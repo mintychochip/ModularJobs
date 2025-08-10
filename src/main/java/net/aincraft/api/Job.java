@@ -1,14 +1,21 @@
 package net.aincraft.api;
 
 import java.util.List;
+import net.aincraft.api.action.ActionType;
 import net.aincraft.api.container.Payable;
+import net.aincraft.api.context.Context;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface Job extends Keyed {
+
   Component getDisplayName();
   Component getDescription();
-  <C> JobTask getTask(@NotNull ActionType.Resolving<C> resolving, @NotNull C object) throws IllegalArgumentException;
-  <C> void addTask(ActionType.Resolving<C> resolving, @NotNull C object, List<Payable> payables);
+  @Nullable
+  JobTask getTask(@NotNull ActionType type, @NotNull Context object) throws IllegalArgumentException;
+  void addTask(ActionType type, @NotNull Context object, List<Payable> payables);
+  void addTask(ActionType type, Key key, List<Payable> payables);
 }

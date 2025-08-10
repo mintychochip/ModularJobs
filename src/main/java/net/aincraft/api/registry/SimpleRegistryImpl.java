@@ -4,9 +4,10 @@ import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
-final class SimpleRegistryImpl<T> implements Registry<T> {
+final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
 
   private final Map<Key, T> registry = new HashMap<>();
 
@@ -22,7 +23,7 @@ final class SimpleRegistryImpl<T> implements Registry<T> {
   }
 
   @Override
-  public void register(@NotNull Key key, @NotNull T object) {
-    registry.put(key, object);
+  public void register(@NotNull T object) {
+    registry.put(object.key(),object);
   }
 }

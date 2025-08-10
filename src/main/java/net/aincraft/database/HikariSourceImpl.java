@@ -10,6 +10,7 @@ final class HikariSourceImpl implements ConnectionSource {
   private final HikariDataSource source;
 
   private final DatabaseType type;
+
   HikariSourceImpl(HikariConfig config, DatabaseType type) {
     this.source = new HikariDataSource(config);
     this.type = type;

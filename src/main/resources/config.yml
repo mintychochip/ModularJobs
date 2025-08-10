@@ -1,5 +1,5 @@
 database:
   type: sqlite
 
-payment-while-riding: false
-payment-in-creative: false
+pay-while-riding: false
+pay-in-creative: false

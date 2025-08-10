@@ -46,5 +46,9 @@ tasks {
             }
         )
         minecraftVersion("1.21.7")
+        downloadPlugins {
+            url("https://www.spigotmc.org/resources/vault.34315/download?version=344916")
+            url("https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar")
+        }
     }
 }

@@ -1,10 +1,9 @@
 package net.aincraft.economy;
 
-import java.math.BigDecimal;
+import net.aincraft.api.container.PayableAmount;
 import org.bukkit.OfflinePlayer;
 
 public interface Economy {
-  boolean deposit(OfflinePlayer player, BigDecimal amount);
-  BigDecimal getBalance(OfflinePlayer player);
-  boolean withdraw(OfflinePlayer player, BigDecimal money);
+  boolean deposit(OfflinePlayer player, PayableAmount payableAmount);
+  boolean withdraw(OfflinePlayer player, PayableAmount payableAmount);
 }

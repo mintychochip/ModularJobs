@@ -1,6 +1,21 @@
 package net.aincraft.api.container;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
+import org.jetbrains.annotations.ApiStatus.NonExtendable;
 
-public interface PayableType extends Keyed {
+@NonExtendable
+public sealed interface PayableType extends Keyed permits PayableTypeImpl {
+
+  static PayableType create(PayableHandler handler, Key key) {
+    return new PayableTypeImpl(handler, key);
+  }
+
+  PayableHandler handler();
+
+  Payable create(PayableAmount amount);
+
+  default Payable create(PayableAmount.Builder builder) {
+    return create(builder.build());
+  }
 }

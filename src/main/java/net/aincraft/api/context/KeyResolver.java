@@ -1,9 +1,22 @@
 package net.aincraft.api.context;
 
+import net.aincraft.api.Bridge;
 import net.kyori.adventure.key.Key;
-import org.jetbrains.annotations.NotNull;
 
-public interface KeyResolver<C> {
-  @NotNull
-  Key resolve(C object) throws IllegalArgumentException;
+public interface KeyResolver {
+
+  static KeyResolver keyResolver() {
+    return Bridge.bridge().resolver();
+  }
+
+  Key resolve(Context object);
+
+  <T extends Context> void addStrategy(KeyResolvingStrategy<T> strategy);
+
+  interface KeyResolvingStrategy<T extends Context> {
+
+    Class<T> getType();
+
+    Key resolve(T object);
+  }
 }

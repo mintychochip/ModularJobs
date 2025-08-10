@@ -14,6 +14,4 @@ public interface JobProgression extends JobProgressionView {
     Preconditions.checkArgument(experience >= getExperience());
     setExperience(experience - getExperience());
   }
-
-  JobProgressionView getView();
 }

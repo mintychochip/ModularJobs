@@ -1,7 +1,10 @@
 package net.aincraft.api;
 
+import net.aincraft.Jobs;
+import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
-import net.aincraft.config.ConfigurationFactory;
+import net.aincraft.economy.Economy;
+import net.aincraft.service.ProgressionService;
 import org.bukkit.Bukkit;
 
 public interface Bridge {
@@ -10,8 +13,13 @@ public interface Bridge {
     return Bukkit.getServicesManager().load(Bridge.class);
   }
 
-  ConfigurationFactory configurationFactory();
+  Jobs plugin();
+
+  KeyResolver resolver();
+
+  ProgressionService progressionService();
 
   RegistryContainer registryContainer();
 
+  Economy economy();
 }

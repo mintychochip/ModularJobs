@@ -1,7 +1,8 @@
 package net.aincraft.api.registry;
 
 import net.aincraft.api.Job;
-import net.aincraft.api.container.PayableHandler;
+import net.aincraft.api.action.ActionType;
+import net.aincraft.api.container.PayableType;
 import net.kyori.adventure.key.Key;
 
 public class RegistryKeys {
@@ -11,6 +12,8 @@ public class RegistryKeys {
   }
 
   public static final RegistryKey<Job> JOBS = RegistryKey.key(Key.key("jobs:jobs"));
-  public static final RegistryKey<PayableHandler> PAYABLE_HANDLERS = RegistryKey.key(
+  public static final RegistryKey<PayableType> PAYABLE_TYPES = RegistryKey.key(
       Key.key("jobs:payable_types"));
+  public static final RegistryKey<ActionType> ACTION_TYPES = RegistryKey.key(
+      Key.key("jobs:action_types"));
 }
