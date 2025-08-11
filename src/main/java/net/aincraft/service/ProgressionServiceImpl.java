@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobProgression;
+import net.aincraft.api.JobProgressionView;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.api.registry.RegistryView;
@@ -53,7 +54,7 @@ public class ProgressionServiceImpl implements ProgressionService {
         if (!rs.next()) {
           return null;
         }
-        long experience = rs.getLong("experience");
+        double experience = rs.getDouble("experience");
         return new JobProgressionImpl(job, player, experience);
       }
     } catch (SQLException e) {
@@ -68,17 +69,18 @@ public class ProgressionServiceImpl implements ProgressionService {
         RegistryKeys.JOBS);
     List<JobProgression> progressions = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection()) {
-      PreparedStatement ps = connection.prepareStatement("SELECT job_key, experience FROM job_progression WHERE player_id=?");
-      ps.setString(1,player.getUniqueId().toString());
+      PreparedStatement ps = connection.prepareStatement(
+          "SELECT job_key, experience FROM job_progression WHERE player_id=?");
+      ps.setString(1, player.getUniqueId().toString());
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
-          Key key = new NamespacedKey("jobs",rs.getString("job_key"));
-          long experience = rs.getLong("experience");
+          Key key = new NamespacedKey("jobs", rs.getString("job_key"));
+          double experience = rs.getDouble("experience");
           if (!registryView.isRegistered(key)) {
             continue;
           }
           Job job = registryView.getOrThrow(key);
-          progressions.add(new JobProgressionImpl(job,player,experience));
+          progressions.add(new JobProgressionImpl(job, player, experience));
         }
       }
     } catch (SQLException e) {
@@ -88,14 +90,14 @@ public class ProgressionServiceImpl implements ProgressionService {
   }
 
   @Override
-  public void update(OfflinePlayer player, Job job, long experience) {
+  public void update(JobProgressionView progression) {
     Preconditions.checkArgument(!connectionSource.isClosed());
     try (Connection connection = connectionSource.getConnection()) {
       PreparedStatement ps = connection.prepareStatement(
           "UPDATE job_progression SET experience=? WHERE player_id=? AND job_key=?");
-      ps.setLong(1,experience);
-      ps.setString(2, player.getUniqueId().toString());
-      ps.setString(3,job.key().value());
+      ps.setDouble(1, progression.getExperience());
+      ps.setString(2, progression.getPlayer().getUniqueId().toString());
+      ps.setString(3, progression.getJob().key().value());
       ps.executeUpdate();
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -104,7 +106,15 @@ public class ProgressionServiceImpl implements ProgressionService {
 
   @Override
   public void delete(OfflinePlayer player) {
-
+    Preconditions.checkArgument(!connectionSource.isClosed());
+    try (Connection connection = connectionSource.getConnection()) {
+      PreparedStatement ps = connection.prepareStatement(
+          "DELETE FROM job_progression WHERE player_id=?");
+      ps.setString(1, player.getUniqueId().toString());
+      ps.executeUpdate();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

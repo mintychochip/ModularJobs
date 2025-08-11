@@ -4,14 +4,9 @@ import com.google.common.base.Preconditions;
 
 public interface JobProgression extends JobProgressionView {
 
-  void setExperience(long experience);
+  void setExperience(double experience);
 
-  default void addExperience(long experience) {
+  default void addExperience(double experience) {
     setExperience(experience + getExperience());
-  }
-
-  default void removeExperience(long experience) throws IllegalArgumentException {
-    Preconditions.checkArgument(experience >= getExperience());
-    setExperience(experience - getExperience());
   }
 }

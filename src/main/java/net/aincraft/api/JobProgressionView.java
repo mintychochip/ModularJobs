@@ -4,9 +4,14 @@ import org.bukkit.OfflinePlayer;
 
 public interface JobProgressionView {
 
+  double getExperienceForLevel(int level);
+
   Job getJob();
 
   OfflinePlayer getPlayer();
 
-  long getExperience();
+  double getExperience();
+
+  int calculateLevel() throws IllegalStateException;
+
 }

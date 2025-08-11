@@ -12,6 +12,8 @@ import net.aincraft.api.container.PayableHandler;
 import net.aincraft.api.container.PayableHandler.PayableContext;
 import net.aincraft.api.container.PayableType;
 import net.aincraft.api.context.Context;
+import net.aincraft.api.event.JobsPaymentEvent;
+import net.aincraft.api.event.JobsPrePaymentEvent;
 import net.aincraft.bridge.BridgeImpl;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.database.ConnectionSource;
@@ -20,6 +22,7 @@ import net.aincraft.listener.JobListener;
 import net.aincraft.service.ProgressionService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +59,7 @@ public class Jobs extends JavaPlugin {
     }
   }
 
-  public static void doTask(OfflinePlayer player, ActionType actionType,
+  public static void doTask(Player player, ActionType actionType,
       Context context) {
     ProgressionService progressionService = ProgressionService.progressionService();
     List<JobProgression> progressions = progressionService.getAll(player);
@@ -68,10 +71,16 @@ public class Jobs extends JavaPlugin {
       }
       for (Payable payable : task.getPayables()) {
         PayableType type = payable.getType();
+        JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job, task);
+        Bukkit.getPluginManager().callEvent(prePaymentEvent);
+        if (prePaymentEvent.isCancelled()) {
+          continue;
+        }
+        Bukkit.getPluginManager().callEvent(new JobsPaymentEvent(player, payable));
         PayableHandler handler = type.handler();
         handler.pay(new PayableContext() {
           @Override
-          public OfflinePlayer getPlayer() {
+          public Player getPlayer() {
             return player;
           }
 

@@ -3,6 +3,8 @@ package net.aincraft.api;
 import java.util.List;
 import net.aincraft.api.action.ActionType;
 import net.aincraft.api.container.Payable;
+import net.aincraft.api.container.PayableCurve;
+import net.aincraft.api.container.PayableType;
 import net.aincraft.api.context.Context;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -13,9 +15,20 @@ import org.jetbrains.annotations.Nullable;
 public interface Job extends Keyed {
 
   Component getDisplayName();
+
   Component getDescription();
+
+  PayableCurve getCurve(PayableType type);
+
+  void setCurve(PayableType type, PayableCurve curve);
+
+  int getMaxLevel();
+
   @Nullable
-  JobTask getTask(@NotNull ActionType type, @NotNull Context object) throws IllegalArgumentException;
+  JobTask getTask(@NotNull ActionType type, @NotNull Context object)
+      throws IllegalArgumentException;
+
   void addTask(ActionType type, @NotNull Context object, List<Payable> payables);
+
   void addTask(ActionType type, Key key, List<Payable> payables);
 }

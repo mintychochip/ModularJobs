@@ -8,7 +8,7 @@ import net.aincraft.api.JobTask;
 import net.aincraft.api.action.ActionType;
 import net.aincraft.api.container.Payable;
 import net.aincraft.api.container.PayableType;
-import net.aincraft.api.container.PaymentCurve;
+import net.aincraft.api.container.PayableCurve;
 import net.aincraft.api.context.Context;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.Registry;
@@ -24,13 +24,14 @@ public final class JobImpl implements Job {
   private final Component displayName;
   private final Component description;
 
-  private final Map<PayableType, PaymentCurve> paymentCurves = new HashMap<>();
+  private final Map<PayableType, PayableCurve> payableCurves;
   private final Map<ActionType, Registry<JobTask>> tasks = new HashMap<>();
 
-  public JobImpl(String key, Component displayName, Component description) {
+  public JobImpl(String key, Component displayName, Component description, Map<PayableType,PayableCurve> payableCurves) {
     this.key = key;
     this.displayName = displayName;
     this.description = description;
+    this.payableCurves = payableCurves;
   }
 
   @Override
@@ -41,6 +42,21 @@ public final class JobImpl implements Job {
   @Override
   public Component getDescription() {
     return description;
+  }
+
+  @Override
+  public PayableCurve getCurve(PayableType type) {
+    return payableCurves.get(type);
+  }
+
+  @Override
+  public void setCurve(PayableType type, PayableCurve curve) {
+    payableCurves.put(type,curve);
+  }
+
+  @Override
+  public int getMaxLevel() {
+    return 200;
   }
 
   @Override

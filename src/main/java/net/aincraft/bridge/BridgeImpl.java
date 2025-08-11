@@ -2,6 +2,7 @@ package net.aincraft.bridge;
 
 import net.aincraft.Jobs;
 import net.aincraft.api.Bridge;
+import net.aincraft.api.container.ExperienceBarFormatter;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.database.ConnectionSource;
@@ -20,6 +21,7 @@ public final class BridgeImpl implements Bridge {
   private final RegistryContainer registryContainer = new RegistryContainerImpl();
   private final ProgressionService progressionService;
   private final KeyResolver keyResolver = new KeyResolverImpl();
+  private final ExperienceBarFormatter experienceBarFormatter = new ExperienceBarFormatterImpl();
 
   public BridgeImpl(Jobs plugin, ConnectionSource connectionSource) {
     this.plugin = plugin;
@@ -45,6 +47,11 @@ public final class BridgeImpl implements Bridge {
   @Override
   public RegistryContainer registryContainer() {
     return registryContainer;
+  }
+
+  @Override
+  public ExperienceBarFormatter experienceBarFormatter() {
+    return experienceBarFormatter;
   }
 
   @Override

@@ -4,6 +4,7 @@ import java.util.List;
 import net.aincraft.api.Bridge;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobProgression;
+import net.aincraft.api.JobProgressionView;
 import org.bukkit.OfflinePlayer;
 
 public interface ProgressionService {
@@ -18,7 +19,7 @@ public interface ProgressionService {
 
   List<JobProgression> getAll(OfflinePlayer player);
 
-  void update(OfflinePlayer player, Job job, long experience);
+  void update(JobProgressionView progression);
 
   void delete(OfflinePlayer player);
 

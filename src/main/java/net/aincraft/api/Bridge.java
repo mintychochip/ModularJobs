@@ -1,6 +1,7 @@
 package net.aincraft.api;
 
 import net.aincraft.Jobs;
+import net.aincraft.api.container.ExperienceBarFormatter;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.economy.Economy;
@@ -20,6 +21,8 @@ public interface Bridge {
   ProgressionService progressionService();
 
   RegistryContainer registryContainer();
+
+  ExperienceBarFormatter experienceBarFormatter();
 
   Economy economy();
 }

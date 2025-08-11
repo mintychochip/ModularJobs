@@ -1,10 +1,10 @@
 package net.aincraft.api.container;
 
 import com.google.common.base.Suppliers;
+import java.util.List;
 import java.util.function.Supplier;
 import net.aincraft.api.Bridge;
 import net.aincraft.config.YamlConfiguration;
-import org.yaml.snakeyaml.Yaml;
 
 public class ConfigurationValues {
 
@@ -28,4 +28,7 @@ public class ConfigurationValues {
 
   public static final ConfigurationValue<Boolean> PAY_IN_CREATIVE = new ConfigurationValueImpl<>(
       createSupplier("pay-in-creative", Boolean.class));
+
+  public static final ConfigurationValue<List<String>> DISABLED_WORLDS = new ConfigurationValueImpl<>(
+      () -> YAML_CONFIGURATION_SUPPLIER.get().getStringList("disabled-worlds"));
 }
