@@ -7,17 +7,12 @@ import net.aincraft.api.Bridge;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobProgression;
 import net.aincraft.api.container.ExperienceBarFormatter.FormattingContext;
-import net.aincraft.api.registry.RegistryContainer;
-import net.aincraft.api.registry.RegistryKeys;
-import net.aincraft.service.ProgressionService;
+import net.aincraft.api.service.ProgressionService;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -36,11 +31,7 @@ public class PayableTypes {
   }, "economy");
 
   private static PayableType type(PayableHandler handler, String keyString) {
-    Key key = new NamespacedKey("jobs", keyString);
-    PayableType type = PayableType.create(handler, key);
-    RegistryContainer.registryContainer()
-        .editRegistry(RegistryKeys.PAYABLE_TYPES, r -> r.register(type));
-    return type;
+    return PayableType.create(handler, new NamespacedKey("jobs", keyString));
   }
 
   private static final class ExperiencePayableHandlerImpl implements PayableHandler {
@@ -77,8 +68,6 @@ public class PayableTypes {
         }
       }.runTaskLater(Bridge.bridge().plugin(), 50L));
     }
-
-
 
 
   }

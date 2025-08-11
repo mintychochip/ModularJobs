@@ -26,6 +26,7 @@ public sealed interface Context permits BlockContext, DyeContext, EnchantmentCon
 
   }
 
+  @Deprecated
   record MaterialContext(Material material) implements Context {
 
   }

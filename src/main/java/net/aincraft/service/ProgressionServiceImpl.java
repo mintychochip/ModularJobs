@@ -13,6 +13,7 @@ import net.aincraft.api.JobProgressionView;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.api.registry.RegistryView;
+import net.aincraft.api.service.ProgressionService;
 import net.aincraft.container.JobProgressionImpl;
 import net.aincraft.database.ConnectionSource;
 import net.kyori.adventure.key.Key;

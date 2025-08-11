@@ -5,11 +5,15 @@ import net.aincraft.api.Bridge;
 import net.aincraft.api.container.ExperienceBarFormatter;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
+import net.aincraft.api.service.BlockExploitService;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.economy.Economy;
 import net.aincraft.economy.VaultEconomy;
-import net.aincraft.service.ProgressionService;
+import net.aincraft.api.service.ProgressionService;
+import net.aincraft.service.BlockExploitServiceImpl;
 import net.aincraft.service.ProgressionServiceImpl;
+import net.aincraft.api.service.SpawnerService;
+import net.aincraft.service.SpawnerServiceImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -22,7 +26,8 @@ public final class BridgeImpl implements Bridge {
   private final ProgressionService progressionService;
   private final KeyResolver keyResolver = new KeyResolverImpl();
   private final ExperienceBarFormatter experienceBarFormatter = new ExperienceBarFormatterImpl();
-
+  private final SpawnerService spawnerService = new SpawnerServiceImpl();
+  private final BlockExploitService blockExploitService = new BlockExploitServiceImpl();
   public BridgeImpl(Jobs plugin, ConnectionSource connectionSource) {
     this.plugin = plugin;
     this.connectionSource = connectionSource;
@@ -55,6 +60,11 @@ public final class BridgeImpl implements Bridge {
   }
 
   @Override
+  public SpawnerService spawnerService() {
+    return spawnerService;
+  }
+
+  @Override
   public Economy economy() {
     Plugin vault = Bukkit.getServer().getPluginManager().getPlugin("Vault");
     if (vault != null) {
@@ -64,6 +74,11 @@ public final class BridgeImpl implements Bridge {
       return new VaultEconomy(provider);
     }
     return null;
+  }
+
+  @Override
+  public BlockExploitService blockExploitService() {
+    return blockExploitService;
   }
 
 }

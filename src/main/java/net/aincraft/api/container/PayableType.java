@@ -8,7 +8,7 @@ import org.jetbrains.annotations.ApiStatus.NonExtendable;
 public sealed interface PayableType extends Keyed permits PayableTypeImpl {
 
   static PayableType create(PayableHandler handler, Key key) {
-    return new PayableTypeImpl(handler, key);
+    return PayableTypeImpl.create(handler,key);
   }
 
   PayableHandler handler();

@@ -18,10 +18,11 @@ import net.aincraft.bridge.BridgeImpl;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.database.ConnectionSourceFactory;
+import net.aincraft.listener.BucketListener;
 import net.aincraft.listener.JobListener;
-import net.aincraft.service.ProgressionService;
+import net.aincraft.listener.util.SpawnerMobController;
+import net.aincraft.api.service.ProgressionService;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,6 +46,8 @@ public class Jobs extends JavaPlugin {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+    Bukkit.getPluginManager().registerEvents(new SpawnerMobController(),this);
+    Bukkit.getPluginManager().registerEvents(new BucketListener(),this);
     Bukkit.getPluginManager().registerEvents(new JobListener(), this);
   }
 
@@ -94,8 +97,6 @@ public class Jobs extends JavaPlugin {
             return job;
           }
         });
-        Bukkit.broadcastMessage(
-            "Paid player: " + player + " with type: " + type + " amount: " + payable.getAmount());
       }
     }
   }

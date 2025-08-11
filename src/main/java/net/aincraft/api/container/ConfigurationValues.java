@@ -29,6 +29,12 @@ public class ConfigurationValues {
   public static final ConfigurationValue<Boolean> PAY_IN_CREATIVE = new ConfigurationValueImpl<>(
       createSupplier("pay-in-creative", Boolean.class));
 
+  public static final ConfigurationValue<Long> COW_MILKING_PERIOD = new ConfigurationValueImpl<>(
+      createSupplier("cow-milking-period", Long.class));
+
+  public static final ConfigurationValue<Boolean> PAY_FOR_ITEM_DURABILITY_LOSS = new ConfigurationValueImpl<>(
+      createSupplier("pay-for-item-durability-loss", Boolean.class));
+
   public static final ConfigurationValue<List<String>> DISABLED_WORLDS = new ConfigurationValueImpl<>(
       () -> YAML_CONFIGURATION_SUPPLIER.get().getStringList("disabled-worlds"));
 }

@@ -7,9 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.aincraft.Jobs;
-import net.aincraft.api.Job;
-import net.aincraft.api.action.ActionTypes;
-import net.aincraft.api.container.Checks;
+import net.aincraft.api.action.ActionType;
 import net.aincraft.api.container.ExpressionPayableCurveImpl;
 import net.aincraft.api.container.Payable;
 import net.aincraft.api.container.PayableAmount;
@@ -19,21 +17,18 @@ import net.aincraft.api.container.PayableTypes;
 import net.aincraft.api.context.Context;
 import net.aincraft.api.context.Context.DyeContext;
 import net.aincraft.api.context.Context.EntityContext;
+import net.aincraft.api.context.Context.ItemContext;
 import net.aincraft.api.context.Context.MaterialContext;
-import net.aincraft.api.event.JobsPrePaymentEvent;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.container.JobImpl;
 import net.aincraft.economy.Currency;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
-import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.damage.DamageSource;
-import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
@@ -42,9 +37,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.inventory.ItemStack;
@@ -55,7 +50,9 @@ public class JobListener implements Listener {
     RegistryContainer.registryContainer().editRegistry(RegistryKeys.JOBS, registry -> {
       Map<PayableType, PayableCurve> curves = new HashMap<>();
       curves.put(PayableTypes.EXPERIENCE,
-          new ExpressionPayableCurveImpl(new ExpressionBuilder("25 * level + 10 * level * level + level * level * level").variable("level").build()));
+          new ExpressionPayableCurveImpl(new ExpressionBuilder(
+              "25 * level + 10 * level * level + level * level * level").variable("level")
+              .build()));
       JobImpl job = new JobImpl("builder", Component.text("Fisherman"), Component.text("test"),
           curves);
       List<Payable> payables = new ArrayList<>();
@@ -74,40 +71,24 @@ public class JobListener implements Listener {
           PayableAmount.create(new BigDecimal("15.00000051512323"))));
       payables.add(PayableTypes.ECONOMY.create(
           PayableAmount.builder().withAmount(BigDecimal.TWO).withCurrency(currency)));
-      job.addTask(ActionTypes.BLOCK_PLACE, new MaterialContext(Material.STONE), payables);
-      job.addTask(ActionTypes.BLOCK_BREAK, new MaterialContext(Material.STONE), payables);
-      job.addTask(ActionTypes.DYE, new DyeContext(DyeColor.BLUE), payables);
-      job.addTask(ActionTypes.KILL, Key.key("minecraft:creeper"), payables);
-      job.addTask(ActionTypes.TAME, Key.key("minecraft:wolf"), payables);
-      job.addTask(ActionTypes.STRIP_LOG, new MaterialContext(Material.ACACIA_LOG), payables);
-      job.addTask(ActionTypes.FISH, new MaterialContext(Material.COD), payables);
+      job.addTask(ActionType.BLOCK_PLACE, new MaterialContext(Material.STONE), payables);
+      job.addTask(ActionType.BLOCK_BREAK, new MaterialContext(Material.STONE), payables);
+      job.addTask(ActionType.DYE, new DyeContext(DyeColor.BLUE), payables);
+      job.addTask(ActionType.KILL, Key.key("minecraft:creeper"), payables);
+      job.addTask(ActionType.TAME, Key.key("minecraft:wolf"), payables);
+      job.addTask(ActionType.STRIP_LOG, new MaterialContext(Material.ACACIA_LOG), payables);
+      job.addTask(ActionType.FISH, new MaterialContext(Material.COD), payables);
+      job.addTask(ActionType.BUCKET,new ItemContext(ItemStack.of(Material.PUFFERFISH_BUCKET)),payables);
+      job.addTask(ActionType.BUCKET,new ItemContext(ItemStack.of(Material.COD_BUCKET)),payables);
+      job.addTask(ActionType.WAX,new MaterialContext(Material.COPPER_BLOCK),payables);
+      job.addTask(ActionType.SHEAR,new ItemContext(ItemStack.of(Material.WHITE_WOOL)),payables);
       registry.register(job);
     });
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBlockPlace(final BlockPlaceEvent event) {
-    if (!event.canBuild()) {
-      return;
-    }
-    Player player = event.getPlayer();
-    if (Checks.World.WORLD_DISABLED.test(player.getWorld()) || Checks.Player.NOT_PAY_IN_CREATIVE.or(
-        Checks.Player.NOT_PAY_WHILE_RIDING).test(player)) {
-      return;
-    }
-    Jobs.doTask(event.getPlayer(), ActionTypes.BLOCK_PLACE, new MaterialContext(event.getBlock()
-        .getType()));
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBlockBreak(final BlockBreakEvent event) {
-    Jobs.doTask(event.getPlayer(), ActionTypes.BLOCK_BREAK, new MaterialContext(event.getBlock()
-        .getType()));
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onDyeEntity(final EntityDyeEvent event) {
-    Jobs.doTask(event.getPlayer(), ActionTypes.DYE, new Context.DyeContext(event.getColor()));
+    Jobs.doTask(event.getPlayer(), ActionType.DYE, new Context.DyeContext(event.getColor()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -118,7 +99,7 @@ public class JobListener implements Listener {
       return;
     }
     LivingEntity dead = event.getEntity();
-    Jobs.doTask(player, ActionTypes.KILL, new EntityContext(dead));
+    Jobs.doTask(player, ActionType.KILL, new EntityContext(dead));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -128,22 +109,35 @@ public class JobListener implements Listener {
       return;
     }
     ItemStack stack = item.getItemStack();
-    Jobs.doTask(player, ActionTypes.FISH, new MaterialContext(stack.getType()));
+    Jobs.doTask(player, ActionType.FISH, new MaterialContext(stack.getType()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onTame(final EntityTameEvent event) {
-    LivingEntity entity = event.getEntity();
-    if (Checks.World.WORLD_DISABLED.test(entity.getWorld())) {
+  private void onCraft(final CraftItemEvent event) {
+    switch (event.getAction()) {
+      case NOTHING:
+      case PLACE_ONE:
+      case PLACE_ALL:
+      case PLACE_SOME:
+        return;
+      default:
+        break;
+    }
+    if (event.getSlotType() != SlotType.RESULT) {
       return;
     }
-    AnimalTamer owner = event.getOwner();
-    if (!(owner instanceof Player player) || Checks.Player.NOT_PAY_IN_CREATIVE.or(
-        Checks.Player.NOT_PAY_WHILE_RIDING).test(player)) {
+
+    if (!event.isLeftClick() && !event.isRightClick()) {
       return;
     }
-    Jobs.doTask(player, ActionTypes.TAME, new EntityContext(event.getEntity()));
+
+    ItemStack result = event.getRecipe().getResult();
+    if (!(event.getWhoClicked() instanceof Player player)) {
+      return;
+    }
+    if (player.getInventory().firstEmpty() == -1 && event.isShiftClick()) {
+      player.sendMessage("you are pp");
+      return;
+    }
   }
-
-
 }

@@ -4,8 +4,10 @@ import net.aincraft.Jobs;
 import net.aincraft.api.container.ExperienceBarFormatter;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
+import net.aincraft.api.service.BlockExploitService;
 import net.aincraft.economy.Economy;
-import net.aincraft.service.ProgressionService;
+import net.aincraft.api.service.ProgressionService;
+import net.aincraft.api.service.SpawnerService;
 import org.bukkit.Bukkit;
 
 public interface Bridge {
@@ -24,5 +26,9 @@ public interface Bridge {
 
   ExperienceBarFormatter experienceBarFormatter();
 
+  SpawnerService spawnerService();
+
   Economy economy();
+
+  BlockExploitService blockExploitService();
 }

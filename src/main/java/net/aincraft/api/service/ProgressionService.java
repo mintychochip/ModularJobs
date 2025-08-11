@@ -1,4 +1,4 @@
-package net.aincraft.service;
+package net.aincraft.api.service;
 
 import java.util.List;
 import net.aincraft.api.Bridge;
