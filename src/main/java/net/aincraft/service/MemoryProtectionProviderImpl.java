@@ -4,14 +4,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import net.aincraft.api.service.ProtectionProvider;
 import org.jetbrains.annotations.NotNull;
 

@@ -6,7 +6,8 @@ import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
-record PayableTypeImpl(@NotNull PayableHandler handler, @NotNull Key key) implements PayableType {
+record PayableTypeImpl(@NotNull PayableHandler handler,
+                                                @NotNull Key key) implements PayableType {
 
   @Internal
   static PayableType create(PayableHandler handler, Key key) {
@@ -18,16 +19,6 @@ record PayableTypeImpl(@NotNull PayableHandler handler, @NotNull Key key) implem
 
   @Override
   public Payable create(PayableAmount amount) {
-    return new Payable() {
-      @Override
-      public PayableType getType() {
-        return PayableTypeImpl.this;
-      }
-
-      @Override
-      public PayableAmount getAmount() {
-        return amount;
-      }
-    };
+    return Payable.create(this,amount);
   }
 }

@@ -33,6 +33,7 @@ public sealed interface ActionType extends Keyed permits ActionTypeImpl {
    */
   ActionType BLOCK_BREAK = type("block_break");
 
+  ActionType TNT_BREAK = type("tnt_break");
   /**
    * Represents a player killing an entity.
    */

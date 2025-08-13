@@ -2,13 +2,21 @@ package net.aincraft.api.container;
 
 import java.math.BigDecimal;
 import net.aincraft.economy.Currency;
+import org.jetbrains.annotations.Nullable;
 
-sealed class PayableAmountImpl implements PayableAmount permits CurrencyAmountImpl {
+public final class PayableAmountImpl implements PayableAmount {
 
   private final BigDecimal amount;
 
+  private Currency currency = null;
+
   PayableAmountImpl(BigDecimal amount) {
     this.amount = amount;
+  }
+
+  public PayableAmountImpl(BigDecimal amount, Currency currency) {
+    this.amount = amount;
+    this.currency = currency;
   }
 
   @Override
@@ -16,24 +24,8 @@ sealed class PayableAmountImpl implements PayableAmount permits CurrencyAmountIm
     return amount;
   }
 
-  static final class BuilderImpl implements PayableAmount.Builder {
-
-    BigDecimal amount;
-
-    @Override
-    public Builder withAmount(BigDecimal amount) {
-      this.amount = amount;
-      return this;
-    }
-
-    @Override
-    public CurrencyAmount.Builder withCurrency(Currency currency) {
-      return new CurrencyAmountImpl.BuilderImpl(this).withCurrency(currency);
-    }
-
-    @Override
-    public PayableAmount build() {
-      return new PayableAmountImpl(amount);
-    }
+  @Override
+  public @Nullable Currency getCurrency() {
+    return currency;
   }
 }

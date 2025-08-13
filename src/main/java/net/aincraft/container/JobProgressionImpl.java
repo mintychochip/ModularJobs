@@ -1,7 +1,6 @@
 package net.aincraft.container;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobProgression;

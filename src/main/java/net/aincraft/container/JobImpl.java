@@ -1,22 +1,13 @@
 package net.aincraft.container;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import net.aincraft.api.Job;
-import net.aincraft.api.JobTask;
-import net.aincraft.api.action.ActionType;
-import net.aincraft.api.container.Payable;
 import net.aincraft.api.container.PayableCurve;
 import net.aincraft.api.container.PayableType;
-import net.aincraft.api.context.Context;
-import net.aincraft.api.context.KeyResolver;
-import net.aincraft.api.registry.Registry;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public final class JobImpl implements Job {
 

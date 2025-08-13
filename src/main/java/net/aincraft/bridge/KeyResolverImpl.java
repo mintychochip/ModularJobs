@@ -11,13 +11,13 @@ public final class KeyResolverImpl implements KeyResolver {
   private final Map<Class<? extends Context>, KeyResolvingStrategy<?>> strategies = new HashMap<>();
 
   @Override
-  public Key resolve(Context object) {
-    Class<? extends Context> objectClass = object.getClass();
+  public Key resolve(Context context) {
+    Class<? extends Context> objectClass = context.getClass();
     KeyResolvingStrategy<?> raw = strategies.get(objectClass);
     if (raw == null) {
       return null;
     }
-    return resolve(raw, object);
+    return resolve(raw, context);
   }
 
   @Override

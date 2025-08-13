@@ -9,7 +9,7 @@ public interface KeyResolver {
     return Bridge.bridge().resolver();
   }
 
-  Key resolve(Context object);
+  Key resolve(Context context);
 
   <T extends Context> void addStrategy(Class<T> clazz, KeyResolvingStrategy<T> strategy);
 

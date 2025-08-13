@@ -15,7 +15,4 @@ public sealed interface PayableType extends Keyed permits PayableTypeImpl {
 
   Payable create(PayableAmount amount);
 
-  default Payable create(PayableAmount.Builder builder) {
-    return create(builder.build());
-  }
 }

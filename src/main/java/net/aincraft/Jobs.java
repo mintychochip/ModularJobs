@@ -6,6 +6,7 @@ import net.aincraft.api.Bridge;
 import net.aincraft.api.Command;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobProgression;
+import net.aincraft.api.JobProgressionView;
 import net.aincraft.api.JobTask;
 import net.aincraft.api.action.ActionType;
 import net.aincraft.api.container.Payable;
@@ -15,6 +16,7 @@ import net.aincraft.api.container.PayableType;
 import net.aincraft.api.context.Context;
 import net.aincraft.api.event.JobsPaymentEvent;
 import net.aincraft.api.event.JobsPrePaymentEvent;
+import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.ProgressionService;
 import net.aincraft.bridge.BridgeImpl;
 import net.aincraft.config.YamlConfiguration;
@@ -47,8 +49,8 @@ public class Jobs extends JavaPlugin {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
-    Bukkit.getPluginManager().registerEvents(new MobTagController(),this);
-    Bukkit.getPluginManager().registerEvents(new BucketListener(),this);
+    Bukkit.getPluginManager().registerEvents(new MobTagController(), this);
+    Bukkit.getPluginManager().registerEvents(new BucketListener(), this);
     Bukkit.getPluginManager().registerEvents(new JobListener(), this);
     Bukkit.getPluginCommand("test").setExecutor(new Command());
   }
@@ -68,37 +70,37 @@ public class Jobs extends JavaPlugin {
       Context context) {
     ProgressionService progressionService = ProgressionService.progressionService();
     List<JobProgression> progressions = progressionService.getAll(player);
-    for (JobProgression progression : progressions) {
+    for (JobProgressionView progression : progressions) {
       Job job = progression.getJob();
-      @Nullable JobTask task = job.getTask(actionType, context);
-      if (task == null) {
-        continue;
-      }
-      for (Payable payable : task.getPayables()) {
-        PayableType type = payable.getType();
-        JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job, task);
-        Bukkit.getPluginManager().callEvent(prePaymentEvent);
-        if (prePaymentEvent.isCancelled()) {
-          continue;
+      JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
+      if (jobTaskProvider.hasTask(job, actionType, context)) {
+        JobTask task = jobTaskProvider.getTask(job, actionType, context);
+        for (Payable payable : task.getPayables()) {
+          PayableType type = payable.getType();
+          JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job, task);
+          Bukkit.getPluginManager().callEvent(prePaymentEvent);
+          if (prePaymentEvent.isCancelled()) {
+            continue;
+          }
+          Bukkit.getPluginManager().callEvent(new JobsPaymentEvent(player, payable));
+          PayableHandler handler = type.handler();
+          handler.pay(new PayableContext() {
+            @Override
+            public OfflinePlayer getPlayer() {
+              return player;
+            }
+
+            @Override
+            public Payable getPayable() {
+              return payable;
+            }
+
+            @Override
+            public Job getJob() {
+              return job;
+            }
+          });
         }
-        Bukkit.getPluginManager().callEvent(new JobsPaymentEvent(player, payable));
-        PayableHandler handler = type.handler();
-        handler.pay(new PayableContext() {
-          @Override
-          public OfflinePlayer getPlayer() {
-            return player;
-          }
-
-          @Override
-          public Payable getPayable() {
-            return payable;
-          }
-
-          @Override
-          public Job getJob() {
-            return job;
-          }
-        });
       }
     }
   }

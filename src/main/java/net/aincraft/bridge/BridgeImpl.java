@@ -3,6 +3,7 @@ package net.aincraft.bridge;
 import com.google.common.cache.CacheLoader;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,11 +12,11 @@ import net.aincraft.api.Bridge;
 import net.aincraft.api.container.ExperienceBarFormatter;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
-import net.aincraft.api.service.ExploitService;
-import net.aincraft.api.service.ExploitService.ExploitProtectionType;
 import net.aincraft.api.service.BlockOwnershipService;
 import net.aincraft.api.service.ChunkExplorationStore;
 import net.aincraft.api.service.EntityValidationService;
+import net.aincraft.api.service.ExploitService;
+import net.aincraft.api.service.ExploitService.ExploitProtectionType;
 import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.MobDamageTracker;
 import net.aincraft.api.service.ProgressionService;
@@ -25,8 +26,8 @@ import net.aincraft.economy.Economy;
 import net.aincraft.economy.VaultEconomy;
 import net.aincraft.service.CSVJobTaskProviderImpl;
 import net.aincraft.service.ExploitServiceImpl;
-import net.aincraft.service.MemoryProtectionProviderImpl;
 import net.aincraft.service.MemoryMobDamageTrackerStoreImpl;
+import net.aincraft.service.MemoryProtectionProviderImpl;
 import net.aincraft.service.MetadataEntityValidationServiceImpl;
 import net.aincraft.service.MobDamageTrackerImpl;
 import net.aincraft.service.PersistentChunkExplorationStoreImpl;
@@ -86,7 +87,11 @@ public final class BridgeImpl implements Bridge {
             Map.of(EntityType.COW, Duration.ofSeconds(5), EntityType.GOAT, Duration.ofSeconds(5)),
             Entity::getType,
             CacheLoader.from(Entity::getUniqueId)));
-    jobTaskProvider = CSVJobTaskProviderImpl.create(plugin);
+    try {
+      jobTaskProvider = CSVJobTaskProviderImpl.create(plugin);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     exploitService = new ExploitServiceImpl(providers);
     progressionService = new ProgressionServiceImpl(connectionSource);
     mobDamageTracker = new MobDamageTrackerImpl(new MemoryMobDamageTrackerStoreImpl(), plugin);

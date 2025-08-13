@@ -1,2 +1,8 @@
-job_key,action_type_key,context_key,payable_type_key,amount
-jobs:builder,jobs:bucket,minecraft:cod,jobs:experience,15
+job_key,action_type_key,context_key,payable_type_key,amount,currency
+jobs:builder,jobs:bucket,minecraft:cod_bucket,jobs:experience,2,USD
+jobs:builder,jobs:bucket,minecraft:cod_bucket,jobs:economy,15,USD
+jobs:builder,jobs:milk,minecraft:cow,jobs:experience,2,USD
+jobs:builder,jobs:milk,minecraft:goat,jobs:experience,2,USD
+jobs:builder,jobs:smelt,minecraft:cooked_beef,jobs:experience,2,USD
+jobs:builder,jobs:brew,minecraft:nether_wart,jobs:experience,2,USD
+jobs:builder,jobs:dye,minecraft:blue,jobs:experience,2,USD
