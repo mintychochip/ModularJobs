@@ -20,6 +20,7 @@ java {
 }
 
 dependencies {
+    implementation("io.undertow:undertow-core:2.3.18.Final")
     implementation("net.objecthunter:exp4j:0.4.8")
     implementation("com.zaxxer:HikariCP:5.0.1")
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")

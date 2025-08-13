@@ -1,5 +1,7 @@
 package net.aincraft;
 
+import io.undertow.Undertow;
+import io.undertow.util.Headers;
 import java.sql.SQLException;
 import java.util.List;
 import net.aincraft.api.Bridge;
@@ -38,7 +40,6 @@ public class Jobs extends JavaPlugin {
 
   @Override
   public void onEnable() {
-
     YamlConfiguration config = YamlConfiguration.create(this, "config.yml");
     ConnectionSourceFactory factory = new ConnectionSourceFactory(this, config);
     try {
@@ -49,6 +50,11 @@ public class Jobs extends JavaPlugin {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+    Undertow server = Undertow.builder().addHttpListener(8000, "0.0.0.0").setHandler(exchange -> {
+      exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+      exchange.getResponseSender().send("hello from undertow!");
+    }).build();
+    server.start();
     Bukkit.getPluginManager().registerEvents(new MobTagController(), this);
     Bukkit.getPluginManager().registerEvents(new BucketListener(), this);
     Bukkit.getPluginManager().registerEvents(new JobListener(), this);
