@@ -106,7 +106,7 @@ public sealed interface ActionType extends Keyed permits ActionTypeImpl {
   /**
    * Represents a player eating food.
    */
-  ActionType EAT = type("eat");
+  ActionType CONSUME = type("eat");
 
   /**
    * Represents a player collecting a material or item.
@@ -121,7 +121,7 @@ public sealed interface ActionType extends Keyed permits ActionTypeImpl {
   /**
    * Represents a player using or filling a bucket.
    */
-  ActionType BUCKET = type("bucket");
+  ActionType BUCKET_ENTITY = type("bucket");
 
   /**
    * Represents a player brushing a block (e.g., for archaeology).

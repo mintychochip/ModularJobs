@@ -14,6 +14,7 @@ public class JobProgressionImpl implements JobProgression {
   private final Job job;
   private final OfflinePlayer player;
   private double experience;
+  private int level = -1;
 
   public JobProgressionImpl(Job job, OfflinePlayer player, double experience) {
     this.job = job;
@@ -24,6 +25,7 @@ public class JobProgressionImpl implements JobProgression {
   @Override
   public void setExperience(double experience) {
     this.experience = experience;
+    this.level = getLevel();
   }
 
   @Override
@@ -48,23 +50,32 @@ public class JobProgressionImpl implements JobProgression {
   }
 
   @Override
-  public int calculateLevel() throws IllegalStateException {
-    int level = 0;
-    int maxLevel = job.getMaxLevel();
-    BigDecimal xp = BigDecimal.valueOf(experience);
-
-    for (int i = 1; i <= maxLevel; i++) {
-      Map<String,Number> variables = new HashMap<>();
-      variables.put("level",i);
-      PayableCurve curve = job.getCurve(PayableTypes.EXPERIENCE);
-      BigDecimal requiredXp = curve.apply(variables);
-      if (xp.compareTo(requiredXp) < 0) {
-        break;
-      }
-
-      level = i;
+  public int getLevel() {
+    if (level < 0) {
+      return calculateLevel();
     }
+    return level;
+  }
 
+  private int calculateLevel() throws IllegalStateException {
+    int maxLevel = job.getMaxLevel();
+    if (maxLevel <= 0) {
+      return 1;
+    }
+    BigDecimal currentXp = BigDecimal.valueOf(experience);
+
+    int low = 1;
+    int level = -1;
+    while (low <= maxLevel) {
+      int mid = (low + maxLevel) >> 1;
+      BigDecimal requiredXpForLevel = job.getCurve(PayableTypes.EXPERIENCE).apply(Map.of("level",mid));
+      if (currentXp.compareTo(requiredXpForLevel) >= 0) {
+        level = mid;
+        low = mid + 1;
+      } else {
+        maxLevel = mid - 1;
+      }
+    }
     return level;
   }
 }

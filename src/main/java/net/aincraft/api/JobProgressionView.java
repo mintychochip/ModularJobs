@@ -12,6 +12,6 @@ public interface JobProgressionView {
 
   double getExperience();
 
-  int calculateLevel() throws IllegalStateException;
+  int getLevel() throws IllegalStateException;
 
 }

@@ -11,11 +11,9 @@ public interface KeyResolver {
 
   Key resolve(Context object);
 
-  <T extends Context> void addStrategy(KeyResolvingStrategy<T> strategy);
+  <T extends Context> void addStrategy(Class<T> clazz, KeyResolvingStrategy<T> strategy);
 
   interface KeyResolvingStrategy<T extends Context> {
-
-    Class<T> getType();
 
     Key resolve(T object);
   }

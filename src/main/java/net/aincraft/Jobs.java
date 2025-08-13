@@ -3,6 +3,7 @@ package net.aincraft;
 import java.sql.SQLException;
 import java.util.List;
 import net.aincraft.api.Bridge;
+import net.aincraft.api.Command;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobProgression;
 import net.aincraft.api.JobTask;
@@ -14,16 +15,16 @@ import net.aincraft.api.container.PayableType;
 import net.aincraft.api.context.Context;
 import net.aincraft.api.event.JobsPaymentEvent;
 import net.aincraft.api.event.JobsPrePaymentEvent;
+import net.aincraft.api.service.ProgressionService;
 import net.aincraft.bridge.BridgeImpl;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.database.ConnectionSourceFactory;
 import net.aincraft.listener.BucketListener;
 import net.aincraft.listener.JobListener;
-import net.aincraft.listener.util.SpawnerMobController;
-import net.aincraft.api.service.ProgressionService;
+import net.aincraft.listener.util.MobTagController;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -46,9 +47,10 @@ public class Jobs extends JavaPlugin {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
-    Bukkit.getPluginManager().registerEvents(new SpawnerMobController(),this);
+    Bukkit.getPluginManager().registerEvents(new MobTagController(),this);
     Bukkit.getPluginManager().registerEvents(new BucketListener(),this);
     Bukkit.getPluginManager().registerEvents(new JobListener(), this);
+    Bukkit.getPluginCommand("test").setExecutor(new Command());
   }
 
   @Override
@@ -62,7 +64,7 @@ public class Jobs extends JavaPlugin {
     }
   }
 
-  public static void doTask(Player player, ActionType actionType,
+  public static void doTask(OfflinePlayer player, ActionType actionType,
       Context context) {
     ProgressionService progressionService = ProgressionService.progressionService();
     List<JobProgression> progressions = progressionService.getAll(player);
@@ -83,7 +85,7 @@ public class Jobs extends JavaPlugin {
         PayableHandler handler = type.handler();
         handler.pay(new PayableContext() {
           @Override
-          public Player getPlayer() {
+          public OfflinePlayer getPlayer() {
             return player;
           }
 

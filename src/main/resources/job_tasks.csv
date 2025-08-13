@@ -1,0 +1,2 @@
+job_key,action_type_key,context_key,payable_type_key,amount
+jobs:builder,jobs:bucket,minecraft:cod,jobs:experience,15

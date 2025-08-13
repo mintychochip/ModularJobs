@@ -4,10 +4,14 @@ import net.aincraft.Jobs;
 import net.aincraft.api.container.ExperienceBarFormatter;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
-import net.aincraft.api.service.BlockExploitService;
-import net.aincraft.economy.Economy;
+import net.aincraft.api.service.ExploitService;
+import net.aincraft.api.service.BlockOwnershipService;
+import net.aincraft.api.service.ChunkExplorationStore;
+import net.aincraft.api.service.EntityValidationService;
+import net.aincraft.api.service.JobTaskProvider;
+import net.aincraft.api.service.MobDamageTracker;
 import net.aincraft.api.service.ProgressionService;
-import net.aincraft.api.service.SpawnerService;
+import net.aincraft.economy.Economy;
 import org.bukkit.Bukkit;
 
 public interface Bridge {
@@ -26,9 +30,17 @@ public interface Bridge {
 
   ExperienceBarFormatter experienceBarFormatter();
 
-  SpawnerService spawnerService();
+  EntityValidationService spawnerService();
+
+  JobTaskProvider jobTaskProvider();
 
   Economy economy();
 
-  BlockExploitService blockExploitService();
+  ExploitService exploitService();
+
+  BlockOwnershipService blockOwnershipService();
+
+  MobDamageTracker mobDamageTracker();
+
+  ChunkExplorationStore chunkExplorationStore();
 }

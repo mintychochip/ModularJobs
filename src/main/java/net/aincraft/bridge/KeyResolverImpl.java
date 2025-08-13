@@ -21,8 +21,8 @@ public final class KeyResolverImpl implements KeyResolver {
   }
 
   @Override
-  public <T extends Context> void addStrategy(KeyResolvingStrategy<T> strategy) {
-    strategies.put(strategy.getType(), strategy);
+  public <T extends Context> void addStrategy(Class<T> clazz, KeyResolvingStrategy<T> strategy) {
+    strategies.put(clazz,strategy);
   }
 
   @SuppressWarnings("unchecked")

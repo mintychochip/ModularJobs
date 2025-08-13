@@ -4,7 +4,5 @@ main: net.aincraft.Jobs
 authors: [ mintychochip ]
 api-version: '1.13'
 commands:
-  bag:
-    description: gives a bag
-  upgrade:
-    description: upgrades bag
+  test:
+    description: asdads

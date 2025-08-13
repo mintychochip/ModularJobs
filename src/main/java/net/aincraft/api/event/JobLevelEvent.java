@@ -1,6 +1,5 @@
 package net.aincraft.api.event;
 
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class JobLevelEvent extends AbstractEvent {

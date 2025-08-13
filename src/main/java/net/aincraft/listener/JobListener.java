@@ -19,6 +19,7 @@ import net.aincraft.api.context.Context.DyeContext;
 import net.aincraft.api.context.Context.EntityContext;
 import net.aincraft.api.context.Context.ItemContext;
 import net.aincraft.api.context.Context.MaterialContext;
+import net.aincraft.api.context.Context.PotionContext;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.container.JobImpl;
@@ -28,21 +29,17 @@ import net.kyori.adventure.text.Component;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
-import org.bukkit.damage.DamageSource;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerFishEvent.State;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionType;
 
 public class JobListener implements Listener {
 
@@ -78,28 +75,24 @@ public class JobListener implements Listener {
       job.addTask(ActionType.TAME, Key.key("minecraft:wolf"), payables);
       job.addTask(ActionType.STRIP_LOG, new MaterialContext(Material.ACACIA_LOG), payables);
       job.addTask(ActionType.FISH, new MaterialContext(Material.COD), payables);
-      job.addTask(ActionType.BUCKET,new ItemContext(ItemStack.of(Material.PUFFERFISH_BUCKET)),payables);
-      job.addTask(ActionType.BUCKET,new ItemContext(ItemStack.of(Material.COD_BUCKET)),payables);
-      job.addTask(ActionType.WAX,new MaterialContext(Material.COPPER_BLOCK),payables);
-      job.addTask(ActionType.SHEAR,new ItemContext(ItemStack.of(Material.WHITE_WOOL)),payables);
+      job.addTask(ActionType.BUCKET_ENTITY,
+          new ItemContext(ItemStack.of(Material.PUFFERFISH_BUCKET)), payables);
+      job.addTask(ActionType.BUCKET_ENTITY, new ItemContext(ItemStack.of(Material.COD_BUCKET)),
+          payables);
+      job.addTask(ActionType.WAX, new MaterialContext(Material.COPPER_BLOCK), payables);
+      job.addTask(ActionType.SHEAR, new ItemContext(ItemStack.of(Material.WHITE_WOOL)), payables);
+      job.addTask(ActionType.BRUSH, new ItemContext(ItemStack.of(Material.ARCHER_POTTERY_SHERD)),
+          payables);
+      job.addTask(ActionType.BREED, Key.key("minecraft:sheep"), payables);
+      job.addTask(ActionType.KILL, Key.key("minecraft:warden"), payables);
+      job.addTask(ActionType.CONSUME, new PotionContext(PotionType.STRONG_POISON), payables);
+      job.addTask(ActionType.CONSUME, new ItemContext(ItemStack.of(Material.COOKED_BEEF)),
+          payables);
+      job.addTask(ActionType.SMELT, new ItemContext(ItemStack.of(Material.COOKED_BEEF)), payables);
+      job.addTask(ActionType.BREW, new ItemContext(ItemStack.of(Material.NETHER_WART)), payables);
+      job.addTask(ActionType.MILK, Key.key("minecraft:cow"), payables);
       registry.register(job);
     });
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onDyeEntity(final EntityDyeEvent event) {
-    Jobs.doTask(event.getPlayer(), ActionType.DYE, new Context.DyeContext(event.getColor()));
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onKillEntity(final EntityDeathEvent event) {
-    DamageSource damageSource = event.getDamageSource();
-    Entity causingEntity = damageSource.getCausingEntity();
-    if (!(causingEntity instanceof Player player)) {
-      return;
-    }
-    LivingEntity dead = event.getEntity();
-    Jobs.doTask(player, ActionType.KILL, new EntityContext(dead));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -110,34 +103,5 @@ public class JobListener implements Listener {
     }
     ItemStack stack = item.getItemStack();
     Jobs.doTask(player, ActionType.FISH, new MaterialContext(stack.getType()));
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onCraft(final CraftItemEvent event) {
-    switch (event.getAction()) {
-      case NOTHING:
-      case PLACE_ONE:
-      case PLACE_ALL:
-      case PLACE_SOME:
-        return;
-      default:
-        break;
-    }
-    if (event.getSlotType() != SlotType.RESULT) {
-      return;
-    }
-
-    if (!event.isLeftClick() && !event.isRightClick()) {
-      return;
-    }
-
-    ItemStack result = event.getRecipe().getResult();
-    if (!(event.getWhoClicked() instanceof Player player)) {
-      return;
-    }
-    if (player.getInventory().firstEmpty() == -1 && event.isShiftClick()) {
-      player.sendMessage("you are pp");
-      return;
-    }
   }
 }

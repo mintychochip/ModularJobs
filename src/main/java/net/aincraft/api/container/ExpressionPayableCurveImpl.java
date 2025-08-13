@@ -3,9 +3,7 @@ package net.aincraft.api.container;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
-import net.kyori.adventure.key.Key;
 import net.objecthunter.exp4j.Expression;
-import org.jetbrains.annotations.NotNull;
 
 public final class ExpressionPayableCurveImpl implements PayableCurve {
 

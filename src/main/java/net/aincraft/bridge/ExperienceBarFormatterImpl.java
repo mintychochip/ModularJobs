@@ -49,11 +49,11 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
   @Internal
   private static float progress(JobProgressionView progression) {
-    int currentLevel = progression.calculateLevel();
+    int currentLevel = progression.getLevel();
     double currentLevelExpRequired = progression.getExperienceForLevel(currentLevel);
     double nextLevelExpRequired = progression.getExperienceForLevel(currentLevel + 1);
     double needed = nextLevelExpRequired - currentLevelExpRequired;
-    if (needed <= 0) {
+    if (needed <= 0.0) {
       return 1.0f;
     }
     return Math.min(1.0f,
@@ -68,7 +68,7 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
     @Override
     public @NotNull Component format(@NotNull FormattingContext context) {
       JobProgressionView progression = context.progression();
-      int level = progression.calculateLevel();
+      int level = progression.getLevel();
       double experienceForNext = progression.getExperienceForLevel(level + 1);
       return MINI_MESSAGE.deserialize(FORMAT, TagResolver.builder()
           .tag("level", Tag.inserting(Component.text(level)))

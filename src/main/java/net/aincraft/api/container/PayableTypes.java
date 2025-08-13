@@ -13,6 +13,7 @@ import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -41,7 +42,7 @@ public class PayableTypes {
 
     @Override
     public void pay(PayableContext context) throws IllegalArgumentException {
-      Player player = context.getPlayer();
+      OfflinePlayer player = context.getPlayer();
       Job job = context.getJob();
       Payable payable = context.getPayable();
       ProgressionService progressionService = ProgressionService.progressionService();
@@ -51,22 +52,26 @@ public class PayableTypes {
       }
       progression.addExperience(payable.getAmount().getAmount().doubleValue());
       progressionService.update(progression);
-      BossBar bossBar = bossBars.computeIfAbsent(context.getPlayer().getUniqueId(),
-          ignored -> BossBar.bossBar(Component.empty(), 0.0f, Color.BLUE, Overlay.PROGRESS));
-
-      ExperienceBarFormatter.experienceBarFormatter()
-          .format(bossBar, new FormattingContext(progression, payable, player));
-      bossBar.addViewer(player);
-      BukkitTask previous = removal.get(player.getUniqueId());
-      if (previous != null && !previous.isCancelled()) {
-        previous.cancel();
-      }
-      removal.put(player.getUniqueId(), new BukkitRunnable() {
-        @Override
-        public void run() {
-          bossBar.removeViewer(player);
+      if (player.isOnline()) {
+        BossBar bossBar = bossBars.computeIfAbsent(context.getPlayer().getUniqueId(),
+            ignored -> BossBar.bossBar(Component.empty(), 0.0f, Color.BLUE, Overlay.PROGRESS));
+        Player onlinePlayer = player.getPlayer();
+        assert onlinePlayer != null;
+        ExperienceBarFormatter.experienceBarFormatter()
+            .format(bossBar, new FormattingContext(progression, payable, onlinePlayer));
+        bossBar.addViewer(onlinePlayer);
+        BukkitTask previous = removal.get(player.getUniqueId());
+        if (previous != null && !previous.isCancelled()) {
+          previous.cancel();
         }
-      }.runTaskLater(Bridge.bridge().plugin(), 50L));
+        removal.put(player.getUniqueId(), new BukkitRunnable() {
+          @Override
+          public void run() {
+            bossBar.removeViewer(onlinePlayer);
+          }
+        }.runTaskLater(Bridge.bridge().plugin(), 50L));
+      }
+
     }
 
 

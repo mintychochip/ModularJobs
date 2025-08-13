@@ -1,6 +1,6 @@
 package net.aincraft.listener.util;
 
-import net.aincraft.api.service.SpawnerService;
+import net.aincraft.api.service.EntityValidationService;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -11,12 +11,11 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityTransformEvent;
 
 /**
- * Listener responsible for tracking entities spawned or transformed
- * by spawner-related mechanics (e.g., natural spawners or spawn eggs).
+ * Listener responsible for tracking entities spawned or transformed by spawner-related mechanics
+ * (e.g., natural spawners or spawn eggs).
  * <p>
- * It tags these entities using the {@link SpawnerService}, so that
- * future plugin logic can identify them as "spawner" entities — useful
- * for applying special behavior or filtering.
+ * It tags these entities using the {@link EntityValidationService}, so that future plugin logic can
+ * identify them as "spawner" entities — useful for applying special behavior or filtering.
  * </p>
  *
  * <p>
@@ -29,26 +28,29 @@ import org.bukkit.event.entity.EntityTransformEvent;
  *
  * @author mintychochip
  */
-public class SpawnerMobController implements Listener {
+public class MobTagController implements Listener {
 
   /**
-   * Handles entity spawn events and marks any entity spawned from a
-   * spawner or a spawn egg as a "spawner entity" using {@link SpawnerService}.
+   * Handles entity spawn events and marks any entity spawned from a spawner or a spawn egg as a
+   * "spawner entity" using {@link EntityValidationService}.
    *
    * @param event the {@link CreatureSpawnEvent} representing the spawn
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onSpawn(final CreatureSpawnEvent event) {
-    SpawnReason reason = event.getSpawnReason();
-    if (reason == SpawnReason.SPAWNER_EGG || reason == SpawnReason.SPAWNER) {
-      SpawnerService.spawnerService().setSpawnerEntity(event.getEntity(), true);
+    switch (event.getSpawnReason()) {
+      case BREEDING:
+      case SPAWNER:
+      case SPAWNER_EGG:
+      case BUCKET:
+        EntityValidationService.entityValidationService()
+            .setValid(event.getEntity(),false);
     }
   }
 
   /**
-   * Handles entity transformations and ensures the "spawner entity" tag
-   * is retained on the resulting entity/entities if the original entity
-   * was tagged.
+   * Handles entity transformations and ensures the "spawner entity" tag is retained on the
+   * resulting entity/entities if the original entity was tagged.
    *
    * <p>
    * Only specific transformation types are eligible for propagation:
@@ -64,9 +66,9 @@ public class SpawnerMobController implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onEntityTransform(final EntityTransformEvent event) {
-    SpawnerService spawnerService = SpawnerService.spawnerService();
+    EntityValidationService entityValidationService = EntityValidationService.entityValidationService();
 
-    if (!spawnerService.isSpawnerEntity(event.getEntity())) {
+    if (!entityValidationService.isValid(event.getEntity())) {
       return;
     }
 
@@ -75,22 +77,25 @@ public class SpawnerMobController implements Listener {
 
     switch (event.getTransformReason()) {
       case DROWNED:
-        if (type != EntityType.ZOMBIE) return;
-        spawnerService.setSpawnerEntity(transformedEntity, true);
+        if (type != EntityType.ZOMBIE) {
+          return;
+        }
+        entityValidationService.setValid(transformedEntity,false);
         break;
-
       case FROZEN:
-        if (type != EntityType.SKELETON) return;
-        spawnerService.setSpawnerEntity(transformedEntity, true);
+        if (type != EntityType.SKELETON) {
+          return;
+        }
+        entityValidationService.setValid(transformedEntity,false);
         break;
-
       case SPLIT:
-        if (!(type == EntityType.SLIME || type == EntityType.MAGMA_CUBE)) return;
+        if (!(type == EntityType.SLIME || type == EntityType.MAGMA_CUBE)) {
+          return;
+        }
         for (Entity entity : event.getTransformedEntities()) {
-          spawnerService.setSpawnerEntity(entity, true);
+          entityValidationService.setValid(entity,false);
         }
         break;
-
       case CURED:
       case INFECTION:
       case LIGHTNING:

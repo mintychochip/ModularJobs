@@ -24,11 +24,4 @@ public interface Job extends Keyed {
 
   int getMaxLevel();
 
-  @Nullable
-  JobTask getTask(@NotNull ActionType type, @NotNull Context object)
-      throws IllegalArgumentException;
-
-  void addTask(ActionType type, @NotNull Context object, List<Payable> payables);
-
-  void addTask(ActionType type, Key key, List<Payable> payables);
 }
