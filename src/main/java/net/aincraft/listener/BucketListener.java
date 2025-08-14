@@ -26,7 +26,7 @@ import net.aincraft.api.context.Context.EntityContext;
 import net.aincraft.api.context.Context.ItemContext;
 import net.aincraft.api.context.Context.MaterialContext;
 import net.aincraft.api.context.Context.PotionContext;
-import net.aincraft.api.service.BlockOwnershipService;
+import net.aincraft.api.service.BlockOwnershipProvider;
 import net.aincraft.api.service.EntityValidationService;
 import net.aincraft.api.service.ExploitService;
 import net.aincraft.api.service.ExploitService.ExploitProtectionType;
@@ -422,11 +422,11 @@ public class BucketListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onFurnaceSmelt(final FurnaceSmeltEvent event) {
     Block block = event.getBlock();
-    BlockOwnershipService blockOwnershipService = BlockOwnershipService.blockOwnershipService();
-    if (!blockOwnershipService.isProtected(block)) {
+    BlockOwnershipProvider blockOwnershipProvider = BlockOwnershipProvider.blockOwnershipProvider();
+    if (!blockOwnershipProvider.isProtected(block)) {
       return;
     }
-    OfflinePlayer player = blockOwnershipService.getOwner(block);
+    OfflinePlayer player = blockOwnershipProvider.getOwner(block);
     if (!player.isOnline()) {
       return;
     }
@@ -449,11 +449,11 @@ public class BucketListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onBrewEvent(final BrewEvent event) {
     Block block = event.getBlock();
-    BlockOwnershipService blockOwnershipService = BlockOwnershipService.blockOwnershipService();
-    if (!blockOwnershipService.isProtected(block)) {
+    BlockOwnershipProvider blockOwnershipProvider = BlockOwnershipProvider.blockOwnershipProvider();
+    if (!blockOwnershipProvider.isProtected(block)) {
       return;
     }
-    OfflinePlayer player = blockOwnershipService.getOwner(block);
+    OfflinePlayer player = blockOwnershipProvider.getOwner(block);
     if (!player.isOnline()) {
       return;
     }

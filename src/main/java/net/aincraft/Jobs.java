@@ -50,11 +50,11 @@ public class Jobs extends JavaPlugin {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
-    Undertow server = Undertow.builder().addHttpListener(8000, "0.0.0.0").setHandler(exchange -> {
-      exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-      exchange.getResponseSender().send("hello from undertow!");
-    }).build();
-    server.start();
+//    Undertow server = Undertow.builder().addHttpListener(8000, "0.0.0.0").setHandler(exchange -> {
+//      exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+//      exchange.getResponseSender().send("hello from undertow!");
+//    }).build();
+//    server.start();
     Bukkit.getPluginManager().registerEvents(new MobTagController(), this);
     Bukkit.getPluginManager().registerEvents(new BucketListener(), this);
     Bukkit.getPluginManager().registerEvents(new JobListener(), this);
@@ -75,15 +75,16 @@ public class Jobs extends JavaPlugin {
   public static void doTask(OfflinePlayer player, ActionType actionType,
       Context context) {
     ProgressionService progressionService = ProgressionService.progressionService();
+    JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
     List<JobProgression> progressions = progressionService.getAll(player);
     for (JobProgressionView progression : progressions) {
       Job job = progression.getJob();
-      JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
       if (jobTaskProvider.hasTask(job, actionType, context)) {
         JobTask task = jobTaskProvider.getTask(job, actionType, context);
         for (Payable payable : task.getPayables()) {
           PayableType type = payable.getType();
-          JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job, task);
+          JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job,
+              task);
           Bukkit.getPluginManager().callEvent(prePaymentEvent);
           if (prePaymentEvent.isCancelled()) {
             continue;

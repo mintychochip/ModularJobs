@@ -6,18 +6,18 @@ import org.bukkit.OfflinePlayer;
 public class JobsPaymentEvent extends AbstractEvent {
 
   private final OfflinePlayer player;
-  private final Payable payable;
+  private final Payable base;
 
-  public JobsPaymentEvent(OfflinePlayer player, Payable payable) {
+  public JobsPaymentEvent(OfflinePlayer player, Payable base) {
     this.player = player;
-    this.payable = payable;
+    this.base = base;
   }
 
   public OfflinePlayer getPlayer() {
     return player;
   }
 
-  public Payable getPayable() {
-    return payable;
+  public Payable getBase() {
+    return base;
   }
 }

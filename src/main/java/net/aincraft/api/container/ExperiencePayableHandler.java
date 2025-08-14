@@ -1,0 +1,41 @@
+package net.aincraft.api.container;
+
+import java.math.BigDecimal;
+import net.aincraft.api.JobProgressionView;
+import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+public interface ExperiencePayableHandler extends PayableHandler {
+
+  void setExperienceBarController(ExperienceBarController controller);
+
+  void setExperienceBarFormatter(ExperienceBarFormatter formatter);
+
+  interface ExperienceBarFormatter {
+
+    BossBar format(@NotNull BossBar bossBar,
+        @NotNull ExperienceBarContext context);
+
+    void setColor(@NotNull BossBar.Color color);
+
+    void setOverlay(@NotNull BossBar.Overlay overlay);
+
+    void setNameFormatter(@NotNull NameFormatter formatter);
+
+    @FunctionalInterface
+    interface NameFormatter {
+
+      @NotNull
+      Component format(@NotNull ExperienceBarContext context);
+    }
+  }
+
+  interface ExperienceBarController {
+
+    void display(ExperienceBarContext context, ExperienceBarFormatter formatter);
+  }
+
+  record ExperienceBarContext(JobProgressionView progression, Player player, BigDecimal amount) {}
+}

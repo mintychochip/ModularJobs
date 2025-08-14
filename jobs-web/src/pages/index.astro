@@ -1,11 +1,13 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import '../styles/global.css'
+import NavBar from '../components/NavBar.astro'
+import Base from "../layouts/Base.astro";
+import Hero from '../components/Hero.astro';
+import Body from '../components/Body.astro';
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<Base lang="fr" theme="dark">
+  <NavBar client:load></NavBar>
+  <Hero version={"1.1.0-SNAPSHOT"}/>
+  <Body/>
+</Base>

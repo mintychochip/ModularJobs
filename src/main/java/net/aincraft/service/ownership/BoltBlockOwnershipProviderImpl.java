@@ -2,7 +2,7 @@ package net.aincraft.service.ownership;
 
 import com.google.common.base.Preconditions;
 import java.util.UUID;
-import net.aincraft.api.service.BlockOwnershipService;
+import net.aincraft.api.service.BlockOwnershipProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -10,11 +10,11 @@ import org.jetbrains.annotations.NotNull;
 import org.popcraft.bolt.BoltAPI;
 import org.popcraft.bolt.protection.BlockProtection;
 
-public final class BoltBlockOwnershipServiceImpl implements BlockOwnershipService {
+public final class BoltBlockOwnershipProviderImpl implements BlockOwnershipProvider {
 
   private final BoltAPI bolt;
 
-  public BoltBlockOwnershipServiceImpl(BoltAPI bolt) {
+  public BoltBlockOwnershipProviderImpl(BoltAPI bolt) {
     this.bolt = bolt;
   }
 

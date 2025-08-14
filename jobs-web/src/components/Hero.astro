@@ -1,0 +1,28 @@
+---
+const {version} = Astro.props
+---
+<div class="w-full h-[30vh] bg-base-300">
+  <div class="mx-auto px-12 h-full">
+    <div class="flex items-center justify-between h-full">
+      <div class="flex items-center gap-6 h-full">
+        <div class="h-3/4">
+          <img src="/houston.webp" alt="Modular Jobs Logo"
+               class="h-full w-auto object-cover rounded-xl">
+        </div>
+        <div>
+          <h1 class="text-5xl font-bold">Modular Jobs</h1>
+          <p class="mt-2 text-lg opacity-80">A jobs economy plugin for Minecraft servers.</p>
+        </div>
+      </div>
+      <a href="/downloads">
+        <div
+            class="bg-primary px-10 py-5 rounded-xl hover:bg-primary-content hover:text-primary transition-colors">
+          <div class="flex flex-col items-center text-center">
+            <span class="text-2xl font-bold">Download</span>
+            <span class="text-sm opacity-80">v{version}</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>

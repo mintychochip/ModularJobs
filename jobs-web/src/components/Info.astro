@@ -1,0 +1,29 @@
+---
+import InfoCard from './InfoCard.astro'
+---
+<div class="flex flex-col gap-y-4">
+<InfoCard link=""
+                   description="Learn how to install, setup, configure, and use the plugin">
+  <h3>Wiki</h3>
+</InfoCard>
+<InfoCard
+    description="Browse the plugin's source code, report issues and contribute to the project"
+    link="https:github.com/mintychochip/modularjobs">
+  <div class="flex items-center gap-2">
+    <img src="/GitHub_Invertocat_Light.svg" alt="Github Logo" class="h-6">
+    <h3>Github</h3>
+  </div>
+</InfoCard>
+<InfoCard
+    description="Join {{players}} others to discuss the project and ask/answer questions"
+    link="https:discord.com">
+  <div class="flex items-center gap-2">
+    <img src="/Discord-Symbol-Blurple.svg" alt="Discord Logo" class="h-6">
+    <h3>Discord</h3>
+  </div>
+</InfoCard>
+<InfoCard description="Join {{players}} others supporting the project on Patreon"
+                   link="patreon.com">
+  <h2>Patreon</h2>
+</InfoCard>
+</div>

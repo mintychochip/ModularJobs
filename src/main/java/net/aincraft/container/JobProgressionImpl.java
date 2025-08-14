@@ -10,27 +10,33 @@ import org.bukkit.OfflinePlayer;
 
 public class JobProgressionImpl implements JobProgression {
 
+  private static final int INVALID_LEVEL = -1;
+
   private final Job job;
   private final OfflinePlayer player;
-  private double experience;
-  private int level = -1;
+  private final BigDecimal experience;
+  private final int level;
 
-  public JobProgressionImpl(Job job, OfflinePlayer player, double experience) {
+  public JobProgressionImpl(Job job, OfflinePlayer player, BigDecimal experience, int level) {
     this.job = job;
     this.player = player;
     this.experience = experience;
+    this.level = level;
+  }
+
+  public JobProgressionImpl(Job job, OfflinePlayer player, BigDecimal experience) {
+    this(job, player, experience, INVALID_LEVEL);
   }
 
   @Override
-  public void setExperience(double experience) {
-    this.experience = experience;
-    this.level = getLevel();
+  public JobProgression setExperience(BigDecimal experience) {
+    return new JobProgressionImpl(job, player, experience, calculateLevel());
   }
 
   @Override
   public double getExperienceForLevel(int level) {
     PayableCurve curve = job.getCurve(PayableTypes.EXPERIENCE);
-    return curve.apply(Map.of("level",level)).doubleValue();
+    return curve.apply(Map.of("level", level)).doubleValue();
   }
 
   @Override
@@ -44,7 +50,7 @@ public class JobProgressionImpl implements JobProgression {
   }
 
   @Override
-  public double getExperience() {
+  public BigDecimal getExperience() {
     return experience;
   }
 
@@ -61,14 +67,14 @@ public class JobProgressionImpl implements JobProgression {
     if (maxLevel <= 0) {
       return 1;
     }
-    BigDecimal currentXp = BigDecimal.valueOf(experience);
 
     int low = 1;
-    int level = -1;
+    int level = INVALID_LEVEL;
     while (low <= maxLevel) {
       int mid = (low + maxLevel) >> 1;
-      BigDecimal requiredXpForLevel = job.getCurve(PayableTypes.EXPERIENCE).apply(Map.of("level",mid));
-      if (currentXp.compareTo(requiredXpForLevel) >= 0) {
+      BigDecimal requiredXpForLevel = job.getCurve(PayableTypes.EXPERIENCE)
+          .apply(Map.of("level", mid));
+      if (experience.compareTo(requiredXpForLevel) >= 0) {
         level = mid;
         low = mid + 1;
       } else {
@@ -77,4 +83,15 @@ public class JobProgressionImpl implements JobProgression {
     }
     return level;
   }
+
+  @Override
+  public String toString() {
+    return "JobProgressionImpl[" +
+        "player=" + player.getUniqueId() +
+        ", job=" + job.key().value() +
+        ", experience=" + experience +
+        ", level=" + getLevel() +
+        "]";
+  }
+
 }

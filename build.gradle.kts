@@ -23,6 +23,7 @@ dependencies {
     implementation("io.undertow:undertow-core:2.3.18.Final")
     implementation("net.objecthunter:exp4j:0.4.8")
     implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude(group = "org.bukkit")

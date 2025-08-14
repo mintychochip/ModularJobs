@@ -1,0 +1,51 @@
+---
+import Info from '../components/Info.astro'
+---
+<div class="bg-base-100 flex justify-between gap-4 m-10">
+  <div class="flex flex-col ">
+    <div class="my-4">
+      <h2 class="text-xl font-bold">Why Modular Jobs?</h2>
+    </div>
+    <p class="text-xs">
+      ModularJobs is a jobs economy plugin for Minecraft servers. It allows server admins to create
+      job tasks for players to do and earn money.
+    </p>
+    <div class="feature-list my-2">
+      <p class="text-md font-bold">Features:</p>
+      <ul class="text-xs list-disc list-outside pl-5 space-y-1">
+        <li>Create your own jobs and choose how much they get paid</li>
+        <li>
+          Integrations with many popular plugins such as:
+          <ul class="mt-1 list-[circle] list-outside pl-5 space-y-1 marker:text-slate-500 font-bold">
+            <li>MythicMobs</li>
+            <li>LWC</li>
+            <li>Bolt</li>
+            <li>McMMO</li>
+            <!-- add more here -->
+          </ul>
+        </li>
+
+        <li>Database support for: MySQL, SQLite, Postgres</li>
+        <li>Option to limit income for certain time intervals</li>
+        <li>
+          Support for many popular economy bridges:
+          <ul class="mt-1 list-[circle] list-outside pl-5 space-y-1 marker:text-slate-500 font-bold">
+            <li>Vault</li>
+            <li>Treasury</li>
+            <li>Service-IO</li>
+          </ul>
+        </li>
+        <li>Support for multi-currency payouts</li>
+        <li>
+          <span class="hover:text-primary font-bold">
+            <a href="editor">Web Editor</a>
+          </span> for registering jobs and tasks
+        </li>
+        <li>Developer API</li>
+      </ul>
+    </div>
+  </div>
+  <div class="w-1/2">
+    <Info/>
+  </div>
+</div>

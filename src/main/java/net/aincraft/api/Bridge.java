@@ -1,10 +1,9 @@
 package net.aincraft.api;
 
 import net.aincraft.Jobs;
-import net.aincraft.api.container.ExperienceBarFormatter;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
-import net.aincraft.api.service.BlockOwnershipService;
+import net.aincraft.api.service.BlockOwnershipProvider;
 import net.aincraft.api.service.ChunkExplorationStore;
 import net.aincraft.api.service.EntityValidationService;
 import net.aincraft.api.service.ExploitService;
@@ -28,8 +27,6 @@ public interface Bridge {
 
   RegistryContainer registryContainer();
 
-  ExperienceBarFormatter experienceBarFormatter();
-
   EntityValidationService spawnerService();
 
   JobTaskProvider jobTaskProvider();
@@ -38,7 +35,7 @@ public interface Bridge {
 
   ExploitService exploitService();
 
-  BlockOwnershipService blockOwnershipService();
+  BlockOwnershipProvider blockOwnershipProvider();
 
   MobDamageTracker mobDamageTracker();
 

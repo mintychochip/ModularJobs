@@ -2,9 +2,8 @@ package net.aincraft.bridge;
 
 import java.math.BigDecimal;
 import net.aincraft.api.JobProgressionView;
-import net.aincraft.api.container.ExperienceBarFormatter;
-import net.aincraft.api.container.Payable;
-import net.aincraft.api.container.PayableAmount;
+import net.aincraft.api.container.ExperiencePayableHandler;
+import net.aincraft.api.container.ExperiencePayableHandler.ExperienceBarFormatter;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
@@ -25,7 +24,8 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
   private Overlay overlay = Overlay.PROGRESS;
 
   @Override
-  public BossBar format(@NotNull BossBar bossBar, @NotNull FormattingContext context) {
+  public BossBar format(@NotNull BossBar bossBar,
+      @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
     return bossBar.name(formatter.format(context))
         .progress(progress(context.progression()))
         .color(color)
@@ -57,7 +57,8 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
       return 1.0f;
     }
     return Math.min(1.0f,
-        (float) (progression.getExperience() - currentLevelExpRequired) / (float) needed);
+        (float) (progression.getExperience().doubleValue() - currentLevelExpRequired)
+            / (float) needed);
   }
 
   private static final class NameFormatterImpl implements NameFormatter {
@@ -66,7 +67,8 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     @Override
-    public @NotNull Component format(@NotNull FormattingContext context) {
+    public @NotNull Component format(
+        @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
       JobProgressionView progression = context.progression();
       int level = progression.getLevel();
       double experienceForNext = progression.getExperienceForLevel(level + 1);
@@ -74,16 +76,14 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
           .tag("level", Tag.inserting(Component.text(level)))
           .tag("job-name", Tag.inserting(progression.getJob().getDisplayName()))
           .tag("xp", Tag.inserting(Component.text(
-              progression.getExperience())))
+              progression.getExperience().doubleValue())))
           .tag("total-xp", Tag.inserting(Component.text(experienceForNext)))
-          .tag("payable", Tag.inserting(payableComponent(context.payable())))
+          .tag("payable", Tag.inserting(payableComponent(context.amount())))
           .build());
     }
 
-    private static Component payableComponent(Payable payable) {
-      PayableAmount payableAmount = payable.getAmount();
-      BigDecimal bigDecimal = payableAmount.getAmount();
-      double value = bigDecimal.doubleValue();
+    private static Component payableComponent(BigDecimal amount) {
+      double value = amount.doubleValue();
       Component component = Component.empty();
       if (value > 0.0) {
         component = component.append(Component.text("+"));

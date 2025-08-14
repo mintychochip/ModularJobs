@@ -1,0 +1,12 @@
+---
+import '../styles/global.css';
+import Base from './Base.astro'
+const props = Astro.props;
+---
+
+<Base {...props}>
+  <div>
+    <p>Test</p>
+  </div>
+  <slot/>
+</Base>

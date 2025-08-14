@@ -4,17 +4,17 @@ import com.google.common.base.Preconditions;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
 import java.util.UUID;
-import net.aincraft.api.service.BlockOwnershipService;
+import net.aincraft.api.service.BlockOwnershipProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-public final class LWCXBlockOwnershipServiceImpl implements BlockOwnershipService {
+public final class LWCXBlockOwnershipProviderImpl implements BlockOwnershipProvider {
 
   private final LWC lwc;
 
-  public LWCXBlockOwnershipServiceImpl(LWC lwc) {
+  public LWCXBlockOwnershipProviderImpl(LWC lwc) {
     this.lwc = lwc;
   }
 

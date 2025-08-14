@@ -1,10 +1,12 @@
 package net.aincraft.api;
 
+import java.math.BigDecimal;
+
 public interface JobProgression extends JobProgressionView {
 
-  void setExperience(double experience);
+  JobProgression setExperience(BigDecimal experience);
 
-  default void addExperience(double experience) {
-    setExperience(experience + getExperience());
+  default JobProgression addExperience(BigDecimal experience) {
+    return setExperience(experience.add(getExperience()));
   }
 }

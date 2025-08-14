@@ -10,13 +10,13 @@ import org.jetbrains.annotations.NotNull;
  * <p>
  * Implementations may integrate with plugins like LWC, Bolt, or others.
  */
-public interface BlockOwnershipService {
+public interface BlockOwnershipProvider {
 
   /**
    * Returns the active block ownership service, or {@code null} if none is registered.
    */
-  static BlockOwnershipService blockOwnershipService() {
-    return Bridge.bridge().blockOwnershipService();
+  static BlockOwnershipProvider blockOwnershipProvider() {
+    return Bridge.bridge().blockOwnershipProvider();
   }
 
   /**

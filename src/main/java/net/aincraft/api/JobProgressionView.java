@@ -1,5 +1,6 @@
 package net.aincraft.api;
 
+import java.math.BigDecimal;
 import org.bukkit.OfflinePlayer;
 
 public interface JobProgressionView {
@@ -10,7 +11,7 @@ public interface JobProgressionView {
 
   OfflinePlayer getPlayer();
 
-  double getExperience();
+  BigDecimal getExperience();
 
   int getLevel() throws IllegalStateException;
 
