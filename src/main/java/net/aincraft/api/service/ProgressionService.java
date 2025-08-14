@@ -19,7 +19,7 @@ public interface ProgressionService {
   }
 
   @NotNull
-  JobProgression create(OfflinePlayer player, Job job);
+  JobProgression create(OfflinePlayer player, Job job) throws IllegalArgumentException;
 
   @Nullable
   JobProgression get(OfflinePlayer player, Job job);
@@ -27,9 +27,8 @@ public interface ProgressionService {
   @NotNull
   List<JobProgression> getAll(OfflinePlayer player);
 
-  void update(JobProgressionView progression);
+  void update(JobProgression progression);
 
-  void update(List<? extends JobProgressionView> progressions);
+  void update(List<? extends JobProgression> progressions);
 
-  void delete(OfflinePlayer player);
 }

@@ -1,16 +1,15 @@
 package net.aincraft.service.ownership;
 
-import com.google.common.base.Preconditions;
-import java.util.UUID;
-import net.aincraft.api.service.BlockOwnershipProvider;
+import java.util.Optional;
+import net.aincraft.api.container.Provider;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.popcraft.bolt.BoltAPI;
-import org.popcraft.bolt.protection.BlockProtection;
+import org.popcraft.bolt.protection.Protection;
 
-public final class BoltBlockOwnershipProviderImpl implements BlockOwnershipProvider {
+public final class BoltBlockOwnershipProviderImpl implements Provider<Block,OfflinePlayer> {
 
   private final BoltAPI bolt;
 
@@ -19,18 +18,8 @@ public final class BoltBlockOwnershipProviderImpl implements BlockOwnershipProvi
   }
 
   @Override
-  public boolean isProtected(@NotNull Block block) {
-    if (!bolt.isProtectable(block)) {
-      return false;
-    }
-    return bolt.isProtected(block);
-  }
-
-  @Override
-  public @NotNull OfflinePlayer getOwner(@NotNull Block block) throws IllegalArgumentException {
-    Preconditions.checkArgument(isProtected(block));
-    BlockProtection protection = bolt.loadProtection(block);
-    UUID owner = protection.getOwner();
-    return Bukkit.getOfflinePlayer(owner);
+  public @NotNull Optional<OfflinePlayer> get(Block key) {
+    Protection protection = bolt.findProtection(key);
+    return Optional.of(Bukkit.getOfflinePlayer(protection.getOwner()));
   }
 }

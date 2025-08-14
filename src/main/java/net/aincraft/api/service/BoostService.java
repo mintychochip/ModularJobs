@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 public interface BoostService {
 
+
   interface BoostStore<T> {
     void addBoost(Boost boost, T object);
     void removeBoost(BoostType type, T object);

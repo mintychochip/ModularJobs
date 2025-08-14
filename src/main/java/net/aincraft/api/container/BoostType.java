@@ -15,6 +15,8 @@ public interface BoostType extends Keyed {
 
   }
 
+  BoostType.Typed<Plugin> MCMMO = type(Key.key("jobs:player"));
+
   BoostType.Typed<Player> PLAYER = type(Key.key("jobs:player"));
 
   BoostType.Typed<Plugin> PLUGIN = type(Key.key(""));

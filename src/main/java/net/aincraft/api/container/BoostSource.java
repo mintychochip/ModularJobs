@@ -1,6 +1,9 @@
 package net.aincraft.api.container;
 
-public interface BoostSource {
-  Boost getBoost();
-  BoostCondition getCondition();
+import java.util.Optional;
+import net.aincraft.api.container.BoostCondition.BoostContext;
+import net.kyori.adventure.key.Keyed;
+
+public interface BoostSource extends Keyed {
+  Optional<Boost> getBoost(BoostContext context);
 }

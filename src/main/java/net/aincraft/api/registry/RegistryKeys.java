@@ -2,6 +2,7 @@ package net.aincraft.api.registry;
 
 import net.aincraft.api.Job;
 import net.aincraft.api.action.ActionType;
+import net.aincraft.api.container.BoostSource;
 import net.aincraft.api.container.PayableType;
 import net.kyori.adventure.key.Key;
 
@@ -16,4 +17,5 @@ public class RegistryKeys {
       Key.key("jobs:payable_types"));
   public static final RegistryKey<ActionType> ACTION_TYPES = RegistryKey.key(
       Key.key("jobs:action_types"));
+  public static final RegistryKey<BoostSource> TRANSIENT_BOOST_SOURCES = RegistryKey.key(Key.key("jobs:boost_sources"));
 }

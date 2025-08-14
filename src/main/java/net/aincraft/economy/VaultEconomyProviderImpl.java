@@ -5,11 +5,11 @@ import net.aincraft.api.container.PayableAmount;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
-public final class VaultEconomy implements Economy {
+public final class VaultEconomyProviderImpl implements EconomyProvider {
 
   private final net.milkbowl.vault.economy.Economy vault;
 
-  public VaultEconomy(net.milkbowl.vault.economy.Economy vault) {
+  public VaultEconomyProviderImpl(net.milkbowl.vault.economy.Economy vault) {
     this.vault = vault;
   }
 

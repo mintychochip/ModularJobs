@@ -17,20 +17,20 @@ public class JobProgressionImpl implements JobProgression {
   private final BigDecimal experience;
   private final int level;
 
-  public JobProgressionImpl(Job job, OfflinePlayer player, BigDecimal experience, int level) {
+  public JobProgressionImpl(OfflinePlayer player, Job job, BigDecimal experience, int level) {
     this.job = job;
     this.player = player;
     this.experience = experience;
     this.level = level;
   }
 
-  public JobProgressionImpl(Job job, OfflinePlayer player, BigDecimal experience) {
-    this(job, player, experience, INVALID_LEVEL);
+  public JobProgressionImpl(OfflinePlayer player, Job job, BigDecimal experience) {
+    this(player, job, experience, INVALID_LEVEL);
   }
 
   @Override
   public JobProgression setExperience(BigDecimal experience) {
-    return new JobProgressionImpl(job, player, experience, calculateLevel());
+    return new JobProgressionImpl(player, job, experience, calculateCurrentLevel());
   }
 
   @Override
@@ -56,13 +56,10 @@ public class JobProgressionImpl implements JobProgression {
 
   @Override
   public int getLevel() {
-    if (level < 0) {
-      return calculateLevel();
-    }
     return level;
   }
 
-  private int calculateLevel() throws IllegalStateException {
+  private int calculateCurrentLevel() throws IllegalStateException {
     int maxLevel = job.getMaxLevel();
     if (maxLevel <= 0) {
       return 1;

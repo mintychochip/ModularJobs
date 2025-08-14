@@ -2,9 +2,11 @@ package net.aincraft.api.registry;
 
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +38,11 @@ final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
   }
 
   @Override
+  public Stream<T> stream() {
+    return registry.values().stream();
+  }
+
+  @Override
   public void register(@NotNull T object) {
     readWriteLock.writeLock().lock();
     try {
@@ -43,5 +50,11 @@ final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
     } finally {
       readWriteLock.writeLock().unlock();
     }
+  }
+
+  @NotNull
+  @Override
+  public Iterator<T> iterator() {
+    return registry.values().iterator();
   }
 }

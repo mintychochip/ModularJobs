@@ -4,6 +4,7 @@ import io.undertow.Undertow;
 import io.undertow.util.Headers;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import net.aincraft.api.Bridge;
 import net.aincraft.api.Command;
 import net.aincraft.api.Job;
@@ -11,6 +12,10 @@ import net.aincraft.api.JobProgression;
 import net.aincraft.api.JobProgressionView;
 import net.aincraft.api.JobTask;
 import net.aincraft.api.action.ActionType;
+import net.aincraft.api.container.Boost;
+import net.aincraft.api.container.BoostCondition;
+import net.aincraft.api.container.BoostCondition.BoostContext;
+import net.aincraft.api.container.BoostSource;
 import net.aincraft.api.container.Payable;
 import net.aincraft.api.container.PayableHandler;
 import net.aincraft.api.container.PayableHandler.PayableContext;
@@ -18,6 +23,9 @@ import net.aincraft.api.container.PayableType;
 import net.aincraft.api.context.Context;
 import net.aincraft.api.event.JobsPaymentEvent;
 import net.aincraft.api.event.JobsPrePaymentEvent;
+import net.aincraft.api.registry.RegistryContainer;
+import net.aincraft.api.registry.RegistryKeys;
+import net.aincraft.api.registry.RegistryView;
 import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.ProgressionService;
 import net.aincraft.bridge.BridgeImpl;
@@ -29,6 +37,7 @@ import net.aincraft.listener.JobListener;
 import net.aincraft.listener.util.MobTagController;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -74,10 +83,33 @@ public class Jobs extends JavaPlugin {
 
   public static void doTask(OfflinePlayer player, ActionType actionType,
       Context context) {
+    RegistryView<BoostSource> registry = RegistryContainer.registryContainer()
+        .getRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES);
+
+
     ProgressionService progressionService = ProgressionService.progressionService();
     JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
     List<JobProgression> progressions = progressionService.getAll(player);
     for (JobProgressionView progression : progressions) {
+      for (BoostSource boostSource : registry) {
+        Optional<Boost> boost = boostSource.getBoost(new BoostContext() {
+          @Override
+          public ActionType getActionType() {
+            return actionType;
+          }
+
+          @Override
+          public JobProgressionView getProgression() {
+            return progression;
+          }
+
+          @Override
+          public Player getPlayer() {
+            return (Player) player;
+          }
+        });
+        boost.ifPresent(b -> Bukkit.broadcastMessage(b.toString()));
+      }
       Job job = progression.getJob();
       if (jobTaskProvider.hasTask(job, actionType, context)) {
         JobTask task = jobTaskProvider.getTask(job, actionType, context);

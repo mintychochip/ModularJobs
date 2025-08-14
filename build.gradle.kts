@@ -10,6 +10,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://nexus.neetgames.com/repository/maven-releases/")
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://jitpack.io")
     maven("https://repo.papermc.io/repository/maven-public/")
@@ -27,6 +28,9 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude(group = "org.bukkit")
+    }
+    compileOnly("com.gmail.nossr50.mcMMO:mcMMO:2.2.004") {
+        exclude(group = "com.sk89q.worldguard")
     }
     compileOnly("com.griefcraft:lwc:2.4.0")
     compileOnly("org.popcraft:bolt-bukkit:1.1.52")
@@ -56,5 +60,6 @@ tasks {
             url("https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar")
             url("https://www.spigotmc.org/resources/lwc-extended.69551/download?version=557109")
         }
+
     }
 }

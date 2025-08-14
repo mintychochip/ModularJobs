@@ -1,16 +1,16 @@
 package net.aincraft.service.ownership;
 
-import com.google.common.base.Preconditions;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
+import java.util.Optional;
 import java.util.UUID;
-import net.aincraft.api.service.BlockOwnershipProvider;
+import net.aincraft.api.container.Provider;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-public final class LWCXBlockOwnershipProviderImpl implements BlockOwnershipProvider {
+public final class LWCXBlockOwnershipProviderImpl implements Provider<Block,OfflinePlayer> {
 
   private final LWC lwc;
 
@@ -19,19 +19,12 @@ public final class LWCXBlockOwnershipProviderImpl implements BlockOwnershipProvi
   }
 
   @Override
-  public boolean isProtected(@NotNull Block block) {
-    if (!lwc.isProtectable(block)) {
-      return false;
+  public @NotNull Optional<OfflinePlayer> get(Block key) {
+    if (!lwc.isProtectable(key)) {
+      return Optional.empty();
     }
-    Protection protection = lwc.findProtection(block);
-    return protection != null;
-  }
-
-  @Override
-  public @NotNull OfflinePlayer getOwner(@NotNull Block block) throws IllegalArgumentException {
-    Preconditions.checkArgument(isProtected(block));
-    Protection protection = lwc.findProtection(block);
+    Protection protection = lwc.findProtection(key);
     UUID owner = UUID.fromString(protection.getOwner());
-    return Bukkit.getOfflinePlayer(owner);
+    return Optional.of(Bukkit.getOfflinePlayer(owner));
   }
 }

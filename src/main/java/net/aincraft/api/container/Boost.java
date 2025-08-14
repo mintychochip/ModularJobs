@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 public interface Boost {
 
-  BoostType getType();
+  BoostType type();
 
   Number apply(Number number);
 
@@ -17,16 +17,7 @@ public interface Boost {
   }
 
   static Boost create(BoostType type, Function<Number, Number> operand) {
-    return new Boost() {
-      @Override
-      public BoostType getType() {
-        return type;
-      }
-
-      @Override
-      public Number apply(Number number) {
-        return operand.apply(number);
-      }
-    };
+    return new SimpleBoostImpl(type,operand);
   }
+
 }

@@ -38,17 +38,14 @@ final class BufferedExperienceHandlerImpl implements ExperiencePayableHandler {
     this.progressions = progressions;
   }
 
-  static PayableHandler create(Plugin plugin, Executor actor) {
+  static PayableHandler create(Plugin plugin) {
     Map<PlayerJobCompositeKey, JobProgression> progressions = new ConcurrentHashMap<>();
-    Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-      actor.execute(() -> {
-        if (progressions.isEmpty()) {
-          return;
-        }
-        ProgressionService.progressionService().update(progressions.values().stream().toList());
-        progressions.clear();
-      });
-
+    Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+      if (progressions.isEmpty()) {
+        return;
+      }
+      ProgressionService.progressionService().update(progressions.values().stream().toList());
+      progressions.clear();
     }, 5L, 200L);
     ExperienceBarFormatterImpl formatter = new ExperienceBarFormatterImpl();
     ExperienceBarControllerImpl renderer = new ExperienceBarControllerImpl(plugin);

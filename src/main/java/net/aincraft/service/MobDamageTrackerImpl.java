@@ -17,9 +17,13 @@ public final class MobDamageTrackerImpl implements MobDamageTracker {
 
   private final MobDamageTrackerStore store;
 
-  public MobDamageTrackerImpl(MobDamageTrackerStore store, Plugin plugin) {
+  private MobDamageTrackerImpl(MobDamageTrackerStore store) {
     this.store = store;
-    Bukkit.getPluginManager().registerEvents(new MobDamageTrackerListener(store), plugin);
+  }
+
+  public static MobDamageTracker create(MobDamageTrackerStore store, Plugin plugin) {
+    Bukkit.getPluginManager().registerEvents(new MobDamageTrackerController(store),plugin);
+    return new MobDamageTrackerImpl(store);
   }
 
   @Override
@@ -38,7 +42,7 @@ public final class MobDamageTrackerImpl implements MobDamageTracker {
   }
 
 
-  private record MobDamageTrackerListener(MobDamageTrackerStore store) implements Listener {
+  private record MobDamageTrackerController(MobDamageTrackerStore store) implements Listener {
 
     @SuppressWarnings("UnstableApiUsage")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

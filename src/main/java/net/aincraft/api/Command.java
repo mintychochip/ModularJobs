@@ -34,19 +34,7 @@ public class Command implements CommandExecutor {
       RegistryView<Job> registry = RegistryContainer.registryContainer()
           .getRegistry(RegistryKeys.JOBS);
       if (registry.isRegistered(Key.key("jobs:builder"))) {
-        Job job = registry.getOrThrow(Key.key("jobs:builder"));
-        Instant now = Instant.now();
-        JobProgression progression = ProgressionService.progressionService().get(player, job);
-        if (progression == null) {
-          return false;
-        }
-        for (int i = 0; i <= 10000000; ++i) {
-          progression = progression.addExperience(BigDecimal.TEN);
-        }
-        ProgressionService.progressionService().update(progression);
-        Boost boost = Boost.additive(BoostType.PLAYER, 15);
-        boost.andThen(Boost.additive(BoostType.PLAYER,15));
-        Bukkit.broadcastMessage(Duration.between(now,Instant.now()).toString());
+
       }
     }
     return false;
