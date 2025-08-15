@@ -1,56 +1,61 @@
 package net.aincraft.bridge;
 
+import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.google.common.cache.CacheLoader;
-import com.griefcraft.lwc.LWC;
-import com.griefcraft.lwc.LWCPlugin;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import net.aincraft.Jobs;
 import net.aincraft.api.Bridge;
+import net.aincraft.api.container.BoostSource;
+import net.aincraft.api.container.ExpressionPayableCurveImpl;
+import net.aincraft.api.container.PayableCurve;
 import net.aincraft.api.container.PayableType;
+import net.aincraft.api.container.PayableTypes;
 import net.aincraft.api.container.Provider;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.api.registry.RegistryKeys;
+import net.aincraft.api.service.BlockOwnershipService;
 import net.aincraft.api.service.ChunkExplorationStore;
 import net.aincraft.api.service.EntityValidationService;
+import net.aincraft.api.service.ExploitProtectionStore;
 import net.aincraft.api.service.ExploitService;
 import net.aincraft.api.service.ExploitService.ExploitProtectionType;
 import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.MobDamageTracker;
 import net.aincraft.api.service.ProgressionService;
-import net.aincraft.api.service.ExploitProtectionStore;
+import net.aincraft.container.JobImpl;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.economy.EconomyProvider;
-import net.aincraft.economy.VaultEconomyProviderImpl;
 import net.aincraft.hooks.McMMOBoostSourceImpl;
 import net.aincraft.service.CSVJobTaskProviderImpl;
 import net.aincraft.service.ExploitServiceImpl;
-import net.aincraft.service.MemoryMobDamageTrackerStoreImpl;
 import net.aincraft.service.MemoryExploitProtectionStoreImpl;
+import net.aincraft.service.MemoryMobDamageTrackerStoreImpl;
 import net.aincraft.service.MetadataEntityValidationServiceImpl;
 import net.aincraft.service.MobDamageTrackerImpl;
 import net.aincraft.service.PersistentChunkExplorationStoreImpl;
 import net.aincraft.service.ProgressionServiceImpl;
-import net.aincraft.service.ownership.BoltBlockOwnershipProviderImpl;
-import net.aincraft.service.ownership.LWCXBlockOwnershipProviderImpl;
+import net.aincraft.service.ownership.BlockOwnershipServiceImpl;
 import net.aincraft.util.LocationKey;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.Component;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.popcraft.bolt.BoltAPI;
+import org.jetbrains.annotations.NotNull;
 
 public final class BridgeImpl implements Bridge {
 
   private final Jobs plugin;
+  private final BridgeDependencyResolver dependencyResolver;
   private final ConnectionSource connectionSource;
   private final RegistryContainer registryContainer = new RegistryContainerImpl();
   private final ProgressionService progressionService;
@@ -58,12 +63,15 @@ public final class BridgeImpl implements Bridge {
   private final EntityValidationService entityValidationService;
   private final ExploitService exploitService;
   private final MobDamageTracker mobDamageTracker;
-  private final Provider<Block,OfflinePlayer> blockOwnershipProvider;
+  private final EconomyProvider economyProvider;
+  private final BlockOwnershipService blockOwnershipService;
   private final ChunkExplorationStore chunkExplorationStore = new PersistentChunkExplorationStoreImpl();
   private final JobTaskProvider jobTaskProvider;
 
   public BridgeImpl(Jobs plugin, ConnectionSource connectionSource) {
     this.plugin = plugin;
+    dependencyResolver = new BridgeDependencyResolverImpl(plugin);
+    economyProvider = dependencyResolver.getEconomyProvider().orElse(null);
     this.connectionSource = connectionSource;
     entityValidationService = new MetadataEntityValidationServiceImpl(plugin);
     Map<Key, ExploitProtectionStore<?>> providers = new HashMap<>();
@@ -89,34 +97,58 @@ public final class BridgeImpl implements Bridge {
             Map.of(EntityType.COW, Duration.ofSeconds(5), EntityType.GOAT, Duration.ofSeconds(5)),
             Entity::getType,
             CacheLoader.from(Entity::getUniqueId)));
-    registryContainer.editRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES,
-        r -> r.register(McMMOBoostSourceImpl.create(plugin, r)));
     try {
       jobTaskProvider = CSVJobTaskProviderImpl.create(plugin);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    registryContainer.editRegistry(RegistryKeys.PAYABLE_TYPES, r -> {
-      r.register(PayableType.create(
-          BufferedExperienceHandlerImpl.create(plugin), Key.key("jobs:experience")));
-    });
-
+    blockOwnershipService = dependencyResolver.getBlockOwnershipProvider()
+        .map(BlockOwnershipServiceImpl::new).orElse(null);
     exploitService = new ExploitServiceImpl(providers);
     progressionService = ProgressionServiceImpl.create(connectionSource);
     mobDamageTracker = MobDamageTrackerImpl.create(new MemoryMobDamageTrackerStoreImpl(), plugin);
-    Plugin p = Bukkit.getPluginManager().getPlugin("LWC");
-    Plugin bolt = Bukkit.getPluginManager().getPlugin("Bolt");
-    if (p != null && p.isEnabled() && p instanceof LWCPlugin lp) {
-      LWC lwc = lp.getLWC();
-      blockOwnershipProvider = new LWCXBlockOwnershipProviderImpl(lwc);
-    } else if (bolt != null && bolt.isEnabled()) {
-      RegisteredServiceProvider<BoltAPI> registration = Bukkit.getServicesManager()
-          .getRegistration(BoltAPI.class);
-      BoltAPI boltAPI = registration.getProvider();
-      blockOwnershipProvider = new BoltBlockOwnershipProviderImpl(boltAPI);
-    } else {
-      blockOwnershipProvider = null;
-    }
+    initializeRegistryContainer();
+  }
+
+  private void initializeRegistryContainer() {
+    registryContainer.editRegistry(RegistryKeys.PAYABLE_TYPES, r -> {
+      r.register(PayableType.create(BufferedExperienceHandlerImpl.create(plugin),
+          Key.key("jobs:experience")));
+      r.register(PayableType.create(context -> {
+        economyProvider.deposit(context.getPlayer(), context.getPayable().getAmount());
+      }, Key.key("jobs:economy")));
+    });
+    registryContainer.editRegistry(RegistryKeys.ACTION_TYPES, r -> {
+      r.register(() -> Key.key("jobs:block_place"));
+      r.register(() -> Key.key("jobs:block_break"));
+      r.register(() -> Key.key("jobs:tnt_break"));
+      r.register(() -> Key.key("jobs:kill"));
+      r.register(() -> Key.key("jobs:dye"));
+      r.register(() -> Key.key("jobs:strip_log"));
+      r.register(() -> Key.key("jobs:craft"));
+      r.register(() -> Key.key("jobs:fish"));
+      r.register(() -> Key.key("jobs:smelt"));
+      r.register(() -> Key.key("jobs:brew"));
+      r.register(() -> Key.key("jobs:enchant"));
+      r.register(() -> Key.key("jobs:repair"));
+      r.register(() -> Key.key("jobs:breed"));
+      r.register(() -> Key.key("jobs:tame"));
+      r.register(() -> Key.key("jobs:shear"));
+      r.register(() -> Key.key("jobs:milk"));
+      r.register(() -> Key.key("jobs:explore"));
+      r.register(() -> Key.key("jobs:eat"));
+      r.register(() -> Key.key("jobs:collect"));
+      r.register(() -> Key.key("jobs:bake"));
+      r.register(() -> Key.key("jobs:bucket"));
+      r.register(() -> Key.key("jobs:brush"));
+      r.register(() -> Key.key("jobs:wax"));
+      r.register(() -> Key.key("jobs:villager_trade"));
+    });
+    dependencyResolver.getMcMMOBoostSource().ifPresent(source -> {
+      registryContainer.editRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES, r -> {
+        r.register(source);
+      });
+    });
   }
 
   @Override
@@ -145,15 +177,8 @@ public final class BridgeImpl implements Bridge {
   }
 
   @Override
-  public EconomyProvider economy() {
-    Plugin vault = Bukkit.getServer().getPluginManager().getPlugin("Vault");
-    if (vault != null) {
-      RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> registration = Bukkit.getServicesManager()
-          .getRegistration(net.milkbowl.vault.economy.Economy.class);
-      net.milkbowl.vault.economy.Economy provider = registration.getProvider();
-      return new VaultEconomyProviderImpl(provider);
-    }
-    return null;
+  public Optional<EconomyProvider> economy() {
+    return Optional.ofNullable(economyProvider);
   }
 
   @Override
@@ -167,11 +192,6 @@ public final class BridgeImpl implements Bridge {
   }
 
   @Override
-  public Provider<Block, OfflinePlayer> blockOwnershipProvider() {
-    return blockOwnershipProvider;
-  }
-
-  @Override
   public MobDamageTracker mobDamageTracker() {
     return mobDamageTracker;
   }
@@ -179,5 +199,10 @@ public final class BridgeImpl implements Bridge {
   @Override
   public ChunkExplorationStore chunkExplorationStore() {
     return chunkExplorationStore;
+  }
+
+  @Override
+  public Optional<BlockOwnershipService> blockOwnershipService() {
+    return Optional.ofNullable(blockOwnershipService);
   }
 }

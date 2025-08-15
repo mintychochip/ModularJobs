@@ -104,7 +104,7 @@ public interface MobDamageTracker {
     double getContribution(Entity entity, boolean normalized);
 
     /**
-     * Adds a damage value for the given contributor.
+     * Adds a damage expected for the given contributor.
      *
      * @param entity the contributor
      * @param damage the amount of damage dealt

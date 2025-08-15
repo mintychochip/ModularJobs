@@ -2,14 +2,15 @@ package net.aincraft.economy;
 
 import java.math.BigDecimal;
 import net.aincraft.api.container.PayableAmount;
+import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
 public final class VaultEconomyProviderImpl implements EconomyProvider {
 
-  private final net.milkbowl.vault.economy.Economy vault;
+  private final Economy vault;
 
-  public VaultEconomyProviderImpl(net.milkbowl.vault.economy.Economy vault) {
+  public VaultEconomyProviderImpl(Economy vault) {
     this.vault = vault;
   }
 
@@ -19,10 +20,4 @@ public final class VaultEconomyProviderImpl implements EconomyProvider {
     EconomyResponse economyResponse = vault.depositPlayer(player, amount.longValue());
     return economyResponse.transactionSuccess();
   }
-
-  @Override
-  public boolean withdraw(OfflinePlayer player, PayableAmount payableAmount) {
-    return false;
-  }
-
 }

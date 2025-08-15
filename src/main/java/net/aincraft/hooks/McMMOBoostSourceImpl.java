@@ -3,6 +3,7 @@ package net.aincraft.hooks;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityActivateEvent;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityDeactivateEvent;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,42 +24,28 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-public class McMMOBoostSourceImpl implements McMMOBoostSource {
+public class McMMOBoostSourceImpl implements BoostSource {
 
   private final Store<UUID, SuperAbilityType> store;
 
-  private Provider<SuperAbilityType, Double> boostAmountProvider;
+  private final Provider<SuperAbilityType, BigDecimal> boostAmountProvider;
 
   public McMMOBoostSourceImpl(Store<UUID, SuperAbilityType> store,
-      Provider<SuperAbilityType, Double> boostAmountProvider) {
+      Provider<SuperAbilityType, BigDecimal> boostAmountProvider) {
     this.store = store;
     this.boostAmountProvider = boostAmountProvider;
   }
 
-  public static McMMOBoostSourceImpl create(Plugin plugin, Registry<BoostSource> sources) {
+  public static McMMOBoostSourceImpl create(Plugin plugin,
+      Provider<SuperAbilityType, BigDecimal> boostAmountProvider) {
     Store<UUID, SuperAbilityType> store = Store.memory();
     Bukkit.getPluginManager().registerEvents(new McMMOController(store), plugin);
-    Provider<SuperAbilityType, Double> provider = new Provider<>() {
-      @Override
-      public @NotNull Optional<Double> get(SuperAbilityType key) {
-        return Optional.ofNullable(amounts.get(key));
-      }
-
-      private static final Map<SuperAbilityType, Double> amounts = new HashMap<>();
-
-      static {
-        amounts.put(SuperAbilityType.TREE_FELLER, 1.0);
-      }
-
-    };
-    McMMOBoostSourceImpl source = new McMMOBoostSourceImpl(store, provider);
-    sources.register(source);
-    return source;
+    return new McMMOBoostSourceImpl(store, boostAmountProvider);
   }
 
   @Override
   public Optional<Boost> getBoost(BoostContext context) {
-    Player player = context.getPlayer();
+    Player player = context.player();
     if (!store.contains(player.getUniqueId())) {
       return Optional.empty();
     }
@@ -84,10 +71,5 @@ public class McMMOBoostSourceImpl implements McMMOBoostSource {
     private void onAbilityOff(final McMMOPlayerAbilityDeactivateEvent event) {
       store.remove(event.getPlayer().getUniqueId());
     }
-  }
-
-  @Override
-  public void setBoostAmountProvider(Provider<SuperAbilityType, Double> boostAmountProvider) {
-    this.boostAmountProvider = boostAmountProvider;
   }
 }

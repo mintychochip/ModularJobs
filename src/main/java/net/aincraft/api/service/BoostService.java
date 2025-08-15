@@ -10,12 +10,6 @@ import org.bukkit.entity.Player;
 public interface BoostService {
 
 
-  interface BoostStore<T> {
-    void addBoost(Boost boost, T object);
-    void removeBoost(BoostType type, T object);
-    Boost getBoost();
-  }
-  <T> void registerBoostProvider(BoostType.Typed<T> type, BoostStore<T> store);
   <T> void addBoost(BoostType.Typed<T> type, T object);
 
   <T> void removeBoost(BoostType.Typed<T> type, T object);

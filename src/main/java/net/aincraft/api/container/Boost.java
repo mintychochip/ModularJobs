@@ -1,23 +1,19 @@
 package net.aincraft.api.container;
 
-import java.util.function.Function;
+import java.math.BigDecimal;
 
 public interface Boost {
 
   BoostType type();
 
-  Number apply(Number number);
+  BigDecimal apply(BigDecimal amount);
 
-  static Boost multiplicative(BoostType type, Number amount) {
-    return create(type, number -> number.doubleValue() * amount.doubleValue());
+  static Boost multiplicative(BoostType type, BigDecimal amount) {
+    return new MultiplicativeBoostImpl(type,amount);
   }
 
-  static Boost additive(BoostType type, Number amount) {
-    return create(type, number -> number.doubleValue() + amount.doubleValue());
-  }
-
-  static Boost create(BoostType type, Function<Number, Number> operand) {
-    return new SimpleBoostImpl(type,operand);
+  static Boost additive(BoostType type, BigDecimal amount) {
+    return new AdditiveBoostImpl(type,amount);
   }
 
 }

@@ -17,9 +17,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.aincraft.Jobs;
 import net.aincraft.api.Bridge;
-import net.aincraft.api.action.ActionType;
+import net.aincraft.api.action.ActionTypes;
 import net.aincraft.api.container.ConfigurationValues;
-import net.aincraft.api.container.Provider;
 import net.aincraft.api.context.Context.BlockContext;
 import net.aincraft.api.context.Context.DyeContext;
 import net.aincraft.api.context.Context.EnchantmentContext;
@@ -27,6 +26,7 @@ import net.aincraft.api.context.Context.EntityContext;
 import net.aincraft.api.context.Context.ItemContext;
 import net.aincraft.api.context.Context.MaterialContext;
 import net.aincraft.api.context.Context.PotionContext;
+import net.aincraft.api.service.BlockOwnershipService;
 import net.aincraft.api.service.EntityValidationService;
 import net.aincraft.api.service.ExploitService;
 import net.aincraft.api.service.ExploitService.ExploitProtectionType;
@@ -120,7 +120,7 @@ public class BucketListener implements Listener {
         .or(ADVENTURE_MODE).test(player)) {
       return;
     }
-    Jobs.doTask(player, ActionType.BUCKET_ENTITY, new ItemContext(event.getEntityBucket()));
+    Jobs.doTask(player, ActionTypes.BUCKET_ENTITY, new ItemContext(event.getEntityBucket()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -151,7 +151,7 @@ public class BucketListener implements Listener {
       }
       exploitService.addProtection(ExploitProtectionType.WAX, block);
     }
-    Jobs.doTask(player, ActionType.WAX, new MaterialContext(material));
+    Jobs.doTask(player, ActionTypes.WAX, new MaterialContext(material));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -174,7 +174,7 @@ public class BucketListener implements Listener {
     if (exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
       exploitService.addProtection(ExploitProtectionType.PLACED, block);
     }
-    Jobs.doTask(event.getPlayer(), ActionType.BLOCK_PLACE, new MaterialContext(block
+    Jobs.doTask(event.getPlayer(), ActionTypes.BLOCK_PLACE, new MaterialContext(block
         .getType()));
   }
 
@@ -193,7 +193,7 @@ public class BucketListener implements Listener {
         .or(ADVENTURE_MODE).test(player)) {
       return;
     }
-    Jobs.doTask(player, ActionType.TAME, new EntityContext(entity));
+    Jobs.doTask(player, ActionTypes.TAME, new EntityContext(entity));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -213,7 +213,7 @@ public class BucketListener implements Listener {
     if (drops.isEmpty()) {
       return;
     }
-    Jobs.doTask(player, ActionType.SHEAR, new ItemContext(drops.getFirst()));
+    Jobs.doTask(player, ActionTypes.SHEAR, new ItemContext(drops.getFirst()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -238,7 +238,7 @@ public class BucketListener implements Listener {
     if (silkTouch > 0) {
       return;
     }
-    Jobs.doTask(player, ActionType.BLOCK_BREAK, new BlockContext(block));
+    Jobs.doTask(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
     breakCache.put(LocationKey.create(block.getLocation()), player);
   }
 
@@ -277,7 +277,7 @@ public class BucketListener implements Listener {
     }
     breakCache.invalidate(sourceKey);
     breakCache.put(LocationKey.create(block.getLocation()), player);
-    Jobs.doTask(player, ActionType.BLOCK_BREAK, new BlockContext(block));
+    Jobs.doTask(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -311,7 +311,7 @@ public class BucketListener implements Listener {
       }
       exploitService.addProtection(ExploitProtectionType.MILK, entity);
     }
-    Jobs.doTask(player, ActionType.MILK, new EntityContext(entity));
+    Jobs.doTask(player, ActionTypes.MILK, new EntityContext(entity));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -333,7 +333,7 @@ public class BucketListener implements Listener {
     if (items.isEmpty()) {
       return;
     }
-    Jobs.doTask(player, ActionType.BRUSH, new ItemContext(items.getFirst().getItemStack()));
+    Jobs.doTask(player, ActionTypes.BRUSH, new ItemContext(items.getFirst().getItemStack()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -355,7 +355,7 @@ public class BucketListener implements Listener {
         .or(IS_CITIZEN).test(player)) {
       return;
     }
-    Jobs.doTask(player, ActionType.BREED, new EntityContext(event.getEntity()));
+    Jobs.doTask(player, ActionTypes.BREED, new EntityContext(event.getEntity()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -392,13 +392,13 @@ public class BucketListener implements Listener {
           double normalized = damageContribution.getContribution(contributor, true);
           //TODO: configure cutoff
           if (normalized > 0.5) {
-            Jobs.doTask(player, ActionType.KILL, new EntityContext(victim));
+            Jobs.doTask(player, ActionTypes.KILL, new EntityContext(victim));
           }
         }
       }
       return;
     }
-    Jobs.doTask(player, ActionType.KILL, new EntityContext(victim));
+    Jobs.doTask(player, ActionTypes.KILL, new EntityContext(victim));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -413,65 +413,70 @@ public class BucketListener implements Listener {
     }
     ItemStack itemStack = event.getItem();
     if (itemStack.getItemMeta() instanceof PotionMeta potionMeta) {
-      Jobs.doTask(player, ActionType.CONSUME, new PotionContext(potionMeta.getBasePotionType()));
+      Jobs.doTask(player, ActionTypes.CONSUME, new PotionContext(potionMeta.getBasePotionType()));
       return;
     }
-    Jobs.doTask(player, ActionType.CONSUME, new ItemContext(itemStack));
+    Jobs.doTask(player, ActionTypes.CONSUME, new ItemContext(itemStack));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onFurnaceSmelt(final FurnaceSmeltEvent event) {
     Block block = event.getBlock();
-    Optional<OfflinePlayer> playerOptional = Bridge.bridge()
-        .blockOwnershipProvider().get(block);
-    if (playerOptional.isEmpty()) {
+
+    BlockOwnershipService blockOwnershipService = BlockOwnershipService.blockOwnershipService()
+        .orElse(null);
+    if (blockOwnershipService == null) {
+      //TODO: add disabled message
       return;
     }
-    OfflinePlayer player = playerOptional.get();
-    if (!player.isOnline()) {
+    OfflinePlayer owner = blockOwnershipService.getOwner(block).orElse(null);
+    if (owner == null || !owner.isOnline()) {
       return;
     }
-    Player onlinePlayer = player.getPlayer();
+    Player player = owner.getPlayer();
+    assert player != null;
     if (PLAYER_WORLD_DISABLED
         .or(NO_PAY_IN_CREATIVE)
         .or(NO_PAY_WHILE_RIDING)
         .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(onlinePlayer)) {
+        .or(IS_CITIZEN).test(player)) {
       return;
     }
     //TODO make this not explicit
-    double v = block.getLocation().distanceSquared(onlinePlayer.getLocation());
+    double v = block.getLocation().distanceSquared(player.getLocation());
     if (v > 25 * 25) {
       return;
     }
-    Jobs.doTask(player, ActionType.SMELT, new ItemContext(event.getResult()));
+    Jobs.doTask(player, ActionTypes.SMELT, new ItemContext(event.getResult()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onBrewEvent(final BrewEvent event) {
     Block block = event.getBlock();
-    Optional<OfflinePlayer> playerOptional = Bridge.bridge()
-        .blockOwnershipProvider().get(block);
-    if (playerOptional.isEmpty()) {
+    BlockOwnershipService blockOwnershipService = BlockOwnershipService.blockOwnershipService()
+        .orElse(null);
+    if (blockOwnershipService == null) {
+      //TODO: add disabled message
       return;
     }
-    OfflinePlayer player = playerOptional.get();
-    if (!player.isOnline()) {
+    OfflinePlayer owner = blockOwnershipService.getOwner(block).orElse(null);
+    if (owner == null || !owner.isOnline()) {
       return;
     }
-    Player onlinePlayer = player.getPlayer();
+    Player player = owner.getPlayer();
+    assert player != null;
     if (PLAYER_WORLD_DISABLED
         .or(NO_PAY_IN_CREATIVE)
         .or(NO_PAY_WHILE_RIDING)
         .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(onlinePlayer)) {
+        .or(IS_CITIZEN).test(player)) {
       return;
     }
-    double v = block.getLocation().distanceSquared(onlinePlayer.getLocation());
+    double v = block.getLocation().distanceSquared(player.getLocation());
     if (v > 25 * 25) {
       return;
     }
-    Jobs.doTask(player, ActionType.BREW, new ItemContext(event.getContents().getIngredient()));
+    Jobs.doTask(player, ActionTypes.BREW, new ItemContext(event.getContents().getIngredient()));
   }
 //
 //  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -488,7 +493,7 @@ public class BucketListener implements Listener {
 //    ChunkExplorationStore store = ChunkExplorationStore.chunkExplorationStore();
 //    if (!store.hasExplored(player, to)) {
 //      store.addExploration(player, to);
-////      Jobs.doTask(player,ActionType.EXPLORE,new );
+////      Jobs.doTask(player,ActionTypes.EXPLORE,new );
 //    }
 //  }
 
@@ -513,7 +518,7 @@ public class BucketListener implements Listener {
       }
       exploitService.addProtection(ExploitProtectionType.DYE_ENTITY, entity);
     }
-    Jobs.doTask(player, ActionType.DYE, new DyeContext(event.getColor()));
+    Jobs.doTask(player, ActionTypes.DYE, new DyeContext(event.getColor()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -540,10 +545,10 @@ public class BucketListener implements Listener {
       if (enchantment == null) {
         continue;
       }
-      Jobs.doTask(player, ActionType.ENCHANT,
+      Jobs.doTask(player, ActionTypes.ENCHANT,
           new EnchantmentContext(enchantment, entry.getValue()));
     }
-    Jobs.doTask(player, ActionType.ENCHANT, new ItemContext(result));
+    Jobs.doTask(player, ActionTypes.ENCHANT, new ItemContext(result));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -560,7 +565,7 @@ public class BucketListener implements Listener {
       return;
     }
     for (Block block : event.blockList()) {
-      Jobs.doTask(player, ActionType.TNT_BREAK, new BlockContext(block));
+      Jobs.doTask(player, ActionTypes.TNT_BREAK, new BlockContext(block));
     }
   }
 
@@ -604,7 +609,7 @@ public class BucketListener implements Listener {
     Set<@NotNull Material> unique = contents.stream().map(ItemStack::getType).collect(
         Collectors.toSet());
     if (contents.size() == 3 && unique.size() == 1) {
-      Jobs.doTask(player, ActionType.REPAIR, new ItemContext(resultStack.clone()));
+      Jobs.doTask(player, ActionTypes.REPAIR, new ItemContext(resultStack.clone()));
       return;
     }
     List<@NotNull DyeColor> dyes = contents.stream().map(ItemStack::getType)
@@ -616,9 +621,9 @@ public class BucketListener implements Listener {
       default -> material.toString().contains("SHULKER_BOX");
     }).findFirst();
     if (!dyes.isEmpty() && dyedMaterial.isPresent()) {
-      Jobs.doTask(player, ActionType.DYE, new ItemContext(ItemStack.of(dyedMaterial.get())));
+      Jobs.doTask(player, ActionTypes.DYE, new ItemContext(ItemStack.of(dyedMaterial.get())));
       for (DyeColor color : dyes) {
-        Jobs.doTask(player, ActionType.DYE, new DyeContext(color));
+        Jobs.doTask(player, ActionTypes.DYE, new DyeContext(color));
       }
       return;
     }
@@ -633,12 +638,12 @@ public class BucketListener implements Listener {
           int before = countSimilarItems(snapShot, reference);
           int after = countSimilarItems(Arrays.asList(inventory.getContents()), reference);
           for (int i = 0; i < Math.max(1, after - before); ++i) {
-            Jobs.doTask(player, ActionType.CRAFT, new ItemContext(reference));
+            Jobs.doTask(player, ActionTypes.CRAFT, new ItemContext(reference));
           }
         });
       } else {
         for (int i = 0; i < resultStack.getAmount(); ++i) {
-          Jobs.doTask(player, ActionType.CRAFT, new ItemContext(resultStack));
+          Jobs.doTask(player, ActionTypes.CRAFT, new ItemContext(resultStack));
         }
       }
     }

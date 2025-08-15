@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobTask;
 import net.aincraft.api.action.ActionType;
@@ -85,14 +86,12 @@ public class CSVJobTaskProviderImpl implements JobTaskProvider {
         .append(KeyResolver.keyResolver().resolve(context)).append(',');
     for (Payable payable : payables) {
       PayableAmount amount = payable.getAmount();
-      Currency currency = amount.getCurrency();
+      Optional<Currency> currency = amount.getCurrency();
       BigDecimal bigDecimal = amount.getAmount();
       StringBuilder payableString = new StringBuilder(base)
           .append(payable.getType().key()).append(',')
           .append(bigDecimal.toString());
-      if (currency != null) {
-        payableString.append(',').append(currency.identifier());
-      }
+      currency.ifPresent(c -> payableString.append(',').append(c.identifier()));
       try {
         Files.writeString(csvPath, payableString.toString(), StandardOpenOption.CREATE,
             StandardOpenOption.APPEND);
@@ -104,8 +103,7 @@ public class CSVJobTaskProviderImpl implements JobTaskProvider {
     List<PayableRecord> records = payables.stream().map(
         payable -> {
           PayableAmount amount = payable.getAmount();
-          Currency currency = amount.getCurrency();
-          String currencyString = currency != null ? currency.identifier() : null;
+          String currencyString = amount.getCurrency().map(Currency::identifier).orElse(null);
           return new PayableRecord(payable.getType().key(),
               amount.getAmount().toString(), currencyString);
         }).toList();

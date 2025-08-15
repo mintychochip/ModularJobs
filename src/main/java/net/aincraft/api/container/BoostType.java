@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 @NonExtendable
 public interface BoostType extends Keyed {
 
-
   interface Typed<T> extends BoostType {
 
   }

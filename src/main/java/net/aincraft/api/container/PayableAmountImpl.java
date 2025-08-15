@@ -1,8 +1,9 @@
 package net.aincraft.api.container;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import net.aincraft.economy.Currency;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 public final class PayableAmountImpl implements PayableAmount {
 
@@ -25,7 +26,7 @@ public final class PayableAmountImpl implements PayableAmount {
   }
 
   @Override
-  public @Nullable Currency getCurrency() {
-    return currency;
+  public @NotNull Optional<Currency> getCurrency() {
+    return Optional.ofNullable(currency);
   }
 }

@@ -1,0 +1,22 @@
+[versions]
+undertow = "2.3.18.Final"
+exp4j = "0.4.8"
+hikari = "5.0.1"
+caffeine = "3.2.2"
+paper = "1.21.4-R0.1-SNAPSHOT"
+vault = "1.7"
+mcmmo = "2.2.004"
+lwc = "2.4.0"
+bolt = "1.1.52"
+
+[libraries]
+undertow-core = { module = "io.undertow:undertow-core", version.ref = "undertow" }
+exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+vault-api = { module = "com.github.MilkBowl:VaultAPI", version.ref = "vault" }
+mcmmo = { module = "com.gmail.nossr50.mcMMO:mcMMO", version.ref = "mcmmo" }
+lwc = { module = "com.griefcraft:lwc", version.ref = "lwc" }
+bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }

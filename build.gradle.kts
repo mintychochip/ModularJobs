@@ -21,23 +21,22 @@ java {
 }
 
 dependencies {
-    implementation("io.undertow:undertow-core:2.3.18.Final")
-    implementation("net.objecthunter:exp4j:0.4.8")
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
+    implementation(libs.undertow.core)
+    implementation(libs.exp4j)
+    implementation(libs.hikaricp)
+    implementation(libs.caffeine)
+
+    compileOnly(libs.paper.api)
+    compileOnly(libs.vault.api) {
         exclude(group = "org.bukkit")
     }
-    compileOnly("com.gmail.nossr50.mcMMO:mcMMO:2.2.004") {
+    compileOnly(libs.mcmmo) {
         exclude(group = "com.sk89q.worldguard")
     }
-    compileOnly("com.griefcraft:lwc:2.4.0")
-    compileOnly("org.popcraft:bolt-bukkit:1.1.52")
-    compileOnly("com.github.lokka30.treasury:treasury-api:2.0.1") {
-        exclude(group = "io.papermc.paper")
-    }
+    compileOnly(libs.lwc)
+    compileOnly(libs.bolt)
 }
+
 tasks {
     shadowJar {
         mergeServiceFiles()
@@ -56,9 +55,9 @@ tasks {
         )
         minecraftVersion("1.21.7")
         downloadPlugins {
-            url("https://www.spigotmc.org/resources/vault.34315/download?version=344916")
             url("https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar")
             url("https://www.spigotmc.org/resources/lwc-extended.69551/download?version=557109")
+            url("https://www.spigotmc.org/resources/vault.34315/download?version=344916")
         }
 
     }

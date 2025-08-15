@@ -1,9 +1,10 @@
 package net.aincraft.api.container;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import net.aincraft.economy.Currency;
 import org.jetbrains.annotations.ApiStatus.NonExtendable;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 @NonExtendable
 public sealed interface PayableAmount permits PayableAmountImpl {
@@ -18,6 +19,6 @@ public sealed interface PayableAmount permits PayableAmountImpl {
 
   BigDecimal getAmount();
 
-  @Nullable
-  Currency getCurrency();
+  @NotNull
+  Optional<Currency> getCurrency();
 }

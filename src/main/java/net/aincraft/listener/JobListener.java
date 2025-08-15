@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import net.aincraft.Jobs;
 import net.aincraft.api.action.ActionType;
+import net.aincraft.api.action.ActionTypes;
 import net.aincraft.api.container.ExpressionPayableCurveImpl;
 import net.aincraft.api.container.Payable;
 import net.aincraft.api.container.PayableAmount;
@@ -32,57 +33,14 @@ import org.bukkit.inventory.ItemStack;
 public class JobListener implements Listener {
 
   static {
-    RegistryContainer.registryContainer().editRegistry(RegistryKeys.JOBS, registry -> {
-      Map<PayableType, PayableCurve> curves = new HashMap<>();
-      curves.put(PayableTypes.EXPERIENCE,
-          new ExpressionPayableCurveImpl(new ExpressionBuilder(
-              "25 * level + 10 * level * level + level * level * level").variable("level")
-              .build()));
-      JobImpl job = new JobImpl("builder", Component.text("Fisherman"), Component.text("test"),
-          curves);
-      List<Payable> payables = new ArrayList<>();
-      Currency currency = new Currency() {
-        @Override
-        public String identifier() {
-          return "gold";
-        }
-
-        @Override
-        public String symbol() {
-          return "";
-        }
-      };
-      payables.add(PayableTypes.EXPERIENCE.create(
-          PayableAmount.create(new BigDecimal("15.00000051512323"))));
-      payables.add(PayableTypes.ECONOMY.create(
-          PayableAmount.create(BigDecimal.TWO,currency)));
-//      job.addTask(ActionType.BLOCK_PLACE, new MaterialContext(Material.STONE), payables);
-//      job.addTask(ActionType.BLOCK_BREAK, new MaterialContext(Material.STONE), payables);
-//      job.addTask(ActionType.DYE, new DyeContext(DyeColor.BLUE), payables);
-//      job.addTask(ActionType.KILL, Key.key("minecraft:creeper"), payables);
-//      job.addTask(ActionType.TAME, Key.key("minecraft:wolf"), payables);
-//      job.addTask(ActionType.STRIP_LOG, new MaterialContext(Material.ACACIA_LOG), payables);
-//      job.addTask(ActionType.FISH, new MaterialContext(Material.COD), payables);
-//      job.addTask(ActionType.BUCKET_ENTITY,
-//          new ItemContext(ItemStack.of(Material.PUFFERFISH_BUCKET)), payables);
-//      job.addTask(ActionType.BUCKET_ENTITY, new ItemContext(ItemStack.of(Material.COD_BUCKET)),
-//          payables);
-//      job.addTask(ActionType.WAX, new MaterialContext(Material.COPPER_BLOCK), payables);
-//      job.addTask(ActionType.SHEAR, new ItemContext(ItemStack.of(Material.WHITE_WOOL)), payables);
-//      job.addTask(ActionType.BRUSH, new ItemContext(ItemStack.of(Material.ARCHER_POTTERY_SHERD)),
-//          payables);
-//      job.addTask(ActionType.BREED, Key.key("minecraft:sheep"), payables);
-//      job.addTask(ActionType.KILL, Key.key("minecraft:warden"), payables);
-//      job.addTask(ActionType.CONSUME, new PotionContext(PotionType.STRONG_POISON), payables);
-//      job.addTask(ActionType.CONSUME, new ItemContext(ItemStack.of(Material.COOKED_BEEF)),
-//          payables);
-//      job.addTask(ActionType.SMELT, new ItemContext(ItemStack.of(Material.COOKED_BEEF)), payables);
-//      job.addTask(ActionType.BREW, new ItemContext(ItemStack.of(Material.NETHER_WART)), payables);
-//      job.addTask(ActionType.MILK, Key.key("minecraft:cow"), payables);
-      registry.register(job);
-    });
+    Map<PayableType, PayableCurve> curves = new HashMap<>();
+    curves.put(PayableTypes.EXPERIENCE,
+        new ExpressionPayableCurveImpl(new ExpressionBuilder(
+            "25 * level + 10 * level * level + level * level * level").variable("level")
+            .build()));
+    RegistryContainer.registryContainer().editRegistry(RegistryKeys.JOBS, r -> r.register(new JobImpl("builder",
+        Component.text("Builder"), null, curves)));
   }
-
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onPlayerFish(final PlayerFishEvent event) {
     Player player = event.getPlayer();
@@ -90,6 +48,6 @@ public class JobListener implements Listener {
       return;
     }
     ItemStack stack = item.getItemStack();
-    Jobs.doTask(player, ActionType.FISH, new MaterialContext(stack.getType()));
+    Jobs.doTask(player, ActionTypes.FISH, new MaterialContext(stack.getType()));
   }
 }

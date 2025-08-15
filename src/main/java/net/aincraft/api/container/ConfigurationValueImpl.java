@@ -14,7 +14,7 @@ final class ConfigurationValueImpl<T> implements ConfigurationValue<T> {
   public @NotNull T get() throws IllegalStateException {
     T t = supplier.get();
     if (t == null) {
-      throw new IllegalStateException("the supplier returned a null value");
+      throw new IllegalStateException("the supplier returned a null expected");
     }
     return t;
   }

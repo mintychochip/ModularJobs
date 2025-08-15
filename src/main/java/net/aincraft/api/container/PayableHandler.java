@@ -1,7 +1,6 @@
 package net.aincraft.api.container;
 
 import net.aincraft.api.Job;
-import net.kyori.adventure.bossbar.BossBar;
 import org.bukkit.OfflinePlayer;
 
 public interface PayableHandler {

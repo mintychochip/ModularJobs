@@ -86,28 +86,13 @@ public class Jobs extends JavaPlugin {
     RegistryView<BoostSource> registry = RegistryContainer.registryContainer()
         .getRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES);
 
-
     ProgressionService progressionService = ProgressionService.progressionService();
     JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
     List<JobProgression> progressions = progressionService.getAll(player);
     for (JobProgressionView progression : progressions) {
       for (BoostSource boostSource : registry) {
-        Optional<Boost> boost = boostSource.getBoost(new BoostContext() {
-          @Override
-          public ActionType getActionType() {
-            return actionType;
-          }
-
-          @Override
-          public JobProgressionView getProgression() {
-            return progression;
-          }
-
-          @Override
-          public Player getPlayer() {
-            return (Player) player;
-          }
-        });
+        Optional<Boost> boost = boostSource.getBoost(
+            new BoostContext(actionType, progression, player.getPlayer()));
         boost.ifPresent(b -> Bukkit.broadcastMessage(b.toString()));
       }
       Job job = progression.getJob();

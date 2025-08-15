@@ -4,11 +4,9 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import net.aincraft.api.Job;
 import net.aincraft.api.JobProgression;
 import net.aincraft.api.container.ExperiencePayableHandler;
@@ -20,36 +18,37 @@ import net.aincraft.util.PlayerJobCompositeKey;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
+import org.jspecify.annotations.NonNull;
 
-final class BufferedExperienceHandlerImpl implements ExperiencePayableHandler {
+final class BufferedExperienceHandlerImpl implements
+    ExperiencePayableHandler {
 
-  private final Map<PlayerJobCompositeKey, JobProgression> progressions;
+  private final Cache<PlayerJobCompositeKey, JobProgression> cache;
 
   private ExperienceBarController controller;
 
   private ExperienceBarFormatter formatter;
 
-
-  BufferedExperienceHandlerImpl(ExperienceBarController controller,
-      ExperienceBarFormatter formatter,
-      Map<PlayerJobCompositeKey, JobProgression> progressions) {
-    this.controller = controller;
-    this.formatter = formatter;
-    this.progressions = progressions;
+  BufferedExperienceHandlerImpl(
+      Cache<PlayerJobCompositeKey, JobProgression> cache, Plugin plugin) {
+    this.cache = cache;
+    this.formatter = new ExperienceBarFormatterImpl();
+    this.controller = new ExperienceBarControllerImpl(plugin);
   }
 
+
   static PayableHandler create(Plugin plugin) {
-    Map<PlayerJobCompositeKey, JobProgression> progressions = new ConcurrentHashMap<>();
-    Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-      if (progressions.isEmpty()) {
-        return;
-      }
-      ProgressionService.progressionService().update(progressions.values().stream().toList());
-      progressions.clear();
-    }, 5L, 200L);
-    ExperienceBarFormatterImpl formatter = new ExperienceBarFormatterImpl();
-    ExperienceBarControllerImpl renderer = new ExperienceBarControllerImpl(plugin);
-    return new BufferedExperienceHandlerImpl(renderer, formatter, progressions);
+    Cache<PlayerJobCompositeKey, JobProgression> cache = Caffeine.newBuilder()
+        .expireAfterWrite(
+            Duration.ofMinutes(1)).build();
+    Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+      ConcurrentMap<PlayerJobCompositeKey, @NonNull JobProgression> liveView = cache.asMap();
+      List<JobProgression> progressions = new ArrayList<>(liveView.values());
+      Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        ProgressionService.progressionService().update(progressions);
+      });
+    }, 0L, 200L);
+    return new BufferedExperienceHandlerImpl(cache, plugin);
   }
 
   @Override
@@ -57,7 +56,7 @@ final class BufferedExperienceHandlerImpl implements ExperiencePayableHandler {
     OfflinePlayer player = context.getPlayer();
     Job job = context.getJob();
     PlayerJobCompositeKey key = PlayerJobCompositeKey.create(player, job);
-    JobProgression progression = this.progressions.computeIfAbsent(key,
+    JobProgression progression = cache.get(key,
         ignored -> ProgressionService.progressionService().get(player, job));
     if (progression == null) {
       return;
@@ -66,7 +65,7 @@ final class BufferedExperienceHandlerImpl implements ExperiencePayableHandler {
     PayableAmount amount = payable.getAmount();
     BigDecimal amountDecimal = amount.getAmount();
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
-    progressions.put(key, calculatedProgression);
+    cache.put(key, calculatedProgression);
     if (player.isOnline()) {
       controller.display(
           new ExperienceBarContext(calculatedProgression, player.getPlayer(), amountDecimal),
