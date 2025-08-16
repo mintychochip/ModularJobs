@@ -20,7 +20,6 @@ import net.aincraft.container.Codec.Writer;
 import net.aincraft.container.boost.In;
 import net.aincraft.container.boost.Out;
 import net.aincraft.registry.Registry;
-import net.aincraft.serialization.BoostCodecLoaderImpl;
 import net.aincraft.service.CodecRegistry;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
@@ -62,14 +61,14 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
 
   @Override
   public Object decode(byte[] bytes) {
-    return decodeCache.get(ByteBuffer.wrap(bytes),ignored -> new In(bytes));
+    return decodeCache.get(ByteBuffer.wrap(bytes), ignored -> new In(bytes));
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T> T decode(byte[] bytes, Class<T> clazz) {
     return (T) decodeCache.get(ByteBuffer.wrap(bytes),
-        ignored -> read(new In(bytes),clazz));
+        ignored -> read(new In(bytes), clazz));
   }
 
   @Override
