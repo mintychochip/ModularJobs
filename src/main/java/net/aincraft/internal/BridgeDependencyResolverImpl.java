@@ -1,4 +1,4 @@
-package net.aincraft.bridge;
+package net.aincraft.internal;
 
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.griefcraft.lwc.LWC;
@@ -9,16 +9,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.aincraft.api.container.BoostSource;
-import net.aincraft.api.container.Provider;
 import net.aincraft.api.container.Store;
+import net.aincraft.api.service.BlockOwnershipService.BlockProtectionAdapter;
 import net.aincraft.economy.EconomyProvider;
 import net.aincraft.economy.VaultEconomyProviderImpl;
 import net.aincraft.hooks.McMMOBoostSourceImpl;
-import net.aincraft.service.ownership.BoltBlockOwnershipProviderImpl;
-import net.aincraft.service.ownership.LWCXBlockOwnershipProviderImpl;
+import net.aincraft.service.ownership.BoltBlockProtectionAdapterImpl;
+import net.aincraft.service.ownership.LWCXBlockProtectionAdapterImpl;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -50,12 +49,13 @@ public class BridgeDependencyResolverImpl implements BridgeDependencyResolver {
     return Optional.empty();
   }
 
+
   @Override
-  public Optional<Provider<Block, UUID>> getBlockOwnershipProvider() {
+  public Optional<BlockProtectionAdapter> getBlockProtectionAdapter() {
     Plugin lwcPlugin = Bukkit.getPluginManager().getPlugin("LWC");
     if (lwcPlugin instanceof LWCPlugin lp && lp.isEnabled()) {
       LWC lwc = lp.getLWC();
-      return Optional.of(new LWCXBlockOwnershipProviderImpl(lwc));
+      return Optional.of(new LWCXBlockProtectionAdapterImpl(lwc));
     }
     Plugin boltPlugin = Bukkit.getPluginManager().getPlugin("Bolt");
     if (boltPlugin != null && boltPlugin.isEnabled()) {
@@ -63,7 +63,7 @@ public class BridgeDependencyResolverImpl implements BridgeDependencyResolver {
           .getRegistration(BoltAPI.class);
       if (registration != null) {
         BoltAPI bolt = registration.getProvider();
-        return Optional.of(new BoltBlockOwnershipProviderImpl(bolt));
+        return Optional.of(new BoltBlockProtectionAdapterImpl(bolt));
       }
     }
     return Optional.empty();
@@ -74,19 +74,9 @@ public class BridgeDependencyResolverImpl implements BridgeDependencyResolver {
     Plugin mcMMO = Bukkit.getPluginManager().getPlugin("McMMO");
     if (mcMMO != null && mcMMO.isEnabled()) {
       Store<UUID, SuperAbilityType> store = Store.memory();
-      Provider<SuperAbilityType, BigDecimal> provider = new Provider<>() {
-        private static final Map<SuperAbilityType, BigDecimal> amounts = new HashMap<>();
-
-        static {
-          amounts.put(SuperAbilityType.TREE_FELLER, BigDecimal.valueOf(1000));
-        }
-
-        @Override
-        public @NotNull Optional<BigDecimal> get(SuperAbilityType key) {
-          return Optional.ofNullable(amounts.get(key));
-        }
-      };
-      return Optional.of(McMMOBoostSourceImpl.create(plugin, provider));
+      Map<SuperAbilityType,BigDecimal> amounts = new HashMap<>();
+      amounts.put(SuperAbilityType.SUPER_BREAKER,BigDecimal.valueOf(10000));
+      return Optional.of(McMMOBoostSourceImpl.create(plugin, amounts));
     }
     return Optional.empty();
   }

@@ -1,4 +1,4 @@
-package net.aincraft.bridge;
+package net.aincraft.internal;
 
 import java.util.HashMap;
 import java.util.Map;

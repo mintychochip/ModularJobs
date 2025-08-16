@@ -2,7 +2,10 @@ package net.aincraft.api.container.boost;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import net.kyori.adventure.key.Key;
+import org.bukkit.NamespacedKey;
 
+//TODO: add checks to reads guys
 public final class In {
 
   private final byte[] buffer;
@@ -11,10 +14,6 @@ public final class In {
   public In(byte[] data) {
     buffer = data;
     position = 0;
-  }
-
-  public int position() {
-    return position;
   }
 
   public int readByte() {
@@ -61,6 +60,17 @@ public final class In {
     int length = readInt();
     byte[] utf8 = readBytes(length);
     return new String(utf8, StandardCharsets.UTF_8);
+  }
+
+  public <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IllegalArgumentException {
+    String raw = readString();
+    return Enum.valueOf(enumClass, raw);
+  }
+
+  public Key readKey() {
+    String namespace = readString();
+    String value = readString();
+    return new NamespacedKey(namespace,value);
   }
 
   public byte[] readBytes(int length) {

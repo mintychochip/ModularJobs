@@ -1,40 +1,39 @@
 package net.aincraft.api.container.boost;
 
-import java.math.BigDecimal;
+import net.aincraft.api.Bridge;
 import net.aincraft.api.container.BoostCondition.BoostContext;
-import net.aincraft.api.container.boost.conditions.BiomeCondition;
-import net.aincraft.api.container.boost.conditions.ComposableCondition;
-import net.aincraft.api.container.boost.conditions.NegatingCondition;
-import net.aincraft.api.container.boost.conditions.PlayerResourceCondition;
-import net.aincraft.api.container.boost.conditions.PlayerResourceCondition.PlayerResourceType;
-import net.aincraft.api.container.boost.conditions.SneakCondition;
-import net.aincraft.api.container.boost.conditions.SprintCondition;
-import net.aincraft.api.container.boost.conditions.WorldCondition;
+import net.aincraft.api.container.boost.Condition.Codec.Typed;
+import net.aincraft.api.container.boost.conditions.ConditionFactory;
+import net.kyori.adventure.key.Keyed;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.jetbrains.annotations.ApiStatus.NonExtendable;
 
 public interface Condition {
+
+  ConditionFactory FACTORY = Bridge.bridge().conditionFactory();
 
   boolean applies(BoostContext context);
 
   static Condition biome(Biome biome) {
-    return new BiomeCondition(biome.getKey());
+    return FACTORY.biome(biome);
   }
 
   static Condition world(World world) {
-    return new WorldCondition(world.getKey());
+    return FACTORY.world(world);
   }
 
-  static Condition playerResource(PlayerResourceType type, BigDecimal expected, RelationalOperator operator) {
-    return new PlayerResourceCondition(type,expected,operator);
+  static Condition playerResource(PlayerResourceType type, double expected,
+      RelationalOperator operator) {
+    return FACTORY.playerResource(type, expected, operator);
   }
 
   static Condition sneaking(boolean state) {
-    return new SneakCondition(state);
+    return FACTORY.sneaking(state);
   }
 
   static Condition sprinting(boolean state) {
-    return new SprintCondition(state);
+    return FACTORY.sprinting(state);
   }
 
   default Condition and(Condition other) {
@@ -46,10 +45,34 @@ public interface Condition {
   }
 
   default Condition negate() {
-    return new NegatingCondition(this);
+    return FACTORY.negate(this);
   }
 
   default Condition compose(Condition other, LogicalOperator operator) {
-    return new ComposableCondition(this, other, operator);
+    return FACTORY.compose(this, other, operator);
   }
+
+  @NonExtendable
+  sealed interface Codec extends Keyed permits Typed {
+
+    Class<?> type();
+
+    non-sealed interface Typed<C extends Condition> extends Codec {
+
+      void encode(Out out, C condition, Typed.Writer writer);
+
+      Condition decode(In in, Typed.Reader reader);
+
+      interface Writer {
+
+        void write(Out out, Condition node);
+      }
+
+      interface Reader {
+
+        Condition read(In in);
+      }
+    }
+  }
+
 }

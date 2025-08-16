@@ -57,4 +57,9 @@ final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
   public Iterator<T> iterator() {
     return registry.values().iterator();
   }
+
+  @Override
+  public String toString() {
+    return registry.toString();
+  }
 }

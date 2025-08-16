@@ -11,8 +11,10 @@ public interface RegistryContainer {
     return Bridge.bridge().registryContainer();
   }
 
-  @NotNull
-  <T> RegistryView<T> getRegistry(RegistryKey<T> key);
+  <T> boolean hasRegistry(RegistryKey<T> key);
 
-  <T extends Keyed> void editRegistry(RegistryKey<T> key, Consumer<Registry<T>> registryConsumer);
+  @NotNull
+  <T> RegistryView<T> getRegistry(RegistryKey<T> key) throws IllegalArgumentException;
+
+  <T extends Keyed> void editRegistry(RegistryKey<T> key, Consumer<Registry<T>> registryConsumer) throws IllegalArgumentException;
 }

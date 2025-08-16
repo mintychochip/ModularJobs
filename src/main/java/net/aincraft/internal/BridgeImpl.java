@@ -1,26 +1,23 @@
-package net.aincraft.bridge;
+package net.aincraft.internal;
 
-import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.google.common.cache.CacheLoader;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.aincraft.Jobs;
 import net.aincraft.api.Bridge;
-import net.aincraft.api.container.BoostSource;
-import net.aincraft.api.container.ExpressionPayableCurveImpl;
-import net.aincraft.api.container.PayableCurve;
 import net.aincraft.api.container.PayableType;
-import net.aincraft.api.container.PayableTypes;
-import net.aincraft.api.container.Provider;
+import net.aincraft.api.container.boost.conditions.ConditionFactory;
 import net.aincraft.api.context.KeyResolver;
+import net.aincraft.api.registry.Registry;
 import net.aincraft.api.registry.RegistryContainer;
+import net.aincraft.api.registry.RegistryKey;
 import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.api.service.BlockOwnershipService;
 import net.aincraft.api.service.ChunkExplorationStore;
+import net.aincraft.api.service.CodecRegistry;
 import net.aincraft.api.service.EntityValidationService;
 import net.aincraft.api.service.ExploitProtectionStore;
 import net.aincraft.api.service.ExploitService;
@@ -28,11 +25,12 @@ import net.aincraft.api.service.ExploitService.ExploitProtectionType;
 import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.MobDamageTracker;
 import net.aincraft.api.service.ProgressionService;
-import net.aincraft.container.JobImpl;
+import net.aincraft.conditions.CodecRegistryLoader;
+import net.aincraft.conditions.ConditionFactoryImpl;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.economy.EconomyProvider;
-import net.aincraft.hooks.McMMOBoostSourceImpl;
 import net.aincraft.service.CSVJobTaskProviderImpl;
+import net.aincraft.service.CodecRegistryImpl;
 import net.aincraft.service.ExploitServiceImpl;
 import net.aincraft.service.MemoryExploitProtectionStoreImpl;
 import net.aincraft.service.MemoryMobDamageTrackerStoreImpl;
@@ -43,21 +41,18 @@ import net.aincraft.service.ProgressionServiceImpl;
 import net.aincraft.service.ownership.BlockOwnershipServiceImpl;
 import net.aincraft.util.LocationKey;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.jetbrains.annotations.NotNull;
 
 public final class BridgeImpl implements Bridge {
 
   private final Jobs plugin;
   private final BridgeDependencyResolver dependencyResolver;
   private final ConnectionSource connectionSource;
-  private final RegistryContainer registryContainer = new RegistryContainerImpl();
+  private final RegistryContainer registryContainer;
   private final ProgressionService progressionService;
   private final KeyResolver keyResolver = new KeyResolverImpl();
   private final EntityValidationService entityValidationService;
@@ -65,6 +60,7 @@ public final class BridgeImpl implements Bridge {
   private final MobDamageTracker mobDamageTracker;
   private final EconomyProvider economyProvider;
   private final BlockOwnershipService blockOwnershipService;
+  private final ConditionFactory conditionFactory = ConditionFactoryImpl.INSTANCE;
   private final ChunkExplorationStore chunkExplorationStore = new PersistentChunkExplorationStoreImpl();
   private final JobTaskProvider jobTaskProvider;
 
@@ -102,15 +98,18 @@ public final class BridgeImpl implements Bridge {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    blockOwnershipService = dependencyResolver.getBlockOwnershipProvider()
+    blockOwnershipService = dependencyResolver.getBlockProtectionAdapter()
         .map(BlockOwnershipServiceImpl::new).orElse(null);
     exploitService = new ExploitServiceImpl(providers);
     progressionService = ProgressionServiceImpl.create(connectionSource);
     mobDamageTracker = MobDamageTrackerImpl.create(new MemoryMobDamageTrackerStoreImpl(), plugin);
+
+    registryContainer = RegistryContainerImpl.create();
     initializeRegistryContainer();
   }
 
   private void initializeRegistryContainer() {
+    registryContainer.editRegistry(RegistryKeys.CONDITION_CODEC, CodecRegistryLoader.INSTANCE::load);
     registryContainer.editRegistry(RegistryKeys.PAYABLE_TYPES, r -> {
       r.register(PayableType.create(BufferedExperienceHandlerImpl.create(plugin),
           Key.key("jobs:experience")));
@@ -184,6 +183,11 @@ public final class BridgeImpl implements Bridge {
   @Override
   public JobTaskProvider jobTaskProvider() {
     return jobTaskProvider;
+  }
+
+  @Override
+  public ConditionFactory conditionFactory() {
+    return conditionFactory;
   }
 
   @Override

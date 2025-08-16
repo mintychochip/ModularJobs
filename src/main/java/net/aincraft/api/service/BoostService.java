@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import net.aincraft.api.container.Boost;
 import net.aincraft.api.container.BoostType;
-
 import org.bukkit.entity.Player;
 
 public interface BoostService {

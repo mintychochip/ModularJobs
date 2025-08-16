@@ -1,4 +1,4 @@
-package net.aincraft.bridge;
+package net.aincraft.internal;
 
 import java.math.BigDecimal;
 import net.aincraft.api.JobProgressionView;

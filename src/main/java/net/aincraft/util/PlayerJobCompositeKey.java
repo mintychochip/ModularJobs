@@ -1,10 +1,9 @@
 package net.aincraft.util;
 
-import com.google.common.cache.Cache;
 import java.util.Objects;
 import java.util.UUID;
-import net.kyori.adventure.key.Key;
 import net.aincraft.api.Job;
+import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
 
 public record PlayerJobCompositeKey(UUID playerId, Key jobKey) {

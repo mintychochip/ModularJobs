@@ -2,6 +2,7 @@ package net.aincraft.api.container.boost;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import net.kyori.adventure.key.Key;
 
 public class Out {
 
@@ -74,6 +75,15 @@ public class Out {
 
   public byte[] toByteArray() {
     return Arrays.copyOf(buffer, position);
+  }
+
+  public <E extends Enum<E>> void writeEnum(E enumMember) {
+    writeString(enumMember.toString());
+  }
+
+  public void writeKey(Key key) {
+    writeString(key.namespace());
+    writeString(key.value());
   }
 
   private void ensure(int add) {

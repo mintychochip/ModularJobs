@@ -4,7 +4,6 @@ import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityActivateEvent;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityDeactivateEvent;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,9 +11,7 @@ import net.aincraft.api.container.Boost;
 import net.aincraft.api.container.BoostCondition.BoostContext;
 import net.aincraft.api.container.BoostSource;
 import net.aincraft.api.container.BoostType;
-import net.aincraft.api.container.Provider;
 import net.aincraft.api.container.Store;
-import net.aincraft.api.registry.Registry;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -28,19 +25,19 @@ public class McMMOBoostSourceImpl implements BoostSource {
 
   private final Store<UUID, SuperAbilityType> store;
 
-  private final Provider<SuperAbilityType, BigDecimal> boostAmountProvider;
+  private final Map<SuperAbilityType, BigDecimal> boostAmounts;
 
   public McMMOBoostSourceImpl(Store<UUID, SuperAbilityType> store,
-      Provider<SuperAbilityType, BigDecimal> boostAmountProvider) {
+      Map<SuperAbilityType, BigDecimal> boostAmounts) {
     this.store = store;
-    this.boostAmountProvider = boostAmountProvider;
+    this.boostAmounts = boostAmounts;
   }
 
   public static McMMOBoostSourceImpl create(Plugin plugin,
-      Provider<SuperAbilityType, BigDecimal> boostAmountProvider) {
+      Map<SuperAbilityType, BigDecimal> boostAmounts) {
     Store<UUID, SuperAbilityType> store = Store.memory();
     Bukkit.getPluginManager().registerEvents(new McMMOController(store), plugin);
-    return new McMMOBoostSourceImpl(store, boostAmountProvider);
+    return new McMMOBoostSourceImpl(store, boostAmounts);
   }
 
   @Override
@@ -50,8 +47,8 @@ public class McMMOBoostSourceImpl implements BoostSource {
       return Optional.empty();
     }
     SuperAbilityType type = store.get(player.getUniqueId());
-    return boostAmountProvider.get(type)
-        .map(amount -> Boost.multiplicative(BoostType.MCMMO, amount));
+    BigDecimal amount = boostAmounts.get(type);
+    return Optional.of(Boost.multiplicative(BoostType.MCMMO, amount));
   }
 
   @Override

@@ -1,6 +1,7 @@
 package net.aincraft.api.service;
 
 import java.util.Optional;
+import java.util.UUID;
 import net.aincraft.api.Bridge;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -14,4 +15,8 @@ public interface BlockOwnershipService {
 
   @NotNull
   Optional<OfflinePlayer> getOwner(Block block);
+
+  interface BlockProtectionAdapter {
+    Optional<UUID> getOwner(Block block);
+  }
 }
