@@ -1,0 +1,20 @@
+package net.aincraft.container;
+
+import net.aincraft.Bridge;
+import net.kyori.adventure.key.Key;
+
+public interface KeyResolver {
+
+  static KeyResolver keyResolver() {
+    return Bridge.bridge().resolver();
+  }
+
+  Key resolve(Context context);
+
+  <T extends Context> void addStrategy(Class<T> clazz, KeyResolvingStrategy<T> strategy);
+
+  interface KeyResolvingStrategy<T extends Context> {
+
+    Key resolve(T object);
+  }
+}

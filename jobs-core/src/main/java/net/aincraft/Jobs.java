@@ -1,0 +1,122 @@
+package net.aincraft;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import net.aincraft.config.YamlConfiguration;
+import net.aincraft.container.ActionType;
+import net.aincraft.container.Boost;
+import net.aincraft.container.BoostContext;
+import net.aincraft.container.BoostSource;
+import net.aincraft.container.Context;
+import net.aincraft.container.Payable;
+import net.aincraft.container.PayableHandler;
+import net.aincraft.container.PayableHandler.PayableContext;
+import net.aincraft.container.PayableType;
+import net.aincraft.database.ConnectionSource;
+import net.aincraft.database.ConnectionSourceFactory;
+import net.aincraft.event.JobsPaymentEvent;
+import net.aincraft.event.JobsPrePaymentEvent;
+import net.aincraft.internal.BridgeImpl;
+import net.aincraft.listener.BucketListener;
+import net.aincraft.listener.JobListener;
+import net.aincraft.listener.util.MobTagController;
+import net.aincraft.registry.RegistryContainer;
+import net.aincraft.registry.RegistryKeys;
+import net.aincraft.registry.RegistryView;
+import net.aincraft.service.JobTaskProvider;
+import net.aincraft.service.ProgressionService;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.plugin.ServicePriority;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
+
+public class Jobs extends JavaPlugin {
+
+  @Nullable
+  private ConnectionSource connectionSource = null;
+
+  @Override
+  public void onEnable() {
+    YamlConfiguration config = YamlConfiguration.create(this, "config.yml");
+    ConnectionSourceFactory factory = new ConnectionSourceFactory(this, config);
+    try {
+      connectionSource = factory.create();
+      Bukkit.getServicesManager()
+          .register(Bridge.class, new BridgeImpl(this, connectionSource), this,
+              ServicePriority.High);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+//    Undertow server = Undertow.builder().addHttpListener(8000, "0.0.0.0").setHandler(exchange -> {
+//      exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+//      exchange.getResponseSender().send("hello from undertow!");
+//    }).build();
+//    server.start();
+    Bukkit.getPluginManager().registerEvents(new MobTagController(), this);
+    Bukkit.getPluginManager().registerEvents(new BucketListener(), this);
+    Bukkit.getPluginManager().registerEvents(new JobListener(), this);
+    Bukkit.getPluginCommand("test").setExecutor(new Command());
+  }
+
+  @Override
+  public void onDisable() {
+    if (!(connectionSource == null || connectionSource.isClosed())) {
+      try {
+        connectionSource.shutdown();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  public static void doTask(OfflinePlayer player, ActionType actionType,
+      Context context) {
+    RegistryView<BoostSource> registry = RegistryContainer.registryContainer()
+        .getRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES);
+    ProgressionService progressionService = ProgressionService.progressionService();
+    JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
+    List<JobProgression> progressions = progressionService.getAll(player);
+    Bukkit.broadcastMessage(player.getUniqueId().toString());
+    Bukkit.broadcastMessage(progressions.toString());
+    for (JobProgressionView progression : progressions) {
+      for (BoostSource boostSource : registry) {
+        List<Boost> boosts = boostSource.evaluate(
+            new BoostContext(actionType, progression, player.getPlayer()));
+        boosts.forEach(b -> Bukkit.broadcastMessage(b.toString()));
+      }
+      Job job = progression.getJob();
+      if (jobTaskProvider.hasTask(job, actionType, context)) {
+        JobTask task = jobTaskProvider.getTask(job, actionType, context);
+        for (Payable payable : task.getPayables()) {
+          PayableType type = payable.type();
+          JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job,
+              task);
+          Bukkit.getPluginManager().callEvent(prePaymentEvent);
+          if (prePaymentEvent.isCancelled()) {
+            continue;
+          }
+          Bukkit.getPluginManager().callEvent(new JobsPaymentEvent(player, payable));
+          PayableHandler handler = type.handler();
+          handler.pay(new PayableContext() {
+            @Override
+            public OfflinePlayer getPlayer() {
+              return player;
+            }
+
+            @Override
+            public Payable getPayable() {
+              return payable;
+            }
+
+            @Override
+            public Job getJob() {
+              return job;
+            }
+          });
+        }
+      }
+    }
+  }
+}
