@@ -1,5 +1,7 @@
 package net.aincraft.api.container.boost;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import net.kyori.adventure.key.Key;
@@ -70,7 +72,17 @@ public final class In {
   public Key readKey() {
     String namespace = readString();
     String value = readString();
-    return new NamespacedKey(namespace,value);
+    return new NamespacedKey(namespace, value);
+  }
+
+  public BigDecimal readBigDecimal() {
+    int scale = readInt();
+    int len = readInt();
+    if (len == 0) {
+      return BigDecimal.ZERO;
+    }
+    byte[] mag = readBytes(len);
+    return new BigDecimal(new BigInteger(mag), scale);
   }
 
   public byte[] readBytes(int length) {

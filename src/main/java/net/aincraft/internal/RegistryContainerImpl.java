@@ -29,7 +29,7 @@ final class RegistryContainerImpl implements RegistryContainer {
     registries.put(RegistryKeys.ACTION_TYPES.key(), Registry.simple());
     registries.put(RegistryKeys.TRANSIENT_BOOST_SOURCES.key(),
         Registry.simple());
-    registries.put(RegistryKeys.CONDITION_CODEC.key(), new CodecRegistryImpl());
+    registries.put(RegistryKeys.CODEC.key(), new CodecRegistryImpl());
     return new RegistryContainerImpl(registries);
   }
 

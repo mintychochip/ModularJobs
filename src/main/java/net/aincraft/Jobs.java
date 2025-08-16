@@ -11,7 +11,7 @@ import net.aincraft.api.JobProgressionView;
 import net.aincraft.api.JobTask;
 import net.aincraft.api.action.ActionType;
 import net.aincraft.api.container.Boost;
-import net.aincraft.api.container.BoostCondition.BoostContext;
+import net.aincraft.api.container.BoostContext;
 import net.aincraft.api.container.BoostSource;
 import net.aincraft.api.container.Payable;
 import net.aincraft.api.container.PayableHandler;
@@ -25,10 +25,10 @@ import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.api.registry.RegistryView;
 import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.ProgressionService;
-import net.aincraft.internal.BridgeImpl;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.database.ConnectionSourceFactory;
+import net.aincraft.internal.BridgeImpl;
 import net.aincraft.listener.BucketListener;
 import net.aincraft.listener.JobListener;
 import net.aincraft.listener.util.MobTagController;
@@ -87,15 +87,15 @@ public class Jobs extends JavaPlugin {
     List<JobProgression> progressions = progressionService.getAll(player);
     for (JobProgressionView progression : progressions) {
       for (BoostSource boostSource : registry) {
-        Optional<Boost> boost = boostSource.getBoost(
+        List<Boost> boosts = boostSource.evaluate(
             new BoostContext(actionType, progression, player.getPlayer()));
-        boost.ifPresent(b -> Bukkit.broadcastMessage(b.toString()));
+        boosts.forEach(b -> Bukkit.broadcastMessage(b.toString()));
       }
       Job job = progression.getJob();
       if (jobTaskProvider.hasTask(job, actionType, context)) {
         JobTask task = jobTaskProvider.getTask(job, actionType, context);
         for (Payable payable : task.getPayables()) {
-          PayableType type = payable.getType();
+          PayableType type = payable.type();
           JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job,
               task);
           Bukkit.getPluginManager().callEvent(prePaymentEvent);

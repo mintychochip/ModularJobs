@@ -1,6 +1,7 @@
-package net.aincraft.conditions;
+package net.aincraft.boost.conditions;
 
-import net.aincraft.api.container.BoostCondition.BoostContext;
+import net.aincraft.api.container.BoostContext;
+import net.aincraft.api.container.Codec;
 import net.aincraft.api.container.boost.Condition;
 import net.aincraft.api.container.boost.In;
 import net.aincraft.api.container.boost.Out;
@@ -23,12 +24,12 @@ record NegatingConditionImpl(Condition condition) implements Condition {
 
     @Override
     public void encode(Out out, NegatingConditionImpl condition, Writer writer) {
-      writer.write(out,condition.condition);
+      writer.write(out, condition.condition);
     }
 
     @Override
     public Condition decode(In in, Reader reader) {
-      return new NegatingConditionImpl(reader.read(in));
+      return new NegatingConditionImpl(reader.read(in, Condition.class));
     }
 
     @Override

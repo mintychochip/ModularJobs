@@ -62,8 +62,8 @@ final class BufferedExperienceHandlerImpl implements
       return;
     }
     Payable payable = context.getPayable();
-    PayableAmount amount = payable.getAmount();
-    BigDecimal amountDecimal = amount.getAmount();
+    PayableAmount amount = payable.amount();
+    BigDecimal amountDecimal = amount.amount();
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
     cache.put(key, calculatedProgression);
     if (player.isOnline()) {

@@ -8,72 +8,49 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
-import net.aincraft.api.container.boost.Condition;
-import net.aincraft.api.container.boost.Condition.Codec;
-import net.aincraft.api.container.boost.Condition.Codec.Typed;
-import net.aincraft.api.container.boost.Condition.Codec.Typed.Reader;
-import net.aincraft.api.container.boost.Condition.Codec.Typed.Writer;
+import net.aincraft.api.container.Codec;
+import net.aincraft.api.container.Codec.Reader;
+import net.aincraft.api.container.Codec.Typed;
+import net.aincraft.api.container.Codec.Writer;
 import net.aincraft.api.container.boost.In;
 import net.aincraft.api.container.boost.Out;
 import net.aincraft.api.registry.Registry;
 import net.aincraft.api.service.CodecRegistry;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 public class CodecRegistryImpl implements CodecRegistry, Writer,
     Reader {
 
   private static final int MAX_ADAPTERS = 256;
-  private final Cache<ByteBuffer, Condition> decodeCache = Caffeine
+  private final Cache<ByteBuffer, Object> decodeCache = Caffeine
       .newBuilder()
-      .maximumSize(500)
-      .expireAfterAccess(Duration.ofMinutes(5))
+      .maximumSize(100)
+      .expireAfterAccess(Duration.ofMinutes(1))
       .build();
 
   private final Registry<Codec> codecs = Registry.simple();
   private final Map<Class<?>, Key> typeToKey = new HashMap<>();
   private int nextId = 0;
 
+
   @Override
-  public byte[] encode(Condition condition) {
+  public byte[] encode(Object object) {
     Out out = new Out(64);
-    write(out, condition);
+    write(out, object);
     return out.toByteArray();
   }
 
   @Override
-  public Condition decode(byte[] bytes) {
-    return decodeCache.get(ByteBuffer.wrap(bytes), ignored -> read(new In(bytes)));
+  public Object decode(byte[] bytes) {
+    return decodeCache.get(ByteBuffer.wrap(bytes),ignored -> new In(bytes));
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public void write(Out out, Condition condition) {
-    Bukkit.broadcastMessage(codecs.toString());
-    Bukkit.broadcastMessage(typeToKey.toString());
-    Key key = typeToKey.get(condition.getClass());
-    if (key == null) {
-      throw new IllegalArgumentException(
-          "could not find adapter id for type: " + condition.getClass());
-    }
-    Codec codec = codecs.getOrThrow(key);
-    if (!(codec instanceof Typed<?>)) {
-      return;
-    }
-    Typed<Condition> typedCodec = (Typed<Condition>) codec;
-    out.writeKey(key);
-    typedCodec.encode(out, condition, this);
-  }
-
-  @Override
-  public Condition read(In in) {
-    Key key = in.readKey();
-    Codec codec = codecs.getOrThrow(key);
-    if (!(codec instanceof Typed<?> typed)) {
-      return null;
-    }
-    return typed.decode(in, this);
+  public <T> T decode(byte[] bytes, Class<T> clazz) {
+    return (T) decodeCache.get(ByteBuffer.wrap(bytes),
+        ignored -> read(new In(bytes),clazz));
   }
 
   @Override
@@ -105,5 +82,32 @@ public class CodecRegistryImpl implements CodecRegistry, Writer,
   @Override
   public Iterator<Codec> iterator() {
     return codecs.iterator();
+  }
+
+  @Override
+  public Object read(In in) {
+    Key key = in.readKey();
+    Codec codec = codecs.getOrThrow(key);
+    if (!(codec instanceof Typed<?> typed)) {
+      return null;
+    }
+    return typed.decode(in, this);
+  }
+
+  @Override
+  public void write(Out out, Object child) {
+    Key key = typeToKey.get(child.getClass());
+    if (key == null) {
+      throw new IllegalArgumentException(
+          "could not find adapter id for type: " + child.getClass());
+    }
+    Codec codec = codecs.getOrThrow(key);
+    if (!(codec instanceof Typed<?>)) {
+      return;
+    }
+    @SuppressWarnings("unchecked")
+    Typed<Object> typedCodec = (Typed<Object>) codec;
+    out.writeKey(key);
+    typedCodec.encode(out, child, this);
   }
 }

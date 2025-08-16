@@ -1,6 +1,7 @@
-package net.aincraft.conditions;
+package net.aincraft.boost.conditions;
 
-import net.aincraft.api.container.BoostCondition.BoostContext;
+import net.aincraft.api.container.BoostContext;
+import net.aincraft.api.container.Codec;
 import net.aincraft.api.container.boost.Condition;
 import net.aincraft.api.container.boost.In;
 import net.aincraft.api.container.boost.Out;

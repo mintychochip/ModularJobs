@@ -1,6 +1,7 @@
-package net.aincraft.conditions;
+package net.aincraft.boost.conditions;
 
-import net.aincraft.api.container.BoostCondition.BoostContext;
+import net.aincraft.api.container.BoostContext;
+import net.aincraft.api.container.Codec;
 import net.aincraft.api.container.boost.Condition;
 import net.aincraft.api.container.boost.In;
 import net.aincraft.api.container.boost.LogicalOperator;
@@ -28,16 +29,16 @@ public record ComposableConditionImpl(Condition a, Condition b,
     @Override
     public void encode(Out out, ComposableConditionImpl condition, Writer writer) {
       out.writeEnum(condition.logicalOperator);
-      writer.write(out,condition.a);
-      writer.write(out,condition.b);
+      writer.write(out, condition.a);
+      writer.write(out, condition.b);
     }
 
     @Override
     public Condition decode(In in, Reader reader) {
       LogicalOperator operator = in.readEnum(LogicalOperator.class);
-      Condition a = reader.read(in);
-      Condition b = reader.read(in);
-      return new ComposableConditionImpl(a,b,operator);
+      Condition a = reader.read(in, Condition.class);
+      Condition b = reader.read(in, Condition.class);
+      return new ComposableConditionImpl(a, b, operator);
     }
 
     @Override

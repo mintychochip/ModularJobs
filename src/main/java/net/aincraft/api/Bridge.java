@@ -2,12 +2,12 @@ package net.aincraft.api;
 
 import java.util.Optional;
 import net.aincraft.Jobs;
-import net.aincraft.api.container.boost.conditions.ConditionFactory;
+import net.aincraft.api.container.boost.factories.BoostFactory;
+import net.aincraft.api.container.boost.factories.ConditionFactory;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.api.service.BlockOwnershipService;
 import net.aincraft.api.service.ChunkExplorationStore;
-import net.aincraft.api.service.CodecRegistry;
 import net.aincraft.api.service.EntityValidationService;
 import net.aincraft.api.service.ExploitService;
 import net.aincraft.api.service.JobTaskProvider;
@@ -35,6 +35,8 @@ public interface Bridge {
   JobTaskProvider jobTaskProvider();
 
   ConditionFactory conditionFactory();
+
+  BoostFactory boostFactory();
 
   ExploitService exploitService();
 

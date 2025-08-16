@@ -4,11 +4,12 @@ import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityActivateEvent;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityDeactivateEvent;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.aincraft.api.container.Boost;
-import net.aincraft.api.container.BoostCondition.BoostContext;
+import net.aincraft.api.container.BoostContext;
 import net.aincraft.api.container.BoostSource;
 import net.aincraft.api.container.BoostType;
 import net.aincraft.api.container.Store;
@@ -41,14 +42,14 @@ public class McMMOBoostSourceImpl implements BoostSource {
   }
 
   @Override
-  public Optional<Boost> getBoost(BoostContext context) {
+  public @NotNull List<Boost> evaluate(BoostContext context) {
     Player player = context.player();
     if (!store.contains(player.getUniqueId())) {
-      return Optional.empty();
+      return List.of();
     }
     SuperAbilityType type = store.get(player.getUniqueId());
     BigDecimal amount = boostAmounts.get(type);
-    return Optional.of(Boost.multiplicative(BoostType.MCMMO, amount));
+    return List.of(Boost.multiplicative(BoostType.MCMMO, amount));
   }
 
   @Override

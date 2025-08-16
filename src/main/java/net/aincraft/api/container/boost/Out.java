@@ -1,5 +1,6 @@
 package net.aincraft.api.container.boost;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import net.kyori.adventure.key.Key;
@@ -9,8 +10,8 @@ public class Out {
   private byte[] buffer;
   private int position;
 
-  public Out(int capacity) {
-    buffer = new byte[Math.max(16, capacity)];
+  public Out(int initialCapacity) {
+    buffer = new byte[Math.max(16, initialCapacity)];
   }
 
   public int position() {
@@ -71,6 +72,23 @@ public class Out {
     ensure(src.length);
     System.arraycopy(src, 0, buffer, position, src.length);
     position += src.length;
+  }
+
+  public void writeBigDecimal(BigDecimal value) {
+    BigDecimal n = value.stripTrailingZeros();
+
+    if (n.signum() == 0) {
+      writeInt(0);
+      writeInt(0);
+      return;
+    }
+
+    int scale = n.scale();
+    byte[] mag = n.unscaledValue().toByteArray();
+
+    writeInt(scale);
+    writeInt(mag.length);
+    writeBytes(mag);
   }
 
   public byte[] toByteArray() {

@@ -1,10 +1,10 @@
-package net.aincraft.conditions;
+package net.aincraft.boost.conditions;
 
 import net.aincraft.api.container.boost.Condition;
 import net.aincraft.api.container.boost.LogicalOperator;
 import net.aincraft.api.container.boost.PlayerResourceType;
 import net.aincraft.api.container.boost.RelationalOperator;
-import net.aincraft.api.container.boost.conditions.ConditionFactory;
+import net.aincraft.api.container.boost.factories.ConditionFactory;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 

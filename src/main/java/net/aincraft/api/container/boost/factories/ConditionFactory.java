@@ -1,4 +1,4 @@
-package net.aincraft.api.container.boost.conditions;
+package net.aincraft.api.container.boost.factories;
 
 import net.aincraft.api.Bridge;
 import net.aincraft.api.container.boost.Condition;
@@ -7,7 +7,9 @@ import net.aincraft.api.container.boost.PlayerResourceType;
 import net.aincraft.api.container.boost.RelationalOperator;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
+@Internal
 public interface ConditionFactory {
 
   static ConditionFactory conditionFactory() {

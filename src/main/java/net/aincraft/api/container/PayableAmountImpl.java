@@ -21,12 +21,12 @@ public final class PayableAmountImpl implements PayableAmount {
   }
 
   @Override
-  public BigDecimal getAmount() {
+  public BigDecimal amount() {
     return amount;
   }
 
   @Override
-  public @NotNull Optional<Currency> getCurrency() {
+  public @NotNull Optional<Currency> currency() {
     return Optional.ofNullable(currency);
   }
 }

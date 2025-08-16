@@ -85,11 +85,11 @@ public class CSVJobTaskProviderImpl implements JobTaskProvider {
         .append(type.key()).append(',')
         .append(KeyResolver.keyResolver().resolve(context)).append(',');
     for (Payable payable : payables) {
-      PayableAmount amount = payable.getAmount();
-      Optional<Currency> currency = amount.getCurrency();
-      BigDecimal bigDecimal = amount.getAmount();
+      PayableAmount amount = payable.amount();
+      Optional<Currency> currency = amount.currency();
+      BigDecimal bigDecimal = amount.amount();
       StringBuilder payableString = new StringBuilder(base)
-          .append(payable.getType().key()).append(',')
+          .append(payable.type().key()).append(',')
           .append(bigDecimal.toString());
       currency.ifPresent(c -> payableString.append(',').append(c.identifier()));
       try {
@@ -102,10 +102,10 @@ public class CSVJobTaskProviderImpl implements JobTaskProvider {
     JobTaskKey key = JobTaskKey.create(job, type, context);
     List<PayableRecord> records = payables.stream().map(
         payable -> {
-          PayableAmount amount = payable.getAmount();
-          String currencyString = amount.getCurrency().map(Currency::identifier).orElse(null);
-          return new PayableRecord(payable.getType().key(),
-              amount.getAmount().toString(), currencyString);
+          PayableAmount amount = payable.amount();
+          String currencyString = amount.currency().map(Currency::identifier).orElse(null);
+          return new PayableRecord(payable.type().key(),
+              amount.amount().toString(), currencyString);
         }).toList();
     this.payables.put(key, records);
   }

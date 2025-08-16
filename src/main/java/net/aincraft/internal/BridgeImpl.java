@@ -9,15 +9,12 @@ import java.util.Optional;
 import net.aincraft.Jobs;
 import net.aincraft.api.Bridge;
 import net.aincraft.api.container.PayableType;
-import net.aincraft.api.container.boost.conditions.ConditionFactory;
+import net.aincraft.api.container.boost.factories.ConditionFactory;
 import net.aincraft.api.context.KeyResolver;
-import net.aincraft.api.registry.Registry;
 import net.aincraft.api.registry.RegistryContainer;
-import net.aincraft.api.registry.RegistryKey;
 import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.api.service.BlockOwnershipService;
 import net.aincraft.api.service.ChunkExplorationStore;
-import net.aincraft.api.service.CodecRegistry;
 import net.aincraft.api.service.EntityValidationService;
 import net.aincraft.api.service.ExploitProtectionStore;
 import net.aincraft.api.service.ExploitService;
@@ -25,12 +22,11 @@ import net.aincraft.api.service.ExploitService.ExploitProtectionType;
 import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.MobDamageTracker;
 import net.aincraft.api.service.ProgressionService;
-import net.aincraft.conditions.CodecRegistryLoader;
-import net.aincraft.conditions.ConditionFactoryImpl;
+import net.aincraft.boost.conditions.CodecRegistryLoader;
+import net.aincraft.boost.conditions.ConditionFactoryImpl;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.economy.EconomyProvider;
 import net.aincraft.service.CSVJobTaskProviderImpl;
-import net.aincraft.service.CodecRegistryImpl;
 import net.aincraft.service.ExploitServiceImpl;
 import net.aincraft.service.MemoryExploitProtectionStoreImpl;
 import net.aincraft.service.MemoryMobDamageTrackerStoreImpl;
@@ -41,7 +37,6 @@ import net.aincraft.service.ProgressionServiceImpl;
 import net.aincraft.service.ownership.BlockOwnershipServiceImpl;
 import net.aincraft.util.LocationKey;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -109,12 +104,12 @@ public final class BridgeImpl implements Bridge {
   }
 
   private void initializeRegistryContainer() {
-    registryContainer.editRegistry(RegistryKeys.CONDITION_CODEC, CodecRegistryLoader.INSTANCE::load);
+    registryContainer.editRegistry(RegistryKeys.CODEC, CodecRegistryLoader.INSTANCE::load);
     registryContainer.editRegistry(RegistryKeys.PAYABLE_TYPES, r -> {
       r.register(PayableType.create(BufferedExperienceHandlerImpl.create(plugin),
           Key.key("jobs:experience")));
       r.register(PayableType.create(context -> {
-        economyProvider.deposit(context.getPlayer(), context.getPayable().getAmount());
+        economyProvider.deposit(context.getPlayer(), context.getPayable().amount());
       }, Key.key("jobs:economy")));
     });
     registryContainer.editRegistry(RegistryKeys.ACTION_TYPES, r -> {

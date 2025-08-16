@@ -1,10 +1,10 @@
-package net.aincraft.conditions;
+package net.aincraft.boost.conditions;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.aincraft.api.container.boost.Condition.Codec;
+import net.aincraft.api.container.Codec;
 import net.aincraft.api.registry.Registry;
-import net.aincraft.conditions.PlayerResourceConditionImpl.CodecImpl;
+import net.aincraft.boost.conditions.PlayerResourceConditionImpl.CodecImpl;
 
 public final class CodecRegistryLoader {
 
