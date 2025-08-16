@@ -15,6 +15,7 @@ import net.aincraft.api.registry.RegistryView;
 import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
 public final class ActionTypes {
 
@@ -159,6 +160,7 @@ public final class ActionTypes {
    */
   public static final ActionType VILLAGER_TRADE = type("villager_trade");
 
+  @Internal
   private static ActionType type(String keyString) {
     RegistryView<ActionType> registry = RegistryContainer.registryContainer()
         .getRegistry(RegistryKeys.ACTION_TYPES);

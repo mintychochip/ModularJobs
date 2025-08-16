@@ -9,6 +9,8 @@ import java.util.Optional;
 import net.aincraft.Jobs;
 import net.aincraft.api.Bridge;
 import net.aincraft.api.container.PayableType;
+import net.aincraft.api.container.PolicyFactory;
+import net.aincraft.api.container.boost.factories.BoostFactory;
 import net.aincraft.api.container.boost.factories.ConditionFactory;
 import net.aincraft.api.context.KeyResolver;
 import net.aincraft.api.registry.RegistryContainer;
@@ -22,8 +24,11 @@ import net.aincraft.api.service.ExploitService.ExploitProtectionType;
 import net.aincraft.api.service.JobTaskProvider;
 import net.aincraft.api.service.MobDamageTracker;
 import net.aincraft.api.service.ProgressionService;
-import net.aincraft.boost.conditions.CodecRegistryLoader;
+import net.aincraft.boost.BoostCodecLoaderImpl;
+import net.aincraft.boost.BoostFactoryImpl;
+import net.aincraft.boost.conditions.ConditionCodecLoaderImpl;
 import net.aincraft.boost.conditions.ConditionFactoryImpl;
+import net.aincraft.boost.policies.PolicyFactoryImpl;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.economy.EconomyProvider;
 import net.aincraft.service.CSVJobTaskProviderImpl;
@@ -55,7 +60,6 @@ public final class BridgeImpl implements Bridge {
   private final MobDamageTracker mobDamageTracker;
   private final EconomyProvider economyProvider;
   private final BlockOwnershipService blockOwnershipService;
-  private final ConditionFactory conditionFactory = ConditionFactoryImpl.INSTANCE;
   private final ChunkExplorationStore chunkExplorationStore = new PersistentChunkExplorationStoreImpl();
   private final JobTaskProvider jobTaskProvider;
 
@@ -104,7 +108,8 @@ public final class BridgeImpl implements Bridge {
   }
 
   private void initializeRegistryContainer() {
-    registryContainer.editRegistry(RegistryKeys.CODEC, CodecRegistryLoader.INSTANCE::load);
+    registryContainer.editRegistry(RegistryKeys.CODEC, ConditionCodecLoaderImpl.INSTANCE::load);
+    registryContainer.editRegistry(RegistryKeys.CODEC, BoostCodecLoaderImpl.INSTANCE::load);
     registryContainer.editRegistry(RegistryKeys.PAYABLE_TYPES, r -> {
       r.register(PayableType.create(BufferedExperienceHandlerImpl.create(plugin),
           Key.key("jobs:experience")));
@@ -182,7 +187,17 @@ public final class BridgeImpl implements Bridge {
 
   @Override
   public ConditionFactory conditionFactory() {
-    return conditionFactory;
+    return ConditionFactoryImpl.INSTANCE;
+  }
+
+  @Override
+  public BoostFactory boostFactory() {
+    return BoostFactoryImpl.INSTANCE;
+  }
+
+  @Override
+  public PolicyFactory policyFactory() {
+    return PolicyFactoryImpl.INSTANCE;
   }
 
   @Override

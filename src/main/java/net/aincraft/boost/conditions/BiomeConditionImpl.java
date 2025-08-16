@@ -34,13 +34,13 @@ record BiomeConditionImpl(Key biomeKey) implements Condition {
     }
 
     @Override
-    public Condition decode(In in, Reader reader) {
+    public BiomeConditionImpl decode(In in, Reader reader) {
       return new BiomeConditionImpl(in.readKey());
     }
 
     @Override
     public @NotNull Key key() {
-      return Key.key("conditions:biome");
+      return Key.key("modular_jobs:biome_condition");
     }
   }
 }

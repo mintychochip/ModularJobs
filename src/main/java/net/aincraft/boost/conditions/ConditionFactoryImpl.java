@@ -1,12 +1,17 @@
 package net.aincraft.boost.conditions;
 
+import com.google.common.base.Preconditions;
 import net.aincraft.api.container.boost.Condition;
+import net.aincraft.api.container.boost.WeatherState;
 import net.aincraft.api.container.boost.LogicalOperator;
 import net.aincraft.api.container.boost.PlayerResourceType;
+import net.aincraft.api.container.boost.PotionConditionType;
 import net.aincraft.api.container.boost.RelationalOperator;
 import net.aincraft.api.container.boost.factories.ConditionFactory;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.potion.PotionEffectType;
 
 public final class ConditionFactoryImpl implements ConditionFactory {
 
@@ -28,7 +33,7 @@ public final class ConditionFactoryImpl implements ConditionFactory {
   @Override
   public Condition playerResource(PlayerResourceType type, double expected,
       RelationalOperator operator) {
-    return null;
+    return new PlayerResourceConditionImpl(type,expected,operator);
   }
 
   @Override
@@ -47,7 +52,29 @@ public final class ConditionFactoryImpl implements ConditionFactory {
   }
 
   @Override
+  public Condition liquid(Material liquid) throws IllegalArgumentException {
+    Preconditions.checkArgument(liquid == Material.WATER || liquid == Material.LAVA);
+    return new LiquidConditionImpl(liquid);
+  }
+
+  @Override
+  public Condition potionType(PotionEffectType type) {
+    return new PotionTypeConditionImpl(type);
+  }
+
+  @Override
+  public Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
+      RelationalOperator operator) {
+    return new PotionConditionImpl(type,expected,conditionType,operator);
+  }
+
+  @Override
   public Condition compose(Condition a, Condition b, LogicalOperator operator) {
     return new ComposableConditionImpl(a, b, operator);
+  }
+
+  @Override
+  public Condition weather(WeatherState state) {
+    return new WeatherConditionImpl(state);
   }
 }

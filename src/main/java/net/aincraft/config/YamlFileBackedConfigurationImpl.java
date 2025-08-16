@@ -9,14 +9,14 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
-public final class YamlFileBackedConfigurationImpl implements FileBackedConfiguration {
+final class YamlFileBackedConfigurationImpl implements FileBackedConfiguration {
 
   private final Plugin plugin;
   private final String path;
   private YamlConfiguration config;
   private File configFile;
 
-  public YamlFileBackedConfigurationImpl(Plugin plugin, String path) {
+  YamlFileBackedConfigurationImpl(Plugin plugin, String path) {
     this.plugin = plugin;
     this.path = path;
     this.configFile = new File(plugin.getDataFolder(), path);
@@ -32,7 +32,7 @@ public final class YamlFileBackedConfigurationImpl implements FileBackedConfigur
     Preconditions.checkArgument(split.length >= 2);
     Preconditions.checkArgument(split[1].equals("yml") || split[1].equals("yaml"));
     YamlFileBackedConfigurationImpl impl = new YamlFileBackedConfigurationImpl(plugin, path);
-    org.bukkit.configuration.file.YamlConfiguration config = impl.getConfig();
+    org.bukkit.configuration.file.YamlConfiguration config = impl.config;
     return (net.aincraft.config.YamlConfiguration) Proxy.newProxyInstance(
         net.aincraft.config.YamlConfiguration.class.getClassLoader(),
         new Class[]{
@@ -50,11 +50,6 @@ public final class YamlFileBackedConfigurationImpl implements FileBackedConfigur
           }
           return method.invoke(config, args);
         });
-  }
-
-  @Internal
-  YamlConfiguration getConfig() {
-    return config;
   }
 
   @Override

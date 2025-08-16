@@ -28,13 +28,13 @@ record SprintConditionImpl(boolean state) implements Condition {
     }
 
     @Override
-    public Condition decode(In in, Reader reader) {
+    public SprintConditionImpl decode(In in, Reader reader) {
       return new SprintConditionImpl(in.readBool());
     }
 
     @Override
     public @NotNull Key key() {
-      return Key.key("conditions:sprint");
+      return Key.key("modular_jobs:sprint_condition");
     }
   }
 }

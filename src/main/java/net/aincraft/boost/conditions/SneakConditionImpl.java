@@ -28,13 +28,13 @@ record SneakConditionImpl(boolean state) implements Condition {
     }
 
     @Override
-    public Condition decode(In in, Reader reader) {
+    public SneakConditionImpl decode(In in, Reader reader) {
       return new SneakConditionImpl(in.readBool());
     }
 
     @Override
     public @NotNull Key key() {
-      return Key.key("conditions:sneak");
+      return Key.key("modular_jobs:sneak_condition");
     }
   }
 }

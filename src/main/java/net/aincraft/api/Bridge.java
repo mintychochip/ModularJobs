@@ -2,6 +2,7 @@ package net.aincraft.api;
 
 import java.util.Optional;
 import net.aincraft.Jobs;
+import net.aincraft.api.container.PolicyFactory;
 import net.aincraft.api.container.boost.factories.BoostFactory;
 import net.aincraft.api.container.boost.factories.ConditionFactory;
 import net.aincraft.api.context.KeyResolver;
@@ -38,11 +39,14 @@ public interface Bridge {
 
   BoostFactory boostFactory();
 
+  PolicyFactory policyFactory();
+
   ExploitService exploitService();
 
   MobDamageTracker mobDamageTracker();
 
   ChunkExplorationStore chunkExplorationStore();
+
   Optional<EconomyProvider> economy();
 
   Optional<BlockOwnershipService> blockOwnershipService();

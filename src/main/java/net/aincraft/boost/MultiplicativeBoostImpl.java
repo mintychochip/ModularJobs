@@ -2,7 +2,6 @@ package net.aincraft.boost;
 
 import java.math.BigDecimal;
 import net.aincraft.api.container.Boost;
-import net.aincraft.api.container.BoostType;
 import net.aincraft.api.container.Codec;
 import net.aincraft.api.container.boost.In;
 import net.aincraft.api.container.boost.Out;
@@ -24,7 +23,7 @@ record MultiplicativeBoostImpl(BigDecimal amount) implements Boost {
     }
 
     @Override
-    public Object decode(In in, Reader reader) {
+    public MultiplicativeBoostImpl decode(In in, Reader reader) {
       return new MultiplicativeBoostImpl(in.readBigDecimal());
     }
 
@@ -35,7 +34,7 @@ record MultiplicativeBoostImpl(BigDecimal amount) implements Boost {
 
     @Override
     public @NotNull Key key() {
-      return Key.key("boost:multiplicative");
+      return Key.key("modular_jobs:multiplicative_boost");
     }
   }
 }

@@ -11,33 +11,36 @@ import net.aincraft.api.container.boost.Out;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
-record TopNPolicyImpl(int n) implements Policy {
+record AllApplicablePolicyImpl() implements Policy {
+
+  static Policy INSTANCE = new AllApplicablePolicyImpl();
 
   @Override
   public List<Boost> resolve(Queue<Rule> rules) {
-    return rules.stream().map(Rule::boost).limit(n).toList();
+    return rules.stream().map(Rule::boost).toList();
   }
 
-  static final class CodecImpl implements Codec.Typed<TopNPolicyImpl> {
+  static final class CodecImpl implements Codec.Typed<AllApplicablePolicyImpl> {
 
-    @Override
-    public void encode(Out out, TopNPolicyImpl object, Writer writer) {
-      out.writeInt(object.n);
-    }
-
-    @Override
-    public TopNPolicyImpl decode(In in, Reader reader) {
-      return new TopNPolicyImpl(in.readInt());
-    }
 
     @Override
     public Class<?> type() {
-      return TopNPolicyImpl.class;
+      return AllApplicablePolicyImpl.class;
     }
 
     @Override
     public @NotNull Key key() {
-      return Key.key("modular_jobs:top_n_policy");
+      return Key.key("modular_jobs:all_applicable_policy");
+    }
+
+    @Override
+    public void encode(Out out, AllApplicablePolicyImpl object, Writer writer) {
+
+    }
+
+    @Override
+    public AllApplicablePolicyImpl decode(In in, Reader reader) {
+      return new AllApplicablePolicyImpl();
     }
   }
 }

@@ -14,7 +14,7 @@ public sealed interface Codec extends Keyed {
 
     void encode(Out out, T object, Writer writer);
 
-    Object decode(In in, Reader reader);
+    T decode(In in, Reader reader);
   }
 
   interface Writer {

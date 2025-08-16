@@ -12,18 +12,13 @@ import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 record PlayerResourceConditionImpl(PlayerResourceType type, double expected,
-                                   RelationalOperator relationalOperator) implements
+                                   RelationalOperator operator) implements
     Condition {
 
   @Override
   public boolean applies(BoostContext context) {
-    double actual = switch (type) {
-      case HEALTH -> context.player().getHealth();
-      case HUNGER -> context.player().getFoodLevel();
-      case EXPERIENCE -> context.player().getExp();
-      case EXPERIENCE_LEVEL -> context.player().getLevel();
-    };
-    return relationalOperator.test(BigDecimal.valueOf(actual),BigDecimal.valueOf(expected));
+    double actual = type.getValue(context.player());
+    return operator.test(BigDecimal.valueOf(actual), BigDecimal.valueOf(expected));
   }
 
   static final class CodecImpl implements Codec.Typed<PlayerResourceConditionImpl> {
@@ -37,20 +32,20 @@ record PlayerResourceConditionImpl(PlayerResourceType type, double expected,
     public void encode(Out out, PlayerResourceConditionImpl condition, Writer writer) {
       out.writeEnum(condition.type);
       out.writeDouble(condition.expected);
-      out.writeEnum(condition.relationalOperator);
+      out.writeEnum(condition.operator);
     }
 
     @Override
-    public Condition decode(In in, Reader reader) {
+    public PlayerResourceConditionImpl decode(In in, Reader reader) {
       PlayerResourceType type = in.readEnum(PlayerResourceType.class);
       double expected = in.readDouble();
       RelationalOperator operator = in.readEnum(RelationalOperator.class);
-      return new PlayerResourceConditionImpl(type,expected,operator);
+      return new PlayerResourceConditionImpl(type, expected, operator);
     }
 
     @Override
     public @NotNull Key key() {
-      return Key.key("conditions:player_resource");
+      return Key.key("modular_jobs:player_resource_condition");
     }
   }
 }

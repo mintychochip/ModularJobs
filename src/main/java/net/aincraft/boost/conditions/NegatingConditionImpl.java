@@ -28,13 +28,13 @@ record NegatingConditionImpl(Condition condition) implements Condition {
     }
 
     @Override
-    public Condition decode(In in, Reader reader) {
+    public NegatingConditionImpl decode(In in, Reader reader) {
       return new NegatingConditionImpl(reader.read(in, Condition.class));
     }
 
     @Override
     public @NotNull Key key() {
-      return Key.key("conditions:negate");
+      return Key.key("modular_jobs:negate_condition");
     }
   }
 }

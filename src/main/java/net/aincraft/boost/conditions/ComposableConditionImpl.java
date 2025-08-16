@@ -34,7 +34,7 @@ public record ComposableConditionImpl(Condition a, Condition b,
     }
 
     @Override
-    public Condition decode(In in, Reader reader) {
+    public ComposableConditionImpl decode(In in, Reader reader) {
       LogicalOperator operator = in.readEnum(LogicalOperator.class);
       Condition a = reader.read(in, Condition.class);
       Condition b = reader.read(in, Condition.class);
@@ -43,7 +43,7 @@ public record ComposableConditionImpl(Condition a, Condition b,
 
     @Override
     public @NotNull Key key() {
-      return Key.key("conditions:composable");
+      return Key.key("modular_jobs:composable_condition");
     }
   }
 }

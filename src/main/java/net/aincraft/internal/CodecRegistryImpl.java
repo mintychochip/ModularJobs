@@ -1,4 +1,4 @@
-package net.aincraft.service;
+package net.aincraft.internal;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -16,10 +16,14 @@ import net.aincraft.api.container.boost.In;
 import net.aincraft.api.container.boost.Out;
 import net.aincraft.api.registry.Registry;
 import net.aincraft.api.service.CodecRegistry;
+import net.aincraft.boost.BoostCodecLoaderImpl;
+import net.aincraft.boost.RuleCodecImpl;
+import net.aincraft.boost.conditions.ConditionCodecLoaderImpl;
+import net.aincraft.boost.policies.PolicyCodecLoaderImpl;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
-public class CodecRegistryImpl implements CodecRegistry, Writer,
+final class CodecRegistryImpl implements CodecRegistry, Writer,
     Reader {
 
   private static final int MAX_ADAPTERS = 256;
@@ -33,6 +37,18 @@ public class CodecRegistryImpl implements CodecRegistry, Writer,
   private final Map<Class<?>, Key> typeToKey = new HashMap<>();
   private int nextId = 0;
 
+  private CodecRegistryImpl() {
+
+  }
+
+  static CodecRegistry create() {
+    CodecRegistryImpl registry = new CodecRegistryImpl();
+    ConditionCodecLoaderImpl.INSTANCE.load(registry);
+    BoostCodecLoaderImpl.INSTANCE.load(registry);
+    PolicyCodecLoaderImpl.INSTANCE.load(registry);
+    registry.register(new RuleCodecImpl());
+    return registry;
+  }
 
   @Override
   public byte[] encode(Object object) {

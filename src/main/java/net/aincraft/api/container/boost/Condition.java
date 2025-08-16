@@ -3,8 +3,10 @@ package net.aincraft.api.container.boost;
 import net.aincraft.api.Bridge;
 import net.aincraft.api.container.BoostContext;
 import net.aincraft.api.container.boost.factories.ConditionFactory;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.potion.PotionEffectType;
 
 public interface Condition {
 
@@ -31,6 +33,23 @@ public interface Condition {
 
   static Condition sprinting(boolean state) {
     return FACTORY.sprinting(state);
+  }
+
+  static Condition liquid(Material liquid) throws IllegalArgumentException {
+    return FACTORY.liquid(liquid);
+  }
+
+  static Condition potionType(PotionEffectType type) {
+    return FACTORY.potionType(type);
+  }
+
+  static Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
+      RelationalOperator operator) {
+    return FACTORY.potion(type, expected, conditionType, operator);
+  }
+
+  static Condition weather(WeatherState state) {
+    return FACTORY.weather(state);
   }
 
   default Condition and(Condition other) {

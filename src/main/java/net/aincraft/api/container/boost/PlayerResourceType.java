@@ -7,15 +7,14 @@ import org.bukkit.entity.Player;
 public enum PlayerResourceType {
   HEALTH(Damageable::getHealth),
   HUNGER(player -> (double) player.getFoodLevel()),
-  EXPERIENCE(player -> (double) player.getExp()),
-  EXPERIENCE_LEVEL(player -> (double) player.getLevel());
+  EXPERIENCE(player -> (double) player.getExp());
   private final Function<Player, Double> valueFunction;
 
   PlayerResourceType(Function<Player, Double> valueFunction) {
     this.valueFunction = valueFunction;
   }
 
-  Double apply(Player player) {
+  public Double getValue(Player player) {
     return valueFunction.apply(player);
   }
 }

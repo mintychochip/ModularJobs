@@ -9,7 +9,6 @@ import net.aincraft.api.registry.RegistryContainer;
 import net.aincraft.api.registry.RegistryKey;
 import net.aincraft.api.registry.RegistryKeys;
 import net.aincraft.api.registry.RegistryView;
-import net.aincraft.service.CodecRegistryImpl;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +28,7 @@ final class RegistryContainerImpl implements RegistryContainer {
     registries.put(RegistryKeys.ACTION_TYPES.key(), Registry.simple());
     registries.put(RegistryKeys.TRANSIENT_BOOST_SOURCES.key(),
         Registry.simple());
-    registries.put(RegistryKeys.CODEC.key(), new CodecRegistryImpl());
+    registries.put(RegistryKeys.CODEC.key(), CodecRegistryImpl.create());
     return new RegistryContainerImpl(registries);
   }
 

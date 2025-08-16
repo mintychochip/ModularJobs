@@ -28,13 +28,13 @@ record WorldConditionImpl(Key worldKey) implements Condition {
     }
 
     @Override
-    public Condition decode(In in, Reader reader) {
+    public WorldConditionImpl decode(In in, Reader reader) {
       return new WorldConditionImpl(in.readKey());
     }
 
     @Override
     public @NotNull Key key() {
-      return Key.key("conditions:world");
+      return Key.key("modular_jobs:world_condition");
     }
   }
 }

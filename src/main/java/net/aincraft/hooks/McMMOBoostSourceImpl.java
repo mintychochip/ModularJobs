@@ -52,11 +52,6 @@ public class McMMOBoostSourceImpl implements BoostSource {
     return List.of(Boost.multiplicative(BoostType.MCMMO, amount));
   }
 
-  @Override
-  public @NotNull Key key() {
-    return Key.key("jobs:mcmmo");
-  }
-
   private record McMMOController(Store<UUID, SuperAbilityType> store) implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -69,5 +64,10 @@ public class McMMOBoostSourceImpl implements BoostSource {
     private void onAbilityOff(final McMMOPlayerAbilityDeactivateEvent event) {
       store.remove(event.getPlayer().getUniqueId());
     }
+  }
+
+  @Override
+  public @NotNull Key key() {
+    return Key.key("modular_jobs:mcmmo_source");
   }
 }
