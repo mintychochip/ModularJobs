@@ -8,6 +8,7 @@ public interface Boost {
 
   BoostFactory FACTORY = Bridge.bridge().boostFactory();
 
+  //TODO: add the payable type
   BigDecimal boost(BigDecimal amount);
 
   static Boost multiplicative(BoostType type, BigDecimal amount) {

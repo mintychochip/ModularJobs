@@ -2,7 +2,6 @@ package net.aincraft;
 
 import java.sql.SQLException;
 import java.util.List;
-
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Boost;

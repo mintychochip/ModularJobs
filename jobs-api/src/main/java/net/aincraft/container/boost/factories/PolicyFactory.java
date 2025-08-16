@@ -11,7 +11,7 @@ public interface PolicyFactory {
 
   Policy getFirst();
 
-  Policy allApplicable();
+  Policy getAllApplicable();
 
-  Policy topN(int n);
+  Policy getTopNBoosts(int n);
 }

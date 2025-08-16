@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import net.aincraft.boost.BoostCodecLoaderImpl;
 import net.aincraft.boost.RuleCodecImpl;
 import net.aincraft.boost.conditions.ConditionCodecLoaderImpl;
+import net.aincraft.boost.data.ItemBoostDataCodecLoaderImpl;
 import net.aincraft.boost.policies.PolicyCodecLoaderImpl;
 import net.aincraft.container.Codec;
 import net.aincraft.container.Codec.Reader;
@@ -19,6 +20,7 @@ import net.aincraft.container.Codec.Writer;
 import net.aincraft.container.boost.In;
 import net.aincraft.container.boost.Out;
 import net.aincraft.registry.Registry;
+import net.aincraft.serialization.BoostCodecLoaderImpl;
 import net.aincraft.service.CodecRegistry;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
@@ -46,12 +48,13 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
     ConditionCodecLoaderImpl.INSTANCE.load(registry);
     BoostCodecLoaderImpl.INSTANCE.load(registry);
     PolicyCodecLoaderImpl.INSTANCE.load(registry);
+    ItemBoostDataCodecLoaderImpl.INSTANCE.load(registry);
     registry.register(new RuleCodecImpl());
     return registry;
   }
 
   @Override
-  public byte[] encode(Object object) {
+  public byte @NotNull [] encode(Object object) {
     Out out = new Out(64);
     write(out, object);
     return out.toByteArray();

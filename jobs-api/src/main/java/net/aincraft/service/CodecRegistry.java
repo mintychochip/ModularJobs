@@ -2,10 +2,11 @@ package net.aincraft.service;
 
 import net.aincraft.container.Codec;
 import net.aincraft.registry.Registry;
+import org.jetbrains.annotations.NotNull;
 
 public interface CodecRegistry extends Registry<Codec> {
 
-  byte[] encode(Object object);
+  byte @NotNull [] encode(Object object);
 
   Object decode(byte[] bytes);
 

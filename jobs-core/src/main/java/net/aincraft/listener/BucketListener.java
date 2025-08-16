@@ -17,7 +17,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.aincraft.Bridge;
 import net.aincraft.Jobs;
-
 import net.aincraft.container.ActionTypes;
 import net.aincraft.container.ConfigurationValues;
 import net.aincraft.container.Context.BlockContext;

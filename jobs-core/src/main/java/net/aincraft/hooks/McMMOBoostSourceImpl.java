@@ -6,10 +6,12 @@ import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityDeactivateEve
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import net.aincraft.container.Boost;
+import net.aincraft.container.BoostContext;
+import net.aincraft.container.BoostSource;
+import net.aincraft.container.BoostType;
 import net.aincraft.container.Store;
-import net.aincraft.container.*;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

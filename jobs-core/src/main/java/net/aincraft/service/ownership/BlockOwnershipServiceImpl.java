@@ -3,7 +3,6 @@ package net.aincraft.service.ownership;
 import java.util.Optional;
 import java.util.UUID;
 import net.aincraft.service.BlockOwnershipService;
-import net.aincraft.service.BlockOwnershipService.BlockProtectionAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
