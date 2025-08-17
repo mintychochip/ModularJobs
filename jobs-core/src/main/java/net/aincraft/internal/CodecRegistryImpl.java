@@ -2,26 +2,27 @@ package net.aincraft.internal;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.hash.Hashing;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
-import net.aincraft.boost.BoostCodecLoaderImpl;
-import net.aincraft.boost.RuleCodecImpl;
-import net.aincraft.boost.conditions.ConditionCodecLoaderImpl;
-import net.aincraft.boost.data.ItemBoostDataCodecLoaderImpl;
-import net.aincraft.boost.policies.PolicyCodecLoaderImpl;
-import net.aincraft.container.Codec;
-import net.aincraft.container.Codec.Reader;
-import net.aincraft.container.Codec.Typed;
-import net.aincraft.container.Codec.Writer;
-import net.aincraft.container.boost.In;
-import net.aincraft.container.boost.Out;
+import net.aincraft.serialization.CodecLoader;
+import net.aincraft.serialization.Codec;
+import net.aincraft.serialization.Codec.Reader;
+import net.aincraft.serialization.Codec.Typed;
+import net.aincraft.serialization.Codec.Writer;
+import net.aincraft.serialization.BinaryIn;
+import net.aincraft.serialization.BinaryOut;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.CodecRegistry;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 final class CodecRegistryImpl implements CodecRegistry, Writer,
@@ -36,7 +37,7 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
 
   private final Registry<Codec> codecs = Registry.simple();
   private final Map<Class<?>, Key> typeToKey = new HashMap<>();
-  private int nextId = 0;
+  private final BiMap<Key, Integer> keyToTag = HashBiMap.create(MAX_ADAPTERS);
 
   private CodecRegistryImpl() {
 
@@ -44,41 +45,44 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
 
   static CodecRegistry create() {
     CodecRegistryImpl registry = new CodecRegistryImpl();
-    ConditionCodecLoaderImpl.INSTANCE.load(registry);
-    BoostCodecLoaderImpl.INSTANCE.load(registry);
-    PolicyCodecLoaderImpl.INSTANCE.load(registry);
-    ItemBoostDataCodecLoaderImpl.INSTANCE.load(registry);
-    registry.register(new RuleCodecImpl());
+    CodecLoader.INSTANCE.load(registry);
     return registry;
   }
 
   @Override
   public byte @NotNull [] encode(Object object) {
-    Out out = new Out(64);
+    BinaryOutImpl out = new BinaryOutImpl(64);
     write(out, object);
     return out.toByteArray();
   }
 
   @Override
   public Object decode(byte[] bytes) {
-    return decodeCache.get(ByteBuffer.wrap(bytes), ignored -> new In(bytes));
+    return decodeCache.get(ByteBuffer.wrap(bytes), ignored -> new BinaryInImpl(bytes));
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T> T decode(byte[] bytes, Class<T> clazz) {
     return (T) decodeCache.get(ByteBuffer.wrap(bytes),
-        ignored -> read(new In(bytes), clazz));
+        ignored -> read(new BinaryInImpl(bytes), clazz));
   }
 
   @Override
   public void register(@NotNull Codec object) {
-    if (nextId >= MAX_ADAPTERS) {
+    if (typeToKey.size() >= MAX_ADAPTERS) {
       throw new IllegalStateException("too many adapters");
     }
-    nextId++;
     codecs.register(object);
-    typeToKey.put(object.type(), object.key());
+    Key key = object.key();
+    typeToKey.put(object.type(), key);
+    int tag = Hashing.murmur3_32_fixed().hashString(key.asString(), StandardCharsets.UTF_8).asInt();
+    if (keyToTag.containsKey(key) || keyToTag.containsValue(tag)) {
+      //TODO: use the plugin logger
+      Bukkit.getLogger().info("duplicated produced by key: " + key + " tag: " + tag);
+      return;
+    }
+    keyToTag.put(key, tag);
   }
 
   @Override
@@ -103,8 +107,9 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
   }
 
   @Override
-  public Object read(In in) {
-    Key key = in.readKey();
+  public Object read(BinaryIn in) {
+    int tag = in.readInt();
+    Key key = keyToTag.inverse().get(tag);
     Codec codec = codecs.getOrThrow(key);
     if (!(codec instanceof Typed<?> typed)) {
       return null;
@@ -113,7 +118,7 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
   }
 
   @Override
-  public void write(Out out, Object child) {
+  public void write(BinaryOut out, Object child) {
     Key key = typeToKey.get(child.getClass());
     if (key == null) {
       throw new IllegalArgumentException(
@@ -125,7 +130,8 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
     }
     @SuppressWarnings("unchecked")
     Typed<Object> typedCodec = (Typed<Object>) codec;
-    out.writeKey(key);
+    int tag = keyToTag.get(key);
+    out.writeInt(tag);
     typedCodec.encode(out, child, this);
   }
 }

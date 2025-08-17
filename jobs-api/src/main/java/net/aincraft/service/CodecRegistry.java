@@ -1,6 +1,6 @@
 package net.aincraft.service;
 
-import net.aincraft.container.Codec;
+import net.aincraft.serialization.Codec;
 import net.aincraft.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 

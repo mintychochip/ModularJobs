@@ -1,32 +1,24 @@
 package net.aincraft.container.boost;
 
 import java.time.Duration;
-import net.aincraft.container.RuledBoostSource;
-import net.aincraft.container.boost.ItemBoostData.Consumable;
-import net.aincraft.container.boost.ItemBoostData.Passive;
+import java.util.Optional;
+import net.aincraft.Bridge;
+import net.aincraft.container.boost.ItemBoostData.ConsumableBoostData;
+import net.aincraft.container.boost.ItemBoostData.PassiveBoostData;
+import net.aincraft.container.boost.factories.ItemBoostDataFactory;
 
-public sealed interface ItemBoostData permits Passive, Consumable {
+public sealed interface ItemBoostData permits PassiveBoostData, ConsumableBoostData {
+
+  ItemBoostDataFactory FACTORY = Bridge.bridge().itemBoostDataFactory();
 
   RuledBoostSource getBoostSource();
 
-  static ItemBoostData consumable() {
-    return new ConsumableBoostDataImpl();
+  non-sealed interface ConsumableBoostData extends ItemBoostData, TimedBoostData {
+
+    Optional<Duration> getDuration();
   }
 
-  static ItemBoostData passive() {
-    return new PassiveBoostDataImpl();
-  }
-
-  static ItemBoostData combined() {
-
-  }
-
-  non-sealed interface Consumable extends ItemBoostData {
-
-    Duration getDuration();
-  }
-
-  non-sealed interface Passive extends ItemBoostData {
+  non-sealed interface PassiveBoostData extends ItemBoostData {
 
     int[] getApplicableSlots();
   }

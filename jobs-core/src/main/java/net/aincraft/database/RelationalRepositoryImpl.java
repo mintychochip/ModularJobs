@@ -1,10 +1,12 @@
 package net.aincraft.database;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Map;
 import net.aincraft.exception.RepositoryException;
 import org.jetbrains.annotations.Nullable;
@@ -13,26 +15,26 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
 
   private final ConnectionSource connectionSource;
 
-  private final RelationalRepositoryAdapter<K, V> adapter;
+  private final RelationalRepositoryContext<K, V> context;
 
-  private final Cache<K, V> cache;
+  private final Cache<K, V> cache = Caffeine.newBuilder()
+      .expireAfterAccess(Duration.ofMinutes(1)).maximumSize(1_000).build();
 
   public RelationalRepositoryImpl(ConnectionSource connectionSource,
-      RelationalRepositoryAdapter<K, V> adapter, Cache<K, V> cache) {
+      RelationalRepositoryContext<K, V> context) {
     this.connectionSource = connectionSource;
-    this.adapter = adapter;
-    this.cache = cache;
+    this.context = context;
   }
 
   @Override
   @Nullable
   public V load(K key) {
-    return cache.get(key,ignored -> {
+    return cache.get(key, ignored -> {
       try (Connection connection = connectionSource.getConnection();
-          PreparedStatement ps = connection.prepareStatement(adapter.getSelectQuery())) {
-        adapter.setKey(ps, key);
+          PreparedStatement ps = connection.prepareStatement(context.getSelectQuery())) {
+        context.setKey(ps, key);
         try (ResultSet rs = ps.executeQuery()) {
-          return rs.next() ? adapter.mapResult(rs, key) : null;
+          return rs.next() ? context.mapResult(rs, key) : null;
         }
       } catch (SQLException e) {
         throw new RuntimeException(e);
@@ -43,9 +45,9 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
   @Override
   public boolean save(K key, V value) {
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(adapter.getSaveQuery())) {
-      adapter.setSaveValues(ps, key, value);
-      cache.put(key,value);
+        PreparedStatement ps = connection.prepareStatement(context.getSaveQuery())) {
+      context.setSaveValues(ps, key, value);
+      cache.put(key, value);
       return ps.executeUpdate() > 0;
     } catch (SQLException e) {
       throw new RuntimeException("Failed to save entity for key: " + key, e);
@@ -61,9 +63,9 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
     try (Connection connection = connectionSource.getConnection()) {
       connection.setAutoCommit(false);
 
-      try (PreparedStatement ps = connection.prepareStatement(adapter.getSaveQuery())) {
+      try (PreparedStatement ps = connection.prepareStatement(context.getSaveQuery())) {
         for (Map.Entry<K, V> entry : entities.entrySet()) {
-          adapter.setSaveValues(ps, entry.getKey(), entry.getValue());
+          context.setSaveValues(ps, entry.getKey(), entry.getValue());
           ps.addBatch();
         }
 
@@ -98,12 +100,11 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
   }
 
 
-
   @Override
   public void delete(K key) {
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(adapter.getDeleteQuery())) {
-      adapter.setKey(ps, key);
+        PreparedStatement ps = connection.prepareStatement(context.getDeleteQuery())) {
+      context.setKey(ps, key);
       if (ps.executeUpdate() > 0) {
         cache.invalidate(key);
       }

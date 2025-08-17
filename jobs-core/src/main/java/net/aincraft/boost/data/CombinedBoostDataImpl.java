@@ -1,21 +1,18 @@
 package net.aincraft.boost.data;
 
 import java.time.Duration;
-import net.aincraft.container.Codec;
-import net.aincraft.container.RuledBoostSource;
-import net.aincraft.container.boost.In;
-import net.aincraft.container.boost.ItemBoostData;
-import net.aincraft.container.boost.Out;
-import net.kyori.adventure.key.Key;
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
+import net.aincraft.container.boost.ItemBoostData.ConsumableBoostData;
+import net.aincraft.container.boost.ItemBoostData.PassiveBoostData;
+import net.aincraft.container.boost.RuledBoostSource;
 
-record CombinedBoostDataImpl(RuledBoostSource boostSource, Duration duration,
-                             int[] slots) implements ItemBoostData.Passive,
-    ItemBoostData.Consumable {
+public record CombinedBoostDataImpl(RuledBoostSource boostSource, Duration duration,
+                             int[] slots) implements PassiveBoostData,
+    ConsumableBoostData {
 
   @Override
-  public Duration getDuration() {
-    return duration;
+  public Optional<Duration> getDuration() {
+    return Optional.ofNullable(duration);
   }
 
   @Override
@@ -28,26 +25,4 @@ record CombinedBoostDataImpl(RuledBoostSource boostSource, Duration duration,
     return boostSource;
   }
 
-  static final class CodecImpl implements Codec.Typed<CombinedBoostDataImpl> {
-
-    @Override
-    public void encode(Out out, CombinedBoostDataImpl object, Writer writer) {
-
-    }
-
-    @Override
-    public CombinedBoostDataImpl decode(In in, Reader reader) {
-      return null;
-    }
-
-    @Override
-    public Class<?> type() {
-      return null;
-    }
-
-    @Override
-    public @NotNull Key key() {
-      return null;
-    }
-  }
 }

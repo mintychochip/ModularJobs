@@ -8,16 +8,13 @@ import java.util.Map;
 import java.util.Optional;
 import net.aincraft.Bridge;
 import net.aincraft.Jobs;
-import net.aincraft.boost.BoostCodecLoaderImpl;
 import net.aincraft.boost.BoostFactoryImpl;
-import net.aincraft.boost.conditions.ConditionCodecLoaderImpl;
-import net.aincraft.boost.conditions.ConditionFactoryImpl;
-import net.aincraft.boost.policies.PolicyFactoryImpl;
 import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.KeyResolver;
 import net.aincraft.container.PayableType;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
+import net.aincraft.container.boost.factories.ItemBoostDataFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.registry.RegistryContainer;
@@ -100,7 +97,7 @@ public final class BridgeImpl implements Bridge {
     blockOwnershipService = dependencyResolver.getBlockProtectionAdapter()
         .map(BlockOwnershipServiceImpl::new).orElse(null);
     exploitService = new ExploitServiceImpl(providers);
-    progressionService = ProgressionServiceImpl.create(connectionSource);
+    progressionService = ProgressionServiceImpl.create(plugin,connectionSource);
     mobDamageTracker = MobDamageTrackerImpl.create(new MemoryMobDamageTrackerStoreImpl(), plugin);
 
     registryContainer = RegistryContainerImpl.create();
@@ -108,10 +105,8 @@ public final class BridgeImpl implements Bridge {
   }
 
   private void initializeRegistryContainer() {
-    registryContainer.editRegistry(RegistryKeys.CODEC, ConditionCodecLoaderImpl.INSTANCE::load);
-    registryContainer.editRegistry(RegistryKeys.CODEC, BoostCodecLoaderImpl.INSTANCE::load);
     registryContainer.editRegistry(RegistryKeys.PAYABLE_TYPES, r -> {
-      r.register(PayableType.create(BufferedExperienceHandlerImpl.create(plugin),
+      r.register(PayableType.create(new BufferedExperienceHandlerImpl(plugin),
           Key.key("jobs:experience")));
       r.register(PayableType.create(context -> {
         economyProvider.deposit(context.getPlayer(), context.getPayable().amount());
@@ -187,7 +182,12 @@ public final class BridgeImpl implements Bridge {
 
   @Override
   public ConditionFactory conditionFactory() {
-    return ConditionFactoryImpl.INSTANCE;
+    return BoostFactoryImpl.INSTANCE;
+  }
+
+  @Override
+  public ItemBoostDataFactory itemBoostDataFactory() {
+    return BoostFactoryImpl.INSTANCE;
   }
 
   @Override
@@ -197,7 +197,7 @@ public final class BridgeImpl implements Bridge {
 
   @Override
   public PolicyFactory policyFactory() {
-    return PolicyFactoryImpl.INSTANCE;
+    return BoostFactoryImpl.INSTANCE;
   }
 
   @Override

@@ -55,8 +55,7 @@ public class McMMOBoostSourceImpl implements BoostSource {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onAbilityOn(final McMMOPlayerAbilityActivateEvent event) {
-      Player player = event.getPlayer();
-      store.add(player.getUniqueId(), event.getAbility());
+      store.add(event.getPlayer().getUniqueId(), event.getAbility());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

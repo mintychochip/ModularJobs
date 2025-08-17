@@ -14,15 +14,17 @@ import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.container.JobProgressionImpl;
 import net.aincraft.database.ConnectionSource;
-import net.aincraft.database.RelationalRepositoryAdapter;
+import net.aincraft.database.RelationalRepositoryContext;
 import net.aincraft.database.RelationalRepositoryImpl;
 import net.aincraft.database.Repository;
+import net.aincraft.database.WriteBehindRepositoryImpl;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.RegistryView;
 import net.aincraft.util.PlayerJobCompositeKey;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,9 +36,9 @@ public class ProgressionServiceImpl implements ProgressionService {
     this.repository = repository;
   }
 
-  public static ProgressionService create(ConnectionSource connectionSource) {
-    RelationalRepositoryAdapter<PlayerJobCompositeKey, JobProgression> adapter =
-        new RelationalRepositoryAdapter<>() {
+  public static ProgressionService create(Plugin plugin, ConnectionSource connectionSource) {
+    RelationalRepositoryContext<PlayerJobCompositeKey, JobProgression> adapter =
+        new RelationalRepositoryContext<>() {
           @Override
           public String getSelectQuery() {
             return "SELECT experience FROM job_progression WHERE player_id = ? AND job_key = ?";
@@ -80,10 +82,10 @@ public class ProgressionServiceImpl implements ProgressionService {
             return new JobProgressionImpl(Bukkit.getOfflinePlayer(key.playerId()), job, experience);
           }
         };
-    Repository<PlayerJobCompositeKey, JobProgression> repository = new RelationalRepositoryImpl<>(
-        connectionSource, adapter,
-        Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(1)).maximumSize(1_000).build());
-    return new ProgressionServiceImpl(repository);
+    Repository<PlayerJobCompositeKey, JobProgression> writeBehindRepository = WriteBehindRepositoryImpl.create(
+        plugin, new RelationalRepositoryImpl<>(
+            connectionSource, adapter), 200L);
+    return new ProgressionServiceImpl(writeBehindRepository);
   }
 
   @Override
@@ -120,17 +122,17 @@ public class ProgressionServiceImpl implements ProgressionService {
         progression.getJob());
     JobProgression jobProgression = repository.load(key);
     if (jobProgression != null) {
-      repository.save(key,progression);
+      repository.save(key, progression);
     }
   }
 
   @Override
   public void update(List<? extends JobProgression> progressions) {
-    Map<PlayerJobCompositeKey,JobProgression> entities = new HashMap<>();
+    Map<PlayerJobCompositeKey, JobProgression> entities = new HashMap<>();
     for (JobProgression progression : progressions) {
       PlayerJobCompositeKey key = PlayerJobCompositeKey.create(progression.getPlayer(),
           progression.getJob());
-      entities.put(key,progression);
+      entities.put(key, progression);
     }
     repository.saveAll(entities);
   }

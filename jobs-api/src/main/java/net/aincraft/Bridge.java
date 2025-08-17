@@ -3,6 +3,7 @@ package net.aincraft;
 import java.util.Optional;
 import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.KeyResolver;
+import net.aincraft.container.boost.factories.ItemBoostDataFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
@@ -36,6 +37,8 @@ public interface Bridge {
   JobTaskProvider jobTaskProvider();
 
   ConditionFactory conditionFactory();
+
+  ItemBoostDataFactory itemBoostDataFactory();
 
   BoostFactory boostFactory();
 

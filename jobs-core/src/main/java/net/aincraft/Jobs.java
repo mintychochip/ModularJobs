@@ -70,6 +70,7 @@ public class Jobs extends JavaPlugin {
     }
   }
 
+  //TODO: move this to an internal class, so we can pass dependencies with di
   public static void doTask(OfflinePlayer player, ActionType actionType,
       Context context) {
     RegistryView<BoostSource> registry = RegistryContainer.registryContainer()
@@ -77,8 +78,6 @@ public class Jobs extends JavaPlugin {
     ProgressionService progressionService = ProgressionService.progressionService();
     JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
     List<JobProgression> progressions = progressionService.getAll(player);
-    Bukkit.broadcastMessage(player.getUniqueId().toString());
-    Bukkit.broadcastMessage(progressions.toString());
     for (JobProgressionView progression : progressions) {
       for (BoostSource boostSource : registry) {
         List<Boost> boosts = boostSource.evaluate(

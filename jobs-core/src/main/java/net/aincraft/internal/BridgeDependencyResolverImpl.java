@@ -73,7 +73,6 @@ public class BridgeDependencyResolverImpl implements BridgeDependencyResolver {
   public Optional<BoostSource> getMcMMOBoostSource() {
     Plugin mcMMO = Bukkit.getPluginManager().getPlugin("McMMO");
     if (mcMMO != null && mcMMO.isEnabled()) {
-      Store<UUID, SuperAbilityType> store = Store.memory();
       Map<SuperAbilityType,BigDecimal> amounts = new HashMap<>();
       amounts.put(SuperAbilityType.SUPER_BREAKER,BigDecimal.valueOf(10000));
       return Optional.of(McMMOBoostSourceImpl.create(plugin, amounts));

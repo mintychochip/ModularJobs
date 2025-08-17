@@ -8,10 +8,6 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 @Internal
 public interface BoostFactory {
 
-  static BoostFactory boostFactory() {
-    return Bridge.bridge().boostFactory();
-  }
-
   Boost additive(BigDecimal amount);
 
   Boost multiplicative(BigDecimal amount);

@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 
 public interface ItemBoostDataService {
 
-  void addBoostData(ItemBoostData data, ItemStack itemStack);
+  boolean addBoostData(ItemBoostData data, ItemStack itemStack);
 
   void removeBoostData(ItemStack itemStack);
 

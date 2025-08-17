@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.aincraft.container.Boost;
+import net.aincraft.container.BoostSource;
 import net.aincraft.container.BoostType.Typed;
 import net.aincraft.container.Store;
 import net.kyori.adventure.key.Key;
@@ -14,6 +15,12 @@ import org.bukkit.entity.Player;
 public class BoostServiceImpl implements BoostService {
 
   private final Map<Key, Store<UUID, UUID>> stores = new HashMap<>();
+
+  @Override
+  public <T> void addBoostSource(BoostSource boostSource, T object) {
+
+  }
+
   @Override
   public <T> void addBoost(Typed<T> type, T object) {
     Store<UUID, UUID> store = stores.get(type.key());
