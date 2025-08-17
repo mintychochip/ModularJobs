@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {

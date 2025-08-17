@@ -17,8 +17,8 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
 
   private final RelationalRepositoryContext<K, V> context;
 
-  private final Cache<K, V> cache = Caffeine.newBuilder()
-      .expireAfterAccess(Duration.ofMinutes(1)).maximumSize(1_000).build();
+  private final Cache<K, V> readCache = Caffeine.newBuilder()
+      .expireAfterAccess(Duration.ofMinutes(5)).maximumSize(1_000).build();
 
   public RelationalRepositoryImpl(ConnectionSource connectionSource,
       RelationalRepositoryContext<K, V> context) {
@@ -29,7 +29,7 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
   @Override
   @Nullable
   public V load(K key) {
-    return cache.get(key, ignored -> {
+    return readCache.get(key, ignored -> {
       try (Connection connection = connectionSource.getConnection();
           PreparedStatement ps = connection.prepareStatement(context.getSelectQuery())) {
         context.setKey(ps, key);
@@ -47,10 +47,10 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(context.getSaveQuery())) {
       context.setSaveValues(ps, key, value);
-      cache.put(key, value);
+      readCache.put(key, value);
       return ps.executeUpdate() > 0;
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to save entity for key: " + key, e);
+      throw new RuntimeException("failed to save entity for key: " + key, e);
     }
   }
 
@@ -79,7 +79,7 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
           }
         }
 
-        cache.putAll(entities);
+        readCache.putAll(entities);
 
       } catch (SQLException e) {
         try {
@@ -106,7 +106,7 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
         PreparedStatement ps = connection.prepareStatement(context.getDeleteQuery())) {
       context.setKey(ps, key);
       if (ps.executeUpdate() > 0) {
-        cache.invalidate(key);
+        readCache.invalidate(key);
       }
     } catch (SQLException e) {
       throw new RuntimeException("Failed to delete entity for key: " + key, e);

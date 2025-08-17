@@ -8,9 +8,8 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 public final class CodecLoader {
 
   private final List<Codec> codecs = List.of(
-      new CombinedBoostDataCodecImpl(),
-      new PassiveBoostDataCodecImpl(),
-      new ConsumableBoostDataCodecImpl(),
+      new SerializableBoostDataCodecImpl(),
+      new SlotSetCodecImpl(),
       new AllApplicablePolicyCodecImpl(),
       new GetFirstPolicyCodecImpl(),
       new TopKPolicyCodecImpl(),
@@ -29,7 +28,6 @@ public final class CodecLoader {
       new MultiplicativeBoostCodecImpl(),
       new RuleCodecImpl(),
       new DurationCodecImpl(),
-      new IntArrayCodecImpl(),
       new RuledBoostCodecImpl()
   );
 

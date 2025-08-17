@@ -6,7 +6,6 @@ import org.jetbrains.annotations.ApiStatus.NonExtendable;
 @NonExtendable
 public sealed interface Codec extends Keyed {
 
-  //TODO: add id
   Class<?> type();
 
   non-sealed interface Typed<T> extends Codec {

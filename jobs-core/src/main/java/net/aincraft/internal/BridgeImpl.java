@@ -14,7 +14,6 @@ import net.aincraft.container.KeyResolver;
 import net.aincraft.container.PayableType;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.ItemBoostDataFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.database.ConnectionSource;
 import net.aincraft.registry.RegistryContainer;
@@ -182,11 +181,6 @@ public final class BridgeImpl implements Bridge {
 
   @Override
   public ConditionFactory conditionFactory() {
-    return BoostFactoryImpl.INSTANCE;
-  }
-
-  @Override
-  public ItemBoostDataFactory itemBoostDataFactory() {
     return BoostFactoryImpl.INSTANCE;
   }
 

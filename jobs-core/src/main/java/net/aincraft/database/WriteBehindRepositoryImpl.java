@@ -21,12 +21,12 @@ public final class WriteBehindRepositoryImpl<K, V> implements Repository<K, V> {
   private final Repository<K, V> delegate;
 
   private final Cache<K, V> readCache = Caffeine.newBuilder()
-      .expireAfterAccess(Duration.ofMinutes(5)).maximumSize(100).build();
+      .expireAfterAccess(Duration.ofMinutes(1)).maximumSize(100).build();
   private final Map<K, V> pendingUpserts = new ConcurrentHashMap<>();
-  private final Set<K> deletes = ConcurrentHashMap.newKeySet();
+  private final Set<K> pendingDeletes = ConcurrentHashMap.newKeySet();
   private final int maxBatch = 50;
 
-  private final AtomicBoolean isFlushing = new AtomicBoolean(false);
+  private final AtomicBoolean flushing = new AtomicBoolean(false);
 
   private WriteBehindRepositoryImpl(Repository<K, V> delegate) {
     this.delegate = delegate;
@@ -43,7 +43,7 @@ public final class WriteBehindRepositoryImpl<K, V> implements Repository<K, V> {
 
   @Override
   public @Nullable V load(K key) {
-    if (deletes.contains(key)) {
+    if (pendingDeletes.contains(key)) {
       return null;
     }
     V staged = pendingUpserts.get(key);
@@ -55,7 +55,7 @@ public final class WriteBehindRepositoryImpl<K, V> implements Repository<K, V> {
 
   @Override
   public boolean save(K key, V value) {
-    deletes.remove(key);
+    pendingDeletes.remove(key);
     pendingUpserts.put(key, value);
     readCache.put(key, value);
     return true;
@@ -67,7 +67,7 @@ public final class WriteBehindRepositoryImpl<K, V> implements Repository<K, V> {
       return;
     }
     entities.forEach((key, value) -> {
-      deletes.remove(key);
+      pendingDeletes.remove(key);
       pendingUpserts.put(key, value);
     });
     readCache.putAll(entities);
@@ -76,18 +76,18 @@ public final class WriteBehindRepositoryImpl<K, V> implements Repository<K, V> {
   @Override
   public void delete(K key) {
     pendingUpserts.remove(key);
-    deletes.add(key);
+    pendingDeletes.add(key);
     readCache.invalidate(key);
   }
 
   private void flush() {
-    if (!isFlushing.compareAndSet(false, true)) {
+    if (!flushing.compareAndSet(false, true)) {
       return;
     }
     try {
       flushOnce();
     } finally {
-      isFlushing.set(false);
+      flushing.set(false);
     }
   }
 
@@ -109,7 +109,7 @@ public final class WriteBehindRepositoryImpl<K, V> implements Repository<K, V> {
     }
 
     List<K> deletes = new ArrayList<>();
-    Iterator<K> keyIterator = this.deletes.iterator();
+    Iterator<K> keyIterator = this.pendingDeletes.iterator();
     while (keyIterator.hasNext() && deletes.size() < maxBatch) {
       K deletedKey = keyIterator.next();
       if (deletes.remove(deletedKey)) {
@@ -131,7 +131,7 @@ public final class WriteBehindRepositoryImpl<K, V> implements Repository<K, V> {
       return true;
     } catch (Throwable t) {
       upserts.forEach(this.pendingUpserts::putIfAbsent);
-      this.deletes.addAll(deletes);
+      this.pendingDeletes.addAll(deletes);
       throw t;
     }
   }

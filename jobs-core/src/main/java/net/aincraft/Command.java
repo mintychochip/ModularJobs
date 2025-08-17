@@ -1,23 +1,26 @@
 package net.aincraft;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.List;
 import net.aincraft.boost.AdditiveBoostImpl;
 import net.aincraft.boost.BoostEngineImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;
+import net.aincraft.boost.SerializableBoostDataImpl;
 import net.aincraft.container.ActionTypes;
 import net.aincraft.container.Boost;
+import net.aincraft.container.SlotSetImpl;
 import net.aincraft.serialization.Codec;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.Condition;
-import net.aincraft.container.boost.ItemBoostData;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.RegistryView;
 import net.aincraft.service.CodecRegistry;
 import net.aincraft.service.ItemBoostDataServiceImpl;
+import net.aincraft.service.ProgressionService;
+import net.kyori.adventure.key.Key;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandExecutor;
@@ -44,16 +47,16 @@ public class Command implements CommandExecutor {
           List.of(new Rule(Condition.biome(
               Biome.BAMBOO_JUNGLE), 0, new AdditiveBoostImpl(BigDecimal.TEN))),
           PolicyFactory.policyFactory().allApplicable());
-      ItemBoostData data = ItemBoostData.FACTORY.builder().withBoostSource(boostSource)
-          .withDuration(Duration.ofMinutes(10)).build();
-      itemBoostDataService.addBoostData(
-          data, stack);
+      SlotSetImpl slotSet = new SlotSetImpl(0x01FF);
+      itemBoostDataService.addData(
+          new SerializableBoostDataImpl(boostSource, slotSet, null), stack);
       inventory.addItem(stack);
       BoostEngineImpl engine = new BoostEngineImpl(itemBoostDataService);
-      for (Boost boost : engine.evaluate(ActionTypes.BAKE, (Player) sender)) {
-
-      }
-
+      Job job = RegistryContainer.registryContainer().getRegistry(RegistryKeys.JOBS)
+          .getOrThrow(Key.key("jobs:builder"));
+      List<Boost> boosts = engine.evaluate(ActionTypes.BLOCK_PLACE,
+          ProgressionService.progressionService().get(player, job), player);
+      Bukkit.broadcastMessage(boosts.toString());
     }
     return false;
   }
