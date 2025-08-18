@@ -1,6 +1,6 @@
 package net.aincraft.serialization;
 
-import net.aincraft.container.SlotSetImpl;
+import net.aincraft.job.SlotSetImpl;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 

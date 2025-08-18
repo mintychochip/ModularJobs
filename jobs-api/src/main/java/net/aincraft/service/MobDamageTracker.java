@@ -1,7 +1,6 @@
 package net.aincraft.service;
 
 import java.util.Collection;
-import java.util.function.Supplier;
 import net.aincraft.Bridge;
 import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Entity;
@@ -43,51 +42,7 @@ public interface MobDamageTracker {
    */
   boolean isTracking(Entity entity);
 
-  /**
-   * Underlying data store for tracking which entity types are tracked and holding contributions.
-   */
-  interface MobDamageTrackerStore {
 
-    /**
-     * Registers a mob type to be tracked.
-     *
-     * @param key the type key (e.g. "minecraft:skeleton")
-     */
-    void registerTrackableEntity(Key key);
-
-    /**
-     * Checks if the given entity is eligible for tracking.
-     *
-     * @param entity the entity to check
-     * @return true if trackable
-     */
-    boolean isTrackable(Entity entity);
-
-    /**
-     * Gets or creates the damage contribution record for an entity.
-     *
-     * @param entity the tracked entity
-     * @param contributionSupplier fallback supplier if no record exists
-     * @return the current or newly created {@link DamageContribution}
-     */
-    DamageContribution getContribution(Entity entity, Supplier<DamageContribution> contributionSupplier);
-
-    /**
-     * Removes and returns the damage contribution for the given entity.
-     *
-     * @param entity the entity to remove
-     * @return the removed contribution, or null if none existed
-     */
-    DamageContribution removeContribution(Entity entity);
-
-    /**
-     * Checks if the entity has an active contribution record.
-     *
-     * @param entity the entity
-     * @return true if a contribution record exists
-     */
-    boolean hasContribution(Entity entity);
-  }
 
   /**
    * Represents damage contribution data for an entity.

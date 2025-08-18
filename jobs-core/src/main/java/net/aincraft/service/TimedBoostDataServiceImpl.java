@@ -1,118 +1,66 @@
 package net.aincraft.service;
 
+import com.google.inject.Inject;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
-import net.aincraft.container.boost.BoostData.Timed;
+import net.aincraft.container.boost.BoostData.TimedBoostData;
 import net.aincraft.container.boost.TimedBoostDataService;
+import net.aincraft.container.boost.TimedBoostDataService.Target.GlobalTarget;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
-import net.aincraft.database.Repository;
-import org.jetbrains.annotations.Nullable;
+import net.aincraft.repository.TimedBoostRepository;
+import org.bukkit.entity.Player;
 
 public class TimedBoostDataServiceImpl implements TimedBoostDataService {
 
+  private static final String GLOBAL_IDENTIFIER = "global";
 
-  @Override
-  public List<TimedActiveBoost> findGlobalBoosts() {
-    return List.of();
+  private final TimedBoostRepository timedBoostRepository;
+
+  @Inject
+  public TimedBoostDataServiceImpl(TimedBoostRepository timedBoostRepository) {
+    this.timedBoostRepository = timedBoostRepository;
   }
 
   @Override
-  public List<TimedActiveBoost> findBoost(Target target) {
-    return List.of();
+  public List<ActiveBoostData> findApplicableBoosts(Target target) {
+    if (target instanceof GlobalTarget) {
+      return timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER);
+    }
+    String playerIdentifier = getPlayerIdentifier((PlayerTarget) target);
+    List<ActiveBoostData> playerBoosts = timedBoostRepository.findAllBoosts(playerIdentifier);
+    playerBoosts.addAll(timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER));
+    return playerBoosts;
   }
 
   @Override
-  public <T extends Timed & SerializableBoostData> void addData(T data, Target target) {
-    String identifier = target instanceof PlayerTarget ? "player" : "global";
-    identifier += target.identifier();
-    Optional<Duration> duration = data.getDuration();
+  public List<ActiveBoostData> findBoosts(Target target) {
+    if (target instanceof GlobalTarget) {
+      return timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER);
+    }
+    String playerIdentifier = getPlayerIdentifier((PlayerTarget) target);
+    return timedBoostRepository.findAllBoosts(playerIdentifier);
   }
 
-  private record ActiveBoosts(Map<String,TimedActiveBoost> boosts) {}
-
-  static final class TimedBoostStore {
-
-    private final Repository<String, byte[]> repository;
-    private final CodecRegistry codecRegistry;
-
-    TimedBoostStore(Repository<String, byte[]> repository, CodecRegistry codecRegistry) {
-      this.repository = repository;
-      this.codecRegistry = codecRegistry;
-    }
-
-    @Nullable
-    private TimedBoostDataServiceImpl.ActiveBoosts loadBoosts(String identifier) {
-      byte[] bytes = repository.load(identifier);
-      if (bytes == null) {
-        return null;
-      }
-      return codecRegistry.decode(bytes, ActiveBoosts.class);
-    }
-
-    public void delete(String identifier, String sourceIdentifier) {
-
-    }
+  @Override
+  public <T extends TimedBoostData & SerializableBoostData> void addData(T data, Target target) {
+    String targetIdentifier =
+        target instanceof PlayerTarget playerTarget ? playerTarget.player().getUniqueId().toString()
+            : "global";
+    String sourceIdentifier = "";
+    Timestamp timestamp = Timestamp.from(Instant.now());
+    Duration duration = data.getDuration().orElse(null);
+    timedBoostRepository.addBoost(
+        new ActiveBoostData(targetIdentifier, sourceIdentifier, timestamp, duration,
+            data.boostSource()));
   }
 
-//  final class BoostStoreKv implements BoostStore {
-//    private final Repository<String, byte[]> repo;
-//    private final Gson gson = new Gson();
-//
-//    BoostStoreKv(Repository<String, byte[]> repo) { this.repo = repo; }
-//
-//    private byte[] enc(BoostBag bag) { return gson.toJson(bag).getBytes(StandardCharsets.UTF_8); }
-//    private BoostBag dec(byte[] bytes) {
-//      return gson.fromJson(new String(bytes, StandardCharsets.UTF_8), BoostBag.class);
-//    }
-//
-//    private BoostBag loadBag(String identifier) {
-//      byte[] bytes = repo.load(identifier);
-//      return (bytes == null) ? new BoostBag(new HashMap<>()) : dec(bytes);
-//    }
-//
-//    @Override
-//    public void upsert(BoostRow r) {
-//      BoostBag bag = loadBag(r.identifier());
-//      bag.bySource().put(r.sourceId(),
-//          new ActiveBoost(r.sourceId(), r.startEpochMs(), r.durationMs(), r.slotMask(), r.schemaVersion()));
-//      repo.save(r.identifier(), enc(bag));     // slow write OK
-//    }
-//
-//    @Override
-//    public void delete(String identifier, String sourceId) {
-//      BoostBag bag = loadBag(identifier);
-//      if (bag.bySource().remove(sourceId) != null) {
-//        repo.save(identifier, enc(bag));       // rewrite the bag
-//      }
-//    }
-//
-//    @Override
-//    public List<BoostRow> listByIdentifier(String identifier) {
-//      BoostBag bag = loadBag(identifier);
-//      var out = new ArrayList<BoostRow>(bag.bySource().size());
-//      for (ActiveBoost b : bag.bySource().values()) {
-//        out.add(new BoostRow(identifier, b.sourceId(), b.startMs(), b.durationMs(), b.slotMask(), /*payload*/null, b.schema()));
-//      }
-//      return out;
-//    }
-//
-//    @Override
-//    public Optional<BoostRow> get(String identifier, String sourceId) {
-//      BoostBag bag = loadBag(identifier);
-//      ActiveBoost b = bag.bySource().get(sourceId);
-//      return (b == null) ? Optional.empty()
-//          : Optional.of(new BoostRow(identifier, b.sourceId(), b.startMs(), b.durationMs(), b.slotMask(), null, b.schema()));
-//    }
-//
-//    @Override
-//    public int deleteExpired(long nowMs) {
-//      // If you need global pruning, expose prune(Target) instead,
-//      // or maintain a simple catalog of identifiers.
-//      return 0;
-//    }
-//  }
+  private static String getPlayerIdentifier(PlayerTarget playerTarget) {
+    Player player = playerTarget.player();
+    UUID uniqueId = player.getUniqueId();
+    return uniqueId.toString();
+  }
 }

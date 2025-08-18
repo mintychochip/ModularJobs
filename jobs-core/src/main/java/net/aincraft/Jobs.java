@@ -1,7 +1,14 @@
 package net.aincraft;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Boost;
@@ -12,14 +19,9 @@ import net.aincraft.container.Payable;
 import net.aincraft.container.PayableHandler;
 import net.aincraft.container.PayableHandler.PayableContext;
 import net.aincraft.container.PayableType;
-import net.aincraft.database.ConnectionSource;
-import net.aincraft.database.ConnectionSourceFactory;
+import net.aincraft.repository.ConnectionSource;
 import net.aincraft.event.JobsPaymentEvent;
 import net.aincraft.event.JobsPrePaymentEvent;
-import net.aincraft.internal.BridgeImpl;
-import net.aincraft.listener.BucketListener;
-import net.aincraft.listener.JobListener;
-import net.aincraft.listener.util.MobTagController;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.RegistryView;
@@ -27,6 +29,7 @@ import net.aincraft.service.JobTaskProvider;
 import net.aincraft.service.ProgressionService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -38,26 +41,18 @@ public class Jobs extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    YamlConfiguration config = YamlConfiguration.create(this, "config.yml");
-    ConnectionSourceFactory factory = new ConnectionSourceFactory(this, config);
-    try {
-      connectionSource = factory.create();
-      Bukkit.getServicesManager()
-          .register(Bridge.class, new BridgeImpl(this, connectionSource), this,
-              ServicePriority.High);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-//    Undertow server = Undertow.builder().addHttpListener(8000, "0.0.0.0").setHandler(exchange -> {
-//      exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-//      exchange.getResponseSender().send("hello from undertow!");
-//    }).build();
-//    server.start();
-    Bukkit.getPluginManager().registerEvents(new MobTagController(), this);
-    Bukkit.getPluginManager().registerEvents(new BucketListener(), this);
-    Bukkit.getPluginManager().registerEvents(new JobListener(), this);
-    Bukkit.getPluginCommand("test").setExecutor(new Command());
+    Injector injector = Guice.createInjector(new PluginModule(this));
+    Set<Listener> listeners = injector.getInstance(
+        Key.get(new TypeLiteral<>() {
+        })
+    );
+    listeners.forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
+//    Bukkit.getServicesManager()
+//        .register(Bridge.class, new BridgeImpl(this, connectionSource), this,
+//            ServicePriority.High);
+//    Bukkit.getPluginCommand("test").setExecutor(new Command());
   }
+
 
   @Override
   public void onDisable() {
@@ -66,54 +61,6 @@ public class Jobs extends JavaPlugin {
         connectionSource.shutdown();
       } catch (SQLException e) {
         throw new RuntimeException(e);
-      }
-    }
-  }
-
-  //TODO: move this to an internal class, so we can pass dependencies with di
-  public static void doTask(OfflinePlayer player, ActionType actionType,
-      Context context) {
-    RegistryView<BoostSource> registry = RegistryContainer.registryContainer()
-        .getRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES);
-    ProgressionService progressionService = ProgressionService.progressionService();
-    JobTaskProvider jobTaskProvider = JobTaskProvider.jobTaskProvider();
-    List<JobProgression> progressions = progressionService.getAll(player);
-    for (JobProgressionView progression : progressions) {
-      for (BoostSource boostSource : registry) {
-        List<Boost> boosts = boostSource.evaluate(
-            new BoostContext(actionType, progression, player.getPlayer()));
-        boosts.forEach(b -> Bukkit.broadcastMessage(b.toString()));
-      }
-      Job job = progression.getJob();
-      if (jobTaskProvider.hasTask(job, actionType, context)) {
-        JobTask task = jobTaskProvider.getTask(job, actionType, context);
-        for (Payable payable : task.getPayables()) {
-          PayableType type = payable.type();
-          JobsPrePaymentEvent prePaymentEvent = new JobsPrePaymentEvent(player, payable, job,
-              task);
-          Bukkit.getPluginManager().callEvent(prePaymentEvent);
-          if (prePaymentEvent.isCancelled()) {
-            continue;
-          }
-          Bukkit.getPluginManager().callEvent(new JobsPaymentEvent(player, payable));
-          PayableHandler handler = type.handler();
-          handler.pay(new PayableContext() {
-            @Override
-            public OfflinePlayer getPlayer() {
-              return player;
-            }
-
-            @Override
-            public Payable getPayable() {
-              return payable;
-            }
-
-            @Override
-            public Job getJob() {
-              return job;
-            }
-          });
-        }
       }
     }
   }

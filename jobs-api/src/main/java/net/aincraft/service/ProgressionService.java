@@ -25,6 +25,4 @@ public interface ProgressionService {
 
   void update(JobProgression progression);
 
-  void update(List<? extends JobProgression> progressions);
-
 }

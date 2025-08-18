@@ -18,6 +18,7 @@ java {
 }
 
 dependencies {
+    implementation("com.google.inject:guice:7.0.0")
     implementation(project(":jobs-api"))
     implementation(libs.undertow.core)
     implementation(libs.exp4j)

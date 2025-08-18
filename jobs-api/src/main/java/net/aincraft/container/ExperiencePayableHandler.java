@@ -3,7 +3,6 @@ package net.aincraft.container;
 import java.math.BigDecimal;
 import net.aincraft.JobProgressionView;
 import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,15 +20,6 @@ public interface ExperiencePayableHandler extends PayableHandler {
     void setColor(@NotNull BossBar.Color color);
 
     void setOverlay(@NotNull BossBar.Overlay overlay);
-
-    void setNameFormatter(@NotNull NameFormatter formatter);
-
-    @FunctionalInterface
-    interface NameFormatter {
-
-      @NotNull
-      Component format(@NotNull ExperienceBarContext context);
-    }
   }
 
   interface ExperienceBarController {

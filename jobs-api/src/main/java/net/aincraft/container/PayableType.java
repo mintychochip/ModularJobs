@@ -5,14 +5,6 @@ import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.ApiStatus.NonExtendable;
 
 @NonExtendable
-public sealed interface PayableType extends Keyed permits PayableTypeImpl {
-
-  static PayableType create(PayableHandler handler, Key key) {
-    return new PayableTypeImpl(handler,key);
-  }
-
-  PayableHandler handler();
-
-  Payable create(PayableAmount amount);
+public record PayableType(PayableHandler handler, Key key) implements Keyed {
 
 }

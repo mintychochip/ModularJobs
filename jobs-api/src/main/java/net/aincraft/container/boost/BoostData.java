@@ -4,22 +4,38 @@ import java.time.Duration;
 import java.util.Optional;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.SlotSet;
+import net.aincraft.container.boost.BoostData.SerializableBoostData;
+import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
+import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
+import org.jetbrains.annotations.NotNull;
 
-public interface BoostData {
-  BoostSource getBoostSource();
-  interface SerializableBoostData extends BoostData {
-    RuledBoostSource getBoostSource();
+public sealed interface BoostData permits SerializableBoostData {
 
-    interface ConsumableBoostData extends Timed {
-      Optional<Duration> getDuration();
+  @NotNull
+  BoostSource boostSource();
+
+  sealed interface SerializableBoostData extends BoostData permits PassiveBoostData,
+      ConsumableBoostData {
+
+    record ConsumableBoostData(@NotNull BoostSource boostSource,
+                               @NotNull Duration duration) implements TimedBoostData,
+        SerializableBoostData {
+
+      @Override
+      public Optional<Duration> getDuration() {
+        return Optional.of(duration);
+      }
     }
 
-    interface PassiveBoostData {
-      Optional<SlotSet> getApplicableSlots();
+    record PassiveBoostData(@NotNull BoostSource boostSource, @NotNull SlotSet slotSet) implements
+        SerializableBoostData {
+
     }
   }
 
-  interface Timed {
+  interface TimedBoostData {
+
     Optional<Duration> getDuration();
   }
+
 }

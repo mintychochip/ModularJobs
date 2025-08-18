@@ -1,6 +1,5 @@
 package net.aincraft.service;
 
-import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -17,7 +16,7 @@ import net.aincraft.JobTask;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Context;
 import net.aincraft.container.Currency;
-import net.aincraft.container.KeyResolver;
+import net.aincraft.util.KeyResolver;
 import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
 import net.aincraft.container.PayableType;
@@ -31,19 +30,21 @@ import org.bukkit.plugin.Plugin;
 /**
  * Format: job_key,action_type_key,context_key,payable_type_key,amount
  */
-public class CSVJobTaskProviderImpl implements JobTaskProvider {
+final class CSVJobTaskProviderImpl implements JobTaskProvider {
 
   private static final String JOB_TASK_CSV_PATH = "job_tasks.csv";
 
+  private final KeyResolver keyResolver;
   private final Path csvPath;
   private final Map<JobTaskKey, List<PayableRecord>> payables;
 
-  private CSVJobTaskProviderImpl(Path csvPath, Map<JobTaskKey, List<PayableRecord>> payables) {
+  CSVJobTaskProviderImpl(KeyResolver keyResolver, Path csvPath, Map<JobTaskKey, List<PayableRecord>> payables) {
+    this.keyResolver = keyResolver;
     this.csvPath = csvPath;
     this.payables = payables;
   }
 
-  public static JobTaskProvider create(Plugin plugin) throws IOException {
+  public static JobTaskProvider create(Plugin plugin, KeyResolver keyResolver) throws IOException {
     File dataFolder = plugin.getDataFolder();
     Path csvPath = dataFolder.toPath().resolve(JOB_TASK_CSV_PATH);
     if (!Files.exists(csvPath)) {
@@ -59,22 +60,18 @@ public class CSVJobTaskProviderImpl implements JobTaskProvider {
           split[5]);
       payables.computeIfAbsent(key, ignored -> new ArrayList<>()).add(record);
     }
-    return new CSVJobTaskProviderImpl(csvPath, payables);
+    return new CSVJobTaskProviderImpl(keyResolver, csvPath, payables);
   }
 
   @Override
-  public boolean hasTask(Job job, ActionType type, Context context) {
-    JobTaskKey key = JobTaskKey.create(job, type, context);
-    return payables.containsKey(key);
-  }
-
-  @Override
-  public JobTask getTask(Job job, ActionType type, Context context)
+  public Optional<JobTask> getTask(Job job, ActionType type, Context context)
       throws IllegalArgumentException {
     JobTaskKey key = JobTaskKey.create(job, type, context);
-    Preconditions.checkArgument(payables.containsKey(key));
+    if (payables.containsKey(key)) {
+      return Optional.empty();
+    }
     List<PayableRecord> records = payables.get(key);
-    return () -> records.stream().map(PayableRecord::toPayable).toList();
+    return Optional.of(() -> records.stream().map(PayableRecord::toPayable).toList());
   }
 
   @Override
@@ -82,7 +79,7 @@ public class CSVJobTaskProviderImpl implements JobTaskProvider {
     StringBuilder base = new StringBuilder()
         .append(job.key()).append(',')
         .append(type.key()).append(',')
-        .append(KeyResolver.keyResolver().resolve(context)).append(',');
+        .append(keyResolver.resolve(context)).append(',');
     for (Payable payable : payables) {
       PayableAmount amount = payable.amount();
       Optional<Currency> currency = amount.currency();
@@ -109,10 +106,10 @@ public class CSVJobTaskProviderImpl implements JobTaskProvider {
     this.payables.put(key, records);
   }
 
-  private record JobTaskKey(Key jobKey, Key actionTypeKey, Key contextKey) {
+  private record JobTaskKey(Key jobKey, Key actionTypeKey, Key contextKey, KeyResolver keyResolver) {
 
     static JobTaskKey create(Job job, ActionType type, Context context) {
-      Key contextKey = KeyResolver.keyResolver().resolve(context);
+      Key contextKey = .resolve(context);
       return new JobTaskKey(job.key(), type.key(), contextKey);
     }
 

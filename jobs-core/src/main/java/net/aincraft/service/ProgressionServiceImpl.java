@@ -1,137 +1,41 @@
 package net.aincraft.service;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
+import com.google.inject.Inject;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
-import net.aincraft.container.JobProgressionImpl;
-import net.aincraft.database.ConnectionSource;
-import net.aincraft.database.RelationalRepositoryContext;
-import net.aincraft.database.RelationalRepositoryImpl;
-import net.aincraft.database.Repository;
-import net.aincraft.database.WriteBehindRepositoryImpl;
-import net.aincraft.registry.RegistryContainer;
-import net.aincraft.registry.RegistryKeys;
-import net.aincraft.registry.RegistryView;
-import net.aincraft.util.PlayerJobCompositeKey;
-import org.bukkit.Bukkit;
+import net.aincraft.repository.ProgressionRepository;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ProgressionServiceImpl implements ProgressionService {
+final class ProgressionServiceImpl implements ProgressionService {
 
-  private final Repository<PlayerJobCompositeKey, JobProgression> repository;
+  private final ProgressionRepository progressionRepository;
 
-  public ProgressionServiceImpl(Repository<PlayerJobCompositeKey, JobProgression> repository) {
-    this.repository = repository;
-  }
-
-  public static ProgressionService create(Plugin plugin, ConnectionSource connectionSource) {
-    RelationalRepositoryContext<PlayerJobCompositeKey, JobProgression> adapter =
-        new RelationalRepositoryContext<>() {
-          @Override
-          public String getSelectQuery() {
-            return "SELECT experience FROM job_progression WHERE player_id = ? AND job_key = ?";
-          }
-
-          @Override
-          public String getSaveQuery() {
-            return "INSERT INTO job_progression (player_id, job_key, experience) " +
-                "VALUES (?, ?, ?) " +
-                "ON CONFLICT(player_id, job_key) DO UPDATE SET experience = excluded.experience";
-          }
-
-
-          @Override
-          public String getDeleteQuery() {
-            return "DELETE FROM job_progression WHERE player_id = ? AND job_key = ?";
-          }
-
-          @Override
-          public void setKey(PreparedStatement ps, PlayerJobCompositeKey key) throws SQLException {
-            ps.setString(1, key.playerId().toString());
-            ps.setString(2, key.jobKey().toString());
-          }
-
-          @Override
-          public void setSaveValues(PreparedStatement ps, PlayerJobCompositeKey key,
-              JobProgression value)
-              throws SQLException {
-            ps.setString(1, key.playerId().toString());
-            ps.setString(2, key.jobKey().toString());
-            ps.setBigDecimal(3, value.getExperience());
-          }
-
-          @Override
-          public JobProgression mapResult(ResultSet rs, PlayerJobCompositeKey key)
-              throws SQLException {
-            BigDecimal experience = rs.getBigDecimal("experience");
-            RegistryView<Job> registry = RegistryContainer.registryContainer()
-                .getRegistry(RegistryKeys.JOBS);
-            Job job = registry.getOrThrow(key.jobKey());
-            return new JobProgressionImpl(Bukkit.getOfflinePlayer(key.playerId()), job, experience);
-          }
-        };
-    Repository<PlayerJobCompositeKey, JobProgression> writeBehindRepository = WriteBehindRepositoryImpl.create(
-        plugin, new RelationalRepositoryImpl<>(
-            connectionSource, adapter), 200L);
-    return new ProgressionServiceImpl(writeBehindRepository);
+  @Inject
+  ProgressionServiceImpl(ProgressionRepository progressionRepository) {
+    this.progressionRepository = progressionRepository;
   }
 
   @Override
   public @NotNull JobProgression create(OfflinePlayer player, Job job)
       throws IllegalArgumentException {
-    PlayerJobCompositeKey key = PlayerJobCompositeKey.create(player, job);
-    JobProgression progression = repository.load(key);
-    if (progression == null) {
-      throw new IllegalArgumentException("progression already exists for player: " + player);
-    }
-    progression = new JobProgressionImpl(player, job, BigDecimal.ZERO);
-    repository.save(key, progression);
-    return progression;
+    return progressionRepository.create(player.getUniqueId(),job.key());
   }
 
   @Override
   public @Nullable JobProgression get(OfflinePlayer player, Job job) {
-    PlayerJobCompositeKey key = PlayerJobCompositeKey.create(player, job);
-    return repository.load(key);
+    return progressionRepository.get(player.getUniqueId(),job.key());
   }
 
   @Override
   public @NotNull List<JobProgression> getAll(OfflinePlayer player) {
-    RegistryView<Job> registry = RegistryContainer.registryContainer()
-        .getRegistry(RegistryKeys.JOBS);
-    return registry.stream()
-        .map(job -> PlayerJobCompositeKey.create(player, job)).map(repository::load).filter(
-            Objects::nonNull).toList();
+    return progressionRepository.getAllProgressions(player.getUniqueId());
   }
 
   @Override
   public void update(JobProgression progression) {
-    PlayerJobCompositeKey key = PlayerJobCompositeKey.create(progression.getPlayer(),
-        progression.getJob());
-    JobProgression jobProgression = repository.load(key);
-    if (jobProgression != null) {
-      repository.save(key, progression);
-    }
-  }
-
-  @Override
-  public void update(List<? extends JobProgression> progressions) {
-    Map<PlayerJobCompositeKey, JobProgression> entities = new HashMap<>();
-    for (JobProgression progression : progressions) {
-      PlayerJobCompositeKey key = PlayerJobCompositeKey.create(progression.getPlayer(),
-          progression.getJob());
-      entities.put(key, progression);
-    }
-    repository.saveAll(entities);
+    progressionRepository.update(progression);
   }
 }

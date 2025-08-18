@@ -6,11 +6,19 @@ CREATE TABLE IF NOT EXISTS job_progression
     PRIMARY KEY (player_id, job_key)
 );
 
-CREATE TABLE IF NOT EXISTS active_time_boosts
+CREATE TABLE IF NOT EXISTS time_boost_identity
 (
-    identifier TEXT NOT NULL,
-    epoch_millis TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    PRIMARY KEY (target_id, source_id)
+);
+
+CREATE TABLE IF NOT EXISTS time_boosts
+(
+    target_id TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    epoch_millis INTEGER NOT NULL,
     duration BLOB NULL,
     boost_source BLOB NOT NULL,
-    PRIMARY KEY (identifier)
+    PRIMARY KEY (target_id, source_id)
 );

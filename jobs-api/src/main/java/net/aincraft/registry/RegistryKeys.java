@@ -3,8 +3,8 @@ package net.aincraft.registry;
 import net.aincraft.Job;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.BoostSource;
-import net.aincraft.serialization.Codec;
 import net.aincraft.container.PayableType;
+import net.aincraft.serialization.Codec;
 import net.kyori.adventure.key.Key;
 
 public class RegistryKeys {

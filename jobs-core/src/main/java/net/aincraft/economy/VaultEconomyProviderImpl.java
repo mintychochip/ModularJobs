@@ -7,11 +7,11 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
-public final class VaultEconomyProviderImpl implements EconomyProvider {
+final class VaultEconomyProviderImpl implements EconomyProvider {
 
   private final Economy vault;
 
-  public VaultEconomyProviderImpl(Economy vault) {
+  VaultEconomyProviderImpl(Economy vault) {
     this.vault = vault;
   }
 

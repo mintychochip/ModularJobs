@@ -1,45 +1,15 @@
 package net.aincraft.container;
 
-import java.util.Locale;
-import net.aincraft.container.Context.BlockContext;
-import net.aincraft.container.Context.DyeContext;
-import net.aincraft.container.Context.EnchantmentContext;
-import net.aincraft.container.Context.EntityContext;
-import net.aincraft.container.Context.ItemContext;
-import net.aincraft.container.Context.MaterialContext;
-import net.aincraft.container.Context.PotionContext;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.RegistryView;
-import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
 public final class ActionTypes {
 
   private ActionTypes() {
-  }
-
-  static {
-    KeyResolver.keyResolver()
-        .addStrategy(BlockContext.class, context -> context.block().getType().getKey());
-    KeyResolver.keyResolver()
-        .addStrategy(MaterialContext.class, context -> context.material().getKey());
-    KeyResolver.keyResolver().addStrategy(DyeContext.class,
-        context -> NamespacedKey.minecraft(context.color().name().toLowerCase(Locale.ENGLISH)));
-    KeyResolver.keyResolver()
-        .addStrategy(EntityContext.class, context -> context.entity().getType().getKey());
-    KeyResolver.keyResolver()
-        .addStrategy(ItemContext.class, context -> context.itemStack().getType().getKey());
-    KeyResolver.keyResolver().addStrategy(PotionContext.class,
-        context -> context.type().key());
-    KeyResolver.keyResolver().addStrategy(EnchantmentContext.class, context -> {
-      Enchantment enchantment = context.enchantment();
-      Key enchantmentKey = enchantment.key();
-      return new NamespacedKey(enchantmentKey.namespace(),
-          enchantmentKey.value() + "_" + context.level());
-    });
+    throw new UnsupportedOperationException("do not instantiate this class");
   }
 
   /**

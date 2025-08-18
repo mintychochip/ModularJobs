@@ -2,20 +2,16 @@ package net.aincraft;
 
 import java.util.Optional;
 import net.aincraft.container.EconomyProvider;
-import net.aincraft.container.KeyResolver;
-import net.aincraft.container.boost.factories.PolicyFactory;
+import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
+import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.service.JobTaskProvider;
 import net.aincraft.service.MobDamageTracker;
-import org.bukkit.plugin.Plugin;
-import net.aincraft.service.BlockOwnershipService;
-import net.aincraft.service.ChunkExplorationStore;
-import net.aincraft.service.EntityValidationService;
-import net.aincraft.service.ExploitService;
 import net.aincraft.service.ProgressionService;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
 public interface Bridge {
 
@@ -25,13 +21,9 @@ public interface Bridge {
 
   Plugin plugin();
 
-  KeyResolver resolver();
-
   ProgressionService progressionService();
 
   RegistryContainer registryContainer();
-
-  EntityValidationService spawnerService();
 
   JobTaskProvider jobTaskProvider();
 
@@ -41,13 +33,9 @@ public interface Bridge {
 
   PolicyFactory policyFactory();
 
-  ExploitService exploitService();
-
   MobDamageTracker mobDamageTracker();
 
-  ChunkExplorationStore chunkExplorationStore();
+  TimedBoostDataService timedBoostDataService();
 
   Optional<EconomyProvider> economy();
-
-  Optional<BlockOwnershipService> blockOwnershipService();
 }

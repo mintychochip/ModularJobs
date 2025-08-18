@@ -9,11 +9,7 @@ public interface PayableHandler {
 
   //TODO: add set methods
 
-  interface PayableContext {
-    OfflinePlayer getPlayer();
-    Payable getPayable();
-    Job getJob();
-  }
+  record PayableContext(OfflinePlayer player, Payable payable, Job job) {}
 
   //TODO: add repair methods
   interface PayableVisualController {
