@@ -1,7 +1,6 @@
 package net.aincraft.util;
 
 import com.google.inject.Inject;
-import java.util.Locale;
 import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;

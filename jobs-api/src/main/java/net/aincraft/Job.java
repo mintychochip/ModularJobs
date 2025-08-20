@@ -10,6 +10,8 @@ public interface Job extends Keyed {
 
   Component getDisplayName();
 
+  String getPlainName();
+
   Component getDescription();
 
   LevelingCurve getLevelingCurve();

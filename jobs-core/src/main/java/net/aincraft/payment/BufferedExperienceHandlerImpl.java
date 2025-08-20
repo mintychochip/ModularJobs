@@ -2,7 +2,6 @@ package net.aincraft.payment;
 
 import com.google.inject.Inject;
 import java.math.BigDecimal;
-import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.container.ExperiencePayableHandler;
 import net.aincraft.container.Payable;

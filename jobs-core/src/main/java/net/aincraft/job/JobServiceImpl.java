@@ -13,6 +13,7 @@ import net.aincraft.service.JobService;
 import net.aincraft.util.KeyResolver;
 import net.aincraft.util.Mapper;
 import net.kyori.adventure.key.Key;
+import org.jetbrains.annotations.NotNull;
 
 final class JobServiceImpl implements JobService {
 
@@ -33,6 +34,11 @@ final class JobServiceImpl implements JobService {
     this.keyResolver = keyResolver;
     this.jobRecordRepository = jobRecordRepository;
     this.payableRecordRepository = payableRecordRepository;
+  }
+
+  @Override
+  public @NotNull List<Job> getJobs() {
+    return jobRecordRepository.getJobs().stream().map(jobRecordMapper::toDomainObject).toList();
   }
 
   @Override

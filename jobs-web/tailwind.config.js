@@ -1,6 +1,6 @@
 // tailwind.config.mjs
 import daisyui from 'daisyui'
-import { defineConfig } from 'tailwindcss'
+import {defineConfig} from 'tailwindcss'
 
 export default defineConfig({
   content: [

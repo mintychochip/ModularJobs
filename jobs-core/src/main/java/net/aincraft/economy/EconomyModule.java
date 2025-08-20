@@ -3,7 +3,6 @@ package net.aincraft.economy;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import java.util.Optional;
 import net.aincraft.container.EconomyProvider;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;

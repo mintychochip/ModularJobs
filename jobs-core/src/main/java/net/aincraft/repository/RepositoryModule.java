@@ -5,17 +5,13 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import net.aincraft.Job;
 import net.aincraft.config.YamlConfiguration;
-import net.aincraft.registry.RegistryContainer;
-import net.aincraft.registry.RegistryKeys;
-import net.aincraft.registry.RegistryView;
 import net.aincraft.serialization.CodecRegistry;
 import net.aincraft.service.JobService;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
-public class RepositoryModule extends AbstractModule {
+public final class RepositoryModule extends AbstractModule {
 
   @Provides
   @Singleton

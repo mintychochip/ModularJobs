@@ -2,9 +2,11 @@ package net.aincraft.job;
 
 import com.google.inject.Inject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.aincraft.config.YamlConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 final class MemoryJobRecordRepositoryImpl implements JobRecordRepository {
@@ -14,6 +16,11 @@ final class MemoryJobRecordRepositoryImpl implements JobRecordRepository {
   @Inject
   MemoryJobRecordRepositoryImpl(Map<String, JobRecord> records) {
     this.records = records;
+  }
+
+  @Override
+  public @NotNull List<JobRecord> getJobs() {
+    return records.values().stream().toList();
   }
 
   @Override

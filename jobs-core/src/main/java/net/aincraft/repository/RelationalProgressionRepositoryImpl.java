@@ -14,9 +14,6 @@ import java.util.UUID;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.job.JobProgressionImpl;
-import net.aincraft.registry.RegistryContainer;
-import net.aincraft.registry.RegistryKeys;
-import net.aincraft.registry.RegistryView;
 import net.aincraft.service.JobService;
 import net.aincraft.util.PlayerJobCompositeKey;
 import net.kyori.adventure.key.Key;
@@ -92,7 +89,7 @@ public final class RelationalProgressionRepositoryImpl implements
     Preconditions.checkArgument(job.isPresent());
     PlayerJobCompositeKey key = new PlayerJobCompositeKey(uuid, jobKey);
     JobProgression progression = repository.load(key);
-    if (progression == null) {
+    if (progression != null) {
       throw new IllegalArgumentException(
           "progression already exists for player: " + uuid.toString());
     }

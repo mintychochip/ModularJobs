@@ -3,32 +3,17 @@ package net.aincraft;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
-import net.aincraft.config.YamlConfiguration;
-import net.aincraft.container.ActionType;
-import net.aincraft.container.Boost;
-import net.aincraft.container.BoostContext;
-import net.aincraft.container.BoostSource;
-import net.aincraft.container.Context;
-import net.aincraft.container.Payable;
-import net.aincraft.container.PayableHandler;
-import net.aincraft.container.PayableHandler.PayableContext;
-import net.aincraft.container.PayableType;
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import net.aincraft.commands.JobsCommand;
 import net.aincraft.repository.ConnectionSource;
-import net.aincraft.event.JobsPaymentEvent;
-import net.aincraft.event.JobsPrePaymentEvent;
-import net.aincraft.registry.RegistryContainer;
-import net.aincraft.registry.RegistryKeys;
-import net.aincraft.registry.RegistryView;
-import net.aincraft.service.JobTaskProvider;
-import net.aincraft.service.ProgressionService;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -51,6 +36,17 @@ public class Jobs extends JavaPlugin {
         })
     );
     listeners.forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
+    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+      injector.getInstance(PlaceholderExpansion.class).register();
+    }
+    Set<JobsCommand> commands = injector.getInstance(Key.get(new TypeLiteral<>(){}));
+    LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("jobs");
+    for (JobsCommand command : commands) {
+      root.then(command.build());
+    }
+    getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,c -> {
+      c.registrar().register(root.build());
+    });
     Bukkit.getPluginCommand("test").setExecutor(injector.getInstance(Command.class));
   }
 
@@ -65,4 +61,5 @@ public class Jobs extends JavaPlugin {
       }
     }
   }
+
 }

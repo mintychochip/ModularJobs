@@ -6,6 +6,14 @@ CREATE TABLE IF NOT EXISTS job_progression
     PRIMARY KEY (player_id, job_key)
 );
 
+CREATE TABLE IF NOT EXISTS archived_progressions
+(
+    player_id  TEXT NOT NULL,
+    job_key    TEXT NOT NULL,
+    experience TEXT NOT NULL,
+    PRIMARY KEY (player_id, job_key)
+);
+
 CREATE TABLE IF NOT EXISTS time_boost_identity
 (
     target_id TEXT NOT NULL,

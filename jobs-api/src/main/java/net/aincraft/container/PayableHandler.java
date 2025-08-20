@@ -1,6 +1,5 @@
 package net.aincraft.container;
 
-import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import org.bukkit.OfflinePlayer;
 

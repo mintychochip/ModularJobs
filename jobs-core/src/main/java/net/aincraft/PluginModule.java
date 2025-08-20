@@ -1,18 +1,19 @@
 package net.aincraft;
 
 import com.google.inject.AbstractModule;
-import java.security.Provider.Service;
-import javax.security.auth.login.Configuration;
+import net.aincraft.commands.CommandModule;
 import net.aincraft.config.ConfigurationModule;
 import net.aincraft.economy.EconomyModule;
 import net.aincraft.job.JobModule;
 import net.aincraft.payment.PaymentModule;
+import net.aincraft.placeholders.PlaceholderAPIModule;
 import net.aincraft.protection.ProtectionModule;
 import net.aincraft.registry.RegistryModule;
 import net.aincraft.repository.RepositoryModule;
 import net.aincraft.serialization.SerializationModule;
 import net.aincraft.service.ServiceModule;
 import net.aincraft.util.UtilModule;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 public final class PluginModule extends AbstractModule {
@@ -37,5 +38,9 @@ public final class PluginModule extends AbstractModule {
     install(new SerializationModule());
     install(new JobModule());
     install(new UtilModule());
+    install(new CommandModule());
+    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+      install(new PlaceholderAPIModule());
+    }
   }
 }

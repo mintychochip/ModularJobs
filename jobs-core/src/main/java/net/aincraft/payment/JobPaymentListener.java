@@ -389,7 +389,7 @@ final class JobPaymentListener implements Listener {
     }
     if (mobDamageTracker.isTracking(victim)) {
       DamageContribution damageContribution = mobDamageTracker.endTracking(victim);
-      Collection<@NotNull Entity> contributors = damageContribution.getContributors();
+      Collection<Entity> contributors = damageContribution.getContributors();
       for (Entity contributor : contributors) {
         if (contributor instanceof Player) {
           double normalized = damageContribution.getContribution(contributor, true);
@@ -593,15 +593,15 @@ final class JobPaymentListener implements Listener {
       return;
     }
     CraftingInventory craftingInventory = event.getInventory();
-    List<@NotNull ItemStack> contents = Arrays.stream(craftingInventory.getContents())
+    List<ItemStack> contents = Arrays.stream(craftingInventory.getContents())
         .filter(itemStack -> itemStack != null && !itemStack.getType().isAir()).toList();
-    Set<@NotNull Material> unique = contents.stream().map(ItemStack::getType).collect(
+    Set<Material> unique = contents.stream().map(ItemStack::getType).collect(
         Collectors.toSet());
     if (contents.size() == 3 && unique.size() == 1) {
       paymentHandler.pay(player, ActionTypes.REPAIR, new ItemContext(resultStack.clone()));
       return;
     }
-    List<@NotNull DyeColor> dyes = contents.stream().map(ItemStack::getType)
+    List<DyeColor> dyes = contents.stream().map(ItemStack::getType)
         .filter(material -> material.toString().endsWith("_DYE"))
         .map(material -> DyeColor.valueOf(material.name().replace("_DYE", ""))).toList();
 
@@ -638,7 +638,7 @@ final class JobPaymentListener implements Listener {
     }
   }
 
-  private static int countSimilarItems(Collection<@Nullable ItemStack> contents,
+  private static int countSimilarItems(Collection<ItemStack> contents,
       ItemStack reference) {
     int amount = 0;
     for (ItemStack content : contents) {

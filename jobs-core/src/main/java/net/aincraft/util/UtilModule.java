@@ -30,7 +30,7 @@ public final class UtilModule extends AbstractModule {
     resolver.addStrategy(MaterialContext.class, context -> context.material().getKey());
     resolver.addStrategy(DyeContext.class,
         context -> NamespacedKey.minecraft(context.color().name().toLowerCase(Locale.ENGLISH)));
-    resolver.addStrategy(EntityContext.class, context -> context.entity().getType().getKey());
+    resolver.addStrategy(EntityContext.class, new EntityResolvingStrategyImpl());
     resolver.addStrategy(ItemContext.class, context -> context.itemStack().getType().getKey());
     resolver.addStrategy(PotionContext.class,
         context -> context.type().key());

@@ -1,7 +1,6 @@
 package net.aincraft.config;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.name.Names;
 import org.bukkit.plugin.Plugin;
 

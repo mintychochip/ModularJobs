@@ -7,6 +7,8 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://repo.incendo.org/releases")
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://nexus.neetgames.com/repository/maven-releases/")
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://jitpack.io")
@@ -25,7 +27,11 @@ dependencies {
     implementation(libs.exp4j)
     implementation(libs.hikaricp)
     implementation(libs.caffeine)
-
+//    compileOnly("io.lumine:Mythic-Dist:5.6.1") {
+//        exclude(group="org.jetbrains.annotations")
+//    }
+    compileOnly("me.clip:placeholderapi:2.11.6")
+    compileOnly("org.jetbrains:annotations:24.1.0")
     compileOnly(libs.paper.api)
     compileOnly(libs.vault.api) {
         exclude(group = "org.bukkit")
@@ -58,6 +64,7 @@ tasks {
             url("https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar")
             url("https://www.spigotmc.org/resources/lwc-extended.69551/download?version=557109")
             url("https://www.spigotmc.org/resources/vault.34315/download?version=344916")
+            url("https://www.spigotmc.org/resources/placeholderapi.6245/download?version=541946")
         }
 
     }

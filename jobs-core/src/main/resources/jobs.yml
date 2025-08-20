@@ -1,8 +1,80 @@
 builder:
   display-name: "<blue>Builder"
-  description:
+  description: "Builds structures and earns from placing blocks."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
-    modular_jobs:experience:
-    modular_jobs:economy:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
 
+lumberjack:
+  display-name: "<green>Lumberjack"
+  description: "Chops trees and earns from breaking logs."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
 
+miner:
+  display-name: "<gray>Miner"
+  description: "Mines ores and stones deep underground."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+farmer:
+  display-name: "<yellow>Farmer"
+  description: "Harvests crops and tends animals."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+hunter:
+  display-name: "<red>Hunter"
+  description: "Kills mobs and earns from combat."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+fisher:
+  display-name: "<aqua>Fisher"
+  description: "Fishes in lakes, rivers, and oceans."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+blacksmith:
+  display-name: "<dark_gray>Blacksmith"
+  description: "Smelts ores and crafts gear."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+enchanter:
+  display-name: "<light_purple>Enchanter"
+  description: "Earns from enchanting and repairing items."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+alchemist:
+  display-name: "<gold>Alchemist"
+  description: "Brews potions and combines ingredients."
+  max-level: 200
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)

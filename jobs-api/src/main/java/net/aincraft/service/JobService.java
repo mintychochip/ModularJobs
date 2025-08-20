@@ -7,9 +7,13 @@ import net.aincraft.container.ActionType;
 import net.aincraft.container.Context;
 import net.aincraft.container.Payable;
 import net.kyori.adventure.key.Key;
+import org.jetbrains.annotations.NotNull;
 
 
 public interface JobService {
+
+  @NotNull
+  List<Job> getJobs();
 
   Optional<Job> getJob(Key jobKey);
 

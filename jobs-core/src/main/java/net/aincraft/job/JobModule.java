@@ -4,13 +4,16 @@ import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import java.util.Map;
 import net.aincraft.Job;
+import net.aincraft.JobProgression;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.container.Payable;
 import net.aincraft.container.PayableType;
 import net.aincraft.job.JobRecordRepository.JobRecord;
+import net.aincraft.job.JobsProgressionRepository.JobProgressionRecord;
 import net.aincraft.job.MemoryJobRecordRepositoryImpl.YamlRecordLoader;
 import net.aincraft.job.PayableRecordRepository.PayableRecord;
 import net.aincraft.registry.Registry;
@@ -30,15 +33,20 @@ public final class JobModule extends AbstractModule {
 
   @Provides
   @Singleton
-  Mapper<Payable, PayableRecord> payableRecordMapper(Registry<PayableType> r) {
-    return new PayableRecordMapperImpl(r);
+  Mapper<JobProgression, JobProgressionRecord> progressionRecordMapper(JobService jobService) {
+    return new JobsProgressionRecordMapperImpl(jobService);
   }
 
   @Provides
   @Singleton
-  Mapper<Job, JobRecord> jobRecordMapper(KeyFactory keyFactory,
-      Registry<PayableType> re) {
-    return new JobRecordMapperImpl(keyFactory, re);
+  Mapper<Job, JobRecord> jobRecordMapper(KeyFactory keyFactory, Registry<PayableType> registry) {
+    return new JobRecordMapperImpl(keyFactory, registry);
+  }
+
+  @Provides
+  @Singleton
+  Mapper<Payable,PayableRecord> payableRecordMapper(Registry<PayableType> registry) {
+    return new PayableRecordMapperImpl(registry);
   }
 
 //  @Provides
