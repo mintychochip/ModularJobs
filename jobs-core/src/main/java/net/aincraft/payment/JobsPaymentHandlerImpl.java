@@ -1,34 +1,40 @@
 package net.aincraft.payment;
 
 import com.google.inject.Inject;
+import java.math.BigDecimal;
 import java.util.List;
 import net.aincraft.Job;
+import net.aincraft.Job.PayableCurve.Parameters;
 import net.aincraft.JobProgression;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Boost;
 import net.aincraft.container.Context;
 import net.aincraft.container.Payable;
+import net.aincraft.container.PayableAmount;
 import net.aincraft.container.PayableHandler;
 import net.aincraft.container.PayableHandler.PayableContext;
 import net.aincraft.container.PayableType;
-import net.aincraft.service.JobTaskProvider;
+import net.aincraft.service.JobService;
 import net.aincraft.service.ProgressionService;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 
-final class JobsPaymentHandlerImpl implements JobsPaymentHandler{
+final class JobsPaymentHandlerImpl implements JobsPaymentHandler {
 
+  private final Plugin plugin;
   private final BoostEngine boostEngine;
   private final ProgressionService progressionService;
-  private final JobTaskProvider jobTaskProvider;
+  private final JobService jobService;
 
   @Inject
-  public JobsPaymentHandlerImpl(BoostEngine boostEngine, ProgressionService progressionService,
-      JobTaskProvider jobTaskProvider) {
+  public JobsPaymentHandlerImpl(Plugin plugin, BoostEngine boostEngine, ProgressionService progressionService,
+      JobService jobService) {
+    this.plugin = plugin;
     this.boostEngine = boostEngine;
     this.progressionService = progressionService;
-    this.jobTaskProvider = jobTaskProvider;
+    this.jobService = jobService;
   }
 
   @Override
@@ -37,12 +43,19 @@ final class JobsPaymentHandlerImpl implements JobsPaymentHandler{
     for (JobProgression progression : progressions) {
       List<Boost> boosts = boostEngine.evaluate(type, progression, (Player) player);
       Job job = progression.getJob();
-      jobTaskProvider.getTask(job, type, context).ifPresent(task -> {
-        for (Payable payable : task.getPayables()) {
-          PayableType payableType = payable.type();
-          PayableHandler handler = payableType.handler();
-          handler.pay(new PayableContext(player,payable,job));
-        }
+      jobService.getPayables(job, type, context).forEach(payable -> {
+        PayableType payableType = payable.type();
+        PayableAmount amount = payable.amount();
+        Parameters parameters = new Parameters(amount.value(), progression.getLevel(),
+            progressions.size());
+
+        BigDecimal finalAmount = job.getCurve(payableType)
+            .map(c -> c.evaluate(parameters))
+            .orElse(amount.value());
+        Payable p = new Payable(payableType,
+            PayableAmount.create(finalAmount,amount.currency().orElse(null)));
+        PayableHandler handler = payableType.handler();
+        handler.pay(new PayableContext(player, p, progression));
       });
     }
   }

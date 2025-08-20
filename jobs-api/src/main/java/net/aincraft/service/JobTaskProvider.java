@@ -12,5 +12,4 @@ public interface JobTaskProvider {
 
   Optional<JobTask> getTask(Job job, ActionType type, Context context);
 
-  void addTask(Job job, ActionType type, Context context, List<Payable> payables);
 }

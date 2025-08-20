@@ -1,5 +1,6 @@
 package net.aincraft.container;
 
+import net.aincraft.Bridge;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.RegistryView;
@@ -133,6 +134,6 @@ public final class ActionTypes {
   private static ActionType type(String keyString) {
     RegistryView<ActionType> registry = RegistryContainer.registryContainer()
         .getRegistry(RegistryKeys.ACTION_TYPES);
-    return registry.getOrThrow(new NamespacedKey("jobs", keyString));
+    return registry.getOrThrow(new NamespacedKey(Bridge.bridge().plugin(), keyString));
   }
 }

@@ -26,6 +26,7 @@ public final class PluginModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(Plugin.class).toInstance(plugin);
+    bind(Bridge.class).to(BridgeImpl.class);
     install(new ConfigurationModule(plugin));
     install(new EconomyModule());
     install(new PaymentModule());

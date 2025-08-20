@@ -1,26 +1,28 @@
 package net.aincraft.job;
 
 import java.util.Map;
+import java.util.Optional;
 import net.aincraft.Job;
-import net.aincraft.container.PayableCurve;
 import net.aincraft.container.PayableType;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
 public final class JobImpl implements Job {
 
-  private final String key;
+  private final Key key;
   private final Component displayName;
   private final Component description;
-
+  private final LevelingCurve levelingCurve;
   private final Map<PayableType, PayableCurve> payableCurves;
 
-  public JobImpl(String key, Component displayName, Component description, Map<PayableType,PayableCurve> payableCurves) {
+  public JobImpl(Key key, Component displayName, Component description,
+      LevelingCurve levelingCurve,
+      Map<PayableType, PayableCurve> payableCurves) {
     this.key = key;
     this.displayName = displayName;
     this.description = description;
+    this.levelingCurve = levelingCurve;
     this.payableCurves = payableCurves;
   }
 
@@ -35,13 +37,13 @@ public final class JobImpl implements Job {
   }
 
   @Override
-  public PayableCurve getCurve(PayableType type) {
-    return payableCurves.get(type);
+  public LevelingCurve getLevelingCurve() {
+    return levelingCurve;
   }
 
   @Override
-  public void setCurve(PayableType type, PayableCurve curve) {
-    payableCurves.put(type,curve);
+  public Optional<PayableCurve> getCurve(PayableType type) {
+    return Optional.ofNullable(payableCurves.get(type));
   }
 
   @Override
@@ -51,6 +53,6 @@ public final class JobImpl implements Job {
 
   @Override
   public @NotNull Key key() {
-    return new NamespacedKey("jobs", key);
+    return key;
   }
 }

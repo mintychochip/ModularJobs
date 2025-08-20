@@ -1,6 +1,7 @@
 package net.aincraft.container;
 
 import net.aincraft.Job;
+import net.aincraft.JobProgression;
 import org.bukkit.OfflinePlayer;
 
 public interface PayableHandler {
@@ -9,7 +10,7 @@ public interface PayableHandler {
 
   //TODO: add set methods
 
-  record PayableContext(OfflinePlayer player, Payable payable, Job job) {}
+  record PayableContext(OfflinePlayer player, Payable payable, JobProgression jobProgression) {}
 
   //TODO: add repair methods
   interface PayableVisualController {

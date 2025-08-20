@@ -12,15 +12,12 @@ import net.aincraft.container.Boost;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.SlotSet;
+import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
 import net.aincraft.container.boost.ItemBoostDataService;
-import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.TimedBoostDataService;
-import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
-import net.aincraft.registry.RegistryContainer;
-import net.aincraft.registry.RegistryKeys;
-import net.aincraft.registry.RegistryView;
+import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -55,9 +52,9 @@ final class BoostEngineImpl implements BoostEngine {
     List<ActiveBoostData> applicableBoosts = timedBoostDataService.findApplicableBoosts(
         new PlayerTarget(player));
     boostSources.addAll(applicableBoosts.stream().map(ActiveBoostData::boostSource).toList());
-    RegistryView<BoostSource> sources = RegistryContainer.registryContainer()
-        .getRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES);
-    sources.stream().forEach(source -> boostSources.add(source));
+//    RegistryView<BoostSource> sources = RegistryContainer.registryContainer()
+//        .getRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES);
+//    sources.stream().forEach(source -> boostSources.add(source));
     Bukkit.broadcastMessage(boostSources.toString());
     return List.of();
   }

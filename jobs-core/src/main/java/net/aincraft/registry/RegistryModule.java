@@ -1,20 +1,16 @@
 package net.aincraft.registry;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
-import java.util.HashMap;
 import java.util.Map;
-import net.aincraft.container.ActionType;
 import net.aincraft.container.PayableHandler;
 import net.aincraft.container.PayableType;
 import net.aincraft.serialization.CodecRegistry;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.key.Keyed;
 
 public final class RegistryModule extends AbstractModule {
 
@@ -35,7 +31,7 @@ public final class RegistryModule extends AbstractModule {
 
   @Provides
   @Singleton
-  Registry<PayableType> payableTypeRegistry(Map<Key, Provider<PayableHandler>> handlers) {
+  public Registry<PayableType> payableTypeRegistry(Map<Key, Provider<PayableHandler>> handlers) {
     SimpleRegistryImpl<PayableType> r = new SimpleRegistryImpl<>();
     handlers.forEach((k, v) -> {
       r.register(new PayableType(v.get(), k));

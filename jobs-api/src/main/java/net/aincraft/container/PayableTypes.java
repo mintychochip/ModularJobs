@@ -16,6 +16,6 @@ public class PayableTypes {
 
   private static PayableType type(String keyString) {
     return RegistryContainer.registryContainer().getRegistry(
-        RegistryKeys.PAYABLE_TYPES).getOrThrow(new NamespacedKey("jobs",keyString));
+        RegistryKeys.PAYABLE_TYPES).getOrThrow(new NamespacedKey("modularjobs",keyString));
   }
 }

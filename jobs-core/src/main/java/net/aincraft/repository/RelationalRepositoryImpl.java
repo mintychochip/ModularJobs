@@ -48,7 +48,7 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
       readCache.put(key, value);
       return ps.executeUpdate() > 0;
     } catch (SQLException e) {
-      throw new RuntimeException("failed to save entity for key: " + key, e);
+      throw new RuntimeException("failed to save entity for jobKey: " + key, e);
     }
   }
 
@@ -61,7 +61,7 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
         readCache.invalidate(key);
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to delete entity for key: " + key, e);
+      throw new RuntimeException("Failed to delete entity for jobKey: " + key, e);
     }
   }
 }

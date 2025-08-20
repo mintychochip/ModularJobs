@@ -16,7 +16,7 @@ public sealed interface PayableAmount permits PayableAmountImpl {
     return new PayableAmountImpl(amount,currency);
   }
 
-  BigDecimal amount();
+  BigDecimal value();
 
   @NotNull
   Optional<Currency> currency();

@@ -5,7 +5,7 @@ import org.bukkit.OfflinePlayer;
 
 public interface JobProgressionView {
 
-  double getExperienceForLevel(int level);
+  BigDecimal getExperienceForLevel(int level);
 
   Job getJob();
 

@@ -20,7 +20,7 @@ public final class PayableAmountImpl implements PayableAmount {
   }
 
   @Override
-  public BigDecimal amount() {
+  public BigDecimal value() {
     return amount;
   }
 

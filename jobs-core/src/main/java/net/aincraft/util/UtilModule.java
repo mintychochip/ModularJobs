@@ -17,6 +17,11 @@ import org.bukkit.enchantments.Enchantment;
 
 public final class UtilModule extends AbstractModule {
 
+  @Override
+  protected void configure() {
+    bind(KeyFactory.class).to(KeyFactoryImpl.class).in(Singleton.class);
+  }
+
   @Provides
   @Singleton
   public KeyResolver keyResolver() {

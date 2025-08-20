@@ -43,17 +43,21 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
   @Internal
   private static float progress(JobProgressionView progression) {
-    int currentLevel = progression.getLevel();
-    double currentLevelExpRequired = progression.getExperienceForLevel(currentLevel);
-    double nextLevelExpRequired = progression.getExperienceForLevel(currentLevel + 1);
-    double needed = nextLevelExpRequired - currentLevelExpRequired;
-    if (needed <= 0.0) {
-      return 1.0f;
-    }
-    return Math.min(1.0f,
-        (float) (progression.getExperience().doubleValue() - currentLevelExpRequired)
-            / (float) needed);
+    int level = progression.getLevel();
+
+    double currentRequired = progression.getExperienceForLevel(level).doubleValue();
+    double nextRequired = progression.getExperienceForLevel(level + 1).doubleValue();
+    double needed  = nextRequired - currentRequired;
+
+    if (needed <= 0.0) return 1.0f;
+
+    double xp = progression.getExperience().doubleValue();
+    double ratio = (xp - currentRequired) / needed;
+
+    if (ratio < 0.0) return 0.0f;
+    return Math.min((float) ratio, 1.0f);
   }
+
 
   private static final class NameFormatter {
 
@@ -64,13 +68,13 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
         @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
       JobProgressionView progression = context.progression();
       int level = progression.getLevel();
-      double experienceForNext = progression.getExperienceForLevel(level + 1);
+      BigDecimal experienceForNext = progression.getExperienceForLevel(level + 1);
       return MINI_MESSAGE.deserialize(FORMAT, TagResolver.builder()
           .tag("level", Tag.inserting(Component.text(level)))
-          .tag("job-name", Tag.inserting(progression.getJob().getDisplayName()))
+          .tag("job-name", Tag.inserting(Component.empty().append(progression.getJob().getDisplayName())))
           .tag("xp", Tag.inserting(Component.text(
               progression.getExperience().doubleValue())))
-          .tag("total-xp", Tag.inserting(Component.text(experienceForNext)))
+          .tag("total-xp", Tag.inserting(Component.text(experienceForNext.doubleValue())))
           .tag("payable", Tag.inserting(payableComponent(context.amount())))
           .build());
     }

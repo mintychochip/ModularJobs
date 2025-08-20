@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
@@ -15,6 +16,11 @@ final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
 
   private final Map<Key, T> registry = new HashMap<>();
   private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+
+  @Override
+  public @NotNull Optional<T> get(Key key) {
+    return Optional.ofNullable(registry.get(key));
+  }
 
   @Override
   public @NotNull T getOrThrow(Key key) throws IllegalArgumentException {

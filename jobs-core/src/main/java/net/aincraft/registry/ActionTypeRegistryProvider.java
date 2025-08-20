@@ -1,38 +1,51 @@
 package net.aincraft.registry;
 
+import com.google.inject.Inject;
 import com.google.inject.Provider;
 import net.aincraft.container.ActionType;
-import net.kyori.adventure.key.Key;
+import org.bukkit.NamespacedKey;
+import org.bukkit.plugin.Plugin;
 
 final class ActionTypeRegistryProvider implements Provider<Registry<ActionType>> {
+
+  private final Plugin plugin;
+
+  @Inject
+  ActionTypeRegistryProvider(Plugin plugin) {
+    this.plugin = plugin;
+  }
 
   @Override
   public Registry<ActionType> get() {
     SimpleRegistryImpl<ActionType> r = new SimpleRegistryImpl<>();
-    r.register(() -> Key.key("jobs:block_place"));
-    r.register(() -> Key.key("jobs:block_break"));
-    r.register(() -> Key.key("jobs:tnt_break"));
-    r.register(() -> Key.key("jobs:kill"));
-    r.register(() -> Key.key("jobs:dye"));
-    r.register(() -> Key.key("jobs:strip_log"));
-    r.register(() -> Key.key("jobs:craft"));
-    r.register(() -> Key.key("jobs:fish"));
-    r.register(() -> Key.key("jobs:smelt"));
-    r.register(() -> Key.key("jobs:brew"));
-    r.register(() -> Key.key("jobs:enchant"));
-    r.register(() -> Key.key("jobs:repair"));
-    r.register(() -> Key.key("jobs:breed"));
-    r.register(() -> Key.key("jobs:tame"));
-    r.register(() -> Key.key("jobs:shear"));
-    r.register(() -> Key.key("jobs:milk"));
-    r.register(() -> Key.key("jobs:explore"));
-    r.register(() -> Key.key("jobs:eat"));
-    r.register(() -> Key.key("jobs:collect"));
-    r.register(() -> Key.key("jobs:bake"));
-    r.register(() -> Key.key("jobs:bucket"));
-    r.register(() -> Key.key("jobs:brush"));
-    r.register(() -> Key.key("jobs:wax"));
-    r.register(() -> Key.key("jobs:villager_trade"));
+    r.register(actionType("block_place"));
+    r.register(actionType("block_break"));
+    r.register(actionType("tnt_break"));
+    r.register(actionType("kill"));
+    r.register(actionType("dye"));
+    r.register(actionType("strip_log"));
+    r.register(actionType("craft"));
+    r.register(actionType("fish"));
+    r.register(actionType("smelt"));
+    r.register(actionType("brew"));
+    r.register(actionType("enchant"));
+    r.register(actionType("repair"));
+    r.register(actionType("breed"));
+    r.register(actionType("tame"));
+    r.register(actionType("shear"));
+    r.register(actionType("milk"));
+    r.register(actionType("explore"));
+    r.register(actionType("eat"));
+    r.register(actionType("collect"));
+    r.register(actionType("bake"));
+    r.register(actionType("bucket"));
+    r.register(actionType("brush"));
+    r.register(actionType("wax"));
+    r.register(actionType("villager_trade"));
     return r;
+  }
+
+  private ActionType actionType(String keyString) {
+    return () -> new NamespacedKey(plugin, keyString);
   }
 }

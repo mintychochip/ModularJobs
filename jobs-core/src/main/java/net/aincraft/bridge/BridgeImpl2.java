@@ -28,7 +28,7 @@
 //import net.aincraft.service.boost.RelationalTimedBoostRepositoryImpl;
 //import net.aincraft.service.TimedBoostDataServiceImpl;
 //import net.aincraft.repository.RelationalProgressionRepositoryImpl;
-//import net.kyori.adventure.key.Key;
+//import net.kyori.adventure.jobKey.Key;
 //
 //public final class BridgeImpl implements Bridge {
 //

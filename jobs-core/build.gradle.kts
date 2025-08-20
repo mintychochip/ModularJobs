@@ -18,6 +18,7 @@ java {
 }
 
 dependencies {
+    implementation("com.esotericsoftware:kryo:5.6.2")
     implementation("com.google.inject:guice:7.0.0")
     implementation(project(":jobs-api"))
     implementation(libs.undertow.core)

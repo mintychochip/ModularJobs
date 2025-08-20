@@ -42,15 +42,16 @@ public class Jobs extends JavaPlugin {
   @Override
   public void onEnable() {
     Injector injector = Guice.createInjector(new PluginModule(this));
+    Bridge bridge = injector.getInstance(Bridge.class);
+    Bukkit.getServicesManager()
+        .register(Bridge.class, bridge, this,
+            ServicePriority.High);
     Set<Listener> listeners = injector.getInstance(
         Key.get(new TypeLiteral<>() {
         })
     );
     listeners.forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
-//    Bukkit.getServicesManager()
-//        .register(Bridge.class, new BridgeImpl(this, connectionSource), this,
-//            ServicePriority.High);
-//    Bukkit.getPluginCommand("test").setExecutor(new Command());
+    Bukkit.getPluginCommand("test").setExecutor(injector.getInstance(Command.class));
   }
 
 

@@ -9,49 +9,36 @@ import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
 import net.aincraft.service.ProgressionService;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.plugin.Plugin;
 
 final class BufferedExperienceHandlerImpl implements
     ExperiencePayableHandler {
 
-  private ExperienceBarController controller;
-
-  private ExperienceBarFormatter formatter;
+  private final ExperienceBarController controller;
+  private final ExperienceBarFormatter formatter;
+  private final ProgressionService progressionService;
 
   @Inject
-  BufferedExperienceHandlerImpl(Plugin plugin) {
-    this.formatter = new ExperienceBarFormatterImpl();
-    this.controller = new ExperienceBarControllerImpl(plugin);
+  BufferedExperienceHandlerImpl(ExperienceBarController controller,
+      ExperienceBarFormatter formatter, ProgressionService progressionService) {
+    this.controller = controller;
+    this.formatter = formatter;
+    this.progressionService = progressionService;
   }
+
 
   @Override
   public void pay(PayableContext context) throws IllegalArgumentException {
     OfflinePlayer player = context.player();
-    Job job = context.job();
-    JobProgression progression = ProgressionService.progressionService().get(player,job);
-    if (progression == null) {
-      return;
-    }
+    JobProgression progression = context.jobProgression();
     Payable payable = context.payable();
     PayableAmount amount = payable.amount();
-    BigDecimal amountDecimal = amount.amount();
+    BigDecimal amountDecimal = amount.value();
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
-    ProgressionService.progressionService().update(calculatedProgression);
+    progressionService.update(calculatedProgression);
     if (player.isOnline()) {
       controller.display(
           new ExperienceBarContext(calculatedProgression, player.getPlayer(), amountDecimal),
           formatter);
     }
   }
-
-  @Override
-  public void setExperienceBarController(ExperienceBarController controller) {
-    this.controller = controller;
-  }
-
-  @Override
-  public void setExperienceBarFormatter(ExperienceBarFormatter formatter) {
-    this.formatter = formatter;
-  }
-
 }

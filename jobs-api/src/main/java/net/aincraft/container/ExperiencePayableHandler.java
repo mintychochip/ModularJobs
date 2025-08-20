@@ -8,10 +8,6 @@ import org.jetbrains.annotations.NotNull;
 
 public interface ExperiencePayableHandler extends PayableHandler {
 
-  void setExperienceBarController(ExperienceBarController controller);
-
-  void setExperienceBarFormatter(ExperienceBarFormatter formatter);
-
   interface ExperienceBarFormatter {
 
     BossBar format(@NotNull BossBar bossBar,

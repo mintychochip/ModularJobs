@@ -38,7 +38,8 @@ final class CSVJobTaskProviderImpl implements JobTaskProvider {
   private final Path csvPath;
   private final Map<JobTaskKey, List<PayableRecord>> payables;
 
-  CSVJobTaskProviderImpl(KeyResolver keyResolver, Path csvPath, Map<JobTaskKey, List<PayableRecord>> payables) {
+  CSVJobTaskProviderImpl(KeyResolver keyResolver, Path csvPath,
+      Map<JobTaskKey, List<PayableRecord>> payables) {
     this.keyResolver = keyResolver;
     this.csvPath = csvPath;
     this.payables = payables;
@@ -55,7 +56,8 @@ final class CSVJobTaskProviderImpl implements JobTaskProvider {
     List<String> lines = Files.readAllLines(csvPath);
     for (String line : lines.stream().skip(1).toList()) {
       String[] split = line.split(",");
-      JobTaskKey key = JobTaskKey.create(split[0], split[1], split[2]);
+      JobTaskKey key = new JobTaskKey(NamespacedKey.fromString(split[0]),
+          NamespacedKey.fromString(split[1]), NamespacedKey.fromString(split[2]));
       PayableRecord record = new PayableRecord(NamespacedKey.fromString(split[3]), split[4],
           split[5]);
       payables.computeIfAbsent(key, ignored -> new ArrayList<>()).add(record);
@@ -66,64 +68,17 @@ final class CSVJobTaskProviderImpl implements JobTaskProvider {
   @Override
   public Optional<JobTask> getTask(Job job, ActionType type, Context context)
       throws IllegalArgumentException {
-    JobTaskKey key = JobTaskKey.create(job, type, context);
-    if (payables.containsKey(key)) {
+    Key contextKey = keyResolver.resolve(context);
+    JobTaskKey key = new JobTaskKey(job.key(), type.key(), contextKey);
+    if (!payables.containsKey(key)) {
       return Optional.empty();
     }
     List<PayableRecord> records = payables.get(key);
     return Optional.of(() -> records.stream().map(PayableRecord::toPayable).toList());
   }
 
-  @Override
-  public void addTask(Job job, ActionType type, Context context, List<Payable> payables) {
-    StringBuilder base = new StringBuilder()
-        .append(job.key()).append(',')
-        .append(type.key()).append(',')
-        .append(keyResolver.resolve(context)).append(',');
-    for (Payable payable : payables) {
-      PayableAmount amount = payable.amount();
-      Optional<Currency> currency = amount.currency();
-      BigDecimal bigDecimal = amount.amount();
-      StringBuilder payableString = new StringBuilder(base)
-          .append(payable.type().key()).append(',')
-          .append(bigDecimal.toString());
-      currency.ifPresent(c -> payableString.append(',').append(c.identifier()));
-      try {
-        Files.writeString(csvPath, payableString.toString(), StandardOpenOption.CREATE,
-            StandardOpenOption.APPEND);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }
-    JobTaskKey key = JobTaskKey.create(job, type, context);
-    List<PayableRecord> records = payables.stream().map(
-        payable -> {
-          PayableAmount amount = payable.amount();
-          String currencyString = amount.currency().map(Currency::identifier).orElse(null);
-          return new PayableRecord(payable.type().key(),
-              amount.amount().toString(), currencyString);
-        }).toList();
-    this.payables.put(key, records);
-  }
+  private record JobTaskKey(Key jobKey, Key actionTypeKey, Key contextKey) {
 
-  private record JobTaskKey(Key jobKey, Key actionTypeKey, Key contextKey, KeyResolver keyResolver) {
-
-    static JobTaskKey create(Job job, ActionType type, Context context) {
-      Key contextKey = .resolve(context);
-      return new JobTaskKey(job.key(), type.key(), contextKey);
-    }
-
-    static JobTaskKey create(String jobKeyString, String actionTypeKeyString,
-        String contextKeyString) throws IllegalArgumentException {
-      NamespacedKey jobKey = NamespacedKey.fromString(jobKeyString);
-      NamespacedKey actionTypeKey = NamespacedKey.fromString(actionTypeKeyString);
-      NamespacedKey contextKey = NamespacedKey.fromString(contextKeyString);
-      if (jobKey == null || actionTypeKey == null || contextKey == null) {
-        throw new IllegalArgumentException(
-            "Invalid parameters: all keys must be valid namespaced keys");
-      }
-      return new JobTaskKey(jobKey, actionTypeKey, contextKey);
-    }
   }
 
   private record PayableRecord(Key payableTypeKey, String amount, String currency) {
@@ -132,7 +87,7 @@ final class CSVJobTaskProviderImpl implements JobTaskProvider {
       RegistryView<PayableType> registry = RegistryContainer.registryContainer()
           .getRegistry(RegistryKeys.PAYABLE_TYPES);
       try {
-        return Payable.create(registry.getOrThrow(payableTypeKey), PayableAmount.create(
+        return new Payable(registry.getOrThrow(payableTypeKey), PayableAmount.create(
             new BigDecimal(amount), new net.aincraft.container.Currency() {
               @Override
               public String identifier() {

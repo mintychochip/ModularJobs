@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import net.aincraft.registry.Registry;
 import net.aincraft.serialization.Codec.Reader;
@@ -67,10 +68,15 @@ final class CodecRegistryImpl implements CodecRegistry, Writer,
     int tag = Hashing.murmur3_32_fixed().hashString(key.asString(), StandardCharsets.UTF_8).asInt();
     if (keyToTag.containsKey(key) || keyToTag.containsValue(tag)) {
       //TODO: use the plugin logger
-      Bukkit.getLogger().info("duplicated produced by key: " + key + " tag: " + tag);
+      Bukkit.getLogger().info("duplicated produced by jobKey: " + key + " tag: " + tag);
       return;
     }
     keyToTag.put(key, tag);
+  }
+
+  @Override
+  public @NotNull Optional<Codec> get(Key key) {
+    return delegate.get(key);
   }
 
   @Override

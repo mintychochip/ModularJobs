@@ -1,16 +1,71 @@
 package net.aincraft.job;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import java.util.Map;
+import net.aincraft.Job;
 import net.aincraft.config.YamlConfiguration;
+import net.aincraft.container.Payable;
+import net.aincraft.container.PayableType;
+import net.aincraft.job.JobRecordRepository.JobRecord;
+import net.aincraft.job.MemoryJobRecordRepositoryImpl.YamlRecordLoader;
+import net.aincraft.job.PayableRecordRepository.PayableRecord;
+import net.aincraft.registry.Registry;
+import net.aincraft.repository.ConnectionSourceFactory;
+import net.aincraft.service.JobService;
+import net.aincraft.util.KeyFactory;
+import net.aincraft.util.Mapper;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
 public final class JobModule extends AbstractModule {
 
+  @Override
+  protected void configure() {
+    bind(JobService.class).to(JobServiceImpl.class).in(Singleton.class);
+  }
+
   @Provides
   @Singleton
-  public JobRepository jobRepository(Plugin plugin) {
-    return YamlJobRepositoryImpl.create(YamlConfiguration.create(plugin, "jobs.yml"));
+  Mapper<Payable, PayableRecord> payableRecordMapper(Registry<PayableType> r) {
+    return new PayableRecordMapperImpl(r);
+  }
+
+  @Provides
+  @Singleton
+  Mapper<Job, JobRecord> jobRecordMapper(KeyFactory keyFactory,
+      Registry<PayableType> re) {
+    return new JobRecordMapperImpl(keyFactory, re);
+  }
+
+//  @Provides
+//  @Singleton
+//  JobTaskRepository jobTaskRepository(@Named("database") YamlConfiguration configuration,
+//      Plugin plugin) {
+//    Preconditions.checkArgument(configuration.contains("payable"));
+//    ConfigurationSection repositoryConfiguration = configuration.getConfigurationSection("payable");
+//    return new RelationalJobTaskRepositoryImpl(
+//        new ConnectionSourceFactory(plugin, repositoryConfiguration).create());
+//  }
+
+  @Provides
+  @Singleton
+  JobRecordRepository jobRepository(Plugin plugin) {
+    YamlRecordLoader loader = new YamlRecordLoader();
+    Map<String, JobRecord> records = loader.load(YamlConfiguration.create(plugin, "jobs.yml"));
+    return new MemoryJobRecordRepositoryImpl(records);
+  }
+
+  @Provides
+  @Singleton
+  PayableRecordRepository payableRecordRepository(
+      @Named("database") YamlConfiguration configuration, Plugin plugin) {
+    Preconditions.checkArgument(configuration.contains("payable"));
+    ConfigurationSection repositoryConfiguration = configuration.getConfigurationSection("payable");
+    return new RelationalPayableRecordRepositoryImpl(
+        new ConnectionSourceFactory(plugin, repositoryConfiguration).create());
   }
 }

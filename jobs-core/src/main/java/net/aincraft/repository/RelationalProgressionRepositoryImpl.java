@@ -79,6 +79,7 @@ public final class RelationalProgressionRepositoryImpl implements
         public JobProgression mapResult(ResultSet rs, PlayerJobCompositeKey key)
             throws SQLException {
           BigDecimal experience = rs.getBigDecimal("experience");
+          Bukkit.broadcastMessage(key.jobKey().toString());
           Optional<Job> job = jobService.getJob(key.jobKey());
           //TODO: idk what exception to throw here
           return new JobProgressionImpl(Bukkit.getOfflinePlayer(key.playerId()), job.get(), experience);
@@ -95,7 +96,7 @@ public final class RelationalProgressionRepositoryImpl implements
       throw new IllegalArgumentException(
           "progression already exists for player: " + uuid.toString());
     }
-    progression = new JobProgressionImpl(Bukkit.getOfflinePlayer(uuid), job.get(), BigDecimal.ZERO, 1);
+    progression = new JobProgressionImpl(Bukkit.getOfflinePlayer(uuid), job.get(), BigDecimal.ZERO);
     repository.save(key, progression);
     return progression;
   }

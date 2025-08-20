@@ -1,14 +1,11 @@
 package net.aincraft.job;
 
 import java.math.BigDecimal;
-import java.util.Map;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
-import net.aincraft.container.PayableCurve;
-import net.aincraft.container.PayableTypes;
 import org.bukkit.OfflinePlayer;
 
-public class JobProgressionImpl implements JobProgression {
+public final class JobProgressionImpl implements JobProgression {
 
   private static final int INVALID_LEVEL = -1;
 
@@ -17,26 +14,21 @@ public class JobProgressionImpl implements JobProgression {
   private final BigDecimal experience;
   private final int level;
 
-  public JobProgressionImpl(OfflinePlayer player, Job job, BigDecimal experience, int level) {
-    this.job = job;
-    this.player = player;
-    this.experience = experience;
-    this.level = level;
-  }
-
   public JobProgressionImpl(OfflinePlayer player, Job job, BigDecimal experience) {
-    this(player, job, experience, INVALID_LEVEL);
+    this.player = player;
+    this.job = job;
+    this.experience = experience;
+    this.level = calculateCurrentLevel();
   }
 
   @Override
   public JobProgression setExperience(BigDecimal experience) {
-    return new JobProgressionImpl(player, job, experience, calculateCurrentLevel());
+    return new JobProgressionImpl(player, job, experience);
   }
 
   @Override
-  public double getExperienceForLevel(int level) {
-    PayableCurve curve = job.getCurve(PayableTypes.EXPERIENCE);
-    return curve.apply(Map.of("level", level)).doubleValue();
+  public BigDecimal getExperienceForLevel(int level) {
+    return job.getLevelingCurve().compute(level);
   }
 
   @Override
@@ -69,8 +61,7 @@ public class JobProgressionImpl implements JobProgression {
     int level = INVALID_LEVEL;
     while (low <= maxLevel) {
       int mid = (low + maxLevel) >>> 1;
-      BigDecimal requiredXpForLevel = job.getCurve(PayableTypes.EXPERIENCE)
-          .apply(Map.of("level", mid));
+      BigDecimal requiredXpForLevel = job.getLevelingCurve().compute(mid);
       if (experience.compareTo(requiredXpForLevel) >= 0) {
         level = mid;
         low = mid + 1;
