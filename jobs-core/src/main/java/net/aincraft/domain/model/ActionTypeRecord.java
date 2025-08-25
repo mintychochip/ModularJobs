@@ -1,4 +1,4 @@
-package net.aincraft.job.model;
+package net.aincraft.domain.model;
 
 public record ActionTypeRecord(String actionTypeKey) {
 

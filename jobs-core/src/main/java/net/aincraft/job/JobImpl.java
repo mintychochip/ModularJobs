@@ -1,8 +1,11 @@
 package net.aincraft.job;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.aincraft.Job;
+import net.aincraft.JobTask;
+import net.aincraft.container.ActionType;
 import net.aincraft.container.PayableType;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -14,15 +17,20 @@ final class JobImpl implements Job {
   private final Key key;
   private final Component displayName;
   private final Component description;
+  private final int maxLevel;
+  private final Map<ActionType, List<JobTask>> tasks;
   private final LevelingCurve levelingCurve;
   private final Map<PayableType, PayableCurve> payableCurves;
 
-  public JobImpl(Key key, Component displayName,  Component description,
+  public JobImpl(Key key, Component displayName,  Component description, int maxLevel,
+      Map<ActionType, List<JobTask>> tasks,
       LevelingCurve levelingCurve,
       Map<PayableType, PayableCurve> payableCurves) {
     this.key = key;
     this.displayName = displayName;
     this.description = description;
+    this.maxLevel = maxLevel;
+    this.tasks = tasks;
     this.levelingCurve = levelingCurve;
     this.payableCurves = payableCurves;
   }
@@ -53,8 +61,13 @@ final class JobImpl implements Job {
   }
 
   @Override
+  public List<JobTask> getTasks(ActionType type) {
+    return tasks.get(type);
+  }
+
+  @Override
   public int getMaxLevel() {
-    return 200;
+    return maxLevel;
   }
 
   @Override

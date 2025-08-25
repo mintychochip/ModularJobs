@@ -1,7 +1,9 @@
 package net.aincraft;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import net.aincraft.container.ActionType;
 import net.aincraft.container.PayableType;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
@@ -19,12 +21,16 @@ public interface Job extends Keyed {
 
   Optional<PayableCurve> getCurve(PayableType type);
 
+  List<JobTask> getTasks(ActionType type);
+
   int getMaxLevel();
 
   interface LevelingCurve {
 
     @Contract(pure = true)
-    BigDecimal evaluate(int level);
+    BigDecimal evaluate(Parameters parameters);
+
+    record Parameters(int level) {}
   }
 
   interface PayableCurve {

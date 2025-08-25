@@ -1,10 +1,8 @@
 package net.aincraft.job;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import java.util.Map;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
@@ -13,12 +11,17 @@ import net.aincraft.config.YamlConfiguration;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Payable;
 import net.aincraft.container.PayableType;
-import net.aincraft.job.JobRecordRepository.JobRecord;
+import net.aincraft.domain.ActionTypeRecordMapperImpl;
+import net.aincraft.domain.JobRecordMapperImpl;
+import net.aincraft.domain.JobTaskRecordMapper;
+import net.aincraft.domain.JobsProgressionRecordMapperImpl;
+import net.aincraft.domain.PayableRecordMapperImpl;
+import net.aincraft.domain.model.JobRecord;
 import net.aincraft.job.MemoryJobRecordRepositoryImpl.YamlRecordLoader;
-import net.aincraft.job.model.ActionTypeRecord;
-import net.aincraft.job.model.JobProgressionRecord;
-import net.aincraft.job.model.JobTaskRecord;
-import net.aincraft.job.model.PayableRecord;
+import net.aincraft.domain.model.ActionTypeRecord;
+import net.aincraft.domain.model.JobProgressionRecord;
+import net.aincraft.domain.model.JobTaskRecord;
+import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.registry.Registry;
 import net.aincraft.repository.ConnectionSourceFactory;
 import net.aincraft.service.JobService;
@@ -62,7 +65,7 @@ public final class JobModule extends AbstractModule {
   @Singleton
   Mapper<ActionType, ActionTypeRecord> actionTypeRecordMapper(Registry<ActionType> registry,
       KeyFactory keyFactory) {
-    return new ActionTypeRecordMapper(registry, keyFactory);
+    return new ActionTypeRecordMapperImpl(registry, keyFactory);
   }
 
 //  @Provides
