@@ -1,7 +1,7 @@
 package net.aincraft.payment;
 
 import java.util.function.Supplier;
-import net.aincraft.service.MobDamageTracker.DamageContribution;
+import net.aincraft.payment.MobDamageTracker.DamageContribution;
 import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.ApiStatus.Internal;

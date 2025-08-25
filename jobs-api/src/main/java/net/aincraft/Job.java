@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.aincraft.container.PayableType;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.Contract;
 
 public interface Job extends Keyed {
 
@@ -21,12 +22,18 @@ public interface Job extends Keyed {
   int getMaxLevel();
 
   interface LevelingCurve {
-    BigDecimal compute(int level);
+
+    @Contract(pure = true)
+    BigDecimal evaluate(int level);
   }
 
   interface PayableCurve {
+
+    @Contract(pure = true)
     BigDecimal evaluate(Parameters parameters);
 
-    record Parameters(BigDecimal base, int level, int jobs) {}
+    record Parameters(BigDecimal base, int level, int jobs) {
+
+    }
   }
 }

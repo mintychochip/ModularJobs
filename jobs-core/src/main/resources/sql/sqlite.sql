@@ -33,11 +33,30 @@ CREATE TABLE IF NOT EXISTS time_boosts
 
 CREATE TABLE IF NOT EXISTS payable_records
 (
+    job_key          TEXT NOT NULL,
+    action_type_key  TEXT NOT NULL,
+    context_key      TEXT NOT NULL,
+    payable_type_key TEXT NOT NULL,
+    amount           TEXT NOT NULL,
+    currency         TEXT NOT NULL,
+    PRIMARY KEY (job_key, action_type_key, context_key, payable_type_key)
+);
+
+CREATE TABLE IF NOT EXISTS job_tasks
+(
+    task_id         INTEGER PRIMARY KEY AUTOINCREMENT,
     job_key         TEXT NOT NULL,
     action_type_key TEXT NOT NULL,
-    context_key     TEXT NOT NULL,
+    context_key     TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS job_task_payables
+(
+    job_task_id      INTEGER NOT NULL,
     payable_type_key TEXT    NOT NULL,
     amount           TEXT    NOT NULL,
-    currency         TEXT    NOT NULL,
-    PRIMARY KEY (job_key,action_type_key,context_key,payable_type_key)
+    currency         TEXT    NULL,
+    FOREIGN KEY (job_task_id) REFERENCES job_tasks (task_id) ON DELETE CASCADE
 );
+
+

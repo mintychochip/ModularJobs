@@ -2,6 +2,7 @@ package net.aincraft;
 
 import java.util.List;
 import net.aincraft.container.Payable;
+import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface JobTask {
 
+  Key getContext();
   /**
    * Returns the unscaled, virtual rewards for this task.
    *

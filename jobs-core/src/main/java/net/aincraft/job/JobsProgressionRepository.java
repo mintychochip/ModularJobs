@@ -1,8 +1,8 @@
 package net.aincraft.job;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import net.aincraft.job.model.JobProgressionRecord;
 
 public interface JobsProgressionRepository {
 
@@ -10,10 +10,6 @@ public interface JobsProgressionRepository {
 
   Optional<JobProgressionRecord> getRecord(String playerId, String jobKey);
 
-  List<JobProgressionRecord> getProgressionRecords();
-
-  record JobProgressionRecord(String playerId, String jobKey, BigDecimal experience) {
-
-  }
+  List<JobProgressionRecord> getRecords(String jobKey);
 
 }

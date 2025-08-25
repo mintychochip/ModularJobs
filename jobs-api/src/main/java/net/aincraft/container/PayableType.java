@@ -1,10 +1,13 @@
 package net.aincraft.container;
 
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.ApiStatus.NonExtendable;
 
 @NonExtendable
-public record PayableType(PayableHandler handler, Key key) implements Keyed {
+public interface PayableType extends Keyed {
 
+  PayableHandler handler();
+
+  Component render(PayableAmount amount, int places);
 }

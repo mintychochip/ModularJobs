@@ -17,7 +17,7 @@ final class Exp4jLevelingCurveImpl implements LevelingCurve {
   }
 
   @Override
-  public BigDecimal compute(int level) {
+  public BigDecimal evaluate(int level) {
     return memo.computeIfAbsent(level,
         ignored -> BigDecimal.valueOf(expression.setVariable("level", level).evaluate()));
   }

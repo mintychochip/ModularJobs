@@ -1,10 +1,14 @@
 package net.aincraft.job;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.aincraft.job.model.JobProgressionRecord;
 import net.aincraft.repository.ConnectionSource;
 
 final class RelationalJobsProgressionRepositoryImpl implements JobsProgressionRepository {
@@ -39,7 +43,23 @@ final class RelationalJobsProgressionRepositoryImpl implements JobsProgressionRe
   }
 
   @Override
-  public List<JobProgressionRecord> getProgressionRecords() {
-    return List.of();
+  public List<JobProgressionRecord> getRecords(String jobKey) {
+    List<JobProgressionRecord> records = new ArrayList<>();
+    try (Connection connection = connectionSource.getConnection();
+        PreparedStatement ps = connection.prepareStatement(
+            "SELECT player_id, experience FROM job_progression WHERE job_key=? ORDER BY (experience IS NULL), CAST(experience AS REAL) DESC")) {
+      ps.setString(1, jobKey);
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+          String playerId = rs.getString("player_id");
+          BigDecimal experience = rs.getBigDecimal("experience");
+          records.add(new JobProgressionRecord(playerId,jobKey,experience));
+        }
+      }
+      return records;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
+
 }

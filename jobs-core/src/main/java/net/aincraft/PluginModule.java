@@ -3,7 +3,8 @@ package net.aincraft;
 import com.google.inject.AbstractModule;
 import net.aincraft.commands.CommandModule;
 import net.aincraft.config.ConfigurationModule;
-import net.aincraft.economy.EconomyModule;
+import net.aincraft.payable.PayableModule;
+import net.aincraft.hooks.preferences.PreferenceModule;
 import net.aincraft.job.JobModule;
 import net.aincraft.payment.PaymentModule;
 import net.aincraft.placeholders.PlaceholderAPIModule;
@@ -29,7 +30,7 @@ public final class PluginModule extends AbstractModule {
     bind(Plugin.class).toInstance(plugin);
     bind(Bridge.class).to(BridgeImpl.class);
     install(new ConfigurationModule(plugin));
-    install(new EconomyModule());
+    install(new PayableModule());
     install(new PaymentModule());
     install(new ProtectionModule());
     install(new RegistryModule());
@@ -39,6 +40,7 @@ public final class PluginModule extends AbstractModule {
     install(new JobModule());
     install(new UtilModule());
     install(new CommandModule());
+    install(new PreferenceModule());
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       install(new PlaceholderAPIModule());
     }

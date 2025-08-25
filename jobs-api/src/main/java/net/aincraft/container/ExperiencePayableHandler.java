@@ -13,8 +13,6 @@ public interface ExperiencePayableHandler extends PayableHandler {
     BossBar format(@NotNull BossBar bossBar,
         @NotNull ExperienceBarContext context);
 
-    void setColor(@NotNull BossBar.Color color);
-
     void setOverlay(@NotNull BossBar.Overlay overlay);
   }
 

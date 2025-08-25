@@ -8,4 +8,6 @@ import org.jetbrains.annotations.ApiStatus.NonExtendable;
  */
 @NonExtendable
 public interface ActionType extends Keyed {
+
+  String name();
 }

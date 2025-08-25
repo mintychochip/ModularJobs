@@ -1,7 +1,6 @@
 package net.aincraft.payment;
 
 import com.google.inject.Inject;
-import net.aincraft.service.MobDamageTracker;
 import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Entity;
 
@@ -28,6 +27,4 @@ final class MobDamageTrackerImpl implements MobDamageTracker {
   public boolean isTracking(Entity entity) {
     return store.hasContribution(entity);
   }
-
-
 }

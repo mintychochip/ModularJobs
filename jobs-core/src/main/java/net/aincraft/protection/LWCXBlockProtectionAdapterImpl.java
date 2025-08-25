@@ -4,7 +4,6 @@ import com.griefcraft.lwc.LWC;
 import com.griefcraft.model.Protection;
 import java.util.Optional;
 import java.util.UUID;
-import net.aincraft.protection.BlockOwnershipService.BlockProtectionAdapter;
 import org.bukkit.block.Block;
 
 final class LWCXBlockProtectionAdapterImpl implements BlockProtectionAdapter {

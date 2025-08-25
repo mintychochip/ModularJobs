@@ -1,0 +1,2 @@
+type: sqlite
+file-path: preferences.db

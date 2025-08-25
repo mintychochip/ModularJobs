@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.exp4j)
     implementation(libs.hikaricp)
     implementation(libs.caffeine)
+    compileOnly("com.github.mintychochip:preferences:631142d")
 //    compileOnly("io.lumine:Mythic-Dist:5.6.1") {
 //        exclude(group="org.jetbrains.annotations")
 //    }
@@ -65,6 +66,8 @@ tasks {
             url("https://www.spigotmc.org/resources/lwc-extended.69551/download?version=557109")
             url("https://www.spigotmc.org/resources/vault.34315/download?version=344916")
             url("https://www.spigotmc.org/resources/placeholderapi.6245/download?version=541946")
+            url("https://www.spigotmc.org/resources/jobs-reborn.4216/download?version=603386")
+            url("https://www.spigotmc.org/resources/cmilib.87610/download?version=603384")
         }
 
     }

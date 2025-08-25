@@ -2,7 +2,6 @@ package net.aincraft.protection;
 
 import java.util.Optional;
 import java.util.UUID;
-import net.aincraft.protection.BlockOwnershipService.BlockProtectionAdapter;
 import org.bukkit.block.Block;
 import org.popcraft.bolt.BoltAPI;
 import org.popcraft.bolt.protection.Protection;

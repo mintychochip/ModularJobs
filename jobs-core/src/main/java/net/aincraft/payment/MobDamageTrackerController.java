@@ -1,7 +1,7 @@
 package net.aincraft.payment;
 
 import com.google.inject.Inject;
-import net.aincraft.service.MobDamageTracker.DamageContribution;
+import net.aincraft.payment.MobDamageTracker.DamageContribution;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;

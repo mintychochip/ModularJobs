@@ -6,6 +6,7 @@ import java.util.List;
 import net.aincraft.Job;
 import net.aincraft.Job.PayableCurve.Parameters;
 import net.aincraft.JobProgression;
+import net.aincraft.JobTask;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Boost;
 import net.aincraft.container.Context;
@@ -43,7 +44,8 @@ final class JobsPaymentHandlerImpl implements JobsPaymentHandler {
     for (JobProgression progression : progressions) {
       List<Boost> boosts = boostEngine.evaluate(type, progression, (Player) player);
       Job job = progression.getJob();
-      jobService.getPayables(job, type, context).forEach(payable -> {
+      JobTask task = jobService.getTask(job, type, context);
+      task.getPayables().forEach(payable -> {
         PayableType payableType = payable.type();
         PayableAmount amount = payable.amount();
         Parameters parameters = new Parameters(amount.value(), progression.getLevel(),

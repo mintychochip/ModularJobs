@@ -17,14 +17,4 @@ public final class ServiceModule extends AbstractModule {
     bind(ProgressionService.class).to(ProgressionServiceImpl.class).in(Singleton.class);
     bind(ItemBoostDataService.class).to(ItemBoostDataServiceImpl.class).in(Singleton.class);
   }
-
-  @Provides
-  @Singleton
-  public JobTaskProvider jobTaskProvider(Plugin plugin, KeyResolver keyResolver) {
-    try {
-      return CSVJobTaskProviderImpl.create(plugin, keyResolver);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
 }

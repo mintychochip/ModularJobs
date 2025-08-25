@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
 import net.aincraft.container.PayableType;
-import net.aincraft.job.PayableRecordRepository.PayableRecord;
+import net.aincraft.job.model.PayableRecord;
 import net.aincraft.registry.Registry;
 import net.aincraft.util.Mapper;
 import org.bukkit.NamespacedKey;

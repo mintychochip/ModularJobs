@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
-import net.aincraft.job.JobsProgressionRepository.JobProgressionRecord;
+import net.aincraft.job.model.JobProgressionRecord;
 import net.aincraft.service.JobService;
 import net.aincraft.util.Mapper;
 import org.bukkit.Bukkit;

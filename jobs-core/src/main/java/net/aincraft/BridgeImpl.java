@@ -9,7 +9,6 @@ import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.service.JobTaskProvider;
-import net.aincraft.service.MobDamageTracker;
 import net.aincraft.service.ProgressionService;
 import org.bukkit.plugin.Plugin;
 
@@ -37,11 +36,6 @@ record BridgeImpl(Plugin plugin, ProgressionService progressionService,
 
   @Override
   public PolicyFactory policyFactory() {
-    return null;
-  }
-
-  @Override
-  public MobDamageTracker mobDamageTracker() {
     return null;
   }
 

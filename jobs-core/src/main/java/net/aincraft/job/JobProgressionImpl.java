@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 
 public final class JobProgressionImpl implements JobProgression {
 
@@ -28,7 +29,7 @@ public final class JobProgressionImpl implements JobProgression {
 
   @Override
   public BigDecimal getExperienceForLevel(int level) {
-    return job.getLevelingCurve().compute(level);
+    return job.getLevelingCurve().evaluate(level);
   }
 
   @Override
@@ -61,7 +62,7 @@ public final class JobProgressionImpl implements JobProgression {
     int level = INVALID_LEVEL;
     while (low <= maxLevel) {
       int mid = (low + maxLevel) >>> 1;
-      BigDecimal requiredXpForLevel = job.getLevelingCurve().compute(mid);
+      BigDecimal requiredXpForLevel = job.getLevelingCurve().evaluate(mid);
       if (experience.compareTo(requiredXpForLevel) >= 0) {
         level = mid;
         low = mid + 1;

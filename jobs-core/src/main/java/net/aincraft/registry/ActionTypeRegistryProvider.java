@@ -2,7 +2,9 @@ package net.aincraft.registry;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import net.aincraft.action.ActionTypeImpl;
 import net.aincraft.container.ActionType;
+import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 
@@ -45,7 +47,22 @@ final class ActionTypeRegistryProvider implements Provider<Registry<ActionType>>
     return r;
   }
 
+  private ActionType actionType(String name, String keyString) {
+    return new ActionTypeImpl(name, new NamespacedKey(plugin, keyString));
+  }
+
   private ActionType actionType(String keyString) {
-    return () -> new NamespacedKey(plugin, keyString);
+    StringBuilder sb = new StringBuilder(keyString.length());
+    boolean capitalNext = true;
+    for (char c : keyString.toCharArray()) {
+      if (c == '_') {
+        sb.append(' ');
+        capitalNext = true;
+      } else {
+        sb.append(capitalNext ? Character.toUpperCase(c) : Character.toLowerCase(c));
+        capitalNext = false;
+      }
+    }
+    return actionType(sb.toString(), keyString);
   }
 }

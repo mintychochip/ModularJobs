@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import net.aincraft.container.Context.EntityContext;
-import net.aincraft.service.MobDamageTracker.DamageContribution;
+import net.aincraft.payment.MobDamageTracker.DamageContribution;
 import net.aincraft.util.KeyResolver;
 import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Entity;

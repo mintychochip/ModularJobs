@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import net.aincraft.service.MobDamageTracker.DamageContribution;
+import net.aincraft.payment.MobDamageTracker.DamageContribution;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;

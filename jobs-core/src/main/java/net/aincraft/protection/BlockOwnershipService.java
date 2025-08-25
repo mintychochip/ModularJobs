@@ -12,7 +12,4 @@ public interface BlockOwnershipService {
   @NotNull
   Optional<OfflinePlayer> getOwner(Block block);
 
-  interface BlockProtectionAdapter {
-    Optional<UUID> getOwner(Block block);
-  }
 }

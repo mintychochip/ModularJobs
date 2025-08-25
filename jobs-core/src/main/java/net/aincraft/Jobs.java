@@ -12,9 +12,11 @@ import java.sql.SQLException;
 import java.util.Set;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.commands.JobsCommand;
+import net.aincraft.hooks.preferences.ExperienceBarColorPreferenceImpl;
 import net.aincraft.repository.ConnectionSource;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -39,12 +41,13 @@ public class Jobs extends JavaPlugin {
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       injector.getInstance(PlaceholderExpansion.class).register();
     }
-    Set<JobsCommand> commands = injector.getInstance(Key.get(new TypeLiteral<>(){}));
+    Set<JobsCommand> commands = injector.getInstance(Key.get(new TypeLiteral<>() {
+    }));
     LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("jobs");
     for (JobsCommand command : commands) {
       root.then(command.build());
     }
-    getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,c -> {
+    getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, c -> {
       c.registrar().register(root.build());
     });
     Bukkit.getPluginCommand("test").setExecutor(injector.getInstance(Command.class));

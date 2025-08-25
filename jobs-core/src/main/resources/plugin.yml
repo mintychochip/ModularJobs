@@ -3,6 +3,8 @@ version: '1.1'
 main: net.aincraft.Jobs
 authors: [ mintychochip ]
 api-version: '1.13'
+softdepend:
+  - Preferences
 commands:
   test:
     description: asdads

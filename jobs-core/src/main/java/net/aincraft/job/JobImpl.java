@@ -9,7 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
-public final class JobImpl implements Job {
+final class JobImpl implements Job {
 
   private final Key key;
   private final Component displayName;
