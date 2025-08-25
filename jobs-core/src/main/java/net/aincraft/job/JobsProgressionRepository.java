@@ -2,7 +2,7 @@ package net.aincraft.job;
 
 import java.util.List;
 import java.util.Optional;
-import net.aincraft.job.model.JobProgressionRecord;
+import net.aincraft.domain.model.JobProgressionRecord;
 
 public interface JobsProgressionRepository {
 

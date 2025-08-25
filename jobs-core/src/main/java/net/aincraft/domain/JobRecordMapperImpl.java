@@ -1,14 +1,23 @@
-package net.aincraft.job;
+package net.aincraft.domain;
 
 import com.google.inject.Inject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import net.aincraft.Job;
 import net.aincraft.Job.LevelingCurve;
 import net.aincraft.Job.PayableCurve;
+import net.aincraft.JobTask;
+import net.aincraft.container.ActionType;
 import net.aincraft.container.PayableType;
-import net.aincraft.job.JobRecordRepository.JobRecord;
+import net.aincraft.domain.model.ActionTypeRecord;
+import net.aincraft.domain.model.JobRecord;
+import net.aincraft.domain.model.JobTaskRecord;
+import net.aincraft.job.Exp4jLevelingCurveImpl;
+import net.aincraft.job.Exp4jPayableCurveImpl;
+import net.aincraft.job.JobImpl;
+import net.aincraft.math.CurveFactory;
 import net.aincraft.registry.Registry;
 import net.aincraft.util.KeyFactory;
 import net.aincraft.util.Mapper;
@@ -21,14 +30,22 @@ final class JobRecordMapperImpl implements Mapper<Job, JobRecord> {
 
   private final KeyFactory keyFactory;
   private final Registry<PayableType> payableTypeRegistry;
+  private final Mapper<ActionType, ActionTypeRecord> actionTypeMapper;
+  private final Mapper<JobTask, JobTaskRecord> jobTaskMapper;
+  private final CurveFactory curveFactory;
   private final Map<String, PayableCurve> payableCurveMap = new HashMap<>();
   private final Map<String, LevelingCurve> levelingCurveMap = new HashMap<>();
 
   @Inject
   JobRecordMapperImpl(KeyFactory keyFactory,
-      Registry<PayableType> payableTypeRegistry) {
+      Registry<PayableType> payableTypeRegistry,
+      Mapper<ActionType, ActionTypeRecord> actionTypeMapper,
+      Mapper<JobTask, JobTaskRecord> jobTaskMapper, CurveFactory curveFactory) {
     this.keyFactory = keyFactory;
     this.payableTypeRegistry = payableTypeRegistry;
+    this.actionTypeMapper = actionTypeMapper;
+    this.jobTaskMapper = jobTaskMapper;
+    this.curveFactory = curveFactory;
   }
 
   @Override
@@ -43,6 +60,8 @@ final class JobRecordMapperImpl implements Mapper<Job, JobRecord> {
     Map<PayableType, PayableCurve> payableCurves = payableCurves(record.payableCurves());
     return new JobImpl(jobKey, displayName, description, levelingCurve, payableCurves);
   }
+
+  private Map<ActionType,List<JobTask>> actionTypeTasks(Map<ActionTypeRecord, List<JobTask>>)
 
   private Map<PayableType, PayableCurve> payableCurves(Map<String, String> curves)
       throws IllegalArgumentException {

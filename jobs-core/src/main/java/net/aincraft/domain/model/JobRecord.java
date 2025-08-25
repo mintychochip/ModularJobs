@@ -1,0 +1,14 @@
+package net.aincraft.domain.model;
+
+import java.util.List;
+import java.util.Map;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+public record JobRecord(@NotNull String jobKey, @NotNull String displayName,
+                        @Nullable String description, int maxLevel,
+                        @NotNull Map<ActionTypeRecord, List<JobTaskRecord>> tasks,
+                        @NotNull String levellingCurve,
+                        @NotNull Map<String, String> payableCurves) {
+
+}

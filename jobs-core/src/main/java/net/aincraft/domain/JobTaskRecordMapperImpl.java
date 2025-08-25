@@ -1,22 +1,22 @@
-package net.aincraft.job;
+package net.aincraft.domain;
 
 import com.google.inject.Inject;
 import java.util.List;
 import net.aincraft.JobTask;
 import net.aincraft.container.Payable;
-import net.aincraft.job.model.JobTaskRecord;
-import net.aincraft.job.model.PayableRecord;
+import net.aincraft.domain.model.JobTaskRecord;
+import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.util.Mapper;
 import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-public final class JobTaskRecordMapper implements Mapper<JobTask, JobTaskRecord> {
+final class JobTaskRecordMapperImpl implements Mapper<JobTask, JobTaskRecord> {
 
   private final Mapper<Payable, PayableRecord> payableRecordMapper;
 
   @Inject
-  public JobTaskRecordMapper(Mapper<Payable, PayableRecord> payableRecordMapper) {
+  public JobTaskRecordMapperImpl(Mapper<Payable, PayableRecord> payableRecordMapper) {
     this.payableRecordMapper = payableRecordMapper;
   }
 

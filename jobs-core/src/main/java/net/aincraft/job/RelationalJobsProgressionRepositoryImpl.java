@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import net.aincraft.job.model.JobProgressionRecord;
+import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.repository.ConnectionSource;
 
 final class RelationalJobsProgressionRepositoryImpl implements JobsProgressionRepository {

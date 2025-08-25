@@ -1,4 +1,4 @@
-package net.aincraft.job;
+package net.aincraft.math;
 
 import java.math.BigDecimal;
 import java.util.HashMap;

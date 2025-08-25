@@ -10,13 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.sound.sampled.Line;
-import net.aincraft.container.ActionType;
-import net.aincraft.job.model.ActionTypeRecord;
-import net.aincraft.job.model.JobTaskRecord;
-import net.aincraft.job.model.PayableRecord;
+import net.aincraft.domain.model.ActionTypeRecord;
+import net.aincraft.domain.model.JobTaskRecord;
+import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.repository.ConnectionSource;
-import org.bukkit.Bukkit;
 
 public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
 
