@@ -3,13 +3,12 @@ package net.aincraft.domain;
 import com.google.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import net.aincraft.Job;
-import net.aincraft.Job.LevelingCurve;
-import net.aincraft.Job.PayableCurve;
+import net.aincraft.LevelingCurve;
+import net.aincraft.PayableCurve;
 import net.aincraft.container.PayableType;
 import net.aincraft.domain.model.JobRecord;
-import net.aincraft.math.JobCurveFactory;
+import net.aincraft.math.ExpressionCurveFactory;
 import net.aincraft.registry.Registry;
 import net.aincraft.util.KeyFactory;
 import net.aincraft.util.DomainMapper;
@@ -20,49 +19,83 @@ import org.jetbrains.annotations.NotNull;
 
 final class JobRecordDomainMapperImpl implements DomainMapper<Job, JobRecord> {
 
+  private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+
+  private final DomainMapper<Map<Key, PayableCurve>, Map<String, String>> payableCurveMapper;
   private final KeyFactory keyFactory;
   private final Registry<PayableType> payableTypeRegistry;
-  private final JobCurveFactory jobCurveFactory;
+  private final ExpressionCurveFactory expressionCurveFactory;
 
   @Inject
-  JobRecordDomainMapperImpl(KeyFactory keyFactory,
+  JobRecordDomainMapperImpl(
+      DomainMapper<Map<Key, PayableCurve>, Map<String, String>> payableCurveMapper,
+      KeyFactory keyFactory,
       Registry<PayableType> payableTypeRegistry,
-      JobCurveFactory jobCurveFactory) {
+      ExpressionCurveFactory expressionCurveFactory) {
+    this.payableCurveMapper = payableCurveMapper;
     this.keyFactory = keyFactory;
     this.payableTypeRegistry = payableTypeRegistry;
-    this.jobCurveFactory = jobCurveFactory;
+    this.expressionCurveFactory = expressionCurveFactory;
   }
 
   @Override
-  public @NotNull Job toDomainObject(@NotNull JobRecord record) throws IllegalArgumentException {
-    MiniMessage miniMessage = MiniMessage.miniMessage();
+  public @NotNull Job toDomain(@NotNull JobRecord record) throws IllegalArgumentException {
     Key jobKey = keyFactory.create(record.jobKey());
-    Component displayName = miniMessage.deserialize(record.displayName());
-    String rawDescription = record.description();
-    Component description = rawDescription != null ? miniMessage.deserialize(rawDescription) : null;
-    LevelingCurve levelingCurve = jobCurveFactory.levelingCurve(record.levellingCurve());
-    Map<PayableType, PayableCurve> payableCurves = payableCurves(record.payableCurves());
+    Component displayName = MINI_MESSAGE.deserialize(record.displayName());
+    Component description = MINI_MESSAGE.deserialize(record.description());
+    LevelingCurve levelingCurve = expressionCurveFactory.levelingCurve(record.levellingCurve());
     return new JobImpl(jobKey, displayName, description, record.maxLevel(), levelingCurve,
-        payableCurves);
+        payableCurveMapper.toDomain(record.payableCurves()));
   }
 
-  private Map<PayableType, PayableCurve> payableCurves(Map<String, String> curves)
-      throws IllegalArgumentException {
-    Map<PayableType, PayableCurve> payableCurves = new HashMap<>();
-    for (Entry<String, String> payableCurve : curves.entrySet()) {
-      String payableTypeKey = payableCurve.getKey();
-      String curveFunction = payableCurve.getValue();
-      if (payableTypeKey == null || curveFunction == null) {
-        continue;
-      }
-      if (!payableTypeRegistry.isRegistered(keyFactory.create(payableTypeKey))) {
-        continue;
-      }
-      PayableType type = payableTypeRegistry.getOrThrow(keyFactory.create(payableTypeKey));
-      PayableCurve curve = payableCurveMap.computeIfAbsent(curveFunction,
-          Exp4jPayableCurveImpl::new);
-      payableCurves.put(type, curve);
+  @Override
+  public @NotNull JobRecord toRecord(@NotNull Job domain) {
+    String jobKey = domain.key().toString();
+    String displayName = MINI_MESSAGE.serialize(domain.displayName());
+    String description = MINI_MESSAGE.serialize(domain.description());
+    LevelingCurve levelingCurve = domain.levelingCurve();
+    return new JobRecord(jobKey, displayName, description, domain.maxLevel(),
+        levelingCurve.toString(), payableCurveMapper.toRecord(domain.payableCurves()));
+  }
+
+  static final class PayableCurveMapperImpl implements
+      DomainMapper<Map<Key, PayableCurve>, Map<String, String>> {
+
+    private final Registry<PayableType> payableTypeRegistry;
+    private final ExpressionCurveFactory expressionCurveFactory;
+    private final KeyFactory keyFactory;
+
+    @Inject
+    PayableCurveMapperImpl(Registry<PayableType> payableTypeRegistry,
+        ExpressionCurveFactory expressionCurveFactory, KeyFactory keyFactory) {
+      this.payableTypeRegistry = payableTypeRegistry;
+      this.expressionCurveFactory = expressionCurveFactory;
+      this.keyFactory = keyFactory;
     }
-    return payableCurves;
+
+
+    @Override
+    public @NotNull Map<Key, PayableCurve> toDomain(@NotNull Map<String, String> record)
+        throws IllegalArgumentException {
+      Map<Key, PayableCurve> curves = new HashMap<>();
+      for (Map.Entry<String, String> entry : record.entrySet()) {
+        Key payableTypeKey = keyFactory.create(entry.getKey());
+        if (!payableTypeRegistry.isRegistered(payableTypeKey)) {
+          continue;
+        }
+        PayableCurve curve = expressionCurveFactory.payableCurve(entry.getValue());
+        curves.put(payableTypeKey, curve);
+      }
+      return curves;
+    }
+
+    @Override
+    public @NotNull Map<String, String> toRecord(@NotNull Map<Key, PayableCurve> domain) {
+      Map<String, String> curves = new HashMap<>();
+      for (Map.Entry<Key, PayableCurve> entry : domain.entrySet()) {
+        curves.put(entry.getKey().toString(), entry.getValue().toString());
+      }
+      return curves;
+    }
   }
 }

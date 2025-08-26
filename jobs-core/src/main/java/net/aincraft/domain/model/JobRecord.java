@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public record JobRecord(@NotNull String jobKey, @NotNull String displayName,
-                        @Nullable String description, int maxLevel,
+                        @NotNull String description, int maxLevel,
                         @NotNull String levellingCurve,
                         @NotNull Map<String, String> payableCurves) {
 

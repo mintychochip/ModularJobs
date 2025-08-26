@@ -7,6 +7,6 @@ public final class MathModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(JobCurveFactory.class).to(JobCurveFactoryImpl.class).in(Singleton.class);
+    bind(ExpressionCurveFactory.class).to(ExpressionCurveFactoryImpl.class).in(Singleton.class);
   }
 }

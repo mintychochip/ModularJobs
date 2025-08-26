@@ -28,12 +28,12 @@ public final class ChatJobsTopPageConsumerImpl implements PageConsumer<List<JobP
     int pageNumber = page.pageNumber();
     for (int i = 0; i < page.pageSize(); i++) {
       JobProgression progression = progressions.get(i);
-      OfflinePlayer progressionPlayer = progression.getPlayer();
+      OfflinePlayer progressionPlayer = progression.player();
       Component row = MiniMessage.miniMessage().deserialize(FORMAT, TagResolver.builder()
           .tag("rank", Tag.inserting(Component.text((i + 1) + (pageNumber - 1) * page.pageSize())))
           .tag("player", Tag.inserting(
               player(progressionPlayer.getName(), progressionPlayer.getUniqueId().toString())))
-          .tag("level", Tag.inserting(Component.text(progression.getLevel())))
+          .tag("level", Tag.inserting(Component.text(progression.level())))
           .build());
       body = body.append(row).appendNewline();
     }

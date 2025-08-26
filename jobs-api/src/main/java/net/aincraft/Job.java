@@ -1,43 +1,28 @@
 package net.aincraft;
 
-import java.math.BigDecimal;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import net.aincraft.container.ActionType;
 import net.aincraft.container.PayableType;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
-import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public interface Job extends Keyed {
 
-  Component getDisplayName();
+  @NotNull
+  Component displayName();
 
   String getPlainName();
 
-  Component getDescription();
+  @NotNull
+  Component description();
 
-  LevelingCurve getLevelingCurve();
+  @NotNull
+  LevelingCurve levelingCurve();
 
-  Optional<PayableCurve> getCurve(PayableType type);
+  @NotNull
+  Map<Key, PayableCurve> payableCurves();
 
-  int getMaxLevel();
-
-  interface LevelingCurve {
-
-    @Contract(pure = true)
-    BigDecimal evaluate(Parameters parameters);
-
-    record Parameters(int level) {}
-  }
-
-  interface PayableCurve {
-
-    @Contract(pure = true)
-    BigDecimal evaluate(Parameters parameters);
-
-    record Parameters(BigDecimal base, int level, int jobs) {
-
-    }
-  }
+  int maxLevel();
 }

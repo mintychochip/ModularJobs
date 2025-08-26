@@ -15,18 +15,6 @@ public final class RepositoryModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public ProgressionRepository progressionRepository(Plugin plugin,
-      @Named("database") YamlConfiguration configuration,
-      JobService jobService) {
-    Preconditions.checkArgument(configuration.contains("timed-boost"));
-    ConfigurationSection repositoryConfiguration = configuration.getConfigurationSection(
-        "timed-boost");
-    return new RelationalProgressionRepositoryImpl(plugin,
-        new ConnectionSourceFactory(plugin, repositoryConfiguration).create(), jobService);
-  }
-
-  @Provides
-  @Singleton
   public TimedBoostRepository timedBoostRepository(Plugin plugin,
       @Named("database") YamlConfiguration configuration,
       CodecRegistry codecRegistry) {

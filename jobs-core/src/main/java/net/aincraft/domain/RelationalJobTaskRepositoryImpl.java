@@ -1,4 +1,4 @@
-package net.aincraft.job;
+package net.aincraft.domain;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -27,8 +27,6 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
       WHERE t.job_key = ?
       ORDER BY t.action_type_key, t.task_id
       """;
-
-  private static final String
 
   public RelationalJobTaskRepositoryImpl(ConnectionSource connectionSource) {
     this.connectionSource = connectionSource;
@@ -86,13 +84,13 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
       throw new RuntimeException(e);
     }
 
-    Map<ActionTypeRecord, List<JobTaskRecord>> records = new LinkedHashMap<>();
+    Map<String, List<JobTaskRecord>> records = new LinkedHashMap<>();
     for (Entry<String, Map<Integer, TaskRecordAccumulator>> entry : actionTypeTaskMap.entrySet()) {
       String actionTypeKey = entry.getKey();
       List<JobTaskRecord> taskRecords = entry.getValue().values().stream()
           .map(a -> new JobTaskRecord(jobKey, actionTypeKey, a.contextKey, List.copyOf(a.payables)))
           .toList();
-      records.put(new ActionTypeRecord(actionTypeKey), taskRecords);
+      records.put(actionTypeKey, taskRecords);
     }
     return records;
   }

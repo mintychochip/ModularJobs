@@ -60,7 +60,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
 
   static JobProgressionRepository create(JobRepository jobRepository,
       ConnectionSource connectionSource, String tableName) {
-    return new RelationalJobProgressionRepositoryImpl(jobRepository, connectionSource, queries);
+    return new RelationalJobProgressionRepositoryImpl(jobRepository, connectionSource, tableName);
   }
 
   @Override
@@ -68,7 +68,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     String jobKey = record.jobRecord().jobKey();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            queries.saveQuery)) {
+            String.format(SAVE_QUERY, tableName))) {
       ps.setString(1, record.playerId());
       ps.setString(2, record.jobRecord().jobKey());
       ps.setBigDecimal(3, record.experience());
@@ -96,7 +96,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     }
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            queries.loadQuery)) {
+            String.format(LOAD_QUERY, tableName))) {
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) {
           return null;
@@ -121,7 +121,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     List<JobProgressionRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            queries.loadAllQuery)) {
+            String.format(LOAD_ALL_QUERY, tableName, limit))) {
       ps.setString(1, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
@@ -147,7 +147,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   @Override
   public boolean delete(String playerId, String jobKey) {
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(queries.deleteQuery)) {
+        PreparedStatement ps = connection.prepareStatement(String.format(DELETE_QUERY, tableName))) {
       ps.setString(1, playerId);
       ps.setString(2, jobKey);
       if (ps.executeUpdate() > 0) {

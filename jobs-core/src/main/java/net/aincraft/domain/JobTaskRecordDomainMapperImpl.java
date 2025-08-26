@@ -22,7 +22,7 @@ final class JobTaskRecordDomainMapperImpl implements DomainMapper<JobTask, JobTa
   }
 
   @Override
-  public @NotNull JobTask toDomainObject(@NotNull JobTaskRecord record)
+  public @NotNull JobTask toDomain(@NotNull JobTaskRecord record)
       throws IllegalArgumentException {
     return new JobTask() {
       @Override
@@ -32,8 +32,13 @@ final class JobTaskRecordDomainMapperImpl implements DomainMapper<JobTask, JobTa
 
       @Override
       public @NotNull List<Payable> getPayables() {
-        return  record.payables().stream().map(payableRecordDomainMapper::toDomainObject).toList();
+        return  record.payables().stream().map(payableRecordDomainMapper::toDomain).toList();
       }
     };
+  }
+
+  @Override
+  public @NotNull JobTaskRecord toRecord(@NotNull JobTask domain) {
+    return null;
   }
 }

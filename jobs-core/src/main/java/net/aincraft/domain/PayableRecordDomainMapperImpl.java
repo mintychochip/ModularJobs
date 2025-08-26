@@ -21,7 +21,7 @@ final class PayableRecordDomainMapperImpl implements DomainMapper<Payable, Payab
   }
 
   @Override
-  public @NotNull Payable toDomainObject(@NotNull PayableRecord record) throws IllegalArgumentException {
+  public @NotNull Payable toDomain(@NotNull PayableRecord record) throws IllegalArgumentException {
     NamespacedKey key = NamespacedKey.fromString(record.payableTypeKey());
     if (key == null) {
       throw new IllegalArgumentException("record maps to invalid jobKey");
@@ -30,6 +30,14 @@ final class PayableRecordDomainMapperImpl implements DomainMapper<Payable, Payab
 
     BigDecimal amount = record.amount();
     //TODO: include currency when we find a bridge
-    return new Payable(type,PayableAmount.create(amount));
+    return new Payable(type, PayableAmount.create(amount));
+  }
+
+  @Override
+  public @NotNull PayableRecord toRecord(@NotNull Payable domain) {
+    PayableType type = domain.type();
+    PayableAmount amount = domain.amount();
+    return new PayableRecord(type.key().toString(), amount.value(),
+        amount.currency().get().identifier());
   }
 }

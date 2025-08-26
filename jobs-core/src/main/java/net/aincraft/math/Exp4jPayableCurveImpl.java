@@ -1,24 +1,21 @@
 package net.aincraft.math;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-import net.aincraft.Job.PayableCurve;
+import net.aincraft.PayableCurve;
+import net.aincraft.PayableCurve.Parameters;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
-final class Exp4jPayableCurveImpl implements PayableCurve {
+final class Exp4jPayableCurveImpl extends AbstractExp4jCurveImpl<Parameters> implements
+    PayableCurve {
 
-  private final Expression expression;
-  private final Map<Parameters, BigDecimal> memo = new HashMap<>();
-
-  private Exp4jPayableCurveImpl(Expression expression) {
-    this.expression = expression;
+  Exp4jPayableCurveImpl(Expression expression, String expressionString) {
+    super(expression, expressionString);
   }
 
   static PayableCurve create(String expression) {
     return new Exp4jPayableCurveImpl(
-        new ExpressionBuilder(expression).variables("base", "level", "jobs").build());
+        new ExpressionBuilder(expression).variables("base", "level", "jobs").build(), expression);
   }
 
   @Override
