@@ -58,7 +58,7 @@ final class JobServiceImpl implements JobService {
 
   @Override
   public Optional<Job> getJob(Key jobKey) {
-    return Optional.ofNullable(jobRepository.getJob(jobKey.toString()))
+    return Optional.ofNullable(jobRepository.load(jobKey.toString()))
         .map(jobMapper::toDomainObject);
   }
 

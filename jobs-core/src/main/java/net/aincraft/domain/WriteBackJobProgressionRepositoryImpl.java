@@ -99,11 +99,12 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   }
 
   @Override
-  public void save(JobProgressionRecord record) {
+  public boolean save(JobProgressionRecord record) {
     FlatKey key = new FlatKey(record.playerId(), record.jobRecord().jobKey());
     pendingDeletes.remove(key);
     pendingUpserts.put(key, record);
     readCache.put(key, record);
+    return true;
   }
 
   @Override
@@ -123,6 +124,14 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   @Override
   public List<JobProgressionRecord> loadAll(String jobKey, int limit)
       throws IllegalArgumentException {
-    return
+    List<JobProgressionRecord> records = delegate.loadAll(jobKey, limit);
+    for (JobProgressionRecord record : records) {
+      readCache.put();
+    }
+  }
+
+  @Override
+  public boolean delete(String playerId, String jobKey) {
+    return false;
   }
 }
