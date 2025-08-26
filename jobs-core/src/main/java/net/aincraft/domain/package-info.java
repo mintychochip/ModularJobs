@@ -1,5 +1,0 @@
-package net.aincraft.domain;
-
-/**
- *
- */

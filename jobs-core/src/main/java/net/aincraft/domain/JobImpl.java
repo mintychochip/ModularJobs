@@ -1,4 +1,4 @@
-package net.aincraft.job;
+package net.aincraft.domain;
 
 import java.util.List;
 import java.util.Map;
@@ -18,19 +18,16 @@ final class JobImpl implements Job {
   private final Component displayName;
   private final Component description;
   private final int maxLevel;
-  private final Map<ActionType, List<JobTask>> tasks;
   private final LevelingCurve levelingCurve;
   private final Map<PayableType, PayableCurve> payableCurves;
 
-  public JobImpl(Key key, Component displayName,  Component description, int maxLevel,
-      Map<ActionType, List<JobTask>> tasks,
+  JobImpl(Key key, Component displayName,  Component description, int maxLevel,
       LevelingCurve levelingCurve,
       Map<PayableType, PayableCurve> payableCurves) {
     this.key = key;
     this.displayName = displayName;
     this.description = description;
     this.maxLevel = maxLevel;
-    this.tasks = tasks;
     this.levelingCurve = levelingCurve;
     this.payableCurves = payableCurves;
   }
@@ -58,11 +55,6 @@ final class JobImpl implements Job {
   @Override
   public Optional<PayableCurve> getCurve(PayableType type) {
     return Optional.ofNullable(payableCurves.get(type));
-  }
-
-  @Override
-  public List<JobTask> getTasks(ActionType type) {
-    return tasks.get(type);
   }
 
   @Override

@@ -1,4 +1,4 @@
-package net.aincraft.job;
+package net.aincraft.domain.repository;
 
 import java.util.List;
 import net.aincraft.domain.model.JobRecord;
@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Internal
-public interface JobRecordRepository {
+public interface JobRepository {
 
   @NotNull
   List<JobRecord> getJobs();
