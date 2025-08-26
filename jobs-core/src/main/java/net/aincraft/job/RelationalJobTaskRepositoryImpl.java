@@ -10,9 +10,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import net.aincraft.domain.model.ActionTypeRecord;
 import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
+import net.aincraft.domain.repository.JobTaskRepository;
 import net.aincraft.repository.ConnectionSource;
 
 public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
@@ -28,12 +28,14 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
       ORDER BY t.action_type_key, t.task_id
       """;
 
+  private static final String
+
   public RelationalJobTaskRepositoryImpl(ConnectionSource connectionSource) {
     this.connectionSource = connectionSource;
   }
 
   @Override
-  public JobTaskRecord getRecord(String jobKey, String actionTypeKey, String contextKey) {
+  public JobTaskRecord load(String jobKey, String actionTypeKey, String contextKey) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
             "SELECT p.payable_type_key, p.amount, p.currency FROM job_task_payables p JOIN job_tasks t ON p.job_task_id = t.task_id WHERE t.job_key=? AND t.action_type_key=? AND t.context_key=?;")) {
@@ -57,7 +59,7 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
   }
 
   @Override
-  public Map<ActionTypeRecord, List<JobTaskRecord>> getRecords(String jobKey) {
+  public Map<String, List<JobTaskRecord>> getRecords(String jobKey) {
     Map<String, Map<Integer, TaskRecordAccumulator>> actionTypeTaskMap = new LinkedHashMap<>();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
@@ -116,7 +118,7 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
           String contextKey = rs.getString("context_key");
-          JobTaskRecord record = getRecord(jobKey, actionTypeKey, contextKey);
+          JobTaskRecord record = load(jobKey, actionTypeKey, contextKey);
           records.add(record);
         }
       }

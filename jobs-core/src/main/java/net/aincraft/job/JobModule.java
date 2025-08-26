@@ -4,29 +4,21 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import java.util.Map;
-import net.aincraft.Job;
-import net.aincraft.JobProgression;
-import net.aincraft.JobTask;
 import net.aincraft.config.YamlConfiguration;
-import net.aincraft.container.ActionType;
-import net.aincraft.container.Payable;
-import net.aincraft.container.PayableType;
-import net.aincraft.domain.ActionTypeRecordMapperImpl;
 import net.aincraft.domain.JobRecordMapperImpl;
+import net.aincraft.domain.JobServiceImpl;
 import net.aincraft.domain.JobTaskRecordMapper;
 import net.aincraft.domain.JobsProgressionRecordMapperImpl;
+import net.aincraft.domain.MemoryJobRepositoryImpl;
 import net.aincraft.domain.PayableRecordMapperImpl;
+import net.aincraft.domain.RelationalJobsProgressionRepositoryImpl;
 import net.aincraft.domain.model.JobRecord;
-import net.aincraft.job.MemoryJobRecordRepositoryImpl.YamlRecordLoader;
-import net.aincraft.domain.model.ActionTypeRecord;
-import net.aincraft.domain.model.JobProgressionRecord;
-import net.aincraft.domain.model.JobTaskRecord;
-import net.aincraft.domain.model.PayableRecord;
-import net.aincraft.registry.Registry;
+import net.aincraft.domain.repository.JobRepository;
+import net.aincraft.domain.repository.JobTaskRepository;
+import net.aincraft.domain.repository.JobProgressionRepository;
+import net.aincraft.domain.MemoryJobRepositoryImpl.YamlRecordLoader;
 import net.aincraft.repository.ConnectionSourceFactory;
 import net.aincraft.service.JobService;
-import net.aincraft.util.KeyFactory;
-import net.aincraft.util.Mapper;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
@@ -35,37 +27,6 @@ public final class JobModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(JobService.class).to(JobServiceImpl.class).in(Singleton.class);
-  }
-
-  @Provides
-  @Singleton
-  Mapper<JobTask, JobTaskRecord> taskRecordMapper(Mapper<Payable, PayableRecord> mapper) {
-    return new JobTaskRecordMapper(mapper);
-  }
-
-  @Provides
-  @Singleton
-  Mapper<JobProgression, JobProgressionRecord> progressionRecordMapper(JobService jobService) {
-    return new JobsProgressionRecordMapperImpl(jobService);
-  }
-
-  @Provides
-  @Singleton
-  Mapper<Job, JobRecord> jobRecordMapper(KeyFactory keyFactory, Registry<PayableType> registry) {
-    return new JobRecordMapperImpl(keyFactory, registry);
-  }
-
-  @Provides
-  @Singleton
-  Mapper<Payable, PayableRecord> payableRecordMapper(Registry<PayableType> registry) {
-    return new PayableRecordMapperImpl(registry);
-  }
-
-  @Provides
-  @Singleton
-  Mapper<ActionType, ActionTypeRecord> actionTypeRecordMapper(Registry<ActionType> registry,
-      KeyFactory keyFactory) {
-    return new ActionTypeRecordMapperImpl(registry, keyFactory);
   }
 
 //  @Provides
@@ -88,15 +49,15 @@ public final class JobModule extends AbstractModule {
 
   @Provides
   @Singleton
-  JobRecordRepository jobRepository(Plugin plugin) {
+  JobRepository jobRepository(Plugin plugin) {
     YamlRecordLoader loader = new YamlRecordLoader();
     Map<String, JobRecord> records = loader.load(YamlConfiguration.create(plugin, "jobs.yml"));
-    return new MemoryJobRecordRepositoryImpl(records);
+    return new MemoryJobRepositoryImpl(records);
   }
 
   @Provides
   @Singleton
-  JobsProgressionRepository jobsProgressionRepository(Plugin plugin) {
+  JobProgressionRepository jobsProgressionRepository(Plugin plugin) {
     YamlConfiguration db = YamlConfiguration.create(plugin, "database.yml");
     ConfigurationSection repositoryConfiguration = db.getConfigurationSection("payable");
     return new RelationalJobsProgressionRepositoryImpl(

@@ -12,8 +12,13 @@ final class Exp4jPayableCurveImpl implements PayableCurve {
   private final Expression expression;
   private final Map<Parameters, BigDecimal> memo = new HashMap<>();
 
-  Exp4jPayableCurveImpl(String expression) {
-    this.expression = new ExpressionBuilder(expression).variables("base", "level", "jobs").build();
+  private Exp4jPayableCurveImpl(Expression expression) {
+    this.expression = expression;
+  }
+
+  static PayableCurve create(String expression) {
+    return new Exp4jPayableCurveImpl(
+        new ExpressionBuilder(expression).variables("base", "level", "jobs").build());
   }
 
   @Override

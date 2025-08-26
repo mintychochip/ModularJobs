@@ -6,18 +6,19 @@ import net.aincraft.JobTask;
 import net.aincraft.container.Payable;
 import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
-import net.aincraft.util.Mapper;
+import net.aincraft.util.DomainMapper;
 import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-final class JobTaskRecordMapperImpl implements Mapper<JobTask, JobTaskRecord> {
+final class JobTaskRecordDomainMapperImpl implements DomainMapper<JobTask, JobTaskRecord> {
 
-  private final Mapper<Payable, PayableRecord> payableRecordMapper;
+  private final DomainMapper<Payable, PayableRecord> payableRecordDomainMapper;
 
   @Inject
-  public JobTaskRecordMapperImpl(Mapper<Payable, PayableRecord> payableRecordMapper) {
-    this.payableRecordMapper = payableRecordMapper;
+  public JobTaskRecordDomainMapperImpl(
+      DomainMapper<Payable, PayableRecord> payableRecordDomainMapper) {
+    this.payableRecordDomainMapper = payableRecordDomainMapper;
   }
 
   @Override
@@ -31,7 +32,7 @@ final class JobTaskRecordMapperImpl implements Mapper<JobTask, JobTaskRecord> {
 
       @Override
       public @NotNull List<Payable> getPayables() {
-        return  record.payables().stream().map(payableRecordMapper::toDomainObject).toList();
+        return  record.payables().stream().map(payableRecordDomainMapper::toDomainObject).toList();
       }
     };
   }

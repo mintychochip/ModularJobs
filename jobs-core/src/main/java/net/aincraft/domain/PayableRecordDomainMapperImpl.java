@@ -7,16 +7,16 @@ import net.aincraft.container.PayableAmount;
 import net.aincraft.container.PayableType;
 import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.registry.Registry;
-import net.aincraft.util.Mapper;
+import net.aincraft.util.DomainMapper;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-final class PayableRecordMapperImpl implements Mapper<Payable, PayableRecord> {
+final class PayableRecordDomainMapperImpl implements DomainMapper<Payable, PayableRecord> {
 
   private final Registry<PayableType> payableTypeRegistry;
 
   @Inject
-  public PayableRecordMapperImpl(Registry<PayableType> payableTypeRegistry) {
+  public PayableRecordDomainMapperImpl(Registry<PayableType> payableTypeRegistry) {
     this.payableTypeRegistry = payableTypeRegistry;
   }
 

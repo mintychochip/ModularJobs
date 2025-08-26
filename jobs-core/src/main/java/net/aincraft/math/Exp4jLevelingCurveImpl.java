@@ -10,15 +10,19 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 final class Exp4jLevelingCurveImpl implements LevelingCurve {
 
   private final Expression expression;
-  private final Map<Integer, BigDecimal> memo = new HashMap<>();
+  private final Map<Parameters, BigDecimal> memo = new HashMap<>();
 
-  Exp4jLevelingCurveImpl(String expression) {
-    this.expression = new ExpressionBuilder(expression).variable("level").build();
+  private Exp4jLevelingCurveImpl(Expression expression) {
+    this.expression = expression;
+  }
+
+  static LevelingCurve create(String expression) {
+    return new Exp4jLevelingCurveImpl(new ExpressionBuilder(expression).variable("level").build());
   }
 
   @Override
-  public BigDecimal evaluate(int level) {
-    return memo.computeIfAbsent(level,
-        ignored -> BigDecimal.valueOf(expression.setVariable("level", level).evaluate()));
+  public BigDecimal evaluate(Parameters parameters) {
+    return memo.computeIfAbsent(parameters, ignored -> BigDecimal.valueOf(
+        expression.setVariable("level", parameters.level()).evaluate()));
   }
 }

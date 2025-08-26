@@ -21,8 +21,6 @@ public interface Job extends Keyed {
 
   Optional<PayableCurve> getCurve(PayableType type);
 
-  List<JobTask> getTasks(ActionType type);
-
   int getMaxLevel();
 
   interface LevelingCurve {
