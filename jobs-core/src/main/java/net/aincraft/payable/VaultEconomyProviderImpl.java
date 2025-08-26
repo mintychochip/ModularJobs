@@ -16,6 +16,11 @@ final class VaultEconomyProviderImpl implements EconomyProvider {
   }
 
   @Override
+  public boolean isCurrencySupported() {
+    return false;
+  }
+
+  @Override
   public boolean deposit(OfflinePlayer player, PayableAmount currencyPayableAmount) {
     BigDecimal amount = currencyPayableAmount.value();
     EconomyResponse economyResponse = vault.depositPlayer(player, amount.longValue());

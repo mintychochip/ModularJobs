@@ -394,7 +394,7 @@ final class TopCommand implements JobsCommand {
     PageConsumer.Page<List<JobProgression>> getPage(Key jobKey, int pageNumber,
         int pageSize) {
       List<JobProgression> progressions = readCache.get(jobKey,
-          ignored -> jobService.getProgressions(jobKey));
+          ignored -> jobService.getProgressions(jobKey, 100));
       int size = progressions.size();
       int maxPages = Math.max(1, (size + pageSize - 1) / pageSize);
       int clampedPage = Math.min(Math.max(pageNumber, 1), maxPages);

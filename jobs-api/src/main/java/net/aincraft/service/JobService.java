@@ -23,5 +23,9 @@ public interface JobService {
 
   Map<ActionType, List<JobTask>> getAllTasks(Job job);
 
-  List<JobProgression> getProgressions(Key jobKey);
+  default List<JobProgression> getProgressions(Key jobKey) {
+    return getProgressions(jobKey, Integer.MAX_VALUE);
+  }
+
+  List<JobProgression> getProgressions(Key jobKey, int limit);
 }
