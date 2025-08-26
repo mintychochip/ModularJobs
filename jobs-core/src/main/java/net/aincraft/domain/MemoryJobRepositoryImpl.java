@@ -1,20 +1,22 @@
-package net.aincraft.job;
+package net.aincraft.domain;
 
 import com.google.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.aincraft.config.YamlConfiguration;
+import net.aincraft.domain.model.JobRecord;
+import net.aincraft.domain.repository.JobRepository;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-final class MemoryJobRecordRepositoryImpl implements JobRecordRepository {
+final class MemoryJobRepositoryImpl implements JobRepository {
 
   private final Map<String, JobRecord> records;
 
   @Inject
-  MemoryJobRecordRepositoryImpl(Map<String, JobRecord> records) {
+  MemoryJobRepositoryImpl(Map<String, JobRecord> records) {
     this.records = records;
   }
 
@@ -24,7 +26,7 @@ final class MemoryJobRecordRepositoryImpl implements JobRecordRepository {
   }
 
   @Override
-  public @Nullable JobRecord getJob(String jobKey) {
+  public @Nullable JobRecord load(String jobKey) {
     return records.get(jobKey);
   }
 
