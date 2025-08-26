@@ -5,14 +5,13 @@ import org.bukkit.OfflinePlayer;
 
 public interface JobProgressionView {
 
-  BigDecimal getExperienceForLevel(int level);
+  BigDecimal experienceForLevel(int level);
 
-  Job getJob();
+  Job job();
 
-  OfflinePlayer getPlayer();
+  OfflinePlayer player();
 
-  BigDecimal getExperience();
+  BigDecimal experience();
 
-  int getLevel() throws IllegalStateException;
-
+  int level();
 }

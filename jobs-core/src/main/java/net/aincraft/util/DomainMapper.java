@@ -5,6 +5,8 @@ import org.jetbrains.annotations.NotNull;
 public interface DomainMapper<D, R> {
 
   @NotNull
-  D toDomainObject(@NotNull R record) throws IllegalArgumentException;
+  D toDomain(@NotNull R record) throws IllegalArgumentException;
 
+  @NotNull
+  R toRecord(@NotNull D domain);
 }

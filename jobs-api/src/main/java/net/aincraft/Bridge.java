@@ -7,8 +7,6 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
-import net.aincraft.service.JobTaskProvider;
-import net.aincraft.service.ProgressionService;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -20,11 +18,7 @@ public interface Bridge {
 
   Plugin plugin();
 
-  ProgressionService progressionService();
-
   RegistryContainer registryContainer();
-
-  JobTaskProvider jobTaskProvider();
 
   ConditionFactory conditionFactory();
 

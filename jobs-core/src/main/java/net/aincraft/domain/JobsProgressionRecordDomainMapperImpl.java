@@ -14,7 +14,8 @@ import org.jetbrains.annotations.NotNull;
 final class JobsProgressionRecordDomainMapperImpl implements
     DomainMapper<JobProgression, JobProgressionRecord> {
 
-  private final DomainMapper<Job,JobRecord> jobMapper;
+  private final DomainMapper<Job, JobRecord> jobMapper;
+
   @Inject
   JobsProgressionRecordDomainMapperImpl(
       DomainMapper<Job, JobRecord> jobMapper) {
@@ -23,11 +24,18 @@ final class JobsProgressionRecordDomainMapperImpl implements
 
 
   @Override
-  public @NotNull JobProgression toDomainObject(@NotNull JobProgressionRecord record)
+  public @NotNull JobProgression toDomain(@NotNull JobProgressionRecord record)
       throws IllegalArgumentException {
-    Job job = jobMapper.toDomainObject(record.jobRecord());
     UUID playerId = UUID.fromString(record.playerId());
     OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
-    return new JobProgressionImpl(player, job, record.experience());
+    return new JobProgressionImpl(player, jobMapper.toDomain(record.jobRecord()),
+        record.experience());
+  }
+
+  @Override
+  public @NotNull JobProgressionRecord toRecord(@NotNull JobProgression domain) {
+    OfflinePlayer player = domain.player();
+    return new JobProgressionRecord(player.getUniqueId().toString(),
+        jobMapper.toRecord(domain.job()), domain.experience());
   }
 }

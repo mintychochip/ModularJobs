@@ -3,9 +3,9 @@ package net.aincraft;
 import com.google.inject.AbstractModule;
 import net.aincraft.commands.CommandModule;
 import net.aincraft.config.ConfigurationModule;
+import net.aincraft.domain.DomainModule;
 import net.aincraft.payable.PayableModule;
 import net.aincraft.hooks.preferences.PreferenceModule;
-import net.aincraft.job.JobModule;
 import net.aincraft.payment.PaymentModule;
 import net.aincraft.placeholders.PlaceholderAPIModule;
 import net.aincraft.protection.ProtectionModule;
@@ -37,10 +37,10 @@ public final class PluginModule extends AbstractModule {
     install(new RepositoryModule());
     install(new ServiceModule());
     install(new SerializationModule());
-    install(new JobModule());
     install(new UtilModule());
     install(new CommandModule());
     install(new PreferenceModule());
+    install(new DomainModule());
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       install(new PlaceholderAPIModule());
     }

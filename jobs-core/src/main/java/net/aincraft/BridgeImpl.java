@@ -8,20 +8,13 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
-import net.aincraft.service.JobTaskProvider;
-import net.aincraft.service.ProgressionService;
 import org.bukkit.plugin.Plugin;
 
-record BridgeImpl(Plugin plugin, ProgressionService progressionService,
+record BridgeImpl(Plugin plugin,
                   RegistryContainer registryContainer) implements Bridge {
 
   @Inject
   BridgeImpl {
-  }
-
-  @Override
-  public JobTaskProvider jobTaskProvider() {
-    return null;
   }
 
   @Override

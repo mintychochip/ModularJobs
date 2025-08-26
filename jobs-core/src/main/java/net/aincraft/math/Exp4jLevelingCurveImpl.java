@@ -1,23 +1,21 @@
 package net.aincraft.math;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-import net.aincraft.Job.LevelingCurve;
+import net.aincraft.LevelingCurve;
+import net.aincraft.LevelingCurve.Parameters;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
-final class Exp4jLevelingCurveImpl implements LevelingCurve {
+final class Exp4jLevelingCurveImpl extends AbstractExp4jCurveImpl<Parameters> implements
+    LevelingCurve {
 
-  private final Expression expression;
-  private final Map<Parameters, BigDecimal> memo = new HashMap<>();
-
-  private Exp4jLevelingCurveImpl(Expression expression) {
-    this.expression = expression;
+  Exp4jLevelingCurveImpl(Expression expression, String expressionString) {
+    super(expression, expressionString);
   }
 
   static LevelingCurve create(String expression) {
-    return new Exp4jLevelingCurveImpl(new ExpressionBuilder(expression).variable("level").build());
+    return new Exp4jLevelingCurveImpl(new ExpressionBuilder(expression).variable("level").build(),
+        expression);
   }
 
   @Override

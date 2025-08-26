@@ -21,8 +21,8 @@ import org.jetbrains.annotations.Nullable;
 
 final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepository {
 
-  private static Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(5);
-  private static int CACHE_MAX_SIZE = 1000;
+  private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(5);
+  private static final int CACHE_MAX_SIZE = 1000;
 
   private final JobProgressionRepository delegate;
 
@@ -126,12 +126,18 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       throws IllegalArgumentException {
     List<JobProgressionRecord> records = delegate.loadAll(jobKey, limit);
     for (JobProgressionRecord record : records) {
-      readCache.put();
+      FlatKey cacheKey = new FlatKey(record.playerId(),record.jobRecord().jobKey());
+      readCache.put(cacheKey,record);
     }
+    return records;
   }
 
   @Override
   public boolean delete(String playerId, String jobKey) {
+    if (delegate.delete(playerId, jobKey)) {
+      readCache.invalidate(new FlatKey(playerId, jobKey));
+      return true;
+    }
     return false;
   }
 }

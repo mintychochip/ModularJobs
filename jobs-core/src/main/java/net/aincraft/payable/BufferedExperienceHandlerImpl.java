@@ -6,7 +6,8 @@ import net.aincraft.JobProgression;
 import net.aincraft.container.ExperiencePayableHandler;
 import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
-import net.aincraft.service.ProgressionService;
+import net.aincraft.domain.repository.JobProgressionRepository;
+import net.aincraft.service.JobService;
 import org.bukkit.OfflinePlayer;
 
 final class BufferedExperienceHandlerImpl implements
@@ -14,14 +15,14 @@ final class BufferedExperienceHandlerImpl implements
 
   private final ExperienceBarController controller;
   private final ExperienceBarFormatter formatter;
-  private final ProgressionService progressionService;
+  private final JobService jobService;
 
   @Inject
   BufferedExperienceHandlerImpl(ExperienceBarController controller,
-      ExperienceBarFormatter formatter, ProgressionService progressionService) {
+      ExperienceBarFormatter formatter, JobService jobService) {
     this.controller = controller;
     this.formatter = formatter;
-    this.progressionService = progressionService;
+    this.jobService = jobService;
   }
 
 
@@ -33,7 +34,7 @@ final class BufferedExperienceHandlerImpl implements
     PayableAmount amount = payable.amount();
     BigDecimal amountDecimal = amount.value();
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
-    progressionService.update(calculatedProgression);
+    jobService.update(calculatedProgression);
     if (player.isOnline()) {
       controller.display(
           new ExperienceBarContext(calculatedProgression, player.getPlayer(), amountDecimal),

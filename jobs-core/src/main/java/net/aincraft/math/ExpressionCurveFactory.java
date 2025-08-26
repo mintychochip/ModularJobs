@@ -1,10 +1,10 @@
 package net.aincraft.math;
 
-import net.aincraft.Job.LevelingCurve;
-import net.aincraft.Job.PayableCurve;
+import net.aincraft.LevelingCurve;
+import net.aincraft.PayableCurve;
 import org.jetbrains.annotations.NotNull;
 
-public interface JobCurveFactory {
+public interface ExpressionCurveFactory {
 
   @NotNull
   LevelingCurve levelingCurve(@NotNull String expression);

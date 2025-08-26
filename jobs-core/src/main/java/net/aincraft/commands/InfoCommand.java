@@ -43,13 +43,13 @@ public class InfoCommand implements JobsCommand {
                   Key jobKey = context.getArgument("job", Key.class);
                   int page = IntegerArgumentType.getInteger(context, "pageNumber");
 
-                  Optional<Job> job = jobService.getJob(jobKey);
-                  if (job.isEmpty()) {
+                  Job job = jobService.getJob(jobKey.toString());
+                  if (job == null) {
                     sender.sendMessage("The job you specified does not exist.");
                     return 0;
                   }
 
-                  Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job.get());
+                  Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
                   for (var entry : tasks.entrySet()) {
                     var type = entry.getKey();
                     var value = entry.getValue();

@@ -41,7 +41,7 @@ final class ExperienceBarControllerImpl implements ExperienceBarController {
   public void display(ExperienceBarContext context, ExperienceBarFormatter formatter) {
     Player player = context.player();
     JobProgressionView progression = context.progression();
-    PlayerJobCompositeKey compositeKey = PlayerJobCompositeKey.create(player, progression.getJob());
+    PlayerJobCompositeKey compositeKey = PlayerJobCompositeKey.create(player, progression.job());
     BossBar bossBar = bossBarCache.get(compositeKey,
         ignored -> BossBar.bossBar(Component.empty(), 0.0f, Color.BLUE, Overlay.PROGRESS));
     if (bossBar == null) {

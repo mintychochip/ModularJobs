@@ -14,7 +14,6 @@ public final class ServiceModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(TimedBoostDataService.class).to(TimedBoostDataServiceImpl.class).in(Singleton.class);
-    bind(ProgressionService.class).to(ProgressionServiceImpl.class).in(Singleton.class);
     bind(ItemBoostDataService.class).to(ItemBoostDataServiceImpl.class).in(Singleton.class);
   }
 }

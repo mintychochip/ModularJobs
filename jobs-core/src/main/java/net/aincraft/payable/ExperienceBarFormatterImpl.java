@@ -43,17 +43,17 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
   @Internal
   private static float progress(JobProgressionView progression) {
-    int level = progression.getLevel();
+    int level = progression.level();
 
-    double currentRequired = progression.getExperienceForLevel(level).doubleValue();
-    double nextRequired = progression.getExperienceForLevel(level + 1).doubleValue();
+    double currentRequired = progression.experienceForLevel(level).doubleValue();
+    double nextRequired = progression.experienceForLevel(level + 1).doubleValue();
     double needed = nextRequired - currentRequired;
 
     if (needed <= 0.0) {
       return 1.0f;
     }
 
-    double xp = progression.getExperience().doubleValue();
+    double xp = progression.experience().doubleValue();
     double ratio = (xp - currentRequired) / needed;
 
     if (ratio < 0.0) {
@@ -71,14 +71,14 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
     public @NotNull Component format(
         @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
       JobProgressionView progression = context.progression();
-      int level = progression.getLevel();
-      BigDecimal experienceForNext = progression.getExperienceForLevel(level + 1);
+      int level = progression.level();
+      BigDecimal experienceForNext = progression.experienceForLevel(level + 1);
       return MINI_MESSAGE.deserialize(FORMAT, TagResolver.builder()
           .tag("level", Tag.inserting(Component.text(level)))
           .tag("job-name",
-              Tag.inserting(Component.empty().append(progression.getJob().getDisplayName())))
+              Tag.inserting(Component.empty().append(progression.job().displayName())))
           .tag("xp", Tag.inserting(Component.text(
-              progression.getExperience().doubleValue())))
+              progression.experience().doubleValue())))
           .tag("total-xp", Tag.inserting(Component.text(experienceForNext.doubleValue())))
           .tag("payable", Tag.inserting(payableComponent(context.amount())))
           .build());

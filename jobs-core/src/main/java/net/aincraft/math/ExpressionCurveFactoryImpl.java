@@ -2,11 +2,11 @@ package net.aincraft.math;
 
 import java.util.HashMap;
 import java.util.Map;
-import net.aincraft.Job.LevelingCurve;
-import net.aincraft.Job.PayableCurve;
+import net.aincraft.LevelingCurve;
+import net.aincraft.PayableCurve;
 import org.jetbrains.annotations.NotNull;
 
-final class JobCurveFactoryImpl implements JobCurveFactory {
+final class ExpressionCurveFactoryImpl implements ExpressionCurveFactory {
 
   private final Map<String, LevelingCurve> levelingCurves = new HashMap<>();
   private final Map<String, PayableCurve> payableCurves = new HashMap<>();

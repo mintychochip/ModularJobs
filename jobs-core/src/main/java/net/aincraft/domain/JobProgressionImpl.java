@@ -2,7 +2,7 @@ package net.aincraft.domain;
 
 import java.math.BigDecimal;
 import net.aincraft.Job;
-import net.aincraft.Job.LevelingCurve.Parameters;
+import net.aincraft.LevelingCurve.Parameters;
 import net.aincraft.JobProgression;
 import org.bukkit.OfflinePlayer;
 
@@ -28,32 +28,32 @@ final class JobProgressionImpl implements JobProgression {
   }
 
   @Override
-  public BigDecimal getExperienceForLevel(int level) {
-    return job.getLevelingCurve().evaluate(new Parameters(level));
+  public BigDecimal experienceForLevel(int level) {
+    return job.levelingCurve().evaluate(new Parameters(level));
   }
 
   @Override
-  public Job getJob() {
+  public Job job() {
     return job;
   }
 
   @Override
-  public OfflinePlayer getPlayer() {
+  public OfflinePlayer player() {
     return player;
   }
 
   @Override
-  public BigDecimal getExperience() {
+  public BigDecimal experience() {
     return experience;
   }
 
   @Override
-  public int getLevel() {
+  public int level() {
     return level;
   }
 
   private int calculateCurrentLevel() throws IllegalStateException {
-    int maxLevel = job.getMaxLevel();
+    int maxLevel = job.maxLevel();
     if (maxLevel <= 0) {
       return 1;
     }
@@ -62,7 +62,7 @@ final class JobProgressionImpl implements JobProgression {
     int level = INVALID_LEVEL;
     while (low <= maxLevel) {
       int mid = (low + maxLevel) >>> 1;
-      BigDecimal requiredXpForLevel = job.getLevelingCurve().evaluate(new Parameters(mid));
+      BigDecimal requiredXpForLevel = job.levelingCurve().evaluate(new Parameters(mid));
       if (experience.compareTo(requiredXpForLevel) >= 0) {
         level = mid;
         low = mid + 1;
@@ -79,7 +79,7 @@ final class JobProgressionImpl implements JobProgression {
         "player=" + player.getUniqueId() +
         ", job=" + job.key().value() +
         ", experience=" + experience +
-        ", level=" + getLevel() +
+        ", level=" + level() +
         "]";
   }
 }

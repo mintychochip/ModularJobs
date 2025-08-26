@@ -1,12 +1,9 @@
 package net.aincraft.placeholders;
 
 import com.google.inject.Inject;
-import java.util.Optional;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.service.JobService;
-import net.aincraft.service.ProgressionService;
 import net.aincraft.util.KeyFactory;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -15,15 +12,13 @@ import org.jetbrains.annotations.Nullable;
 final class ModularJobsPlaceholderExpansion extends PlaceholderExpansion {
 
   //TODO: set version dynamically
-  private final ProgressionService progressionService;
   private final JobService jobService;
   private final KeyFactory keyFactory;
   private final String version = "1.1";
 
   @Inject
-  ModularJobsPlaceholderExpansion(ProgressionService progressionService, JobService jobService,
+  ModularJobsPlaceholderExpansion(JobService jobService,
       KeyFactory keyFactory) {
-    this.progressionService = progressionService;
     this.jobService = jobService;
     this.keyFactory = keyFactory;
   }
@@ -48,15 +43,12 @@ final class ModularJobsPlaceholderExpansion extends PlaceholderExpansion {
     String[] args = params.split("_");
     if (args.length > 1) {
       if ("experience".equals(args[0])) {
-        Optional<Job> job = jobService.getJob(keyFactory.create(args[1]));
-        if (job.isEmpty()) {
-          return "";
-        }
-        JobProgression progression = progressionService.get(player, job.get());
+        JobProgression progression = jobService.getProgression(player.getUniqueId().toString(),
+            args[1]);
         if (progression == null) {
           return "";
         }
-        return progression.getExperience().toPlainString();
+        return progression.experience().toPlainString();
       }
       if ("level".equals(args[1])) {
 
