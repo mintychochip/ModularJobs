@@ -26,7 +26,7 @@ final class MemoryJobRepositoryImpl implements JobRepository {
   }
 
   @Override
-  public @Nullable JobRecord getJob(String jobKey) {
+  public @Nullable JobRecord load(String jobKey) {
     return records.get(jobKey);
   }
 

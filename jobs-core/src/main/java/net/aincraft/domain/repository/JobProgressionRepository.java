@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface JobProgressionRepository {
 
-  void save(JobProgressionRecord record);
+  boolean save(JobProgressionRecord record);
 
   @Nullable
   JobProgressionRecord load(String playerId, String jobKey) throws IllegalArgumentException;

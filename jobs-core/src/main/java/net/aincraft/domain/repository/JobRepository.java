@@ -12,6 +12,6 @@ public interface JobRepository {
   @NotNull
   List<JobRecord> getJobs();
   @Nullable
-  JobRecord getJob(String jobKey);
+  JobRecord load(String jobKey);
 
 }
