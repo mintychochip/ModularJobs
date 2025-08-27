@@ -8,8 +8,6 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import net.aincraft.Job;
 import net.aincraft.JobTask;
 import net.aincraft.container.ActionType;
@@ -18,7 +16,6 @@ import net.aincraft.service.JobService;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 //TODO: before the server starts, lets query the info from the repository before we start
@@ -57,8 +54,8 @@ public class InfoCommand implements JobsCommand {
 
                     sender.sendMessage(type.toString());
                     for (JobTask task : value) {
-                      TextComponent text = Component.text(task.getContext().toString()).append(Component.text("->"));
-                      for (Payable payable : task.getPayables()) {
+                      TextComponent text = Component.text(task.contextKey().toString()).append(Component.text("->"));
+                      for (Payable payable : task.payables()) {
                         text = text.append(payable).append(Component.space());
                       }
                       sender.sendMessage(Component.text("  ").append(text));

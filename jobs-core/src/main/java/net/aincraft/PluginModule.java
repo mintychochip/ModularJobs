@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import net.aincraft.commands.CommandModule;
 import net.aincraft.config.ConfigurationModule;
 import net.aincraft.domain.DomainModule;
+import net.aincraft.math.MathModule;
 import net.aincraft.payable.PayableModule;
 import net.aincraft.hooks.preferences.PreferenceModule;
 import net.aincraft.payment.PaymentModule;
@@ -41,6 +42,7 @@ public final class PluginModule extends AbstractModule {
     install(new CommandModule());
     install(new PreferenceModule());
     install(new DomainModule());
+    install(new MathModule());
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       install(new PlaceholderAPIModule());
     }

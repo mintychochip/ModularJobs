@@ -24,8 +24,7 @@ record EconomyPayableTypeImpl(PayableHandler handler, Key key) implements Payabl
 
   @Override
   public Component render(PayableAmount amount, int places) {
-    //TODO: explicitly code a currency USD for the else
-    String symbol = amount.currency().map(Currency::symbol).orElse("$");
+    String symbol = amount.currency().orElse(Currency.USD).symbol();
     NumberFormat nf = NumberFormat.getNumberInstance();
     nf.setMinimumFractionDigits(places);
     nf.setMaximumFractionDigits(places);

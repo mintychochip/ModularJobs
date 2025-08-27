@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.util.List;
 import net.aincraft.Job;
+import net.aincraft.PayableCurve;
 import net.aincraft.PayableCurve.Parameters;
 import net.aincraft.JobProgression;
 import net.aincraft.JobTask;
@@ -42,17 +43,15 @@ final class JobsPaymentHandlerImpl implements JobsPaymentHandler {
       List<Boost> boosts = boostEngine.evaluate(type, progression, (Player) player);
       Job job = progression.job();
       JobTask task = jobService.getTask(job, type, context);
-      task.getPayables().forEach(payable -> {
+      task.payables().forEach(payable -> {
         PayableType payableType = payable.type();
         PayableAmount amount = payable.amount();
         Parameters parameters = new Parameters(amount.value(), progression.level(),
             progressions.size());
-
-        BigDecimal finalAmount = job.getCurve(payableType)
-            .map(c -> c.evaluate(parameters))
-            .orElse(amount.value());
+        PayableCurve curve = job.payableCurves().get(type.key());
+        BigDecimal a = curve == null ? amount.value() : curve.evaluate(parameters);
         Payable p = new Payable(payableType,
-            PayableAmount.create(finalAmount, amount.currency().orElse(null)));
+            PayableAmount.create(a, amount.currency().orElse(null)));
         PayableHandler handler = payableType.handler();
         handler.pay(new PayableContext(player, p, progression));
       });

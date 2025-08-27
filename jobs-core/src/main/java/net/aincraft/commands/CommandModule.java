@@ -14,5 +14,6 @@ public final class CommandModule extends AbstractModule {
     binder.addBinding().to(JoinCommand.class);
     binder.addBinding().to(TopCommand.class);
     binder.addBinding().to(InfoCommand.class);
+    binder.addBinding().to(LeaveCommand.class);
   }
 }

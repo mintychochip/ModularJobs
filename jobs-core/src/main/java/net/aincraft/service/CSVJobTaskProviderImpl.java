@@ -79,7 +79,7 @@
 //
 //  }
 //
-//  private record PayableRecord(Key payableTypeKey, String amount, String currency) {
+//  private record PayableRecord(Key payableTypeKey, String amount, String currencyIdentifier) {
 //
 //    Payable toPayable() throws IllegalStateException {
 //      RegistryView<PayableType> registry = RegistryContainer.registryContainer()
@@ -89,7 +89,7 @@
 //            new BigDecimal(amount), new net.aincraft.container.Currency() {
 //              @Override
 //              public String identifier() {
-//                return currency;
+//                return currencyIdentifier;
 //              }
 //
 //              @Override
