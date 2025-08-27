@@ -1,6 +1,7 @@
 package net.aincraft.domain;
 
 import com.google.inject.Inject;
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import net.aincraft.service.JobService;
 import net.aincraft.util.DomainMapper;
 import net.aincraft.util.KeyResolver;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +36,7 @@ final class JobServiceImpl implements JobService {
   private final JobTaskRepository jobTaskRepository;
   private final KeyResolver keyResolver;
   private final JobRepository jobRepository;
-  private final JobProgressionRepository progressionRepository;
+  private final ProgressionService progressionService;
 
   @Inject
   public JobServiceImpl(
@@ -44,8 +46,7 @@ final class JobServiceImpl implements JobService {
       Registry<ActionType> actionTypeRegistry,
       JobTaskRepository jobTaskRepository,
       KeyResolver keyResolver,
-      JobRepository jobRepository,
-      JobProgressionRepository progressionRepository) {
+      JobRepository jobRepository, ProgressionService progressionService) {
     this.progressionMapper = progressionMapper;
     this.jobMapper = jobMapper;
     this.jobTaskMapper = jobTaskMapper;
@@ -53,7 +54,7 @@ final class JobServiceImpl implements JobService {
     this.jobTaskRepository = jobTaskRepository;
     this.keyResolver = keyResolver;
     this.jobRepository = jobRepository;
-    this.progressionRepository = progressionRepository;
+    this.progressionService = progressionService;
   }
 
   @Override
@@ -95,7 +96,30 @@ final class JobServiceImpl implements JobService {
 
   @Override
   public boolean update(JobProgression progression) {
-    return progressionRepository.save(progressionMapper.toRecord(progression));
+    return progressionService.save(progressionMapper.toRecord(progression));
+  }
+
+  @Override
+  public boolean joinJob(String playerId, String jobKey) throws IllegalArgumentException {
+    JobRecord jobRecord = jobRepository.load(jobKey);
+    if (jobRecord == null) {
+      throw new IllegalArgumentException("failed to joined job, the job does not exist");
+    }
+    JobProgressionRecord record = progressionService.load(playerId, jobKey);
+    if (record == null) {
+      return progressionService.save(
+          new JobProgressionRecord(playerId, jobRecord, BigDecimal.ZERO));
+    }
+    return false;
+  }
+
+  @Override
+  public boolean leaveJob(String playerId, String jobKey) throws IllegalArgumentException {
+    JobProgressionRecord record = progressionService.load(playerId, jobKey);
+    if (record == null) {
+      return false;
+    }
+    return progressionService.archive(playerId,jobKey);
   }
 
   @Override
@@ -106,12 +130,13 @@ final class JobServiceImpl implements JobService {
 
   @Override
   public List<JobProgression> getProgressions(OfflinePlayer player) {
-    return List.of();
+    return progressionService.loadAllForPlayer(player.getUniqueId().toString(), 100).stream()
+        .map(progressionMapper::toDomain).toList();
   }
 
   @Override
   public List<JobProgression> getProgressions(Key jobKey, int limit) {
-    return progressionRepository.loadAll(jobKey.toString(), limit).stream()
+    return progressionService.loadAllForJob(jobKey.toString(), limit).stream()
         .map(progressionMapper::toDomain).toList();
   }
 }

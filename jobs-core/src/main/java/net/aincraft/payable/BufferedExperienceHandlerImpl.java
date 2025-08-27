@@ -8,6 +8,7 @@ import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
 import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.service.JobService;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 final class BufferedExperienceHandlerImpl implements
@@ -34,8 +35,7 @@ final class BufferedExperienceHandlerImpl implements
     PayableAmount amount = payable.amount();
     BigDecimal amountDecimal = amount.value();
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
-    jobService.update(calculatedProgression);
-    if (player.isOnline()) {
+    if (jobService.update(calculatedProgression) && player.isOnline()) {
       controller.display(
           new ExperienceBarContext(calculatedProgression, player.getPlayer(), amountDecimal),
           formatter);

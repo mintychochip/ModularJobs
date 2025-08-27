@@ -1,10 +1,13 @@
 package net.aincraft.domain;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,13 +18,18 @@ import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.domain.repository.JobTaskRepository;
 import net.aincraft.repository.ConnectionSource;
 
-public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
+final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
 
+  private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
+  private static final int CACHE_MAXIMUM_SIZE = 10_000;
   private final ConnectionSource connectionSource;
+
+  private final Cache<String, JobTaskRecord> readCache = Caffeine.newBuilder()
+      .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE).build();
 
   private static final String GET_RECORDS_MAP = """
       SELECT t.context_key, t.task_id, t.action_type_key, 
-             p.payable_type_key, p.amount, p.currency
+             p.payable_type_key, p.amount, p.currency_identifier
       FROM job_tasks t
       LEFT JOIN job_task_payables p ON p.job_task_id = t.task_id
       WHERE t.job_key = ?
@@ -34,9 +42,14 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
 
   @Override
   public JobTaskRecord load(String jobKey, String actionTypeKey, String contextKey) {
+    String cacheKey = jobKey + actionTypeKey + contextKey;
+    JobTaskRecord taskRecord = readCache.getIfPresent(cacheKey);
+    if (taskRecord != null) {
+      return taskRecord;
+    }
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            "SELECT p.payable_type_key, p.amount, p.currency FROM job_task_payables p JOIN job_tasks t ON p.job_task_id = t.task_id WHERE t.job_key=? AND t.action_type_key=? AND t.context_key=?;")) {
+            "SELECT p.payable_type_key, p.amount, p.currency_identifier FROM job_task_payables p JOIN job_tasks t ON p.job_task_id = t.task_id WHERE t.job_key=? AND t.action_type_key=? AND t.context_key=?;")) {
       ps.setString(1, jobKey);
       ps.setString(2, actionTypeKey);
       ps.setString(3, contextKey);
@@ -45,11 +58,13 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
         while (rs.next()) {
           String payableTypeKey = rs.getString("payable_type_key");
           BigDecimal amount = rs.getBigDecimal("amount");
-          String currency = rs.getString("currency");
+          String currency = rs.getString("currency_identifier");
           PayableRecord record = new PayableRecord(payableTypeKey, amount, currency);
           records.add(record);
         }
-        return new JobTaskRecord(jobKey, actionTypeKey, contextKey, records);
+        taskRecord = new JobTaskRecord(jobKey, actionTypeKey, contextKey, records);
+        readCache.put(cacheKey, taskRecord);
+        return taskRecord;
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -69,7 +84,7 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
           String actionTypeKey = rs.getString("action_type_key");
           String payableTypeKey = rs.getString("payable_type_key");
           BigDecimal amount = rs.getBigDecimal("amount");
-          String currency = rs.getString("currency");
+          String currency = rs.getString("currency_identifier");
           String contextKey = rs.getString("context_key");
           Map<Integer, TaskRecordAccumulator> taskMap = actionTypeTaskMap.computeIfAbsent(
               actionTypeKey, ignored -> new LinkedHashMap<>());
@@ -124,5 +139,9 @@ public class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static String createCacheKey(String jobKey, String actionTypeKey, String contextKey) {
+    return jobKey + actionTypeKey + contextKey;
   }
 }

@@ -2,7 +2,6 @@ package net.aincraft.domain;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,7 +31,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   private static final String SAVE_QUERY = """
       INSERT INTO %s (player_id, job_key, experience)
       VALUES (?,?,?)
-      ON CONFLICT (player_id, job_key, experience)
+      ON CONFLICT (player_id, job_key)
       DO UPDATE SET experience = excluded.experience;
       """;
 
@@ -41,10 +40,15 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       AND job_key = ? LIMIT 1;
       """;
 
-  private static final String LOAD_ALL_QUERY = """
+  private static final String LOAD_ALL_FOR_JOB = """
       SELECT player_id,experience FROM %s WHERE job_key = ?
       ORDER BY (experience IS NULL) CAST (experience AS REAL)
       DESC LIMIT %d;
+      """;
+
+  private static final String LOAD_ALL_FOR_PLAYER = """
+      SELECT job_key,experience FROM %s WHERE player_id = ?
+      LIMIT %d;
       """;
 
   private static final String DELETE_QUERY = """
@@ -65,12 +69,12 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
 
   @Override
   public boolean save(JobProgressionRecord record) {
-    String jobKey = record.jobRecord().jobKey();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
             String.format(SAVE_QUERY, tableName))) {
+      String jobKey = record.jobRecord().jobKey();
       ps.setString(1, record.playerId());
-      ps.setString(2, record.jobRecord().jobKey());
+      ps.setString(2, jobKey);
       ps.setBigDecimal(3, record.experience());
       if (ps.executeUpdate() > 0) {
         readCache.put(createCacheKey(record.playerId(), jobKey), record);
@@ -83,8 +87,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   }
 
   @Override
-  public @Nullable JobProgressionRecord load(String playerId, String jobKey)
-      throws IllegalArgumentException {
+  public @Nullable JobProgressionRecord load(String playerId, String jobKey) {
     String cacheKey = createCacheKey(playerId, jobKey);
     JobProgressionRecord progressionRecord = readCache.getIfPresent(cacheKey);
     if (progressionRecord != null) {
@@ -92,11 +95,13 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     }
     JobRecord jobRecord = jobRepository.load(jobKey);
     if (jobRecord == null) {
-      throw new IllegalArgumentException("failed to find job record for: " + jobKey);
+      return null;
     }
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
             String.format(LOAD_QUERY, tableName))) {
+      ps.setString(1, playerId);
+      ps.setString(2, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) {
           return null;
@@ -112,16 +117,15 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   }
 
   @Override
-  public List<JobProgressionRecord> loadAll(String jobKey, int limit)
-      throws IllegalArgumentException {
+  public List<JobProgressionRecord> loadAllForJob(String jobKey, int limit) {
     JobRecord jobRecord = jobRepository.load(jobKey);
     if (jobRecord == null) {
-      throw new IllegalArgumentException("the job key does not map to a valid job");
+      return List.of();
     }
     List<JobProgressionRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            String.format(LOAD_ALL_QUERY, tableName, limit))) {
+            String.format(LOAD_ALL_FOR_JOB, tableName, limit))) {
       ps.setString(1, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
@@ -145,9 +149,43 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   }
 
   @Override
+  public List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit) {
+    List<JobProgressionRecord> records = new ArrayList<>();
+    try (Connection connection = connectionSource.getConnection();
+        PreparedStatement ps = connection.prepareStatement(
+            String.format(LOAD_ALL_FOR_PLAYER, tableName, limit))) {
+      ps.setString(1, playerId);
+      try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+          String jobKey = rs.getString("job_key");
+          String cacheKey = createCacheKey(playerId, jobKey);
+          JobProgressionRecord progressionRecord = readCache.getIfPresent(cacheKey);
+          if (progressionRecord != null) {
+            records.add(progressionRecord);
+            continue;
+          }
+          JobRecord jobRecord = jobRepository.load(jobKey);
+          if (jobRecord == null) {
+            //TODO: throw an error here
+            return records;
+          }
+          BigDecimal experience = rs.getBigDecimal("experience");
+          progressionRecord = new JobProgressionRecord(playerId, jobRecord, experience);
+          readCache.put(cacheKey, progressionRecord);
+          records.add(progressionRecord);
+        }
+      }
+      return records;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public boolean delete(String playerId, String jobKey) {
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(String.format(DELETE_QUERY, tableName))) {
+        PreparedStatement ps = connection.prepareStatement(
+            String.format(DELETE_QUERY, tableName))) {
       ps.setString(1, playerId);
       ps.setString(2, jobKey);
       if (ps.executeUpdate() > 0) {

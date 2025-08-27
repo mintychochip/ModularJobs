@@ -3,6 +3,7 @@ package net.aincraft.domain;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.aincraft.domain.model.JobProgressionRecord;
+import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.repository.JobProgressionRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -22,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepository {
 
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(5);
+
   private static final int CACHE_MAX_SIZE = 1000;
 
   private final JobProgressionRepository delegate;
@@ -53,7 +56,8 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       int upsertBatchSize, int deleteBatchSize, long rate, TimeUnit rateUnit) {
     WriteBackJobProgressionRepositoryImpl repository = new WriteBackJobProgressionRepositoryImpl(
         delegate, upsertBatchSize, deleteBatchSize);
-    Bukkit.getAsyncScheduler().runAtFixedRate(plugin, __ -> {
+    Bukkit.getAsyncScheduler().runAtFixedRate(plugin, task -> {
+      repository.flush();
     }, 0L, rate, rateUnit);
     return repository;
   }
@@ -81,11 +85,9 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       }
     }
     try {
-      if (!batchUpserts.isEmpty()) {
-        batchUpserts.forEach((__, record) -> {
-          delegate.save(record);
-        });
-      }
+      batchUpserts.forEach((__, record) -> {
+        delegate.save(record);
+      });
       for (FlatKey key : batchDeletes) {
         delegate.delete(key.playerId(), key.jobKey());
       }
@@ -122,14 +124,32 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   }
 
   @Override
-  public List<JobProgressionRecord> loadAll(String jobKey, int limit)
+  public List<JobProgressionRecord> loadAllForJob(String jobKey, int limit)
       throws IllegalArgumentException {
-    List<JobProgressionRecord> records = delegate.loadAll(jobKey, limit);
-    for (JobProgressionRecord record : records) {
-      FlatKey cacheKey = new FlatKey(record.playerId(),record.jobRecord().jobKey());
-      readCache.put(cacheKey,record);
+    List<JobProgressionRecord> staleRecords = delegate.loadAllForJob(jobKey, limit);
+    for (JobProgressionRecord staleRecord : staleRecords) {
+      FlatKey cacheKey = new FlatKey(staleRecord.playerId(), jobKey);
+      JobProgressionRecord progressionRecord = readCache.getIfPresent(cacheKey);
+      if (progressionRecord == null) {
+        progressionRecord = staleRecord;
+      }
+      readCache.put(cacheKey, progressionRecord);
     }
-    return records;
+    return staleRecords;
+  }
+
+  @Override
+  public List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit)
+      throws IllegalArgumentException {
+    List<JobProgressionRecord> staleRecords = delegate.loadAllForPlayer(playerId, limit);
+    List<JobProgressionRecord> currentRecords = new ArrayList<>(staleRecords.size());
+    for (JobProgressionRecord staleRecord : staleRecords) {
+      JobRecord jobRecord = staleRecord.jobRecord();
+      FlatKey cacheKey = new FlatKey(playerId, jobRecord.jobKey());
+      JobProgressionRecord cached = readCache.getIfPresent(cacheKey);
+      currentRecords.add(cached != null ? cached : staleRecord);
+    }
+    return currentRecords;
   }
 
   @Override

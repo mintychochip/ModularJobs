@@ -24,21 +24,22 @@ final class JobTaskRecordDomainMapperImpl implements DomainMapper<JobTask, JobTa
   @Override
   public @NotNull JobTask toDomain(@NotNull JobTaskRecord record)
       throws IllegalArgumentException {
-    return new JobTask() {
-      @Override
-      public Key getContext() {
-        return NamespacedKey.fromString(record.contextKey());
-      }
-
-      @Override
-      public @NotNull List<Payable> getPayables() {
-        return  record.payables().stream().map(payableRecordDomainMapper::toDomain).toList();
-      }
-    };
+    Key jobKey = NamespacedKey.fromString(record.jobKey());
+    Key actionTypeKey = NamespacedKey.fromString(record.actionTypeKey());
+    Key contextKey = NamespacedKey.fromString(record.contextKey());
+    return new JobTask(jobKey, actionTypeKey, contextKey,
+        record.payables().stream().map(payableRecordDomainMapper::toDomain)
+            .toList());
   }
 
   @Override
   public @NotNull JobTaskRecord toRecord(@NotNull JobTask domain) {
-    return null;
+    String jobKey = domain.jobKey().toString();
+    String actionTypeKey = domain.actionTypeKey().toString();
+    String contextKey = domain.contextKey().toString();
+    return new JobTaskRecord(jobKey, actionTypeKey,
+        contextKey, domain.payables().stream()
+        .map(payableRecordDomainMapper::toRecord)
+        .toList());
   }
 }

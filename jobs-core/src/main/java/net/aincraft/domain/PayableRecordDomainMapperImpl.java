@@ -29,7 +29,7 @@ final class PayableRecordDomainMapperImpl implements DomainMapper<Payable, Payab
     PayableType type = payableTypeRegistry.getOrThrow(key);
 
     BigDecimal amount = record.amount();
-    //TODO: include currency when we find a bridge
+    //TODO: include currencyIdentifier when we find a bridge
     return new Payable(type, PayableAmount.create(amount));
   }
 

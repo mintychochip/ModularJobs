@@ -27,6 +27,10 @@ public interface JobService {
 
   boolean update(JobProgression progression);
 
+  boolean joinJob(String playerId, String jobKey) throws IllegalArgumentException;
+
+  boolean leaveJob(String playerId, String jobKey) throws IllegalArgumentException;
+
   JobProgression getProgression(String playerId, String jobKey) throws IllegalArgumentException;
 
   List<JobProgression> getProgressions(OfflinePlayer player);

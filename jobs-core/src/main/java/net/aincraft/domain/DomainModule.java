@@ -5,7 +5,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.JobTask;
@@ -18,7 +17,6 @@ import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
-import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.domain.repository.JobRepository;
 import net.aincraft.domain.repository.JobTaskRepository;
 import net.aincraft.repository.ConnectionSourceFactory;
@@ -30,8 +28,10 @@ import org.bukkit.plugin.Plugin;
 
 public final class DomainModule extends PrivateModule {
 
+
   @Override
   protected void configure() {
+    install(new ProgressionServiceModule());
     bind(new TypeLiteral<DomainMapper<Job, JobRecord>>() {
     })
         .to(JobRecordDomainMapperImpl.class)
@@ -64,18 +64,7 @@ public final class DomainModule extends PrivateModule {
     return new MemoryJobRepositoryImpl(records);
   }
 
-  @Provides
-  @Singleton
-  JobProgressionRepository jobProgressionRepository(JobRepository jobRepository, Plugin plugin) {
-    YamlConfiguration database = YamlConfiguration.create(plugin, "database.yml");
-    ConfigurationSection repositoryConfiguration = database.getConfigurationSection("payable");
-    ConnectionSourceFactory factory = new ConnectionSourceFactory(plugin,
-        repositoryConfiguration);
-    JobProgressionRepository repository = RelationalJobProgressionRepositoryImpl.create(
-        jobRepository, factory.create(), "job_progression");
-    return WriteBackJobProgressionRepositoryImpl.create(plugin, repository, 50, 50, 10,
-        TimeUnit.SECONDS);
-  }
+
 
   @Provides
   @Singleton

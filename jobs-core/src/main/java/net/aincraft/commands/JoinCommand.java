@@ -43,12 +43,9 @@ final class JoinCommand implements JobsCommand {
             player.sendMessage("invalid job");
             return 0;
           }
-//          try {
-//            jobService.create(player, job.get());
-//          } catch (IllegalArgumentException ex) {
-//            player.sendMessage("You are already in this job.");
-//          }
-          player.sendMessage(Component.text("You joined: ").append(job.displayName()));
+          if (jobService.joinJob(player.getUniqueId().toString(),jobKey.toString())) {
+            player.sendMessage(Component.text("You joined: ").append(job.displayName()));
+          }
           return Command.SINGLE_SUCCESS;
         }));
   }
