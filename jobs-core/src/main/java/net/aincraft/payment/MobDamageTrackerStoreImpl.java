@@ -15,13 +15,12 @@ import org.bukkit.entity.Entity;
 
 final class MobDamageTrackerStoreImpl implements MobDamageTrackerStore {
 
-  private final Set<Key> trackableEntities;
+  private final Set<Key> trackableEntities = new HashSet<>();
   private final KeyResolver keyResolver;
   private final Map<UUID, DamageContribution> damageContributions = new HashMap<>();
 
   @Inject
-  public MobDamageTrackerStoreImpl(Set<Key> trackableEntities, KeyResolver keyResolver) {
-    this.trackableEntities = trackableEntities;
+  public MobDamageTrackerStoreImpl(KeyResolver keyResolver) {
     this.keyResolver = keyResolver;
   }
 

@@ -11,13 +11,6 @@ import org.jetbrains.annotations.NotNull;
 interface MobDamageTracker {
 
   /**
-   * Registers a mob type (by {@link Key}) to be tracked when spawned.
-   *
-   * @param key the mob's type key (e.g. "minecraft:zombie")
-   */
-  void registerEntity(Key key);
-
-  /**
    * Ends tracking for an entity and returns the final damage contribution record.
    *
    * @param entity the tracked entity

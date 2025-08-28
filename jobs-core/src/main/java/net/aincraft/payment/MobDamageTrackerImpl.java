@@ -14,11 +14,6 @@ final class MobDamageTrackerImpl implements MobDamageTracker {
   }
 
   @Override
-  public void registerEntity(Key key) {
-    store.registerTrackableEntity(key);
-  }
-
-  @Override
   public DamageContribution endTracking(Entity entity) throws IllegalArgumentException {
     return store.removeContribution(entity);
   }

@@ -22,15 +22,15 @@ public final class ScoreboardJobsTopConsumerImpl implements PageConsumer<JobProg
 
   @Override
   public void consume(Page<JobProgression> page, CommandSender sender) {
-    if (!(sender instanceof Player player)) {
-      return;
-    }
-    List<JobProgression> data = page.data();
-    int size = data.size();
-    for (int i = 0; i < size; i++) {
-      JobProgression progression = data.get(i);
-      scoreboard.setLine();
-    }
-    scoreboard.setLine();
+//    if (!(sender instanceof Player player)) {
+//      return;
+//    }
+//    List<JobProgression> data = page.data();
+//    int size = data.size();
+//    for (int i = 0; i < size; i++) {
+//      JobProgression progression = data.get(i);
+//      scoreboard.setLine();
+//    }
+//    scoreboard.setLine();
   }
 }
