@@ -1,23 +1,32 @@
 package net.aincraft.payment;
 
+import com.google.errorprone.annotations.concurrent.LazyInit;
+import com.google.inject.Inject;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 final class EntityValidationServiceImpl implements EntityValidationService {
 
-  private static final String INVALIDATION_VALUE = "invalid";
+  @NotNull
+  private final Plugin plugin;
 
-  private final NamespacedKey invalidationKey;
+  @LazyInit
+  private NamespacedKey invalidationKey = null;
 
-  private EntityValidationServiceImpl(NamespacedKey invalidationKey) {
-    this.invalidationKey = invalidationKey;
+  private NamespacedKey invalidationKey() {
+    if (invalidationKey == null) {
+      invalidationKey = new NamespacedKey(plugin,"invalid");
+    }
+    return invalidationKey;
   }
 
-  public static EntityValidationService create(Plugin plugin) {
-    return new EntityValidationServiceImpl(new NamespacedKey(plugin, INVALIDATION_VALUE));
+  @Inject
+  private EntityValidationServiceImpl(@NotNull Plugin plugin) {
+    this.plugin = plugin;
   }
 
   @Override
@@ -33,6 +42,6 @@ final class EntityValidationServiceImpl implements EntityValidationService {
       pdc.remove(invalidationKey);
       return;
     }
-    pdc.set(invalidationKey, PersistentDataType.BOOLEAN,true);
+    pdc.set(invalidationKey, PersistentDataType.BOOLEAN, true);
   }
 }

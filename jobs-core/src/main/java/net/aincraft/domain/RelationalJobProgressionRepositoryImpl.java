@@ -166,8 +166,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
           }
           JobRecord jobRecord = jobRepository.load(jobKey);
           if (jobRecord == null) {
-            //TODO: throw an error here
-            return records;
+            continue;
           }
           BigDecimal experience = rs.getBigDecimal("experience");
           progressionRecord = new JobProgressionRecord(playerId, jobRecord, experience);

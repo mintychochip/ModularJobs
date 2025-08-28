@@ -1,5 +1,1 @@
-timed-boost:
-  type: sqlite
-
-progression:
-  type: sqlite
+payable:

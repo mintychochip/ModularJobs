@@ -3,7 +3,8 @@ package net.aincraft.commands.top;
 import java.util.List;
 import java.util.Map;
 import net.aincraft.JobTask;
-import net.aincraft.commands.top.PageConsumer.Page;
+import net.aincraft.commands.Page;
+import net.aincraft.commands.PageConsumer;
 import net.aincraft.container.ActionType;
 import org.bukkit.command.CommandSender;
 

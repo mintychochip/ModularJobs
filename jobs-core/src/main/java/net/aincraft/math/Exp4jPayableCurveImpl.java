@@ -13,9 +13,9 @@ final class Exp4jPayableCurveImpl extends AbstractExp4jCurveImpl<Parameters> imp
     super(expression, expressionString);
   }
 
-  static PayableCurve create(String expression) {
+  static PayableCurve create(String expressionString) {
     return new Exp4jPayableCurveImpl(
-        new ExpressionBuilder(expression).variables("base", "level", "jobs").build(), expression);
+        new ExpressionBuilder(expressionString).variables("base", "level", "jobs").build(), expressionString);
   }
 
   @Override

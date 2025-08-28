@@ -27,8 +27,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
 public final class DomainModule extends PrivateModule {
-
-
+  
   @Override
   protected void configure() {
     install(new ProgressionServiceModule());

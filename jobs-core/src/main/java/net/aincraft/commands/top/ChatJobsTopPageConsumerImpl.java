@@ -2,6 +2,9 @@ package net.aincraft.commands.top;
 
 import java.util.List;
 import net.aincraft.JobProgression;
+import net.aincraft.commands.Page;
+import net.aincraft.commands.PageConsumer;
+import net.aincraft.commands.components.PlayerComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -11,9 +14,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.Nullable;
 
-public final class ChatJobsTopPageConsumerImpl implements PageConsumer<List<JobProgression>> {
+public final class ChatJobsTopPageConsumerImpl implements PageConsumer<JobProgression> {
 
-  private static final String FORMAT = "<rank>. <player>: <level>";
+  private static final String ENTRY_FORMAT = "<rank>. <player>: <level>";
 
   private static Component player(@Nullable String playerName, String playerId) {
     playerName = playerName != null ? playerName : "Invalid";
@@ -22,19 +25,18 @@ public final class ChatJobsTopPageConsumerImpl implements PageConsumer<List<JobP
   }
 
   @Override
-  public void consume(Page<List<JobProgression>> page, CommandSender sender) {
+  public void consume(Page<JobProgression> page, CommandSender sender) {
     Component body = Component.empty();
-    List<JobProgression> progressions = page.content();
+    List<JobProgression> data = page.data();
     int pageNumber = page.pageNumber();
-    for (int i = 0; i < page.pageSize(); i++) {
-      JobProgression progression = progressions.get(i);
+    for (int i = 0; i < data.size(); i++) {
+      JobProgression progression = data.get(i);
       OfflinePlayer progressionPlayer = progression.player();
-      Component row = MiniMessage.miniMessage().deserialize(FORMAT, TagResolver.builder()
-          .tag("rank", Tag.inserting(Component.text((i + 1) + (pageNumber - 1) * page.pageSize())))
-          .tag("player", Tag.inserting(
-              player(progressionPlayer.getName(), progressionPlayer.getUniqueId().toString())))
-          .tag("level", Tag.inserting(Component.text(progression.level())))
-          .build());
+      Component row = MiniMessage.miniMessage().deserialize(ENTRY_FORMAT, TagResolver.builder()
+          .tag("rank", Tag.inserting(Component.text((i + 1) + (pageNumber - 1) * data.size())))
+          .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))
+          .tag("level", Tag.inserting(LevelComponent.of(progression)))
+              .build());
       body = body.append(row).appendNewline();
     }
     sender.sendMessage(body);
