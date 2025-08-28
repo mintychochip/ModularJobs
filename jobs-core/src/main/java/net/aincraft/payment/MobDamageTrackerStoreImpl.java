@@ -15,23 +15,14 @@ import org.bukkit.entity.Entity;
 
 final class MobDamageTrackerStoreImpl implements MobDamageTrackerStore {
 
-  private final Set<Key> trackableEntities = new HashSet<>();
+  private final Set<Key> trackableEntities;
   private final KeyResolver keyResolver;
-  //TODO: add configuration
   private final Map<UUID, DamageContribution> damageContributions = new HashMap<>();
 
   @Inject
-  public MobDamageTrackerStoreImpl(KeyResolver keyResolver) {
+  public MobDamageTrackerStoreImpl(Set<Key> trackableEntities, KeyResolver keyResolver) {
+    this.trackableEntities = trackableEntities;
     this.keyResolver = keyResolver;
-    trackableEntities.add(Key.key("minecraft", "warden"));
-    trackableEntities.add(Key.key("minecraft", "ender_dragon"));
-    trackableEntities.add(Key.key("minecraft", "wither"));
-    trackableEntities.add(Key.key("minecraft", "creeper"));
-  }
-
-  @Override
-  public void registerTrackableEntity(Key key) {
-    trackableEntities.add(key);
   }
 
   @Override
@@ -41,8 +32,10 @@ final class MobDamageTrackerStoreImpl implements MobDamageTrackerStore {
   }
 
   @Override
-  public DamageContribution getContribution(Entity entity, Supplier<DamageContribution> contributionSupplier) {
-    return damageContributions.computeIfAbsent(entity.getUniqueId(),ignored -> contributionSupplier.get());
+  public DamageContribution getContribution(Entity entity,
+      Supplier<DamageContribution> contributionSupplier) {
+    return damageContributions.computeIfAbsent(entity.getUniqueId(),
+        __ -> contributionSupplier.get());
   }
 
   @Override

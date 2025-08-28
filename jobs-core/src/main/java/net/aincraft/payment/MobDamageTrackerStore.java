@@ -9,8 +9,6 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 @Internal
 interface MobDamageTrackerStore {
 
-  void registerTrackableEntity(Key key);
-
   boolean isTrackable(Entity entity);
 
   DamageContribution getContribution(Entity entity,
