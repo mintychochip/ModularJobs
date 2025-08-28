@@ -11,10 +11,4 @@ public class JobRepositoryModule extends AbstractModule {
   protected void configure() {
 
   }
-
-  @Provides
-  @Singleton
-  public JobRepository jobRepository() {
-
-  }
 }

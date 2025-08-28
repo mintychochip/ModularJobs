@@ -19,7 +19,7 @@ final class EntityValidationServiceImpl implements EntityValidationService {
 
   private NamespacedKey invalidationKey() {
     if (invalidationKey == null) {
-      invalidationKey = new NamespacedKey(plugin,"invalid");
+      invalidationKey = new NamespacedKey(plugin, "invalid");
     }
     return invalidationKey;
   }
@@ -32,16 +32,16 @@ final class EntityValidationServiceImpl implements EntityValidationService {
   @Override
   public boolean isValid(Entity entity) {
     PersistentDataContainer pdc = entity.getPersistentDataContainer();
-    return !pdc.has(invalidationKey);
+    return !pdc.has(invalidationKey());
   }
 
   @Override
   public void setValid(Entity entity, boolean state) {
     PersistentDataContainer pdc = entity.getPersistentDataContainer();
     if (state) {
-      pdc.remove(invalidationKey);
+      pdc.remove(invalidationKey());
       return;
     }
-    pdc.set(invalidationKey, PersistentDataType.BOOLEAN, true);
+    pdc.set(invalidationKey(), PersistentDataType.BOOLEAN, true);
   }
 }

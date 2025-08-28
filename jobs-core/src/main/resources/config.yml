@@ -3,3 +3,5 @@ database:
 
 pay-in-creative: true
 pay-while-riding: false
+
+trackable_entities:

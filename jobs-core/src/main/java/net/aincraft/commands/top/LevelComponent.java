@@ -24,6 +24,7 @@ final class LevelComponent implements ComponentLike {
   @Override
   public @NotNull Component asComponent() {
     return Component.text(level)
-        .hoverEvent(HoverEvent.showText(Component.text(experience.toPlainString())));
+        .hoverEvent(
+            HoverEvent.showText(Component.text("Experience: " + experience.toPlainString())));
   }
 }

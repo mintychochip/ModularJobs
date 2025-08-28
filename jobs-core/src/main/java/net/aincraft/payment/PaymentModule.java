@@ -21,6 +21,7 @@ import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.Listener;
@@ -28,7 +29,7 @@ import org.bukkit.plugin.Plugin;
 
 public final class PaymentModule extends AbstractModule {
 
-  private static final String TRACKABLE_ENTITIES = "trackable_entities";
+  private static final String TRACKABLE_ENTITIES = "trackable-entities";
 
   @Override
   protected void configure() {
@@ -45,18 +46,18 @@ public final class PaymentModule extends AbstractModule {
     binder.addBinding().to(ExploitStoreController.class);
   }
 
-  @Provides
-  @Singleton
-  @Named(TRACKABLE_ENTITIES)
-  Set<Key> trackableEntities(final YamlConfiguration configuration) {
-    if (!configuration.contains(TRACKABLE_ENTITIES)) {
-      //TODO: add logging message, with plugin logger
-      return Set.of();
-    }
-    return configuration.getStringList(TRACKABLE_ENTITIES).stream().map(NamespacedKey::fromString)
-        .collect(
-            Collectors.toSet());
-  }
+//  @Provides
+//  @Singleton
+//  @Named(TRACKABLE_ENTITIES)
+//  Set<Key> trackableEntities(@Named(TRACKABLE_ENTITIES) final ConfigurationSection configuration) {
+//    if (!configuration.contains(TRACKABLE_ENTITIES)) {
+//      //TODO: add logging message, with plugin logger
+//      return Set.of();
+//    }
+//    return configuration.getStringList(TRACKABLE_ENTITIES).stream().map(NamespacedKey::fromString)
+//        .collect(
+//            Collectors.toSet());
+//  }
 
   @Provides
   @Singleton

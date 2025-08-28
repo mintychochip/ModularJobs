@@ -311,6 +311,23 @@ import net.kyori.adventure.key.Key;
  * Name	Explanation /jobs exp playerName jobName add 2.5	Adds 2.5 amount of experience to the given
  * player. /jobs level playerName jobName take 8	Takes 8 amount of level from the given player.
  * /jobs expplayerName jobName set 10	Sets the player exp to 10
+ * <p>
+ * /jobs edititembonus add itemName	Sets the item bonus NBT to what is in the player hand. /jobs
+ * edititembonus remove	Removes the NBT from the item what the player is holding currently. /jobs
+ * edititembonus list	Lists the item bonuses that the player is holding currently. Permissions:
+ * jobs.command.expboost, jobs.command.moneyboost, jobs.command.pointboost
+ * <p>
+ * Name	Explanation /jobs expboost jobName 2.5	Adds 2.5 amount of experience boost to the specified
+ * job. /jobs pointboost jobName 1hour5m30second 2.5	Adds 2.5 amount of point boost to the specified
+ * job with the specified time. /jobs moneyboost all 5 10m	Sets the Global money bonus to 500% for
+ * all the available jobs for 10 minutes. /jobs expboost reset jobName	Resets the experience boost
+ * for the specified job. /jobs pointboost reset all	Resets the point boost for all jobs.
+ * <p>
+ * Experience, level Permissions: jobs.command.exp, jobs.command.level
+ * <p>
+ * Name	Explanation /jobs exp playerName jobName add 2.5	Adds 2.5 amount of experience to the given
+ * player. /jobs level playerName jobName take 8	Takes 8 amount of level from the given player.
+ * /jobs expplayerName jobName set 10	Sets the player exp to 10
  */
 
 /**
@@ -342,13 +359,13 @@ final class TopCommand implements JobsCommand {
   private static final int ENTRIES_PER_QUERY = 100;
 
   private final JobService jobService;
-  private final JobsTopPageProvider resultProvider;
+  private final JobTopPageProvider resultProvider;
   private final KeyFactory keyFactory;
 
   private static final int PAGE_SIZE = 10;
 
   @Inject
-  public TopCommand(JobService jobService, JobsTopPageProvider resultProvider,
+  public TopCommand(JobService jobService, JobTopPageProvider resultProvider,
       KeyFactory keyFactory) {
     this.jobService = jobService;
     this.resultProvider = resultProvider;
@@ -368,8 +385,10 @@ final class TopCommand implements JobsCommand {
           Key key = keyFactory.create(jobKey);
           //TODO: add limits
           ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
-          consumer.consume(resultProvider.getPage(key, page, PAGE_SIZE),
-              context.getSource().getSender());
+          int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
+          int clamped = Math.min(Math.max(page, 1), maxPages);
+          consumer.consume(key, resultProvider.getPage(key, clamped, PAGE_SIZE),
+              context.getSource().getSender(), maxPages);
           return 1;
         })));
   }
@@ -380,6 +399,7 @@ final class TopCommand implements JobsCommand {
     private final Cache<Key, List<JobProgression>> readCache = Caffeine.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(10)).build();
 
+    @Inject
     JobTopPageProviderImpl(JobService jobService) {
       this.jobService = jobService;
     }
@@ -389,15 +409,12 @@ final class TopCommand implements JobsCommand {
       List<JobProgression> progressions = readCache.get(jobKey,
           __ -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
       if (progressions == null) {
-        return new Page<>(List.of(), -1);
+        return new Page<>(List.of(), -1, pageSize);
       }
-      int size = progressions.size();
-      int maxPages = Math.max(1, (size + pageSize - 1) / pageSize);
-      int clamped = Math.min(Math.max(pageNumber, 1), maxPages);
-      int from = (clamped - 1) * pageSize;
-      int to = Math.min(from + pageSize, size);
+      int from = (pageNumber - 1) * pageSize;
+      int to = Math.min(from + pageSize, ENTRIES_PER_QUERY);
       List<JobProgression> slice = from < to ? progressions.subList(from, to) : List.of();
-      return new Page<>(slice, pageSize);
+      return new Page<>(slice, pageNumber, pageSize);
     }
   }
 }

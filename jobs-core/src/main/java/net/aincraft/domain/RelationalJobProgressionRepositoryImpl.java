@@ -42,7 +42,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
 
   private static final String LOAD_ALL_FOR_JOB = """
       SELECT player_id,experience FROM %s WHERE job_key = ?
-      ORDER BY (experience IS NULL) CAST (experience AS REAL)
+      ORDER BY (experience IS NULL), CAST(experience AS REAL)
       DESC LIMIT %d;
       """;
 
