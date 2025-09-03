@@ -10,7 +10,7 @@ import net.aincraft.container.boost.RuledBoostSource;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
-public record RuledBoostSourceImpl(List<Rule> rules, Policy policy) implements RuledBoostSource {
+public record RuledBoostSourceImpl(List<Rule> rules, Policy policy, Key key) implements RuledBoostSource {
 
   private static final Queue<Rule> RULE_QUEUE = new PriorityQueue<>(
       Comparator.comparingInt(Rule::priority).reversed());
@@ -24,7 +24,6 @@ public record RuledBoostSourceImpl(List<Rule> rules, Policy policy) implements R
 
   @Override
   public @NotNull Key key() {
-    return Key.key("");
+    return key;
   }
-
 }

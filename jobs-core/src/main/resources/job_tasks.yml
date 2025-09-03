@@ -1,0 +1,5 @@
+modularjobs:builder:
+  block_place:
+    bamboo_block:
+      experience: 2
+      economy: 2

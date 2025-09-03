@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.Locale;
 import net.aincraft.JobProgression;
 import net.aincraft.commands.top.ChatJobsTopPageConsumerImpl;
+import net.aincraft.commands.top.ScoreboardJobsTopPageConsumerImpl;
 import net.aincraft.service.JobService;
 import net.aincraft.util.KeyFactory;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 
 /**
  * /jobs area add wg:worldGuardArea 2	jobs.area.add	Adds a new restricted area with 2 amount of
@@ -380,14 +384,15 @@ final class TopCommand implements JobsCommand {
               .forEach(builder::suggest);
           return builder.buildFuture();
         }).then(Commands.argument("pageNumber", IntegerArgumentType.integer()).executes(context -> {
+          CommandSourceStack source = context.getSource();
+          CommandSender sender = source.getSender();
           String jobKey = context.getArgument("job", String.class);
           int page = context.getArgument("pageNumber", Integer.class);
           Key key = keyFactory.create(jobKey);
           //TODO: add limits
           ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
           int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
-          int clamped = Math.min(Math.max(page, 1), maxPages);
-          consumer.consume(key, resultProvider.getPage(key, clamped, PAGE_SIZE),
+          consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
               context.getSource().getSender(), maxPages);
           return 1;
         })));
@@ -408,13 +413,20 @@ final class TopCommand implements JobsCommand {
     public Page<JobProgression> getPage(Key jobKey, int pageNumber, int pageSize) {
       List<JobProgression> progressions = readCache.get(jobKey,
           __ -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
-      if (progressions == null) {
-        return new Page<>(List.of(), -1, pageSize);
+
+      if (progressions == null || progressions.isEmpty()) {
+        return new Page<>(List.of(), 1, pageSize);
       }
-      int from = (pageNumber - 1) * pageSize;
-      int to = Math.min(from + pageSize, ENTRIES_PER_QUERY);
-      List<JobProgression> slice = from < to ? progressions.subList(from, to) : List.of();
-      return new Page<>(slice, pageNumber, pageSize);
+
+      int total = Math.min(ENTRIES_PER_QUERY, progressions.size());
+      int totalPages = Math.max(1, (total + pageSize - 1) / pageSize);
+      int clamped = Math.min(Math.max(pageNumber, 1), totalPages);
+
+      int from = (clamped - 1) * pageSize;
+      int to = Math.min(from + pageSize, total);
+
+      List<JobProgression> slice = progressions.subList(from, to);
+      return new Page<>(slice, clamped, pageSize);
     }
   }
 }

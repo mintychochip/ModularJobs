@@ -72,6 +72,11 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
   }
 
   @Override
+  public boolean save(JobTaskRecord record) {
+    return false;
+  }
+
+  @Override
   public Map<String, List<JobTaskRecord>> getRecords(String jobKey) {
     Map<String, Map<Integer, TaskRecordAccumulator>> actionTypeTaskMap = new LinkedHashMap<>();
     try (Connection connection = connectionSource.getConnection();

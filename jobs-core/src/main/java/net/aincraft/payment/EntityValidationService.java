@@ -21,7 +21,7 @@ interface EntityValidationService {
    * Sets the validity state for the given entity.
    *
    * @param entity the entity to modify
-   * @param state  true to mark as valid, false to mark as invalid
+   * @param valid  true to mark as valid, false to mark as invalid
    */
-  void setValid(Entity entity, boolean state);
+  void setValid(Entity entity, boolean valid);
 }

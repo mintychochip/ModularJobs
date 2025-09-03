@@ -6,4 +6,5 @@ import org.jetbrains.annotations.NotNull;
 public record JobTaskRecord(@NotNull String jobKey, String actionTypeKey, String contextKey,
                             List<PayableRecord> payables) {
 
+  public record JobTaskRecordKey(String jobKey, String actionTypeKey, String contextKey) {}
 }

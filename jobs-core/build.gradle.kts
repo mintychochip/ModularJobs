@@ -63,11 +63,7 @@ tasks {
         minecraftVersion("1.21.7")
         downloadPlugins {
             url("https://github.com/EssentialsX/Essentials/releases/download/2.21.2/EssentialsX-2.21.2.jar")
-            url("https://www.spigotmc.org/resources/lwc-extended.69551/download?version=557109")
-            url("https://www.spigotmc.org/resources/vault.34315/download?version=344916")
-            url("https://www.spigotmc.org/resources/placeholderapi.6245/download?version=541946")
-            url("https://www.spigotmc.org/resources/jobs-reborn.4216/download?version=603386")
-            url("https://www.spigotmc.org/resources/cmilib.87610/download?version=603384")
+            hangar("Bolt","1.1.78")
         }
 
     }

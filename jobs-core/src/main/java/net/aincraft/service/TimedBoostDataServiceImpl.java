@@ -50,7 +50,7 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
     String targetIdentifier =
         target instanceof PlayerTarget playerTarget ? playerTarget.player().getUniqueId().toString()
             : "global";
-    String sourceIdentifier = "";
+    String sourceIdentifier = data.boostSource().key().toString();
     Timestamp timestamp = Timestamp.from(Instant.now());
     Duration duration = data.getDuration().orElse(null);
     timedBoostRepository.addBoost(
