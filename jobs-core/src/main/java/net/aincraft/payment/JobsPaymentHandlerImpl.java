@@ -40,7 +40,6 @@ final class JobsPaymentHandlerImpl implements JobsPaymentHandler {
   public void pay(OfflinePlayer player, ActionType type, Context context) {
     List<JobProgression> progressions = jobService.getProgressions(player);
     for (JobProgression progression : progressions) {
-      List<Boost> boosts = boostEngine.evaluate(type, progression, (Player) player);
       Job job = progression.job();
       JobTask task = jobService.getTask(job, type, context);
       task.payables().forEach(payable -> {

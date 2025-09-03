@@ -25,8 +25,10 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   private final JobRepository jobRepository;
   private final ConnectionSource connectionSource;
   private final String tableName;
-  private final Cache<String, JobProgressionRecord> readCache = Caffeine.newBuilder()
-      .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE).build();
+  private final Cache<JobProgressionRepository.Key, JobProgressionRecord> readCache = Caffeine.newBuilder()
+      .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE)
+      .build();
+
 
   private static final String SAVE_QUERY = """
       INSERT INTO %s (player_id, job_key, experience)
@@ -40,7 +42,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       AND job_key = ? LIMIT 1;
       """;
 
-  private static final String LOAD_ALL_FOR_JOB = """
+  private static final String LOAD_ALL_BY_JOB_QUERY = """
       SELECT player_id,experience FROM %s WHERE job_key = ?
       ORDER BY (experience IS NULL), CAST(experience AS REAL)
       DESC LIMIT %d;
@@ -77,7 +79,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       ps.setString(2, jobKey);
       ps.setBigDecimal(3, record.experience());
       if (ps.executeUpdate() > 0) {
-        readCache.put(createCacheKey(record.playerId(), jobKey), record);
+        readCache.put(new Key(record.playerId(), jobKey), record);
         return true;
       }
       return false;
@@ -88,8 +90,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
 
   @Override
   public @Nullable JobProgressionRecord load(String playerId, String jobKey) {
-    String cacheKey = createCacheKey(playerId, jobKey);
-    JobProgressionRecord progressionRecord = readCache.getIfPresent(cacheKey);
+    Key key = new Key(playerId, jobKey);
+    JobProgressionRecord progressionRecord = readCache.getIfPresent(key);
     if (progressionRecord != null) {
       return progressionRecord;
     }
@@ -108,7 +110,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
         }
         BigDecimal experience = rs.getBigDecimal("experience");
         progressionRecord = new JobProgressionRecord(playerId, jobRecord, experience);
-        readCache.put(cacheKey, progressionRecord);
+        readCache.put(key, progressionRecord);
         return progressionRecord;
       }
     } catch (SQLException e) {
@@ -125,20 +127,20 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     List<JobProgressionRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            String.format(LOAD_ALL_FOR_JOB, tableName, limit))) {
+            String.format(LOAD_ALL_BY_JOB_QUERY, tableName, limit))) {
       ps.setString(1, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
           String playerId = rs.getString("player_id");
-          String cacheKey = createCacheKey(playerId, jobKey);
-          JobProgressionRecord progressionRecord = readCache.getIfPresent(cacheKey);
+          Key key = new Key(playerId, jobKey);
+          JobProgressionRecord progressionRecord = readCache.getIfPresent(key);
           if (progressionRecord != null) {
             records.add(progressionRecord);
             continue;
           }
           BigDecimal experience = rs.getBigDecimal("experience");
           progressionRecord = new JobProgressionRecord(playerId, jobRecord, experience);
-          readCache.put(cacheKey, progressionRecord);
+          readCache.put(key, progressionRecord);
           records.add(progressionRecord);
         }
       }
@@ -158,8 +160,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
           String jobKey = rs.getString("job_key");
-          String cacheKey = createCacheKey(playerId, jobKey);
-          JobProgressionRecord progressionRecord = readCache.getIfPresent(cacheKey);
+          Key key = new Key(playerId, jobKey);
+          JobProgressionRecord progressionRecord = readCache.getIfPresent(key);
           if (progressionRecord != null) {
             records.add(progressionRecord);
             continue;
@@ -170,7 +172,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
           }
           BigDecimal experience = rs.getBigDecimal("experience");
           progressionRecord = new JobProgressionRecord(playerId, jobRecord, experience);
-          readCache.put(cacheKey, progressionRecord);
+          readCache.put(key, progressionRecord);
           records.add(progressionRecord);
         }
       }
@@ -188,16 +190,12 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       ps.setString(1, playerId);
       ps.setString(2, jobKey);
       if (ps.executeUpdate() > 0) {
-        readCache.invalidate(createCacheKey(playerId, jobKey));
+        readCache.invalidate(new Key(playerId, jobKey));
         return true;
       }
       return false;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private static String createCacheKey(String playerId, String jobKey) {
-    return playerId + jobKey;
   }
 }

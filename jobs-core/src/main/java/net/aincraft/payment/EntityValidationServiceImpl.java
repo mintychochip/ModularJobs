@@ -36,9 +36,9 @@ final class EntityValidationServiceImpl implements EntityValidationService {
   }
 
   @Override
-  public void setValid(Entity entity, boolean state) {
+  public void setValid(Entity entity, boolean valid) {
     PersistentDataContainer pdc = entity.getPersistentDataContainer();
-    if (state) {
+    if (valid) {
       pdc.remove(invalidationKey());
       return;
     }

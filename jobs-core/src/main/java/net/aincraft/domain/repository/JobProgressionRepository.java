@@ -16,4 +16,7 @@ public interface JobProgressionRepository {
   List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit);
 
   boolean delete(String playerId, String jobKey);
+
+  record Key(String playerId, String jobKey) {
+  }
 }

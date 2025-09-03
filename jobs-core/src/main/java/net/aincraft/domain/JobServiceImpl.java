@@ -106,6 +106,9 @@ final class JobServiceImpl implements JobService {
       throw new IllegalArgumentException("failed to joined job, the job does not exist");
     }
     JobProgressionRecord record = progressionService.load(playerId, jobKey);
+    if (progressionService.restore(playerId, jobKey)) {
+      return true;
+    }
     if (record == null) {
       return progressionService.save(
           new JobProgressionRecord(playerId, jobRecord, BigDecimal.ZERO));

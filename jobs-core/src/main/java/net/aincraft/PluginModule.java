@@ -1,6 +1,7 @@
 package net.aincraft;
 
 import com.google.inject.AbstractModule;
+import net.aincraft.boost.BoostModule;
 import net.aincraft.commands.CommandModule;
 import net.aincraft.config.ConfigurationModule;
 import net.aincraft.domain.DomainModule;
@@ -43,6 +44,7 @@ public final class PluginModule extends AbstractModule {
     install(new PreferenceModule());
     install(new DomainModule());
     install(new MathModule());
+    install(new BoostModule());
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       install(new PlaceholderAPIModule());
     }

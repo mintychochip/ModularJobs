@@ -24,6 +24,9 @@ final class JobProgressionImpl implements JobProgression {
 
   @Override
   public JobProgression setExperience(BigDecimal experience) {
+    if (this.experience.equals(experience)) {
+      return this;
+    }
     return new JobProgressionImpl(player, job, experience);
   }
 

@@ -10,7 +10,9 @@ public interface JobTaskRepository {
   @Nullable
   JobTaskRecord load(String jobKey, String actionTypeKey, String contextKey);
 
-  Map<String,List<JobTaskRecord>> getRecords(String jobKey);
+  boolean save(JobTaskRecord record);
+
+  Map<String, List<JobTaskRecord>> getRecords(String jobKey);
 
   List<JobTaskRecord> getRecords(String jobKey, String actionTypeKey);
 }

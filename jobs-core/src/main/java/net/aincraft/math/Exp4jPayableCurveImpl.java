@@ -1,10 +1,18 @@
 package net.aincraft.math;
 
 import java.math.BigDecimal;
+import java.util.List;
+import net.aincraft.JobProgressionView;
 import net.aincraft.PayableCurve;
 import net.aincraft.PayableCurve.Parameters;
+import net.aincraft.container.Boost;
+import net.aincraft.container.BoostContext;
+import net.aincraft.container.Payable;
+import net.aincraft.container.PayableAmount;
+import net.kyori.adventure.key.Key;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import org.jetbrains.annotations.NotNull;
 
 final class Exp4jPayableCurveImpl extends AbstractExp4jCurveImpl<Parameters> implements
     PayableCurve {

@@ -1,6 +1,7 @@
 package net.aincraft;
 
 import java.math.BigDecimal;
+import net.aincraft.container.BoostSource;
 import org.jetbrains.annotations.Contract;
 
 public interface PayableCurve {
