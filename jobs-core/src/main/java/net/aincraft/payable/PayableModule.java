@@ -33,6 +33,8 @@ public final class PayableModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    // Default color provider (blue bar) - was previously in PreferenceModule
+    bind(ExperienceBarColorProvider.class).toInstance(player -> net.kyori.adventure.bossbar.BossBar.Color.BLUE);
     install(new EconomyModule());
     install(new ExperienceModule());
     Multibinder<PayableType> set = Multibinder.newSetBinder(binder(), PayableType.class);

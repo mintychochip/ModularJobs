@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import net.kyori.adventure.key.Key;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.aincraft.boost.AdditiveBoostImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;

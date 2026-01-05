@@ -18,7 +18,6 @@ import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.repository.JobRepository;
 import net.aincraft.domain.repository.JobTaskRepository;
 import net.aincraft.domain.repository.JobProgressionRepository;
-import net.aincraft.event.JobJoinEvent;
 import net.aincraft.event.JobLeaveEvent;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
@@ -109,33 +108,13 @@ final class JobServiceImpl implements JobService {
     if (jobRecord == null) {
       throw new IllegalArgumentException("failed to joined job, the job does not exist");
     }
-
-    UUID uuid = UUID.fromString(playerId);
-    Player player = Bukkit.getPlayer(uuid);
-    Job job = jobMapper.toDomain(jobRecord);
-
-    // Try to restore from archive first (rejoin case)
-    if (progressionService.restore(playerId, jobKey)) {
-      if (player != null) {
-        JobProgressionRecord restored = progressionService.load(playerId, jobKey);
-        int level = progressionMapper.toDomain(restored).level();
-        Bukkit.getPluginManager().callEvent(new JobJoinEvent(player, job, level, true));
-      }
-      return true;
-    }
-
-    // Check if already in job
     JobProgressionRecord record = progressionService.load(playerId, jobKey);
-    if (record != null) {
-      return false; // Already in job
-    }
-
-    // New join
-    if (progressionService.save(new JobProgressionRecord(playerId, jobRecord, BigDecimal.ZERO))) {
-      if (player != null) {
-        Bukkit.getPluginManager().callEvent(new JobJoinEvent(player, job, 1, false));
-      }
+    if (progressionService.restore(playerId, jobKey)) {
       return true;
+    }
+    if (record == null) {
+      return progressionService.save(
+          new JobProgressionRecord(playerId, jobRecord, BigDecimal.ZERO));
     }
     return false;
   }
@@ -165,14 +144,7 @@ final class JobServiceImpl implements JobService {
   @Override
   public JobProgression getProgression(String playerId, String jobKey)
       throws IllegalArgumentException {
-    // Ensure jobKey has proper namespace
-    String fullJobKey = jobKey.contains(":") ? jobKey : "modularjobs:" + jobKey;
-
-    JobProgressionRecord record = progressionService.load(playerId, fullJobKey);
-    if (record == null) {
-      return null;
-    }
-    return progressionMapper.toDomain(record);
+    return null;
   }
 
   @Override

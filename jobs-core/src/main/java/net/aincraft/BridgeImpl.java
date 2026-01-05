@@ -8,10 +8,12 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
+import net.aincraft.service.JobService;
 import org.bukkit.plugin.Plugin;
 
 record BridgeImpl(Plugin plugin,
-                  RegistryContainer registryContainer) implements Bridge {
+                  RegistryContainer registryContainer,
+                  JobService jobService) implements Bridge {
 
   @Inject
   BridgeImpl {

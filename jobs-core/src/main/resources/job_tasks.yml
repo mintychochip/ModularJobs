@@ -3,3 +3,141 @@ modularjobs:builder:
     bamboo_block:
       experience: 2
       economy: 2
+
+modularjobs:miner:
+  block_break:
+    # Basic stones
+    stone:
+      experience: 1
+      economy: 0.1
+    cobblestone:
+      experience: 1
+      economy: 0.1
+    deepslate:
+      experience: 2
+      economy: 0.15
+    cobbled_deepslate:
+      experience: 2
+      economy: 0.15
+    granite:
+      experience: 1
+      economy: 0.1
+    diorite:
+      experience: 1
+      economy: 0.1
+    andesite:
+      experience: 1
+      economy: 0.1
+    tuff:
+      experience: 2
+      economy: 0.15
+    calcite:
+      experience: 2
+      economy: 0.2
+    dripstone_block:
+      experience: 2
+      economy: 0.2
+
+    # Coal
+    coal_ore:
+      experience: 5
+      economy: 1
+    deepslate_coal_ore:
+      experience: 7
+      economy: 1.5
+
+    # Iron
+    iron_ore:
+      experience: 10
+      economy: 3
+    deepslate_iron_ore:
+      experience: 12
+      economy: 4
+
+    # Copper
+    copper_ore:
+      experience: 8
+      economy: 2
+    deepslate_copper_ore:
+      experience: 10
+      economy: 2.5
+
+    # Gold
+    gold_ore:
+      experience: 20
+      economy: 8
+    deepslate_gold_ore:
+      experience: 25
+      economy: 10
+    nether_gold_ore:
+      experience: 15
+      economy: 6
+
+    # Redstone
+    redstone_ore:
+      experience: 15
+      economy: 5
+    deepslate_redstone_ore:
+      experience: 18
+      economy: 6
+
+    # Lapis
+    lapis_ore:
+      experience: 20
+      economy: 7
+    deepslate_lapis_ore:
+      experience: 25
+      economy: 9
+
+    # Diamond
+    diamond_ore:
+      experience: 50
+      economy: 25
+    deepslate_diamond_ore:
+      experience: 60
+      economy: 30
+
+    # Emerald
+    emerald_ore:
+      experience: 75
+      economy: 40
+    deepslate_emerald_ore:
+      experience: 90
+      economy: 50
+
+    # Nether ores
+    nether_quartz_ore:
+      experience: 12
+      economy: 4
+    ancient_debris:
+      experience: 150
+      economy: 100
+
+    # Other mining blocks
+    obsidian:
+      experience: 25
+      economy: 10
+    crying_obsidian:
+      experience: 30
+      economy: 15
+    glowstone:
+      experience: 8
+      economy: 3
+    netherrack:
+      experience: 1
+      economy: 0.05
+    basalt:
+      experience: 2
+      economy: 0.15
+    blackstone:
+      experience: 3
+      economy: 0.2
+    end_stone:
+      experience: 5
+      economy: 1
+    amethyst_block:
+      experience: 10
+      economy: 3
+    budding_amethyst:
+      experience: 20
+      economy: 8

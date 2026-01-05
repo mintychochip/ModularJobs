@@ -8,8 +8,6 @@ import org.bukkit.OfflinePlayer;
 
 final class JobProgressionImpl implements JobProgression {
 
-  private static final int INVALID_LEVEL = -1;
-
   private final Job job;
   private final OfflinePlayer player;
   private final BigDecimal experience;
@@ -62,7 +60,7 @@ final class JobProgressionImpl implements JobProgression {
     }
 
     int low = 1;
-    int level = INVALID_LEVEL;
+    int level = 1; // Start at level 1, upgrade if XP thresholds are met
     while (low <= maxLevel) {
       int mid = (low + maxLevel) >>> 1;
       BigDecimal requiredXpForLevel = job.levelingCurve().evaluate(new Parameters(mid));
