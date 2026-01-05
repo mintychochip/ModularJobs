@@ -44,6 +44,7 @@ public final class PaymentModule extends AbstractModule {
     binder.addBinding().to(JobPaymentListener.class);
     binder.addBinding().to(MobTagController.class);
     binder.addBinding().to(ExploitStoreController.class);
+    binder.addBinding().to(JobLevelUpListener.class);
   }
 
 //  @Provides

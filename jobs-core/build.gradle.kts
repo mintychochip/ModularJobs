@@ -43,7 +43,6 @@ tasks {
         )
         minecraftVersion("1.21.11")
         downloadPlugins {
-            hangar("Mint","1.2.0-f1a5192")
             hangar("Bolt","1.1.78")
         }
 

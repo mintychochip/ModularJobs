@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.JobProgression;
 import net.aincraft.service.JobService;
-import net.aincraft.util.KeyFactory;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,14 +12,11 @@ final class ModularJobsPlaceholderExpansion extends PlaceholderExpansion {
 
   //TODO: set version dynamically
   private final JobService jobService;
-  private final KeyFactory keyFactory;
   private final String version = "1.1";
 
   @Inject
-  ModularJobsPlaceholderExpansion(JobService jobService,
-      KeyFactory keyFactory) {
+  ModularJobsPlaceholderExpansion(JobService jobService) {
     this.jobService = jobService;
-    this.keyFactory = keyFactory;
   }
 
   @Override

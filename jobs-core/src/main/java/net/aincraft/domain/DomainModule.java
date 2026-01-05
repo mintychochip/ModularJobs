@@ -20,6 +20,7 @@ import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.domain.repository.JobRepository;
 import net.aincraft.domain.repository.JobTaskRepository;
 import net.aincraft.repository.ConnectionSourceFactory;
+import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
 import net.aincraft.util.DomainMapper;
 import net.kyori.adventure.key.Key;
@@ -27,7 +28,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 
 public final class DomainModule extends PrivateModule {
-  
+
   @Override
   protected void configure() {
     install(new ProgressionServiceModule());
@@ -52,7 +53,9 @@ public final class DomainModule extends PrivateModule {
         .to(PayableCurveMapperImpl.class)
         .in(Singleton.class);
     bind(JobService.class).to(JobServiceImpl.class).in(Singleton.class);
+    bind(JobResolver.class).to(JobResolverImpl.class).in(Singleton.class);
     expose(JobService.class);
+    expose(JobResolver.class);
     expose(JobTaskRepository.class);
   }
 

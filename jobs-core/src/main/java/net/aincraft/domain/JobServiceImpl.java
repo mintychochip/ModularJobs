@@ -74,6 +74,9 @@ final class JobServiceImpl implements JobService {
   @Override
   public JobTask getTask(Job job, ActionType type, Context context) {
     Key contextKey = keyResolver.resolve(context);
+    if (contextKey == null) {
+      throw new IllegalStateException("No KeyResolver strategy registered for context type: " + context.getClass().getSimpleName());
+    }
     JobTaskRecord record = jobTaskRepository.load(job.key().toString(), type.key().toString(),
         contextKey.toString());
     return jobTaskMapper.toDomain(record);
@@ -140,6 +143,12 @@ final class JobServiceImpl implements JobService {
   @Override
   public List<JobProgression> getProgressions(Key jobKey, int limit) {
     return progressionService.loadAllForJob(jobKey.toString(), limit).stream()
+        .map(progressionMapper::toDomain).toList();
+  }
+
+  @Override
+  public List<JobProgression> getArchivedProgressions(OfflinePlayer player) {
+    return progressionService.loadAllArchivedForPlayer(player.getUniqueId().toString(), 100).stream()
         .map(progressionMapper::toDomain).toList();
   }
 }

@@ -12,7 +12,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
-final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
+public final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
 
   private final Map<Key, T> registry = new HashMap<>();
   private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();

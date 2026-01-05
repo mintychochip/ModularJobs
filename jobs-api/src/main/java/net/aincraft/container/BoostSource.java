@@ -3,6 +3,7 @@ package net.aincraft.container;
 import java.util.List;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A boostSource of one or more {@link Boost Boosts}.
@@ -27,5 +28,13 @@ public interface BoostSource extends Keyed {
    */
   @NotNull
   List<Boost> evaluate(BoostContext context);
+
+  /**
+   * Get the description of this boost source.
+   *
+   * @return description or null if not provided
+   */
+  @Nullable
+  String description();
 
 }

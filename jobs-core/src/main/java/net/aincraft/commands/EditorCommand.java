@@ -8,6 +8,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Bridge;
 import net.aincraft.editor.EditorService;
+import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -30,11 +31,14 @@ final class EditorCommand implements JobsCommand {
 
   private final EditorService editorService;
   private final JobService jobService;
+  private final JobResolver jobResolver;
+  private static final String DEFAULT_NAMESPACE = "modularjobs";
 
   @Inject
-  public EditorCommand(EditorService editorService, JobService jobService) {
+  public EditorCommand(EditorService editorService, JobService jobService, JobResolver jobResolver) {
     this.editorService = editorService;
     this.jobService = jobService;
+    this.jobResolver = jobResolver;
   }
 
   @Override
@@ -43,9 +47,7 @@ final class EditorCommand implements JobsCommand {
         // /jobs editor [job] - with optional job argument
         .then(Commands.argument("job", StringArgumentType.string())
             .suggests((context, builder) -> {
-              jobService.getJobs().stream()
-                  .map(job -> job.key().value())
-                  .forEach(builder::suggest);
+              jobResolver.getPlainNames().forEach(builder::suggest);
               return builder.buildFuture();
             })
             .executes(context -> {
@@ -58,17 +60,28 @@ final class EditorCommand implements JobsCommand {
                 return Command.SINGLE_SUCCESS;
               }
 
-              String jobArg = context.getArgument("job", String.class);
-              NamespacedKey jobKey = new NamespacedKey("modularjobs", jobArg);
+              String input = context.getArgument("job", String.class);
 
-              // Validate job exists
-              if (jobService.getJob(jobKey.toString()) == null) {
-                player.sendMessage(Component.text("Job not found: " + jobArg)
-                    .color(NamedTextColor.RED));
+              // Resolve job (supports both plain name and full key)
+              net.aincraft.Job job = jobResolver.resolveInNamespace(input, DEFAULT_NAMESPACE);
+
+              if (job == null) {
+                // Try fuzzy matching for suggestions
+                java.util.List<String> suggestions = jobResolver.suggestSimilar(input, 3);
+
+                if (suggestions.isEmpty()) {
+                  player.sendMessage(Component.text("Job not found: " + input)
+                      .color(NamedTextColor.RED));
+                } else {
+                  player.sendMessage(Component.text("Job not found: " + input)
+                      .color(NamedTextColor.RED));
+                  player.sendMessage(Component.text("Did you mean: " + String.join(", ", suggestions))
+                      .color(NamedTextColor.GRAY));
+                }
                 return 0;
               }
 
-              handleExport(player, jobKey.toString());
+              handleExport(player, job.key().toString());
               return Command.SINGLE_SUCCESS;
             }))
         // /jobs editor - without arguments (export all jobs)
