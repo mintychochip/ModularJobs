@@ -129,13 +129,17 @@ public final class JobLevelUpListener implements Listener {
         job.petRevokedPerks().getOrDefault(selectedPet, List.of()) : List.of();
 
     // Grant all universal perks up to current level (except revoked ones)
-    // Process storage permissions specially to only grant the highest one
+    // Process storage SIZE permissions specially to only grant the highest one
+    // Note: storage.access is the ACCESS permission, not a size - grant it directly
     Map<Integer, List<String>> unlocks = job.perkUnlocks();
     String highestStoragePerk = null;
     for (Map.Entry<Integer, List<String>> entry : unlocks.entrySet()) {
       if (entry.getKey() <= level) {
         for (String perk : entry.getValue()) {
-          if (perk.startsWith("storage.")) {
+          if (perk.equals("storage.access")) {
+            // storage.access is the base access permission, grant directly
+            jobPetsHook.grantPerkPermission(player, perk);
+          } else if (perk.startsWith("storage.")) {
             highestStoragePerk = perk; // Will be overwritten by higher levels
           } else if (!revokes.contains(perk)) {
             jobPetsHook.grantPerkPermission(player, perk);
@@ -211,10 +215,10 @@ public final class JobLevelUpListener implements Listener {
 
   private List<String> getAllStoragePermissions(Job job) {
     List<String> storage = new ArrayList<>();
-    // From universal perks
+    // From universal perks (exclude storage.access - that's the base access permission, not a size)
     for (List<String> perks : job.perkUnlocks().values()) {
       for (String perk : perks) {
-        if (perk.startsWith("storage.")) {
+        if (perk.startsWith("storage.") && !perk.equals("storage.access")) {
           storage.add(perk);
         }
       }
@@ -223,7 +227,7 @@ public final class JobLevelUpListener implements Listener {
     for (Map<Integer, List<String>> petPerks : job.petPerks().values()) {
       for (List<String> perks : petPerks.values()) {
         for (String perk : perks) {
-          if (perk.startsWith("storage.")) {
+          if (perk.startsWith("storage.") && !perk.equals("storage.access")) {
             storage.add(perk);
           }
         }

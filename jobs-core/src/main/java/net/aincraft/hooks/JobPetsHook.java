@@ -31,7 +31,10 @@ public final class JobPetsHook {
 
   public void grantPerkPermission(@NotNull Player player, @NotNull String perkConfigName) {
     String permission;
-    if (perkConfigName.startsWith("storage.")) {
+    if (perkConfigName.equals("storage.access")) {
+      // storage.access -> jobpets.storage.access (base access permission)
+      permission = "jobpets.storage.access";
+    } else if (perkConfigName.startsWith("storage.")) {
       // storage.tworows -> aincraft-mining.storage.tworows
       permission = "aincraft-mining." + perkConfigName.toLowerCase();
     } else {
@@ -48,7 +51,10 @@ public final class JobPetsHook {
 
   public void revokePerkPermission(@NotNull Player player, @NotNull String perkConfigName) {
     String permission;
-    if (perkConfigName.startsWith("storage.")) {
+    if (perkConfigName.equals("storage.access")) {
+      // storage.access -> jobpets.storage.access (base access permission)
+      permission = "jobpets.storage.access";
+    } else if (perkConfigName.startsWith("storage.")) {
       permission = "aincraft-mining." + perkConfigName.toLowerCase();
     } else {
       permission = "aincraft-mining.perk." + perkConfigName.toLowerCase();

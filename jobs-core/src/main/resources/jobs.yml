@@ -27,6 +27,7 @@ miner:
     economy: base + (base * (level - 1) * 0.01)
   # Universal perks (all players get these)
   perk-unlocks:
+    1: [storage.access]
     5: [lavaimmunity]
     10: [petlantern, stoneskin]
     15: [fargather, storage.tworows]
