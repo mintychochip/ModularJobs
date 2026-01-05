@@ -43,38 +43,44 @@ final class ApplyEditsCommand implements JobsCommand {
 
               editorService.importTasks(code, player.getUniqueId())
                   .thenAccept(result -> {
-                    if (result.errors().isEmpty()) {
-                      player.sendMessage(Component.text("Successfully applied edits!")
-                          .color(NamedTextColor.GREEN)
-                          .append(Component.newline())
-                          .append(Component.text("Tasks imported: " + result.tasksImported())
-                              .color(NamedTextColor.GREEN))
-                          .append(Component.newline())
-                          .append(Component.text("Tasks deleted: " + result.tasksDeleted())
-                              .color(NamedTextColor.GREEN)));
-                    } else {
-                      Component errorMessage = Component.text("Edits applied with errors:")
-                          .color(NamedTextColor.YELLOW)
-                          .append(Component.newline())
-                          .append(Component.text("Tasks imported: " + result.tasksImported())
-                              .color(NamedTextColor.GREEN))
-                          .append(Component.newline())
-                          .append(Component.text("Tasks deleted: " + result.tasksDeleted())
-                              .color(NamedTextColor.GREEN))
-                          .append(Component.newline())
-                          .append(Component.text("Errors:").color(NamedTextColor.RED));
+                    // Run on main thread to safely send messages
+                    org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
+                      if (result.errors().isEmpty()) {
+                        player.sendMessage(Component.text("Successfully applied edits!")
+                            .color(NamedTextColor.GREEN)
+                            .append(Component.newline())
+                            .append(Component.text("Tasks imported: " + result.tasksImported())
+                                .color(NamedTextColor.GREEN))
+                            .append(Component.newline())
+                            .append(Component.text("Tasks deleted: " + result.tasksDeleted())
+                                .color(NamedTextColor.GREEN)));
+                      } else {
+                        Component errorMessage = Component.text("Edits applied with errors:")
+                            .color(NamedTextColor.YELLOW)
+                            .append(Component.newline())
+                            .append(Component.text("Tasks imported: " + result.tasksImported())
+                                .color(NamedTextColor.GREEN))
+                            .append(Component.newline())
+                            .append(Component.text("Tasks deleted: " + result.tasksDeleted())
+                                .color(NamedTextColor.GREEN))
+                            .append(Component.newline())
+                            .append(Component.text("Errors:").color(NamedTextColor.RED));
 
-                      for (String error : result.errors()) {
-                        errorMessage = errorMessage.append(Component.newline())
-                            .append(Component.text("  - " + error).color(NamedTextColor.RED));
+                        for (String error : result.errors()) {
+                          errorMessage = errorMessage.append(Component.newline())
+                              .append(Component.text("  - " + error).color(NamedTextColor.RED));
+                        }
+
+                        player.sendMessage(errorMessage);
                       }
-
-                      player.sendMessage(errorMessage);
-                    }
+                    });
                   })
                   .exceptionally(throwable -> {
-                    player.sendMessage(Component.text("Failed to apply edits: " + throwable.getMessage())
-                        .color(NamedTextColor.RED));
+                    // Run on main thread to safely send messages
+                    org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
+                      player.sendMessage(Component.text("Failed to apply edits: " + throwable.getMessage())
+                          .color(NamedTextColor.RED));
+                    });
                     return null;
                   });
 

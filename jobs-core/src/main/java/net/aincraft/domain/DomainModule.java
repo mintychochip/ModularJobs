@@ -53,6 +53,7 @@ public final class DomainModule extends PrivateModule {
         .in(Singleton.class);
     bind(JobService.class).to(JobServiceImpl.class).in(Singleton.class);
     expose(JobService.class);
+    expose(JobTaskRepository.class);
   }
 
   @Provides
