@@ -5,6 +5,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import java.util.Locale;
 import net.aincraft.container.Context.BlockContext;
+import net.aincraft.container.Context.ChunkContext;
 import net.aincraft.container.Context.DyeContext;
 import net.aincraft.container.Context.EnchantmentContext;
 import net.aincraft.container.Context.EntityContext;
@@ -19,7 +20,7 @@ public final class UtilModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(KeyFactory.class).to(KeyFactoryImpl.class).in(Singleton.class);
+    // Utility module for providing key resolution strategies
   }
 
   @Provides
@@ -40,6 +41,7 @@ public final class UtilModule extends AbstractModule {
       return new NamespacedKey(enchantmentKey.namespace(),
           enchantmentKey.value() + "_" + context.level());
     });
+    resolver.addStrategy(ChunkContext.class, context -> context.chunk().getWorld().getKey());
     return resolver;
   }
 }

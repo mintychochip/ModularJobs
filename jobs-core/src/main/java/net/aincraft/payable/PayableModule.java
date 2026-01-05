@@ -9,8 +9,10 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import dev.mintychochip.mint.Mint;
 import dev.mintychochip.mint.Service;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.ExperiencePayableHandler.ExperienceBarController;
@@ -18,7 +20,7 @@ import net.aincraft.container.ExperiencePayableHandler.ExperienceBarFormatter;
 import net.aincraft.container.PayableHandler;
 import net.aincraft.container.PayableType;
 import net.aincraft.registry.Registry;
-import net.aincraft.registry.RegistryFactory;
+import net.aincraft.registry.SimpleRegistryImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
@@ -42,30 +44,33 @@ public final class PayableModule extends AbstractModule {
 
   @Provides
   @Singleton
-  Registry<PayableType> payableTypeRegistry(Set<PayableType> types,
-      RegistryFactory registryFactory) {
-    Registry<PayableType> registry = registryFactory.simple();
+  Registry<PayableType> payableTypeRegistry(Set<PayableType> types) {
+    Registry<PayableType> registry = new SimpleRegistryImpl<>();
     types.forEach(registry::register);
     return registry;
   }
 
   private static final class EconomyModule extends PrivateModule {
 
+    private static final Logger LOGGER = Logger.getLogger(EconomyModule.class.getName());
+
     @Provides
     @Singleton
+    @Exposed
     @Nullable
     public EconomyProvider economyProvider() {
       PluginManager pluginManager = Bukkit.getPluginManager();
       ServicesManager servicesManager = Bukkit.getServicesManager();
       Plugin mint = pluginManager.getPlugin("Mint");
-      if (mint != null && mint.isEnabled()) {
-        RegisteredServiceProvider<Service> registration = servicesManager.getRegistration(
-            Service.class);
-        if (registration != null) {
-          Service provider = registration.getProvider();
-          return new MintEconomyProviderImpl(provider);
-        }
+      LOGGER.info("Looking for Mint plugin...");
+      LOGGER.info("Mint plugin found: " + (mint != null));
+      if (mint != null) {
+        LOGGER.info("Mint enabled: " + mint.isEnabled());
       }
+      if (mint != null && mint.isEnabled() && Mint.SERVICE.isLoaded()) {
+        return new MintEconomyProviderImpl(Mint.SERVICE);
+      }
+      LOGGER.warning("No economy provider available - Mint not found or not enabled");
       return null;
     }
 

@@ -10,6 +10,7 @@ import java.util.UUID;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.BoostSource;
+import net.aincraft.container.MemoryStoreImpl;
 import net.aincraft.container.Store;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
@@ -34,7 +35,7 @@ public class McMMOBoostSourceImpl implements BoostSource {
 
   public static McMMOBoostSourceImpl create(Plugin plugin,
       Map<SuperAbilityType, BigDecimal> boostAmounts) {
-    Store<UUID, SuperAbilityType> store = Store.memory();
+    Store<UUID, SuperAbilityType> store = new MemoryStoreImpl<>();
     Bukkit.getPluginManager().registerEvents(new McMMOController(store), plugin);
     return new McMMOBoostSourceImpl(store, boostAmounts);
   }
@@ -69,5 +70,10 @@ public class McMMOBoostSourceImpl implements BoostSource {
   @Override
   public @NotNull Key key() {
     return Key.key("modular_jobs:mcmmo_source");
+  }
+
+  @Override
+  public String description() {
+    return "McMMO super ability boosts - Active during McMMO super abilities";
   }
 }

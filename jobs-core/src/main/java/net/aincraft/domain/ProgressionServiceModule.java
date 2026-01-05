@@ -15,7 +15,7 @@ import org.bukkit.plugin.Plugin;
 final class ProgressionServiceModule extends PrivateModule {
 
   static final String LIVE_REPOSITORY = "job_progression";
-  static final String ARCHIVE_REPOSITORY = "archive_job_progression";
+  static final String ARCHIVE_REPOSITORY = "archived_progressions";
 
   @Override
   protected void configure() {

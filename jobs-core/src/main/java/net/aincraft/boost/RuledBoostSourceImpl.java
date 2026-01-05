@@ -10,7 +10,7 @@ import net.aincraft.container.boost.RuledBoostSource;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
-public record RuledBoostSourceImpl(List<Rule> rules, Policy policy, Key key) implements RuledBoostSource {
+public record RuledBoostSourceImpl(List<Rule> rules, Policy policy, Key key, String description) implements RuledBoostSource {
 
   @Override
   public @NotNull List<Boost> evaluate(BoostContext context) {

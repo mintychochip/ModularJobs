@@ -5,6 +5,8 @@ authors: [ mintychochip ]
 api-version: '1.13'
 softdepend:
   - Preferences
+  - Choco
+  - Mint
 commands:
   test:
     description: asdads

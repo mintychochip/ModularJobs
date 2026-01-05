@@ -2,6 +2,7 @@ package net.aincraft;
 
 import com.google.inject.Inject;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
@@ -11,7 +12,8 @@ import net.aincraft.registry.RegistryContainer;
 import org.bukkit.plugin.Plugin;
 
 record BridgeImpl(Plugin plugin,
-                  RegistryContainer registryContainer) implements Bridge {
+                  RegistryContainer registryContainer,
+                  @Nullable EconomyProvider economyProvider) implements Bridge {
 
   @Inject
   BridgeImpl {
@@ -39,6 +41,6 @@ record BridgeImpl(Plugin plugin,
 
   @Override
   public Optional<EconomyProvider> economy() {
-    return Optional.empty();
+    return Optional.ofNullable(economyProvider);
   }
 }

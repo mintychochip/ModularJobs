@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import net.aincraft.Bridge;
 import net.aincraft.container.ActionTypes;
 import net.aincraft.container.Context.BlockContext;
+import net.aincraft.container.Context.ChunkContext;
 import net.aincraft.container.Context.DyeContext;
 import net.aincraft.container.Context.EnchantmentContext;
 import net.aincraft.container.Context.EntityContext;
@@ -29,6 +30,7 @@ import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.payment.MobDamageTracker.DamageContribution;
 import net.aincraft.util.LocationKey;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -50,6 +52,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Sheep;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -62,18 +65,23 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerBucketEntityEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.EnchantingInventory;
+import org.bukkit.inventory.MerchantInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -89,6 +97,7 @@ final class JobPaymentListener implements Listener {
   private final JobsPaymentHandler paymentHandler;
   private final EntityValidationService entityValidationService;
   private final ExploitService exploitService;
+  private final ChunkExplorationStore chunkExplorationStore;
   private final Cache<LocationKey, Player> breakCache = CacheBuilder.newBuilder().expireAfterWrite(
       Duration.ofSeconds(10)).build();
 
@@ -109,12 +118,13 @@ final class JobPaymentListener implements Listener {
 
   @Inject
   JobPaymentListener(BlockOwnershipService blockOwnershipService, MobDamageTracker mobDamageTracker, JobsPaymentHandler paymentHandler,
-      EntityValidationService entityValidationService, ExploitService exploitService) {
+      EntityValidationService entityValidationService, ExploitService exploitService, ChunkExplorationStore chunkExplorationStore) {
     this.blockOwnershipService = blockOwnershipService;
     this.mobDamageTracker = mobDamageTracker;
     this.paymentHandler = paymentHandler;
     this.entityValidationService = entityValidationService;
     this.exploitService = exploitService;
+    this.chunkExplorationStore = chunkExplorationStore;
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -159,6 +169,36 @@ final class JobPaymentListener implements Listener {
       exploitService.addProtection(ExploitProtectionType.WAX, block);
     }
     paymentHandler.pay(player, ActionTypes.WAX, new MaterialContext(material));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  private void onStripLog(final PlayerInteractEvent event) {
+    Action action = event.getAction();
+    Block block = event.getClickedBlock();
+    if (action != Action.RIGHT_CLICK_BLOCK || block == null) {
+      return;
+    }
+    Material material = block.getType();
+    String materialName = material.toString();
+    if (!materialName.endsWith("_LOG") || materialName.startsWith("STRIPPED_")) {
+      return;
+    }
+    Player player = event.getPlayer();
+    if (PLAYER_WORLD_DISABLED.or(NO_PAY_IN_CREATIVE).or(NO_PAY_WHILE_RIDING)
+        .or(ADVENTURE_MODE).or(IS_CITIZEN).test(player)) {
+      return;
+    }
+    ItemStack itemStack = event.getItem();
+    if (itemStack == null || !itemStack.getType().toString().endsWith("_AXE")) {
+      return;
+    }
+    if (exploitService.canProtect(ExploitProtectionType.STRIP, block)) {
+      if (exploitService.isProtected(ExploitProtectionType.STRIP, block)) {
+        return;
+      }
+      exploitService.addProtection(ExploitProtectionType.STRIP, block);
+    }
+    paymentHandler.pay(player, ActionTypes.STRIP_LOG, new MaterialContext(material));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -422,6 +462,91 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  private void onPickupItem(final EntityPickupItemEvent event) {
+    Entity entity = event.getEntity();
+    if (!(entity instanceof Player player)) {
+      return;
+    }
+    if (PLAYER_WORLD_DISABLED
+        .or(NO_PAY_IN_CREATIVE)
+        .or(NO_PAY_WHILE_RIDING)
+        .or(ADVENTURE_MODE)
+        .or(IS_CITIZEN).test(player)) {
+      return;
+    }
+    Item item = event.getItem();
+    paymentHandler.pay(player, ActionTypes.COLLECT, new ItemContext(item.getItemStack()));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  private void onHarvestBerries(final PlayerInteractEvent event) {
+    if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+      return;
+    }
+    Block block = event.getClickedBlock();
+    if (block == null) {
+      return;
+    }
+    Material material = block.getType();
+    // Check for sweet berry bush or cave vines with berries
+    if (material != Material.SWEET_BERRY_BUSH && material != Material.CAVE_VINES && material != Material.CAVE_VINES_PLANT) {
+      return;
+    }
+    Player player = event.getPlayer();
+    if (PLAYER_WORLD_DISABLED
+        .or(NO_PAY_IN_CREATIVE)
+        .or(NO_PAY_WHILE_RIDING)
+        .or(ADVENTURE_MODE)
+        .or(IS_CITIZEN).test(player)) {
+      return;
+    }
+    // For sweet berry bush, check age (only harvestable at age 2 or 3)
+    if (material == Material.SWEET_BERRY_BUSH) {
+      BlockState state = block.getState();
+      if (state.getBlockData() instanceof org.bukkit.block.data.Ageable ageable) {
+        if (ageable.getAge() < 2) {
+          return;
+        }
+      }
+    }
+    // For cave vines, check if berries are present
+    if (material == Material.CAVE_VINES || material == Material.CAVE_VINES_PLANT) {
+      BlockState state = block.getState();
+      if (state.getBlockData() instanceof org.bukkit.block.data.type.CaveVinesPlant caveVines) {
+        if (!caveVines.isBerries()) {
+          return;
+        }
+      }
+    }
+    // Determine the collected item
+    ItemStack collectedItem = material == Material.SWEET_BERRY_BUSH
+        ? new ItemStack(Material.SWEET_BERRIES)
+        : new ItemStack(Material.GLOW_BERRIES);
+    paymentHandler.pay(player, ActionTypes.COLLECT, new ItemContext(collectedItem));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  private void onFish(final PlayerFishEvent event) {
+    if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) {
+      return;
+    }
+    Entity caught = event.getCaught();
+    if (!(caught instanceof Item item)) {
+      return;
+    }
+    Player player = event.getPlayer();
+    if (PLAYER_WORLD_DISABLED
+        .or(NO_PAY_IN_CREATIVE)
+        .or(NO_PAY_WHILE_RIDING)
+        .or(ADVENTURE_MODE)
+        .or(IS_CITIZEN).test(player)) {
+      return;
+    }
+    ItemStack itemStack = item.getItemStack();
+    paymentHandler.pay(player, ActionTypes.FISH, new ItemContext(itemStack));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onFurnaceSmelt(final FurnaceSmeltEvent event) {
     Block block = event.getBlock();
     OfflinePlayer owner = blockOwnershipService.getOwner(block).orElse(null);
@@ -442,7 +567,12 @@ final class JobPaymentListener implements Listener {
     if (v > 25 * 25) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.SMELT, new ItemContext(event.getResult()));
+    ItemStack result = event.getResult();
+    paymentHandler.pay(player, ActionTypes.SMELT, new ItemContext(result));
+    // Also pay for BAKE action if the smelted result is food
+    if (result.getType().isEdible()) {
+      paymentHandler.pay(player, ActionTypes.BAKE, new ItemContext(result));
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -467,24 +597,27 @@ final class JobPaymentListener implements Listener {
     }
     paymentHandler.pay(player, ActionTypes.BREW, new ItemContext(event.getContents().getIngredient()));
   }
-//
-//  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-//  private void onExplore(final PlayerMoveEvent event) {
-//    Player player = event.getPlayer();
-//    if (!player.isOnline()) {
-//      return;
-//    }
-//    Chunk from = event.getFrom().getChunk();
-//    Chunk to = event.getTo().getChunk();
-//    if (from.equals(to)) {
-//      return;
-//    }
-//    ChunkExplorationStore store = ChunkExplorationStore.chunkExplorationStore();
-//    if (!store.hasExplored(player, to)) {
-//      store.addExploration(player, to);
-////      paymentHandler.pay(player,ActionTypes.EXPLORE,new );
-//    }
-//  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  private void onExplore(final PlayerMoveEvent event) {
+    Player player = event.getPlayer();
+    if (PLAYER_WORLD_DISABLED
+        .or(NO_PAY_IN_CREATIVE)
+        .or(NO_PAY_WHILE_RIDING)
+        .or(ADVENTURE_MODE)
+        .or(IS_CITIZEN).test(player)) {
+      return;
+    }
+    Chunk from = event.getFrom().getChunk();
+    Chunk to = event.getTo().getChunk();
+    if (from.equals(to)) {
+      return;
+    }
+    if (!chunkExplorationStore.hasExplored(player, to)) {
+      chunkExplorationStore.addExploration(player, to);
+      paymentHandler.pay(player, ActionTypes.EXPLORE, new ChunkContext(to));
+    }
+  }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onDyeEntity(final EntityDyeEvent event) {
@@ -555,6 +688,35 @@ final class JobPaymentListener implements Listener {
     for (Block block : event.blockList()) {
       paymentHandler.pay(player, ActionTypes.TNT_BREAK, new BlockContext(block));
     }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  private void onVillagerTrade(final InventoryClickEvent event) {
+    if (!(event.getInventory() instanceof MerchantInventory merchantInventory)) {
+      return;
+    }
+    if (event.getSlotType() != SlotType.RESULT) {
+      return;
+    }
+    if (!(merchantInventory.getHolder() instanceof Villager)) {
+      return;
+    }
+    ItemStack resultItem = event.getCurrentItem();
+    if (resultItem == null || resultItem.getType().isAir()) {
+      return;
+    }
+    HumanEntity entity = event.getWhoClicked();
+    if (!(entity instanceof Player player)) {
+      return;
+    }
+    if (PLAYER_WORLD_DISABLED
+        .or(NO_PAY_IN_CREATIVE)
+        .or(NO_PAY_WHILE_RIDING)
+        .or(ADVENTURE_MODE)
+        .or(IS_CITIZEN).test(player)) {
+      return;
+    }
+    paymentHandler.pay(player, ActionTypes.VILLAGER_TRADE, new ItemContext(resultItem));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

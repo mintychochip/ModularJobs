@@ -20,4 +20,6 @@ public interface ProgressionService {
   boolean archive(String playerId, String jobKey);
 
   boolean restore(String playerId, String jobKey);
+
+  List<JobProgressionRecord> loadAllArchivedForPlayer(String playerId, int limit);
 }

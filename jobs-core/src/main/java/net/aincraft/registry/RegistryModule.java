@@ -15,7 +15,6 @@ public final class RegistryModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(RegistryFactory.class).to(RegistryFactoryImpl.class).in(Singleton.class);
     bind(new TypeLiteral<Registry<ActionType>>() {
     }).toProvider(ActionTypeRegistryProvider.class).in(Singleton.class);
     MapBinder<Key, Registry<?>> registries = MapBinder.newMapBinder(binder(),

@@ -10,11 +10,12 @@ import net.aincraft.container.PayableType;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.math.ExpressionCurveFactory;
 import net.aincraft.registry.Registry;
-import net.aincraft.util.KeyFactory;
 import net.aincraft.util.DomainMapper;
+import net.aincraft.util.KeyUtils;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 final class JobRecordDomainMapperImpl implements DomainMapper<Job, JobRecord> {
@@ -22,25 +23,25 @@ final class JobRecordDomainMapperImpl implements DomainMapper<Job, JobRecord> {
   private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
   private final DomainMapper<Map<Key, PayableCurve>, Map<String, String>> payableCurveMapper;
-  private final KeyFactory keyFactory;
+  private final Plugin plugin;
   private final Registry<PayableType> payableTypeRegistry;
   private final ExpressionCurveFactory expressionCurveFactory;
 
   @Inject
   JobRecordDomainMapperImpl(
       DomainMapper<Map<Key, PayableCurve>, Map<String, String>> payableCurveMapper,
-      KeyFactory keyFactory,
+      Plugin plugin,
       Registry<PayableType> payableTypeRegistry,
       ExpressionCurveFactory expressionCurveFactory) {
     this.payableCurveMapper = payableCurveMapper;
-    this.keyFactory = keyFactory;
+    this.plugin = plugin;
     this.payableTypeRegistry = payableTypeRegistry;
     this.expressionCurveFactory = expressionCurveFactory;
   }
 
   @Override
   public @NotNull Job toDomain(@NotNull JobRecord record) throws IllegalArgumentException {
-    Key jobKey = keyFactory.create(record.jobKey());
+    Key jobKey = KeyUtils.parseKey(plugin, record.jobKey());
     Component displayName = MINI_MESSAGE.deserialize(record.displayName());
     Component description = MINI_MESSAGE.deserialize(record.description());
     LevelingCurve levelingCurve = expressionCurveFactory.levelingCurve(record.levellingCurve());
@@ -63,14 +64,14 @@ final class JobRecordDomainMapperImpl implements DomainMapper<Job, JobRecord> {
 
     private final Registry<PayableType> payableTypeRegistry;
     private final ExpressionCurveFactory expressionCurveFactory;
-    private final KeyFactory keyFactory;
+    private final Plugin plugin;
 
     @Inject
     PayableCurveMapperImpl(Registry<PayableType> payableTypeRegistry,
-        ExpressionCurveFactory expressionCurveFactory, KeyFactory keyFactory) {
+        ExpressionCurveFactory expressionCurveFactory, Plugin plugin) {
       this.payableTypeRegistry = payableTypeRegistry;
       this.expressionCurveFactory = expressionCurveFactory;
-      this.keyFactory = keyFactory;
+      this.plugin = plugin;
     }
 
 
@@ -79,7 +80,7 @@ final class JobRecordDomainMapperImpl implements DomainMapper<Job, JobRecord> {
         throws IllegalArgumentException {
       Map<Key, PayableCurve> curves = new HashMap<>();
       for (Map.Entry<String, String> entry : record.entrySet()) {
-        Key payableTypeKey = keyFactory.create(entry.getKey());
+        Key payableTypeKey = KeyUtils.parseKey(plugin, entry.getKey());
         if (!payableTypeRegistry.isRegistered(payableTypeKey)) {
           continue;
         }
