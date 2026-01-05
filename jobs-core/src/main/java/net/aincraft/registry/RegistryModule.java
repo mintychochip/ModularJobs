@@ -8,9 +8,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import java.util.Map;
 import net.aincraft.container.ActionType;
-import net.aincraft.container.PayableHandler;
 import net.aincraft.container.PayableType;
-import net.aincraft.serialization.CodecRegistry;
 import net.kyori.adventure.key.Key;
 
 public final class RegistryModule extends AbstractModule {
@@ -30,7 +28,6 @@ public final class RegistryModule extends AbstractModule {
     registries.addBinding(RegistryKeys.PAYABLE_TYPES.key())
         .to(com.google.inject.Key.get(new TypeLiteral<Registry<PayableType>>() {
         }));
-    registries.addBinding(RegistryKeys.CODEC.key()).to(CodecRegistry.class);
   }
 
   @Provides

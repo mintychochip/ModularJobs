@@ -12,14 +12,11 @@ import org.jetbrains.annotations.NotNull;
 
 public record RuledBoostSourceImpl(List<Rule> rules, Policy policy, Key key) implements RuledBoostSource {
 
-  private static final Queue<Rule> RULE_QUEUE = new PriorityQueue<>(
-      Comparator.comparingInt(Rule::priority).reversed());
-
   @Override
   public @NotNull List<Boost> evaluate(BoostContext context) {
-    RULE_QUEUE.clear();
-    rules.stream().filter(rule -> rule.condition().applies(context)).forEach(RULE_QUEUE::add);
-    return policy.resolve(RULE_QUEUE);
+    Queue<Rule> ruleQueue = new PriorityQueue<>(Comparator.comparingInt(Rule::priority).reversed());
+    rules.stream().filter(rule -> rule.condition().applies(context)).forEach(ruleQueue::add);
+    return policy.resolve(ruleQueue);
   }
 
   @Override

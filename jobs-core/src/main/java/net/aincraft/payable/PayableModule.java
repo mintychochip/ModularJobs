@@ -9,7 +9,9 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import dev.mintychochip.mint.Service;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.ExperiencePayableHandler.ExperienceBarController;
 import net.aincraft.container.ExperiencePayableHandler.ExperienceBarFormatter;
@@ -17,14 +19,12 @@ import net.aincraft.container.PayableHandler;
 import net.aincraft.container.PayableType;
 import net.aincraft.registry.Registry;
 import net.aincraft.registry.RegistryFactory;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicesManager;
-import org.jetbrains.annotations.Nullable;
 
 public final class PayableModule extends AbstractModule {
 
@@ -57,13 +57,13 @@ public final class PayableModule extends AbstractModule {
     public EconomyProvider economyProvider() {
       PluginManager pluginManager = Bukkit.getPluginManager();
       ServicesManager servicesManager = Bukkit.getServicesManager();
-      Plugin vault = pluginManager.getPlugin("Vault");
-      if (vault != null && vault.isEnabled()) {
-        RegisteredServiceProvider<Economy> registration = servicesManager.getRegistration(
-            Economy.class);
+      Plugin mint = pluginManager.getPlugin("Mint");
+      if (mint != null && mint.isEnabled()) {
+        RegisteredServiceProvider<Service> registration = servicesManager.getRegistration(
+            Service.class);
         if (registration != null) {
-          Economy provider = registration.getProvider();
-          return new VaultEconomyProviderImpl(provider);
+          Service provider = registration.getProvider();
+          return new MintEconomyProviderImpl(provider);
         }
       }
       return null;

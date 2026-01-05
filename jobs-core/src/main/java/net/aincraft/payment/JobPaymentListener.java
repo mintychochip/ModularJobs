@@ -239,9 +239,9 @@ final class JobPaymentListener implements Listener {
     if (exploitService.canProtect(ExploitProtectionType.PLACED, block)
         && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
       exploitService.removeProtection(ExploitProtectionType.PLACED, block);
-    }
-    if (silkTouch > 0) {
-      return;
+      if (silkTouch > 0) {
+        return;
+      }
     }
     paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
     breakCache.put(LocationKey.create(block.getLocation()), player);
