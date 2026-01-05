@@ -1,5 +1,6 @@
 package net.aincraft;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.aincraft.container.PayableType;
@@ -25,4 +26,15 @@ public interface Job extends Keyed {
   Map<Key, PayableCurve> payableCurves();
 
   int maxLevel();
+
+  int upgradeLevel();
+
+  @NotNull
+  Map<Integer, List<String>> perkUnlocks();
+
+  @NotNull
+  Map<String, Map<Integer, List<String>>> petPerks();
+
+  @NotNull
+  Map<String, List<String>> petRevokedPerks();
 }

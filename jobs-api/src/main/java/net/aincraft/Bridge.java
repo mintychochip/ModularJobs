@@ -7,6 +7,7 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
+import net.aincraft.service.JobService;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -29,4 +30,6 @@ public interface Bridge {
   TimedBoostDataService timedBoostDataService();
 
   Optional<EconomyProvider> economy();
+
+  JobService jobService();
 }

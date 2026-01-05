@@ -23,6 +23,8 @@ dependencies {
     }
     compileOnly(libs.lwc)
     compileOnly(libs.bolt)
+    // JobPets API for pet change events (file dependency from parent workspace)
+    compileOnly(files("../../jobpets-api/build/libs/jobpets-api-1.0.0.jar"))
 }
 
 tasks {

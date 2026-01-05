@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS job_progression
     PRIMARY KEY (player_id, job_key)
 );
 
-CREATE TABLE IF NOT EXISTS archived_progressions
+CREATE TABLE IF NOT EXISTS archive_job_progression
 (
     player_id  TEXT NOT NULL,
     job_key    TEXT NOT NULL,
@@ -59,4 +59,12 @@ CREATE TABLE IF NOT EXISTS job_task_payables
     FOREIGN KEY (job_task_id) REFERENCES job_tasks (task_id) ON DELETE CASCADE
 );
 
+
+CREATE TABLE IF NOT EXISTS job_pet_selections (
+    player_id VARCHAR(36) NOT NULL,
+    job_key VARCHAR(255) NOT NULL,
+    pet_config_name VARCHAR(255) NOT NULL,
+    selected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (player_id, job_key)
+);
 

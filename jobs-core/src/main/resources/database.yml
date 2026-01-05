@@ -1,1 +1,7 @@
 payable:
+  type: sqlite
+  file-path: modularjobs.db
+
+timed-boost:
+  type: sqlite
+  file-path: modularjobs.db
