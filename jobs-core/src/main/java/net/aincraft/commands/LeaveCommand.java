@@ -43,7 +43,7 @@ public class LeaveCommand implements JobsCommand {
             return 0;
           }
           if (jobService.leaveJob(player.getUniqueId().toString(), jobKey.toString())) {
-            player.sendMessage(Component.text("You joined: ").append(job.displayName()));
+            player.sendMessage(Component.text("You left: ").append(job.displayName()));
           }
           return Command.SINGLE_SUCCESS;
         }));

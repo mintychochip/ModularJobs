@@ -243,6 +243,9 @@ final class JobPaymentListener implements Listener {
         return;
       }
     }
+    if (silkTouch > 0 && isOre(block.getType())) {
+      return;
+    }
     paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
     breakCache.put(LocationKey.create(block.getLocation()), player);
   }
@@ -661,6 +664,11 @@ final class JobPaymentListener implements Listener {
       return player;
     }
     return null;
+  }
+
+  private boolean isOre(Material material) {
+    String name = material.name();
+    return name.endsWith("_ORE") || material == Material.ANCIENT_DEBRIS;
   }
 
   private boolean isReplaceable(Material material) {

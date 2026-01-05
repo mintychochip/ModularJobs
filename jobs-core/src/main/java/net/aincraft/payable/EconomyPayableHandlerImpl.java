@@ -7,11 +7,10 @@ import net.aincraft.container.PayableHandler;
 
 final class EconomyPayableHandlerImpl implements PayableHandler {
 
-  @Nullable
   private final EconomyProvider provider;
 
   @Inject
-  public EconomyPayableHandlerImpl(@Nullable EconomyProvider provider) {
+  public EconomyPayableHandlerImpl(@javax.annotation.Nullable EconomyProvider provider) {
     this.provider = provider;
   }
 

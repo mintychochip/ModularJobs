@@ -8,3 +8,7 @@ softdepend:
 commands:
   test:
     description: asdads
+permissions:
+  modularjobs.admin:
+    description: Admin commands for ModularJobs
+    default: op

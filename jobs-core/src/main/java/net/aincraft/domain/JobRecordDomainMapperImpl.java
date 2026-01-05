@@ -2,6 +2,7 @@ package net.aincraft.domain;
 
 import com.google.inject.Inject;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.aincraft.Job;
 import net.aincraft.LevelingCurve;
@@ -45,7 +46,8 @@ final class JobRecordDomainMapperImpl implements DomainMapper<Job, JobRecord> {
     Component description = MINI_MESSAGE.deserialize(record.description());
     LevelingCurve levelingCurve = expressionCurveFactory.levelingCurve(record.levellingCurve());
     return new JobImpl(jobKey, displayName, description, record.maxLevel(), levelingCurve,
-        payableCurveMapper.toDomain(record.payableCurves()));
+        payableCurveMapper.toDomain(record.payableCurves()), record.upgradeLevel(),
+        record.perkUnlocks(), record.petPerks(), record.petRevokedPerks());
   }
 
   @Override
@@ -55,7 +57,8 @@ final class JobRecordDomainMapperImpl implements DomainMapper<Job, JobRecord> {
     String description = MINI_MESSAGE.serialize(domain.description());
     LevelingCurve levelingCurve = domain.levelingCurve();
     return new JobRecord(jobKey, displayName, description, domain.maxLevel(),
-        levelingCurve.toString(), payableCurveMapper.toRecord(domain.payableCurves()));
+        levelingCurve.toString(), payableCurveMapper.toRecord(domain.payableCurves()),
+        domain.upgradeLevel(), domain.perkUnlocks(), domain.petPerks(), domain.petRevokedPerks());
   }
 
   static final class PayableCurveMapperImpl implements
