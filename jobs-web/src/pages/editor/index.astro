@@ -1,0 +1,48 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Web Editor">
+  <div class="container mx-auto p-8 max-w-2xl">
+    <h1 class="text-3xl font-bold mb-6">ModularJobs Web Editor</h1>
+
+    <div class="card bg-base-200 shadow-xl mb-6">
+      <div class="card-body">
+        <h2 class="card-title">How to use</h2>
+        <ol class="list-decimal list-inside space-y-2">
+          <li>Run <code class="kbd kbd-sm">/jobs editor</code> in-game</li>
+          <li>Click the link provided or paste the code below</li>
+          <li>Edit your job tasks in the table</li>
+          <li>Click Save and run <code class="kbd kbd-sm">/jobs applyedits CODE</code></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Session Code</span>
+      </label>
+      <div class="join">
+        <input type="text" id="code-input" placeholder="Paste code here..."
+               class="input input-bordered join-item flex-1" />
+        <button id="load-btn" class="btn btn-primary join-item">Load</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('load-btn')?.addEventListener('click', () => {
+      const code = (document.getElementById('code-input') as HTMLInputElement)?.value?.trim();
+      if (code) {
+        window.location.href = `/editor/session?code=${encodeURIComponent(code)}`;
+      }
+    });
+
+    // Also handle Enter key
+    document.getElementById('code-input')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('load-btn')?.click();
+      }
+    });
+  </script>
+</Base>
