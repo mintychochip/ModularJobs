@@ -15,11 +15,12 @@ import net.aincraft.JobProgression;
 import net.aincraft.commands.top.ChatJobsTopPageConsumerImpl;
 import net.aincraft.commands.top.ScoreboardJobsTopPageConsumerImpl;
 import net.aincraft.service.JobService;
-import net.aincraft.util.KeyFactory;
+import net.aincraft.util.KeyUtils;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 
 /**
  * /jobs area add wg:worldGuardArea 2	jobs.area.add	Adds a new restricted area with 2 amount of
@@ -364,16 +365,16 @@ final class TopCommand implements JobsCommand {
 
   private final JobService jobService;
   private final JobTopPageProvider resultProvider;
-  private final KeyFactory keyFactory;
+  private final Plugin plugin;
 
   private static final int PAGE_SIZE = 10;
 
   @Inject
   public TopCommand(JobService jobService, JobTopPageProvider resultProvider,
-      KeyFactory keyFactory) {
+      Plugin plugin) {
     this.jobService = jobService;
     this.resultProvider = resultProvider;
-    this.keyFactory = keyFactory;
+    this.plugin = plugin;
   }
 
   @Override
@@ -388,7 +389,7 @@ final class TopCommand implements JobsCommand {
           CommandSender sender = source.getSender();
           String jobKey = context.getArgument("job", String.class);
           int page = context.getArgument("pageNumber", Integer.class);
-          Key key = keyFactory.create(jobKey);
+          Key key = KeyUtils.parseKey(plugin, jobKey);
           //TODO: add limits
           ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
           int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);

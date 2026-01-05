@@ -36,4 +36,6 @@ public interface JobService {
   List<JobProgression> getProgressions(OfflinePlayer player);
 
   List<JobProgression> getProgressions(Key jobKey, int limit);
+
+  List<JobProgression> getArchivedProgressions(OfflinePlayer player);
 }

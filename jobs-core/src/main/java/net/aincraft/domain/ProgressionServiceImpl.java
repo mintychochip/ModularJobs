@@ -57,6 +57,11 @@ final class ProgressionServiceImpl implements ProgressionService {
     return migrate(archive, live, playerId, jobKey);
   }
 
+  @Override
+  public List<JobProgressionRecord> loadAllArchivedForPlayer(String playerId, int limit) {
+    return archive.loadAllForPlayer(playerId, limit);
+  }
+
   private boolean migrate(JobProgressionRepository from, JobProgressionRepository to,
       String playerId, String jobKey) {
     JobProgressionRecord record = from.load(playerId, jobKey);

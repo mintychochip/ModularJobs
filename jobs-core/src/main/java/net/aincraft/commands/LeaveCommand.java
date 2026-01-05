@@ -7,44 +7,72 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Job;
+import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
-import org.bukkit.NamespacedKey;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 public class LeaveCommand implements JobsCommand {
 
   private final JobService jobService;
+  private final JobResolver jobResolver;
+  private static final String DEFAULT_NAMESPACE = "modularjobs";
 
   @Inject
-  public LeaveCommand(JobService jobService) {
+  public LeaveCommand(JobService jobService, JobResolver jobResolver) {
     this.jobService = jobService;
+    this.jobResolver = jobResolver;
   }
 
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("leave")
         .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
-          jobService.getJobs().stream().map(job -> job.key().value()).forEach(builder::suggest);
+          jobResolver.getPlainNames().forEach(builder::suggest);
           return builder.buildFuture();
         }).executes(context -> {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
           if (!(sender instanceof Player player)) {
-            //TODO: add admin
-            sender.sendMessage("failed to execute command");
-            return com.mojang.brigadier.Command.SINGLE_SUCCESS;
+            sender.sendMessage(Component.text("This command can only be used by players.")
+                .color(NamedTextColor.RED));
+            return Command.SINGLE_SUCCESS;
           }
-          NamespacedKey jobKey = new NamespacedKey("modularjobs",context.getArgument("job", String.class));
-          Job job = jobService.getJob(jobKey.toString());
+
+          String input = context.getArgument("job", String.class);
+
+          // Resolve job (supports both plain name and full key)
+          Job job = jobResolver.resolveInNamespace(input, DEFAULT_NAMESPACE);
+
           if (job == null) {
-            player.sendMessage("invalid job");
+            // Try fuzzy matching for suggestions
+            List<String> suggestions = jobResolver.suggestSimilar(input, 3);
+
+            if (suggestions.isEmpty()) {
+              player.sendMessage(Component.text("Job not found: " + input)
+                  .color(NamedTextColor.RED));
+            } else {
+              player.sendMessage(Component.text("Job not found: " + input)
+                  .color(NamedTextColor.RED));
+              player.sendMessage(Component.text("Did you mean: " + String.join(", ", suggestions))
+                  .color(NamedTextColor.GRAY));
+            }
             return 0;
           }
-          if (jobService.leaveJob(player.getUniqueId().toString(), jobKey.toString())) {
-            player.sendMessage(Component.text("You joined: ").append(job.displayName()));
+
+          if (jobService.leaveJob(player.getUniqueId().toString(), job.key().toString())) {
+            player.sendMessage(Component.text("You left: ")
+                .color(NamedTextColor.GREEN)
+                .append(job.displayName()));
+          } else {
+            player.sendMessage(Component.text("You are not in this job.")
+                .color(NamedTextColor.YELLOW));
           }
+
           return Command.SINGLE_SUCCESS;
         }));
   }

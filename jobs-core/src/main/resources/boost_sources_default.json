@@ -1,0 +1,146 @@
+{
+  "boost_sources": {
+    "mining_boost": {
+      "key": "modularjobs:mining_boost",
+      "description": "Enhanced mining rewards - Highest boost in the Nether while sneaking",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "world",
+                "value": "world_nether"
+              },
+              {
+                "type": "sneaking",
+                "value": true
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 3.0
+          }
+        },
+        {
+          "priority": 10,
+          "conditions": {
+            "type": "always"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.25
+          }
+        }
+      ]
+    },
+    "combat_boost": {
+      "key": "modularjobs:combat_boost",
+      "description": "Combat rewards amplifier - Massive boost when low on health with Strength",
+      "policy": {
+        "type": "first"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "player_resource",
+                "resourceType": "health",
+                "operator": "less_than_or_equal",
+                "value": 6.0
+              },
+              {
+                "type": "potion_effect",
+                "effect": "strength"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 4.0
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "potion_effect",
+                "effect": "strength"
+              },
+              {
+                "type": "potion_effect",
+                "effect": "speed"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.5
+          }
+        }
+      ]
+    },
+    "farming_boost": {
+      "key": "modularjobs:farming_boost",
+      "description": "Farming efficiency enhancer - Weather and movement-based bonuses",
+      "policy": {
+        "type": "top_k",
+        "k": 2
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "weather",
+                "value": "raining"
+              },
+              {
+                "type": "biome",
+                "value": "plains"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.0
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "weather",
+            "value": "clear"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.3
+          }
+        },
+        {
+          "priority": 30,
+          "conditions": {
+            "type": "sprinting",
+            "value": false
+          },
+          "boost": {
+            "type": "additive",
+            "amount": 25.0
+          }
+        }
+      ]
+    }
+  }
+}

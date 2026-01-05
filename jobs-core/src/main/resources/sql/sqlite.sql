@@ -52,10 +52,10 @@ CREATE TABLE IF NOT EXISTS job_tasks
 
 CREATE TABLE IF NOT EXISTS job_task_payables
 (
-    job_task_id      INTEGER NOT NULL,
-    payable_type_key TEXT    NOT NULL,
-    amount           TEXT    NOT NULL,
-    currency         TEXT    NULL,
+    job_task_id         INTEGER NOT NULL,
+    payable_type_key    TEXT    NOT NULL,
+    amount              TEXT    NOT NULL,
+    currency_identifier TEXT    NULL,
     FOREIGN KEY (job_task_id) REFERENCES job_tasks (task_id) ON DELETE CASCADE
 );
 

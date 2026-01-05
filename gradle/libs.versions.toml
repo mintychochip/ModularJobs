@@ -13,7 +13,7 @@ exp4j = "0.4.8"
 gson = "2.11.0"
 
 # Minecraft ecosystem
-paper = "1.21.4-R0.1-SNAPSHOT"
+paper = "1.21.8-R0.1-SNAPSHOT"
 mcmmo = "2.2.004"
 lwc = "2.4.0"
 bolt = "1.1.52"

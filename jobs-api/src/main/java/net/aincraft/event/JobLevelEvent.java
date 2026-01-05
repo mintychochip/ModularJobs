@@ -1,22 +1,46 @@
 package net.aincraft.event;
 
+import net.aincraft.Job;
+import net.aincraft.JobProgression;
 import org.bukkit.entity.Player;
 
 public class JobLevelEvent extends AbstractEvent {
 
-  private final int level;
   private final Player player;
+  private final Job job;
+  private final int oldLevel;
+  private final int newLevel;
+  private final JobProgression progression;
 
-  public JobLevelEvent(int level, Player player) {
-    this.level = level;
+  public JobLevelEvent(Player player, Job job, int oldLevel, int newLevel, JobProgression progression) {
     this.player = player;
+    this.job = job;
+    this.oldLevel = oldLevel;
+    this.newLevel = newLevel;
+    this.progression = progression;
   }
 
   public Player getPlayer() {
     return player;
   }
 
+  public Job getJob() {
+    return job;
+  }
+
+  public int getOldLevel() {
+    return oldLevel;
+  }
+
+  public int getNewLevel() {
+    return newLevel;
+  }
+
   public int getLevel() {
-    return level;
+    return newLevel;
+  }
+
+  public JobProgression getProgression() {
+    return progression;
   }
 }

@@ -85,3 +85,9 @@ This means you should automatically use claude-context to search the code base u
 Always use context7 when I need code generation, setup or configuration steps, or
 library/API documentation. This means you should automatically use the Context7 MCP
 tools to resolve library id and get library docs without me having to explicitly ask.
+
+## Working Log
+
+### Guice Binding Fixes (2026-01-04)
+- `BoostModule.java`: Added `BoostFactory`, `ConditionFactory`, `PolicyFactory` bindings → `BoostFactoryImpl.INSTANCE`
+- `DomainModule.java`: `JobResolver` → `JobResolverImpl` (requires import due to package-private)
