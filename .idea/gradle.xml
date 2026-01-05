@@ -11,7 +11,6 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/jobs-api" />
             <option value="$PROJECT_DIR$/jobs-core" />
-            <option value="$PROJECT_DIR$/jobs-web" />
           </set>
         </option>
       </GradleProjectSettings>

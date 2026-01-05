@@ -33,7 +33,6 @@ public class ConsumableBoostController implements Listener {
       return;
     }
     if (data.get() instanceof ConsumableBoostData consumableBoostData) {
-      Bukkit.broadcastMessage("added data to " + event.getPlayer().toString());
       timedBoostDataService.addData(consumableBoostData, new PlayerTarget(event.getPlayer()));
     }
   }

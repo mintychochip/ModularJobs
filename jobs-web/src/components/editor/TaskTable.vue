@@ -69,6 +69,25 @@ function addTask(jobKey: string) {
   payload.value.jobs[jobKey].tasks.push(newTask);
 }
 
+function addPayable(jobKey: string, taskIndex: number) {
+  if (!payload.value) return;
+  const newPayable = {
+    type: payload.value.registeredPayableTypes[0] || 'modularjobs:experience',
+    amount: '1.0'
+  };
+  payload.value.jobs[jobKey].tasks[taskIndex].payables.push(newPayable);
+}
+
+function deletePayable(jobKey: string, taskIndex: number, payableIndex: number) {
+  if (!payload.value) return;
+  payload.value.jobs[jobKey].tasks[taskIndex].payables.splice(payableIndex, 1);
+}
+
+function updatePayableType(jobKey: string, taskIndex: number, payableIndex: number, newType: string) {
+  if (!payload.value) return;
+  payload.value.jobs[jobKey].tasks[taskIndex].payables[payableIndex].type = newType;
+}
+
 async function save() {
   if (!payload.value) return;
   saving.value = true;
@@ -141,15 +160,35 @@ async function save() {
                        class="input input-bordered input-sm w-full" />
               </td>
               <td>
-                <div v-for="(payable, pIndex) in item.task.payables" :key="pIndex" class="flex gap-1 mb-1">
-                  <span class="badge badge-outline">{{ payable.type.split(':')[1] }}</span>
-                  <input type="text" v-model="payable.amount"
-                         class="input input-bordered input-xs w-20" />
+                <div class="space-y-1">
+                  <div v-for="(payable, pIndex) in item.task.payables" :key="pIndex"
+                       class="flex gap-1 items-center">
+                    <select v-model="payable.type"
+                            class="select select-bordered select-xs w-32">
+                      <option v-for="pt in payload.registeredPayableTypes" :key="pt" :value="pt">
+                        {{ pt.split(':')[1] }}
+                      </option>
+                    </select>
+                    <input type="text" v-model="payable.amount"
+                           class="input input-bordered input-xs w-20"
+                           placeholder="Amount" />
+                    <button @click="deletePayable(item.jobKey, item.taskIndex, pIndex)"
+                            class="btn btn-error btn-xs"
+                            :disabled="item.task.payables.length === 1"
+                            title="Delete payable">
+                      ×
+                    </button>
+                  </div>
+                  <button @click="addPayable(item.jobKey, item.taskIndex)"
+                          class="btn btn-success btn-xs w-full">
+                    + Payable
+                  </button>
                 </div>
               </td>
               <td>
-                <button @click="deleteTask(item.jobKey, item.taskIndex)" class="btn btn-error btn-xs">
-                  Delete
+                <button @click="deleteTask(item.jobKey, item.taskIndex)"
+                        class="btn btn-error btn-xs">
+                  Delete Task
                 </button>
               </td>
             </tr>
