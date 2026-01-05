@@ -5,7 +5,7 @@ import org.bukkit.potion.PotionEffect;
 
 public enum PotionConditionType {
   DURATION(PotionEffect::getDuration),
-  AMPLIFIER(PotionEffect::getDuration);
+  AMPLIFIER(PotionEffect::getAmplifier);
   private final Function<PotionEffect, Integer> valueFunction;
 
   PotionConditionType(Function<PotionEffect, Integer> valueFunction) {

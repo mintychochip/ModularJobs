@@ -26,29 +26,34 @@ public final class ModularJobsBootstrap extends JavaPlugin {
 
   @Override
   public void onEnable() {
-    Injector injector = Guice.createInjector(new PluginModule(this));
-    Bridge bridge = injector.getInstance(Bridge.class);
-    Bukkit.getServicesManager()
-        .register(Bridge.class, bridge, this,
-            ServicePriority.High);
-    Set<Listener> listeners = injector.getInstance(
-        Key.get(new TypeLiteral<>() {
-        })
-    );
-    listeners.forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
-    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-      injector.getInstance(PlaceholderExpansion.class).register();
+    try {
+      Injector injector = Guice.createInjector(new PluginModule(this));
+      Bridge bridge = injector.getInstance(Bridge.class);
+      Bukkit.getServicesManager()
+          .register(Bridge.class, bridge, this,
+              ServicePriority.High);
+      Set<Listener> listeners = injector.getInstance(
+          Key.get(new TypeLiteral<>() {
+          })
+      );
+      listeners.forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
+      if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        injector.getInstance(PlaceholderExpansion.class).register();
+      }
+      Set<JobsCommand> commands = injector.getInstance(Key.get(new TypeLiteral<>() {
+      }));
+      LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("jobs");
+      for (JobsCommand command : commands) {
+        root.then(command.build());
+      }
+      getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, c -> {
+        c.registrar().register(root.build());
+      });
+      Bukkit.getPluginCommand("test").setExecutor(injector.getInstance(Command.class));
+    } catch (Exception e) {
+      getSLF4JLogger().error("Failed to enable ModularJobs", e);
+      throw e;
     }
-    Set<JobsCommand> commands = injector.getInstance(Key.get(new TypeLiteral<>() {
-    }));
-    LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("jobs");
-    for (JobsCommand command : commands) {
-      root.then(command.build());
-    }
-    getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, c -> {
-      c.registrar().register(root.build());
-    });
-    Bukkit.getPluginCommand("test").setExecutor(injector.getInstance(Command.class));
   }
 
   @Override

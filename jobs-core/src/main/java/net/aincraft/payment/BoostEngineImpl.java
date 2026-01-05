@@ -56,11 +56,57 @@ final class BoostEngineImpl implements BoostEngine {
   @Override
   public Map<Key, Boost> evaluate(OfflinePlayer player, ActionType type, Context context,
       JobProgression progression, Payable payable) {
-    Map<Key,Boost> boosts = new HashMap<>();
-    Job job = progression.job();
-    PayableAmount amount = payable.amount();
-    PayableType payableType = payable.type();
-    return Map.of();
+    Map<Key, List<Boost>> boostsBySource = new HashMap<>();
+
+    if (!player.isOnline()) {
+      return Map.of();
+    }
+    Player onlinePlayer = player.getPlayer();
+    if (onlinePlayer == null) {
+      return Map.of();
+    }
+
+    BoostContext boostContext = new BoostContext(type, progression, onlinePlayer, payable);
+
+    // Aggregate passive item sources
+    List<BoostSource> itemSources = aggregateItemSources(onlinePlayer);
+    for (BoostSource source : itemSources) {
+      List<Boost> evaluated = source.evaluate(boostContext);
+      if (!evaluated.isEmpty()) {
+        boostsBySource.put(source.key(), evaluated);
+      }
+    }
+
+    // Aggregate timed boost sources
+    List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
+        new PlayerTarget(onlinePlayer));
+    for (ActiveBoostData activeBoost : timedBoosts) {
+      BoostSource source = activeBoost.boostSource();
+      List<Boost> evaluated = source.evaluate(boostContext);
+      if (!evaluated.isEmpty()) {
+        boostsBySource.put(source.key(), evaluated);
+      }
+    }
+
+    // Flatten: for each source, combine boosts into a single composite boost
+    Map<Key, Boost> result = new HashMap<>();
+    for (Map.Entry<Key, List<Boost>> entry : boostsBySource.entrySet()) {
+      List<Boost> sourceBoosts = entry.getValue();
+      if (sourceBoosts.size() == 1) {
+        result.put(entry.getKey(), sourceBoosts.get(0));
+      } else {
+        // Combine multiple boosts from same source into composite
+        result.put(entry.getKey(), amount -> {
+          BigDecimal current = amount;
+          for (Boost b : sourceBoosts) {
+            current = b.boost(current);
+          }
+          return current;
+        });
+      }
+    }
+
+    return result;
   }
 
   private List<BoostSource> aggregateItemSources(Player player) {

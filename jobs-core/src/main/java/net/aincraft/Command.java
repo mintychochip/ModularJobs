@@ -7,6 +7,8 @@ import com.esotericsoftware.kryo.io.Output;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.aincraft.boost.AdditiveBoostImpl;
@@ -20,6 +22,7 @@ import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.serialization.CodecRegistry;
 import net.aincraft.service.JobService;
+import net.aincraft.upgrade.JobUpgradeNode;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
@@ -47,16 +50,45 @@ public class Command implements CommandExecutor {
   public boolean onCommand(@NotNull CommandSender sender,
       org.bukkit.command.Command command, @NotNull String label,
       @NotNull String @NotNull [] args) {
+    // For this factory, we'll return all defined nodes.
+    JobUpgradeNode root = buildSampleGraph();
     Rule rule = new Rule(new BiomeConditionImpl(Biome.PLAINS.key()), 0,
         new AdditiveBoostImpl(BigDecimal.valueOf(1.0)));
-    RuledBoostSourceImpl source = new RuledBoostSourceImpl(List.of(rule),
-        AllApplicablePolicyImpl.INSTANCE);
     ItemStack stack = ItemStack.of(
         Material.COOKED_BEEF);
-    boostDataService.addData(new ConsumableBoostData(source, Duration.ofMinutes(5)), stack);
     if (sender instanceof Player player) {
       player.getInventory().addItem(stack);
     }
     return false;
+  }
+  public static JobUpgradeNode buildSampleGraph() {
+    // 1. Create the final destination node (Node D - no neighbors)
+    JobUpgradeNode masteryTier = new JobUpgradeNode(
+        "Mastery Tier",
+        5,
+        Collections.emptyList() // No neighbors
+    );
+
+    // 2. Create intermediate nodes (Node B and Node C), both leading to Mastery Tier (D)
+    JobUpgradeNode skillPath1 = new JobUpgradeNode(
+        "Skill Path 1",
+        10,
+        Arrays.asList(masteryTier) // Neighbor: D
+    );
+
+    JobUpgradeNode skillPath2 = new JobUpgradeNode(
+        "Skill Path 2",
+        8,
+        Arrays.asList(masteryTier) // Neighbor: D
+    );
+
+    // 3. Create the starting node (Node A), which leads to the two paths (B and C)
+    JobUpgradeNode startingJob = new JobUpgradeNode(
+        "Starting Job",
+        0,
+        Arrays.asList(skillPath1, skillPath2) // Neighbors: B and C
+    );
+
+    return startingJob;
   }
 }

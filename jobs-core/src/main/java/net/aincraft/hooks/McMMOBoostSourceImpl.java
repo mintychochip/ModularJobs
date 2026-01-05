@@ -10,7 +10,6 @@ import java.util.UUID;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.BoostSource;
-import net.aincraft.container.BoostType;
 import net.aincraft.container.Store;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
@@ -48,7 +47,10 @@ public class McMMOBoostSourceImpl implements BoostSource {
     }
     SuperAbilityType type = store.get(player.getUniqueId());
     BigDecimal amount = boostAmounts.get(type);
-    return List.of(Boost.multiplicative(BoostType.MCMMO, amount));
+    if (amount == null) {
+      return List.of();
+    }
+    return List.of(Boost.FACTORY.multiplicative(amount));
   }
 
   private record McMMOController(Store<UUID, SuperAbilityType> store) implements Listener {
