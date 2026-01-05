@@ -23,6 +23,14 @@ public interface TimedBoostDataService {
   //TODO: handle cleaning of the db
   record ActiveBoostData(String targetIdentifier, String sourceIdentifier, Timestamp started,
                          @Nullable Duration duration, BoostSource boostSource) {
+
+    public boolean isExpired() {
+      if (duration == null) {
+        return false; // Permanent boost
+      }
+      long expiresAt = started.getTime() + duration.toMillis();
+      return System.currentTimeMillis() > expiresAt;
+    }
   }
 
   List<ActiveBoostData> findApplicableBoosts(Target target);

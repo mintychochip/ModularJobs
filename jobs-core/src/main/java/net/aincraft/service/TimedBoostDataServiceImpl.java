@@ -27,13 +27,26 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
 
   @Override
   public List<ActiveBoostData> findApplicableBoosts(Target target) {
+    List<ActiveBoostData> allBoosts;
     if (target instanceof GlobalTarget) {
-      return timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER);
+      allBoosts = timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER);
+    } else {
+      String playerIdentifier = getPlayerIdentifier((PlayerTarget) target);
+      allBoosts = timedBoostRepository.findAllBoosts(playerIdentifier);
+      allBoosts.addAll(timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER));
     }
-    String playerIdentifier = getPlayerIdentifier((PlayerTarget) target);
-    List<ActiveBoostData> playerBoosts = timedBoostRepository.findAllBoosts(playerIdentifier);
-    playerBoosts.addAll(timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER));
-    return playerBoosts;
+
+    // Filter out expired boosts and clean up database
+    return allBoosts.stream()
+        .filter(boost -> {
+          if (boost.isExpired()) {
+            // Remove expired boost from database
+            timedBoostRepository.delete(boost.targetIdentifier(), boost.sourceIdentifier());
+            return false;
+          }
+          return true;
+        })
+        .toList();
   }
 
   @Override

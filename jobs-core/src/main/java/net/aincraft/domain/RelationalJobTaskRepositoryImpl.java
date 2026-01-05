@@ -73,7 +73,123 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
 
   @Override
   public boolean save(JobTaskRecord record) {
-    return false;
+    String cacheKey = createCacheKey(record.jobKey(), record.actionTypeKey(), record.contextKey());
+    try (Connection connection = connectionSource.getConnection()) {
+      connection.setAutoCommit(false);
+      try {
+        // Check if task exists
+        Integer taskId = null;
+        try (PreparedStatement ps = connection.prepareStatement(
+            "SELECT task_id FROM job_tasks WHERE job_key=? AND action_type_key=? AND context_key=?")) {
+          ps.setString(1, record.jobKey());
+          ps.setString(2, record.actionTypeKey());
+          ps.setString(3, record.contextKey());
+          try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+              taskId = rs.getInt("task_id");
+            }
+          }
+        }
+
+        if (taskId == null) {
+          // Insert new task
+          try (PreparedStatement ps = connection.prepareStatement(
+              "INSERT INTO job_tasks (job_key, action_type_key, context_key) VALUES (?, ?, ?)",
+              PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, record.jobKey());
+            ps.setString(2, record.actionTypeKey());
+            ps.setString(3, record.contextKey());
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+              if (rs.next()) {
+                taskId = rs.getInt(1);
+              }
+            }
+          }
+        } else {
+          // Delete existing payables for update
+          try (PreparedStatement ps = connection.prepareStatement(
+              "DELETE FROM job_task_payables WHERE job_task_id=?")) {
+            ps.setInt(1, taskId);
+            ps.executeUpdate();
+          }
+        }
+
+        // Insert payables
+        if (taskId != null && record.payables() != null) {
+          try (PreparedStatement ps = connection.prepareStatement(
+              "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount, currency_identifier) VALUES (?, ?, ?, ?)")) {
+            for (PayableRecord payable : record.payables()) {
+              ps.setInt(1, taskId);
+              ps.setString(2, payable.payableTypeKey());
+              ps.setBigDecimal(3, payable.amount());
+              ps.setString(4, payable.currencyIdentifier());
+              ps.addBatch();
+            }
+            ps.executeBatch();
+          }
+        }
+
+        connection.commit();
+        readCache.put(cacheKey, record);
+        return true;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public boolean delete(String jobKey, String actionTypeKey, String contextKey) {
+    String cacheKey = createCacheKey(jobKey, actionTypeKey, contextKey);
+    try (Connection connection = connectionSource.getConnection()) {
+      connection.setAutoCommit(false);
+      try {
+        // Get task_id first
+        Integer taskId = null;
+        try (PreparedStatement ps = connection.prepareStatement(
+            "SELECT task_id FROM job_tasks WHERE job_key=? AND action_type_key=? AND context_key=?")) {
+          ps.setString(1, jobKey);
+          ps.setString(2, actionTypeKey);
+          ps.setString(3, contextKey);
+          try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+              taskId = rs.getInt("task_id");
+            }
+          }
+        }
+
+        if (taskId == null) {
+          return false;
+        }
+
+        // Delete payables first (foreign key)
+        try (PreparedStatement ps = connection.prepareStatement(
+            "DELETE FROM job_task_payables WHERE job_task_id=?")) {
+          ps.setInt(1, taskId);
+          ps.executeUpdate();
+        }
+
+        // Delete task
+        try (PreparedStatement ps = connection.prepareStatement(
+            "DELETE FROM job_tasks WHERE task_id=?")) {
+          ps.setInt(1, taskId);
+          ps.executeUpdate();
+        }
+
+        connection.commit();
+        readCache.invalidate(cacheKey);
+        return true;
+      } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -144,6 +260,16 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public List<JobTaskRecord> getAllRecords(String jobKey) {
+    Map<String, List<JobTaskRecord>> grouped = getRecords(jobKey);
+    List<JobTaskRecord> all = new ArrayList<>();
+    for (List<JobTaskRecord> records : grouped.values()) {
+      all.addAll(records);
+    }
+    return all;
   }
 
   private static String createCacheKey(String jobKey, String actionTypeKey, String contextKey) {

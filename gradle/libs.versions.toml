@@ -14,7 +14,6 @@ gson = "2.11.0"
 
 # Minecraft ecosystem
 paper = "1.21.4-R0.1-SNAPSHOT"
-vault = "1.7"
 mcmmo = "2.2.004"
 lwc = "2.4.0"
 bolt = "1.1.52"
@@ -37,7 +36,6 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 # Minecraft APIs
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
-vault-api = { module = "com.github.MilkBowl:VaultAPI", version.ref = "vault" }
 mcmmo = { module = "com.gmail.nossr50.mcMMO:mcMMO", version.ref = "mcmmo" }
 lwc = { module = "com.griefcraft:lwc", version.ref = "lwc" }
 bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }
@@ -49,7 +47,7 @@ preferences = { module = "com.github.mintychochip:preferences", version.ref = "p
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 
 [bundles]
-minecraft-api = ["paper-api", "vault-api", "mcmmo"]
+minecraft-api = ["paper-api", "mcmmo"]
 
 [plugins]
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }

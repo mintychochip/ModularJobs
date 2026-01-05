@@ -10,7 +10,7 @@ public record EditorConfig(
     int sessionTtlMinutes
 ) {
     public static final String DEFAULT_BYTEBIN_URL = "https://bytebin.lucko.me";
-    public static final String DEFAULT_WEB_EDITOR_URL = "https://modularjobs.example.com/editor";
+    public static final String DEFAULT_WEB_EDITOR_URL = "https://modular-jobs.vercel.app/editor";
     public static final int DEFAULT_SESSION_TTL = 60;
 
     public static EditorConfig defaults() {
