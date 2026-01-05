@@ -1,9 +1,9 @@
 package net.aincraft.payable;
 
 import com.google.inject.Inject;
+import javax.annotation.Nullable;
 import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.PayableHandler;
-import org.jetbrains.annotations.Nullable;
 
 final class EconomyPayableHandlerImpl implements PayableHandler {
 

@@ -7,7 +7,7 @@ public record MultiplicativeBoostImpl(BigDecimal amount) implements Boost {
 
   @Override
   public BigDecimal boost(BigDecimal amount) {
-    return amount.multiply(amount);
+    return amount.multiply(this.amount);
   }
 
 }

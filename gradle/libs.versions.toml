@@ -1,22 +1,56 @@
 [versions]
-undertow = "2.3.18.Final"
-exp4j = "0.4.8"
+# Build plugins
+run-paper = "2.3.1"
+shadow = "8.1.1"
+
+# Core infrastructure
+kryo = "5.6.2"
+guice = "7.0.0"
 hikari = "5.0.1"
 caffeine = "3.2.2"
+undertow = "2.3.18.Final"
+exp4j = "0.4.8"
+gson = "2.11.0"
+
+# Minecraft ecosystem
 paper = "1.21.4-R0.1-SNAPSHOT"
 vault = "1.7"
 mcmmo = "2.2.004"
 lwc = "2.4.0"
 bolt = "1.1.52"
+placeholderapi = "2.11.6"
+mint-api = "1.2"
+preferences = "631142d"
+
+# Development tools
+jetbrains-annotations = "24.1.0"
 
 [libraries]
-undertow-core = { module = "io.undertow:undertow-core", version.ref = "undertow" }
-exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }
+# Infrastructure
+kryo = { module = "com.esotericsoftware:kryo", version.ref = "kryo" }
+guice = { module = "com.google.inject:guice", version.ref = "guice" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+undertow-core = { module = "io.undertow:undertow-core", version.ref = "undertow" }
+exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
+# Minecraft APIs
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 vault-api = { module = "com.github.MilkBowl:VaultAPI", version.ref = "vault" }
 mcmmo = { module = "com.gmail.nossr50.mcMMO:mcMMO", version.ref = "mcmmo" }
 lwc = { module = "com.griefcraft:lwc", version.ref = "lwc" }
 bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }
+placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
+mint-api = { module = "dev.mintychochip:mint-api", version.ref = "mint-api" }
+preferences = { module = "com.github.mintychochip:preferences", version.ref = "preferences" }
+
+# Development
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+
+[bundles]
+minecraft-api = ["paper-api", "vault-api", "mcmmo"]
+
+[plugins]
+run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
