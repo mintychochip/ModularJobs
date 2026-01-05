@@ -13,6 +13,7 @@ import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -53,8 +54,15 @@ public class StatsCommand implements JobsCommand {
                 .append(Component.text(" to join a job.", NamedTextColor.GRAY)));
             player.sendMessage(Component.empty());
           } else {
+            // Calculate max job name length for alignment
+            PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+            int maxNameLength = progressions.stream()
+                .map(p -> serializer.serialize(p.job().displayName()).length())
+                .max(Integer::compareTo)
+                .orElse(0);
+
             for (JobProgression progression : progressions) {
-              displayJobStats(player, progression);
+              displayJobStats(player, progression, maxNameLength, serializer);
             }
           }
 
@@ -65,7 +73,8 @@ public class StatsCommand implements JobsCommand {
         });
   }
 
-  private void displayJobStats(Player player, JobProgression progression) {
+  private void displayJobStats(Player player, JobProgression progression, int maxNameLength,
+                               PlainTextComponentSerializer serializer) {
     int currentLevel = progression.level();
     BigDecimal currentXp = progression.experience();
     int maxLevel = progression.job().maxLevel();
@@ -94,13 +103,8 @@ public class StatsCommand implements JobsCommand {
       xpTotal = formatNumber(xpNeeded);
     }
 
-    // Job name on first line
-    Component jobNameLine = Component.text("  ")
-        .append(progression.job().displayName());
-    player.sendMessage(jobNameLine);
-
-    // Progress bar on second line (indented) - all bars align this way
-    Component barLine = Component.text("    ")
+    // Bar on LEFT, job name on RIGHT - bars naturally align
+    Component line = Component.text("  ")
         .append(createProgressBar(percentage))
         .append(Component.text(" ", NamedTextColor.GRAY))
         .append(Component.text(String.format("%.1f%%", percentage), NamedTextColor.YELLOW))
@@ -108,9 +112,11 @@ public class StatsCommand implements JobsCommand {
         .append(Component.text(xpCurrent, NamedTextColor.AQUA))
         .append(Component.text("/", NamedTextColor.DARK_GRAY))
         .append(Component.text(xpTotal, NamedTextColor.AQUA))
-        .append(Component.text(")", NamedTextColor.GRAY))
+        .append(Component.text(") ", NamedTextColor.GRAY))
+        .append(progression.job().displayName())
         .hoverEvent(hoverInfo);
-    player.sendMessage(barLine);
+
+    player.sendMessage(line);
   }
 
   private Component buildHoverMetadata(JobProgression progression, int currentLevel,
@@ -154,7 +160,7 @@ public class StatsCommand implements JobsCommand {
   }
 
   private Component createProgressBar(double percentage) {
-    int barLength = 30;
+    int barLength = 20;  // Shorter bar for better alignment
     int filled = (int) Math.round(percentage / 100.0 * barLength);
     filled = Math.min(barLength, Math.max(0, filled));
 
@@ -164,9 +170,9 @@ public class StatsCommand implements JobsCommand {
       if (i < filled) {
         // Color gradient based on percentage
         NamedTextColor color = getProgressColor(percentage);
-        bar = bar.append(Component.text("|", color));
+        bar = bar.append(Component.text("█", color));
       } else {
-        bar = bar.append(Component.text("|", NamedTextColor.DARK_GRAY));
+        bar = bar.append(Component.text("█", NamedTextColor.DARK_GRAY));
       }
     }
 
