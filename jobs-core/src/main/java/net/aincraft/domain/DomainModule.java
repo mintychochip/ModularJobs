@@ -19,9 +19,11 @@ import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.domain.repository.JobRepository;
 import net.aincraft.domain.repository.JobTaskRepository;
+import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.ConnectionSourceFactory;
 import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
+import net.aincraft.service.YamlJobTaskLoader;
 import net.aincraft.util.DomainMapper;
 import net.kyori.adventure.key.Key;
 import org.bukkit.configuration.ConfigurationSection;
@@ -57,6 +59,7 @@ public final class DomainModule extends PrivateModule {
     expose(JobService.class);
     expose(JobResolver.class);
     expose(JobTaskRepository.class);
+    expose(ProgressionService.class);
   }
 
   @Provides
@@ -71,10 +74,11 @@ public final class DomainModule extends PrivateModule {
 
   @Provides
   @Singleton
-  JobTaskRepository jobTaskRepository(Plugin plugin) {
-    YamlConfiguration configuration = YamlConfiguration.create(plugin, "database.yml");
-    ConfigurationSection repositoryConfiguration = configuration.getConfigurationSection("payable");
-    return new RelationalJobTaskRepositoryImpl(
-        new ConnectionSourceFactory(plugin, repositoryConfiguration).create());
+  JobTaskRepository jobTaskRepository(Plugin plugin, ConnectionSource connectionSource) {
+    // Load YAML tasks if database is empty
+    YamlJobTaskLoader loader = new YamlJobTaskLoader(plugin, connectionSource);
+    loader.loadIfEmpty();
+
+    return new RelationalJobTaskRepositoryImpl(connectionSource);
   }
 }

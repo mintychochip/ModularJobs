@@ -36,6 +36,10 @@ public class JobLevelEvent extends AbstractEvent {
     return newLevel;
   }
 
+  /**
+   * @deprecated Use {@link #getNewLevel()} instead
+   */
+  @Deprecated
   public int getLevel() {
     return newLevel;
   }

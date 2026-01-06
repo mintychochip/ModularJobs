@@ -14,7 +14,7 @@ final class EconomyPayableHandlerImpl implements PayableHandler {
   private final EconomyProvider provider;
 
   @Inject
-  public EconomyPayableHandlerImpl(@Nullable EconomyProvider provider) {
+  public EconomyPayableHandlerImpl(@javax.annotation.Nullable EconomyProvider provider) {
     this.provider = provider;
     LOGGER.info("EconomyPayableHandlerImpl initialized with provider: " + (provider != null ? provider.getClass().getName() : "null"));
   }
