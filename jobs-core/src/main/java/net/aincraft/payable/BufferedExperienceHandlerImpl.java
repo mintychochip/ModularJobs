@@ -55,6 +55,13 @@ final class BufferedExperienceHandlerImpl implements
     }
 
     int oldLevel = progression.level();
+    int maxLevel = progression.job().maxLevel();
+
+    // Don't add experience if already at max level
+    if (oldLevel >= maxLevel) {
+      return;
+    }
+
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
     int newLevel = calculatedProgression.level();
 

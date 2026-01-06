@@ -49,7 +49,19 @@ final class ExperienceBarControllerImpl implements ExperienceBarController {
     }
     BigDecimal merged = bufferedAmounts.merge(compositeKey, context.amount(), BigDecimal::add);
     formatter.format(bossBar, new ExperienceBarContext(progression,player,merged));
-    bossBar.addViewer(player);
+
+    // Only add viewer if not already viewing to prevent duplicate boss bars
+    boolean isViewing = false;
+    for (var viewer : bossBar.viewers()) {
+      if (viewer.equals(player)) {
+        isViewing = true;
+        break;
+      }
+    }
+    if (!isViewing) {
+      bossBar.addViewer(player);
+    }
+
     BukkitTask previous = removalTasks.get(compositeKey);
     if (previous != null && !previous.isCancelled()) {
       previous.cancel();
@@ -59,6 +71,7 @@ final class ExperienceBarControllerImpl implements ExperienceBarController {
       public void run() {
         bossBar.removeViewer(player);
         bufferedAmounts.remove(compositeKey);
+        bossBarCache.invalidate(compositeKey);
       }
     }.runTaskLater(plugin, 50L));
   }
