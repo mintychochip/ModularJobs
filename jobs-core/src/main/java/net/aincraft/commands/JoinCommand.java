@@ -58,9 +58,9 @@ final class JoinCommand implements JobsCommand {
           }
 
           if (jobService.joinJob(player.getUniqueId().toString(), job.key().toString())) {
-            Mint.sendMessage(player, "<accent>You joined: " + job.getPlainName());
+            Mint.sendMessage(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
           } else {
-            Mint.sendMessage(player, "<secondary>You are already in this job.");
+            Mint.sendMessage(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
           }
 
           return Command.SINGLE_SUCCESS;

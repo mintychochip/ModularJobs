@@ -311,7 +311,7 @@ public final class BoostCommand implements JobsCommand {
       Mint.sendMessage(sender, "");
     }
 
-    Mint.sendMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Mint.sendMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     return Command.SINGLE_SUCCESS;
   }
 
@@ -332,7 +332,7 @@ public final class BoostCommand implements JobsCommand {
     }
 
     Mint.sendMessage(sender, "");
-    Mint.sendMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Mint.sendMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     return Command.SINGLE_SUCCESS;
   }
 
@@ -530,7 +530,7 @@ public final class BoostCommand implements JobsCommand {
     String policyName = policy.getClass().getSimpleName()
         .replace("Impl", "").replace("Policy", "");
 
-    Mint.sendMessage(sender, "<neutral>Policy: <tertiary>" + policyName);
+    Mint.sendMessage(sender, "<neutral>Policy: <info>" + policyName);
 
     var rules = source.rules();
     Mint.sendMessage(sender, "<neutral>Rules: <secondary>" + rules.size() + " rule(s)");

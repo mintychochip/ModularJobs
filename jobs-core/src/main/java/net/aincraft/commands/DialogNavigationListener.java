@@ -2,6 +2,7 @@ package net.aincraft.commands;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import dev.mintychochip.mint.Mint;
 import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.event.player.PlayerCustomClickEvent;
@@ -17,7 +18,6 @@ import net.aincraft.service.JobService;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -72,7 +72,7 @@ public class DialogNavigationListener implements Listener {
 
     Job job = jobResolver.resolveInNamespace(jobName, NAMESPACE);
     if (job == null) {
-      player.sendMessage(Component.text("Job not found!", NamedTextColor.RED));
+      Mint.sendMessage(player, "<error>Job not found!");
       return;
     }
 

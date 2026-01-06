@@ -8,6 +8,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import net.aincraft.config.YamlConfiguration;
+import net.aincraft.gui.UpgradeTreeGui;
 import net.aincraft.registry.Registry;
 import net.aincraft.registry.SimpleRegistryImpl;
 import net.aincraft.repository.ConnectionSource;
@@ -28,10 +29,17 @@ public final class UpgradeModule extends AbstractModule {
         .to(new TypeLiteral<SimpleRegistryImpl<UpgradeTree>>() {})
         .in(Singleton.class);
     bind(UpgradeService.class).to(UpgradeServiceImpl.class).in(Singleton.class);
+    bind(UpgradeTreeGui.class).in(Singleton.class);
 
-    // Register upgrade level-up listener
+    // Effect application services
+    bind(UpgradePermissionManager.class).in(Singleton.class);
+    bind(UpgradeEffectApplier.class).in(Singleton.class);
+
+    // Register upgrade listeners
     Multibinder<Listener> listenerBinder = Multibinder.newSetBinder(binder(), Listener.class);
     listenerBinder.addBinding().to(UpgradeLevelUpListener.class);
+    listenerBinder.addBinding().to(UpgradeTreeGui.class);
+    listenerBinder.addBinding().to(UpgradePermissionRestoreListener.class);
   }
 
   @Provides

@@ -28,8 +28,8 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
       .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE).build();
 
   private static final String GET_RECORDS_MAP = """
-      SELECT t.context_key, t.task_id, t.action_type_key, 
-             p.payable_type_key, p.amount, p.currency
+      SELECT t.context_key, t.task_id, t.action_type_key,
+             p.payable_type_key, p.amount, p.currency_identifier
       FROM job_tasks t
       LEFT JOIN job_task_payables p ON p.job_task_id = t.task_id
       WHERE t.job_key = ?
@@ -49,7 +49,7 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     }
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            "SELECT p.payable_type_key, p.amount, p.currency FROM job_task_payables p JOIN job_tasks t ON p.job_task_id = t.task_id WHERE t.job_key=? AND t.action_type_key=? AND t.context_key=?;")) {
+            "SELECT p.payable_type_key, p.amount, p.currency_identifier FROM job_task_payables p JOIN job_tasks t ON p.job_task_id = t.task_id WHERE t.job_key=? AND t.action_type_key=? AND t.context_key=?;")) {
       ps.setString(1, jobKey);
       ps.setString(2, actionTypeKey);
       ps.setString(3, contextKey);
@@ -58,7 +58,7 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
         while (rs.next()) {
           String payableTypeKey = rs.getString("payable_type_key");
           BigDecimal amount = rs.getBigDecimal("amount");
-          String currency = rs.getString("currency");
+          String currency = rs.getString("currency_identifier");
           PayableRecord record = new PayableRecord(payableTypeKey, amount, currency);
           records.add(record);
         }
@@ -205,7 +205,7 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
           String actionTypeKey = rs.getString("action_type_key");
           String payableTypeKey = rs.getString("payable_type_key");
           BigDecimal amount = rs.getBigDecimal("amount");
-          String currency = rs.getString("currency");
+          String currency = rs.getString("currency_identifier");
           String contextKey = rs.getString("context_key");
           Map<Integer, TaskRecordAccumulator> taskMap = actionTypeTaskMap.computeIfAbsent(
               actionTypeKey, ignored -> new LinkedHashMap<>());

@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.mint.Mint;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.List;
@@ -12,8 +13,6 @@ import net.aincraft.JobProgression;
 import net.aincraft.gui.PetSelectionGui;
 import net.aincraft.service.JobService;
 import net.aincraft.service.PetUpgradeService;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -49,7 +48,7 @@ final class UpgradeCommand implements JobsCommand {
                     CommandSourceStack source = context.getSource();
                     CommandSender sender = source.getSender();
                     if (!(sender instanceof Player player)) {
-                        sender.sendMessage("This command can only be used by players");
+                        Mint.sendMessage(sender, "<error>This command can only be used by players");
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -61,7 +60,7 @@ final class UpgradeCommand implements JobsCommand {
                     try {
                         job = jobService.getJob(jobKey.toString());
                     } catch (IllegalArgumentException e) {
-                        player.sendMessage(Component.text("Invalid job: " + jobName, NamedTextColor.RED));
+                        Mint.sendMessage(player, "<error>Invalid job: " + jobName);
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -76,11 +75,7 @@ final class UpgradeCommand implements JobsCommand {
                     }
 
                     if (playerProgression == null) {
-                        player.sendMessage(Component.text()
-                            .append(Component.text("You haven't joined the ", NamedTextColor.RED))
-                            .append(job.displayName())
-                            .append(Component.text(" job!", NamedTextColor.RED))
-                            .build());
+                        Mint.sendMessage(player, "<error>You haven't joined the " + job.displayName().toString() + " job!");
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -88,30 +83,23 @@ final class UpgradeCommand implements JobsCommand {
                     int currentLevel = playerProgression.level();
                     int upgradeLevel = job.upgradeLevel();
                     if (currentLevel < upgradeLevel) {
-                        player.sendMessage(Component.text()
-                            .append(Component.text("You need to reach level ", NamedTextColor.RED))
-                            .append(Component.text(String.valueOf(upgradeLevel), NamedTextColor.YELLOW))
-                            .append(Component.text(" to upgrade. Current: ", NamedTextColor.RED))
-                            .append(Component.text(String.valueOf(currentLevel), NamedTextColor.YELLOW))
-                            .build());
+                        Mint.sendMessage(player, "<error>You need to reach level <secondary>" + upgradeLevel
+                            + "<error> to upgrade. Current: <secondary>" + currentLevel);
                         return Command.SINGLE_SUCCESS;
                     }
 
                     // Check if available pets exist for this job
                     List<String> availablePets = petUpgradeService.getAvailablePets(jobKey.toString());
                     if (availablePets.isEmpty()) {
-                        player.sendMessage(Component.text("No pet upgrades available for this job.", NamedTextColor.RED));
+                        Mint.sendMessage(player, "<error>No pet upgrades available for this job.");
                         return Command.SINGLE_SUCCESS;
                     }
 
                     // Check if player already has a pet for this job
                     String existingPet = petUpgradeService.getSelectedPet(player.getUniqueId(), jobKey.toString());
                     if (existingPet != null) {
-                        player.sendMessage(Component.text()
-                            .append(Component.text("You already upgraded to: ", NamedTextColor.YELLOW))
-                            .append(Component.text(formatPetName(existingPet), NamedTextColor.GREEN))
-                            .build());
-                        player.sendMessage(Component.text("Job upgrades are permanent.", NamedTextColor.GRAY));
+                        Mint.sendMessage(player, "<info>You already upgraded to: <success>" + formatPetName(existingPet));
+                        Mint.sendMessage(player, "<neutral>Job upgrades are permanent.");
                         return Command.SINGLE_SUCCESS;
                     }
 
