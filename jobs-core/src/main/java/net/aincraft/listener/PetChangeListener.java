@@ -1,5 +1,7 @@
 package net.aincraft.listener;
 
+// DISABLED: JobPets dependency not available
+/*
 import com.aincraft.jobpets.api.event.PetChangeEvent;
 import com.google.inject.Inject;
 import java.util.List;
@@ -127,3 +129,4 @@ public final class PetChangeListener implements Listener {
     }
   }
 }
+*/
