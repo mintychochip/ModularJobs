@@ -62,7 +62,7 @@ final class JobProgressionImpl implements JobProgression {
     }
 
     int low = 1;
-    int level = INVALID_LEVEL;
+    int level = 1;
     while (low <= maxLevel) {
       int mid = (low + maxLevel) >>> 1;
       BigDecimal requiredXpForLevel = job.levelingCurve().evaluate(new Parameters(mid));

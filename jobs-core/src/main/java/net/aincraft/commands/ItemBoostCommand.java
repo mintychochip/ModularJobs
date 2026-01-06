@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.mint.Mint;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -16,7 +17,6 @@ import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.registry.Registry;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -100,7 +100,7 @@ public final class ItemBoostCommand implements JobsCommand {
     try {
       material = Material.valueOf(materialName.toUpperCase());
     } catch (IllegalArgumentException e) {
-      sender.sendMessage(Component.text("Invalid material: " + materialName, NamedTextColor.RED));
+      Mint.sendMessage(sender, "<error>Invalid material: " + materialName);
       return 0;
     }
 
@@ -108,7 +108,7 @@ public final class ItemBoostCommand implements JobsCommand {
     Key boostKey = Key.key(boostKeyStr);
     BoostSource boostSource = boostSourceRegistry.get(boostKey).orElse(null);
     if (boostSource == null) {
-      sender.sendMessage(Component.text("Boost source not found: " + boostKeyStr, NamedTextColor.RED));
+      Mint.sendMessage(sender, "<error>Boost source not found: " + boostKeyStr);
       return 0;
     }
 
@@ -117,7 +117,7 @@ public final class ItemBoostCommand implements JobsCommand {
     try {
       slotSet = SlotSetParser.parse(slotSetSpec);
     } catch (IllegalArgumentException e) {
-      sender.sendMessage(Component.text("Invalid slot specification: " + e.getMessage(), NamedTextColor.RED));
+      Mint.sendMessage(sender, "<error>Invalid slot specification: " + e.getMessage());
       return 0;
     }
 
@@ -128,20 +128,14 @@ public final class ItemBoostCommand implements JobsCommand {
 
     // Add lore
     item.lore(java.util.List.of(
-        Component.text("Boost: ", NamedTextColor.GRAY)
-            .append(Component.text(boostKeyStr, NamedTextColor.GOLD)),
-        Component.text("Slots: " + slotSetSpec, NamedTextColor.DARK_GRAY)
+        Component.text("Boost: " + boostKeyStr),
+        Component.text("Slots: " + slotSetSpec)
     ));
 
     // Give to player
     target.getInventory().addItem(item);
 
-    sender.sendMessage(
-        Component.text("Gave ", NamedTextColor.GREEN)
-            .append(Component.text(target.getName(), NamedTextColor.YELLOW))
-            .append(Component.text(" an item with boost ", NamedTextColor.GREEN))
-            .append(Component.text(boostKeyStr, NamedTextColor.GOLD))
-    );
+    Mint.sendMessage(sender, "<accent>Gave <secondary>" + target.getName() + "<accent> an item with boost <primary>" + boostKeyStr);
 
     return Command.SINGLE_SUCCESS;
   }

@@ -20,9 +20,7 @@ import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import dev.mintychochip.mint.Mint;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -46,54 +44,46 @@ public class BoostsCommand implements JobsCommand {
           CommandSourceStack source = context.getSource();
 
           if (!(source.getSender() instanceof Player player)) {
-            source.getSender().sendMessage(Component.text("This command can only be used by players.")
-                .color(NamedTextColor.RED));
+            Mint.sendMessage(source.getSender(), "<error>This command can only be used by players.");
             return 0;
           }
 
           // Header
-          player.sendMessage(Component.text("━━━━━━━━━ ", NamedTextColor.GRAY)
-              .append(Component.text("Active Boosts", NamedTextColor.GOLD, TextDecoration.BOLD))
-              .append(Component.text(" ━━━━━━━━━", NamedTextColor.GRAY)));
-          player.sendMessage(Component.empty());
+          Mint.sendMessage(player, "<neutral>━━━━━━━━━ <primary>Active Boosts<neutral> ━━━━━━━━━");
+          Mint.sendMessage(player, "");
 
           // Timed Boosts
           List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
               new PlayerTarget(player));
 
           if (!timedBoosts.isEmpty()) {
-            player.sendMessage(Component.text("⏰ Timed Boosts:", NamedTextColor.YELLOW));
+            Mint.sendMessage(player, "<secondary>⏰ Timed Boosts:");
             for (ActiveBoostData boost : timedBoosts) {
               String timeRemaining = getTimeRemaining(boost);
-              player.sendMessage(Component.text("  • ", NamedTextColor.GRAY)
-                  .append(Component.text(boost.boostSource().key().asString(), NamedTextColor.WHITE))
-                  .append(Component.text(" - " + timeRemaining, NamedTextColor.AQUA)));
+              Mint.sendMessage(player, "<neutral>  • <secondary>" + boost.boostSource().key().asString() + "<accent> - " + timeRemaining);
             }
-            player.sendMessage(Component.empty());
+            Mint.sendMessage(player, "");
           }
 
           // Passive Item Boosts
           List<PassiveBoostInfo> passiveBoosts = getPassiveBoosts(player);
 
           if (!passiveBoosts.isEmpty()) {
-            player.sendMessage(Component.text("\uD83D\uDEE1 Passive Boosts:", NamedTextColor.YELLOW));
+            Mint.sendMessage(player, "<secondary>🛡 Passive Boosts:");
             for (PassiveBoostInfo info : passiveBoosts) {
-              player.sendMessage(Component.text("  • ", NamedTextColor.GRAY)
-                  .append(Component.text(info.boostSource.key().asString(), NamedTextColor.WHITE))
-                  .append(Component.text(" (Slot " + info.slot + ")", NamedTextColor.DARK_GRAY)));
+              Mint.sendMessage(player, "<neutral>  • <secondary>" + info.boostSource.key().asString() + "<neutral> (Slot " + info.slot + ")");
             }
-            player.sendMessage(Component.empty());
+            Mint.sendMessage(player, "");
           }
 
           // No boosts message
           if (timedBoosts.isEmpty() && passiveBoosts.isEmpty()) {
-            player.sendMessage(Component.text("  You have no active boosts.", NamedTextColor.GRAY)
-                .append(Component.text(" ☹", NamedTextColor.DARK_GRAY)));
-            player.sendMessage(Component.empty());
+            Mint.sendMessage(player, "<neutral>  You have no active boosts. ☹");
+            Mint.sendMessage(player, "");
           }
 
           // Footer
-          player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
+          Mint.sendMessage(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
           return Command.SINGLE_SUCCESS;
         });

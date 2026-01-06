@@ -9,7 +9,11 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
 import net.aincraft.serialization.CodecRegistry;
@@ -21,6 +25,8 @@ final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepository {
   private final ConnectionSource connectionSource;
   private final Repository<String, ActiveBoostData> repository;
   private final CodecRegistry codecRegistry;
+  // Track boost keys per target to handle write-back cache delay
+  private final Map<String, Set<String>> knownBoostKeys = new ConcurrentHashMap<>();
 
   @Inject
   RelationalTimedBoostRepositoryImpl(Plugin plugin, ConnectionSource connectionSource,
@@ -96,29 +102,39 @@ final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepository {
 
   @Override
   public @NotNull List<ActiveBoostData> findAllBoosts(String targetIdentifier) {
+    Set<String> sourceIds = new HashSet<>();
+
+    // Get source IDs from database
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
             "SELECT source_id FROM time_boosts WHERE target_id = ?")) {
 
       ps.setString(1, targetIdentifier);
-      List<ActiveBoostData> boosts = new ArrayList<>();
-
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
-          String sourceIdentifier = rs.getString("source_id");
-          ActiveBoostData boost = repository.load(targetIdentifier + sourceIdentifier);
-          if (boost == null) {
-            continue;
-          }
-          boosts.add(boost);
+          sourceIds.add(rs.getString("source_id"));
         }
       }
-
-      return boosts;
-
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+
+    // Also include any locally tracked keys (handles write-back cache delay)
+    Set<String> localKeys = knownBoostKeys.get(targetIdentifier);
+    if (localKeys != null) {
+      sourceIds.addAll(localKeys);
+    }
+
+    // Load all boosts from repository (which checks cache first)
+    List<ActiveBoostData> boosts = new ArrayList<>();
+    for (String sourceId : sourceIds) {
+      ActiveBoostData boost = repository.load(targetIdentifier + sourceId);
+      if (boost != null) {
+        boosts.add(boost);
+      }
+    }
+
+    return boosts;
   }
 
   @Override
@@ -129,10 +145,18 @@ final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepository {
   @Override
   public void delete(String targetIdentifier, String sourceIdentifier) {
     repository.delete(targetIdentifier + sourceIdentifier);
+    // Remove from local tracking
+    Set<String> keys = knownBoostKeys.get(targetIdentifier);
+    if (keys != null) {
+      keys.remove(sourceIdentifier);
+    }
   }
 
   @Override
   public void addBoost(ActiveBoostData boost) {
     repository.save(boost.targetIdentifier() + boost.sourceIdentifier(), boost);
+    // Track locally so findAllBoosts works before cache flush
+    knownBoostKeys.computeIfAbsent(boost.targetIdentifier(), k -> ConcurrentHashMap.newKeySet())
+        .add(boost.sourceIdentifier());
   }
 }

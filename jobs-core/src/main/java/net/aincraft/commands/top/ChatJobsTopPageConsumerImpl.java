@@ -1,5 +1,6 @@
 package net.aincraft.commands.top;
 
+import dev.mintychochip.mint.Mint;
 import java.util.List;
 import net.aincraft.JobProgression;
 import net.aincraft.commands.Page;
@@ -11,6 +12,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
@@ -21,7 +23,8 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
   @Override
   public void consume(Component jobName, Page<JobProgression> page, CommandSender sender,
       int maxPages) {
-    sender.sendMessage(Component.text("Jobs Top ").append(jobName));
+    String jobNameText = PlainTextComponentSerializer.plainText().serialize(jobName);
+    Mint.sendMessage(sender, "<primary>Jobs Top </primary><accent>" + jobNameText + "</accent>");
     Component body = Component.empty();
     List<JobProgression> data = page.data();
     int pageNumber = page.pageNumber();

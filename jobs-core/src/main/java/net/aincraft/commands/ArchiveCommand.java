@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.mint.Mint;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.math.BigDecimal;
@@ -12,8 +13,6 @@ import java.util.List;
 import net.aincraft.JobProgression;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -42,8 +41,7 @@ public class ArchiveCommand implements JobsCommand {
               OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
 
               if (target == null) {
-                sender.sendMessage(Component.text("Player not found: " + playerName)
-                    .color(NamedTextColor.RED));
+                Mint.sendMessage(sender, "<error>Player not found: " + playerName);
                 return 0;
               }
 
@@ -57,8 +55,7 @@ public class ArchiveCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("This command can only be used by players.")
-                .color(NamedTextColor.RED));
+            Mint.sendMessage(sender, "<error>This command can only be used by players.");
             return 0;
           }
 
@@ -72,18 +69,14 @@ public class ArchiveCommand implements JobsCommand {
 
     // Header
     String targetName = target.getName() != null ? target.getName() : "Unknown";
-    Component headerText = viewer.equals(target)
-        ? Component.text("Your Archived Jobs", NamedTextColor.GOLD, TextDecoration.BOLD)
-        : Component.text(targetName + "'s Archived Jobs", NamedTextColor.GOLD, TextDecoration.BOLD);
+    String header = viewer.equals(target)
+        ? "<primary>Your Archived Jobs"
+        : "<primary>" + targetName + "'s Archived Jobs";
 
-    viewer.sendMessage(Component.text("━━━━━━━━━ ", NamedTextColor.GRAY)
-        .append(headerText)
-        .append(Component.text(" ━━━━━━━━━", NamedTextColor.GRAY)));
-    viewer.sendMessage(Component.empty());
+    Mint.sendMessage(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral>━━━━━━━━━");
 
     if (archivedProgressions.isEmpty()) {
-      viewer.sendMessage(Component.text("  No archived jobs found.", NamedTextColor.GRAY));
-      viewer.sendMessage(Component.empty());
+      Mint.sendMessage(viewer, "<neutral>  No archived jobs found.");
     } else {
       for (JobProgression progression : archivedProgressions) {
         displayJobEntry(viewer, progression);
@@ -91,22 +84,15 @@ public class ArchiveCommand implements JobsCommand {
     }
 
     // Footer
-    viewer.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
+    Mint.sendMessage(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   }
 
   private void displayJobEntry(CommandSender viewer, JobProgression progression) {
     int level = progression.level();
     BigDecimal experience = progression.experience();
 
-    viewer.sendMessage(Component.text("  ")
-        .append(progression.job().displayName())
-        .append(Component.text(" - Level ", NamedTextColor.GRAY))
-        .append(Component.text(level, NamedTextColor.GREEN)));
-
-    viewer.sendMessage(Component.text("    Total XP: ", NamedTextColor.GRAY)
-        .append(Component.text(formatNumber(experience), NamedTextColor.AQUA)));
-
-    viewer.sendMessage(Component.empty());
+    Mint.sendMessage(viewer, "  " + progression.job().getPlainName() + " <neutral>- Level <accent>" + level);
+    Mint.sendMessage(viewer, "    <neutral>Total XP: <accent>" + formatNumber(experience));
   }
 
   private String formatNumber(BigDecimal number) {

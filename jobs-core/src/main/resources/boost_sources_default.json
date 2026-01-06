@@ -141,6 +141,847 @@
           }
         }
       ]
+    },
+    "ocean_explorer_boost": {
+      "key": "modularjobs:ocean_explorer",
+      "description": "Deep sea diving rewards - Huge boost when underwater with water breathing",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "liquid",
+                "touching": true
+              },
+              {
+                "type": "potion_effect",
+                "effect": "water_breathing"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.5
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "biome",
+            "value": "ocean"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.5
+          }
+        }
+      ]
+    },
+    "desert_survivor_boost": {
+      "key": "modularjobs:desert_survivor",
+      "description": "Desert endurance bonus - Better rewards in hot biomes during day",
+      "policy": {
+        "type": "first"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "biome",
+                "value": "desert"
+              },
+              {
+                "type": "weather",
+                "value": "clear"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.0
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "biome",
+            "value": "badlands"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.8
+          }
+        }
+      ]
+    },
+    "hardcore_adrenaline_boost": {
+      "key": "modularjobs:hardcore_adrenaline",
+      "description": "Risk vs reward - Extreme boost at critical health",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "player_resource",
+            "resourceType": "health",
+            "operator": "less_than_or_equal",
+            "value": 4.0
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 5.0
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "player_resource",
+            "resourceType": "health",
+            "operator": "less_than_or_equal",
+            "value": 10.0
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.0
+          }
+        },
+        {
+          "priority": 10,
+          "conditions": {
+            "type": "always"
+          },
+          "boost": {
+            "type": "additive",
+            "amount": 10.0
+          }
+        }
+      ]
+    },
+    "speed_demon_boost": {
+      "key": "modularjobs:speed_demon",
+      "description": "Gotta go fast - Rewards for sprinting with speed effects",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "sprinting",
+                "value": true
+              },
+              {
+                "type": "potion_effect",
+                "effect": "speed"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.0
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "sprinting",
+            "value": true
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.3
+          }
+        }
+      ]
+    },
+    "end_conqueror_boost": {
+      "key": "modularjobs:end_conqueror",
+      "description": "End dimension mastery - Massive rewards in the End",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "world",
+            "value": "world_the_end"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 3.5
+          }
+        }
+      ]
+    },
+    "potion_master_boost": {
+      "key": "modularjobs:potion_master",
+      "description": "Alchemist's advantage - Stacking bonuses for multiple effects",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "potion_effect",
+            "effect": "regeneration"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.5
+          }
+        },
+        {
+          "priority": 90,
+          "conditions": {
+            "type": "potion_effect",
+            "effect": "absorption"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.4
+          }
+        },
+        {
+          "priority": 80,
+          "conditions": {
+            "type": "potion_effect",
+            "effect": "resistance"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.3
+          }
+        }
+      ]
+    },
+    "stealth_operative_boost": {
+      "key": "modularjobs:stealth_operative",
+      "description": "Sneaky profits - Enhanced rewards for sneaking with invisibility",
+      "policy": {
+        "type": "first"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "sneaking",
+                "value": true
+              },
+              {
+                "type": "potion_effect",
+                "effect": "invisibility"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 3.0
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "sneaking",
+            "value": true
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.5
+          }
+        }
+      ]
+    },
+    "full_belly_boost": {
+      "key": "modularjobs:full_belly",
+      "description": "Well fed worker - Better performance when satiated",
+      "policy": {
+        "type": "first"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "player_resource",
+            "resourceType": "food_level",
+            "operator": "greater_than_or_equal",
+            "value": 18.0
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.8
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "player_resource",
+            "resourceType": "food_level",
+            "operator": "greater_than_or_equal",
+            "value": 12.0
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.3
+          }
+        }
+      ]
+    },
+    "rainy_day_boost": {
+      "key": "modularjobs:rainy_day",
+      "description": "Weather worker - Rewards for working in the rain",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "not",
+            "condition": {
+              "type": "weather",
+              "value": "clear"
+            }
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.6
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "always"
+          },
+          "boost": {
+            "type": "additive",
+            "amount": 5.0
+          }
+        }
+      ]
+    },
+    "extreme_conditions_boost": {
+      "key": "modularjobs:extreme_conditions",
+      "description": "Ultimate survivor - Massive rewards for working under extreme conditions",
+      "policy": {
+        "type": "top_k",
+        "k": 3
+      },
+      "rules": [
+        {
+          "priority": 150,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "world",
+                    "value": "world_nether"
+                  },
+                  {
+                    "type": "world",
+                    "value": "world_the_end"
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "player_resource",
+                    "resourceType": "health",
+                    "operator": "less_than_or_equal",
+                    "value": 8.0
+                  },
+                  {
+                    "type": "player_resource",
+                    "resourceType": "food_level",
+                    "operator": "less_than_or_equal",
+                    "value": 10.0
+                  }
+                ]
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 10.0
+          }
+        },
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "liquid",
+                    "touching": true
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "potion_effect",
+                      "effect": "water_breathing"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "biome",
+                    "value": "desert"
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "potion_effect",
+                      "effect": "fire_resistance"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 3.5
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "weather",
+                "value": "raining"
+              },
+              {
+                "type": "sprinting",
+                "value": true
+              },
+              {
+                "type": "player_resource",
+                "resourceType": "food_level",
+                "operator": "greater_than_or_equal",
+                "value": 15.0
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.5
+          }
+        }
+      ]
+    },
+    "tactical_advantage_boost": {
+      "key": "modularjobs:tactical_advantage",
+      "description": "Strategic gameplay - Complex conditions for skilled players",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 120,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "not",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "sprinting",
+                      "value": true
+                    },
+                    {
+                      "type": "sneaking",
+                      "value": false
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "potion_effect",
+                    "effect": "night_vision"
+                  },
+                  {
+                    "type": "potion_effect",
+                    "effect": "invisibility"
+                  }
+                ]
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 4.0
+          }
+        },
+        {
+          "priority": 80,
+          "conditions": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "biome",
+                    "value": "jungle"
+                  },
+                  {
+                    "type": "weather",
+                    "value": "raining"
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "biome",
+                    "value": "ice_spikes"
+                  },
+                  {
+                    "type": "weather",
+                    "value": "clear"
+                  }
+                ]
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.2
+          }
+        }
+      ]
+    },
+    "perfectionist_boost": {
+      "key": "modularjobs:perfectionist",
+      "description": "Peak performance - Requires full health, food, and beneficial effects",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 200,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "player_resource",
+                    "resourceType": "health",
+                    "operator": "greater_than_or_equal",
+                    "value": 20.0
+                  },
+                  {
+                    "type": "player_resource",
+                    "resourceType": "food_level",
+                    "operator": "greater_than_or_equal",
+                    "value": 20.0
+                  }
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "potion_effect",
+                        "effect": "strength"
+                      },
+                      {
+                        "type": "potion_effect",
+                        "effect": "speed"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "potion_effect",
+                        "effect": "haste"
+                      },
+                      {
+                        "type": "potion_effect",
+                        "effect": "regeneration"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 5.0
+          }
+        },
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "player_resource",
+                "resourceType": "health",
+                "operator": "equal",
+                "value": 20.0
+              },
+              {
+                "type": "player_resource",
+                "resourceType": "food_level",
+                "operator": "equal",
+                "value": 20.0
+              }
+            ]
+          },
+          "boost": {
+            "type": "additive",
+            "amount": 100.0
+          }
+        }
+      ]
+    },
+    "dimensional_traveler_boost": {
+      "key": "modularjobs:dimensional_traveler",
+      "description": "Multiverse mastery - Different bonuses across dimensions",
+      "policy": {
+        "type": "first"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "world",
+                "value": "world_the_end"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "potion_effect",
+                      "effect": "levitation"
+                    },
+                    {
+                      "type": "potion_effect",
+                      "effect": "slow_falling"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 6.0
+          }
+        },
+        {
+          "priority": 90,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "world",
+                "value": "world_nether"
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "potion_effect",
+                    "effect": "fire_resistance"
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "liquid",
+                      "touching": true
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 4.5
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "not",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "world",
+                      "value": "world_nether"
+                    },
+                    {
+                      "type": "world",
+                      "value": "world_the_end"
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "biome",
+                    "value": "plains"
+                  },
+                  {
+                    "type": "biome",
+                    "value": "forest"
+                  }
+                ]
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.5
+          }
+        }
+      ]
+    },
+    "miner_specialist_boost": {
+      "key": "modularjobs:miner_specialist",
+      "description": "Dedicated miner bonus - Enhanced rewards for miner job only",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "job",
+            "value": "modularjobs:miner"
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.0
+          }
+        }
+      ]
+    },
+    "combat_jobs_boost": {
+      "key": "modularjobs:combat_jobs",
+      "description": "Combat professions bonus - Applies to warrior, hunter, and mercenary jobs",
+      "policy": {
+        "type": "first"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "job",
+                "values": ["modularjobs:warrior", "modularjobs:hunter", "modularjobs:mercenary"]
+              },
+              {
+                "type": "world",
+                "value": "world_nether"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 3.0
+          }
+        },
+        {
+          "priority": 50,
+          "conditions": {
+            "type": "job",
+            "values": ["modularjobs:warrior", "modularjobs:hunter", "modularjobs:mercenary"]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 1.5
+          }
+        }
+      ]
+    },
+    "farmer_weather_boost": {
+      "key": "modularjobs:farmer_weather",
+      "description": "Farmer-specific weather bonus - Better rewards for farmers working in rain",
+      "policy": {
+        "type": "all_applicable"
+      },
+      "rules": [
+        {
+          "priority": 100,
+          "conditions": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "job",
+                "value": "modularjobs:farmer"
+              },
+              {
+                "type": "weather",
+                "value": "raining"
+              }
+            ]
+          },
+          "boost": {
+            "type": "multiplicative",
+            "amount": 2.5
+          }
+        }
+      ]
     }
   }
 }

@@ -71,6 +71,21 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
             data.boostSource()));
   }
 
+  @Override
+  public boolean removeBoost(Target target, String sourceIdentifier) {
+    String targetIdentifier = target instanceof PlayerTarget playerTarget
+        ? playerTarget.player().getUniqueId().toString()
+        : GLOBAL_IDENTIFIER;
+
+    ActiveBoostData existing = timedBoostRepository.findBoost(targetIdentifier, sourceIdentifier);
+    if (existing == null) {
+      return false;
+    }
+
+    timedBoostRepository.delete(targetIdentifier, sourceIdentifier);
+    return true;
+  }
+
   private static String getPlayerIdentifier(PlayerTarget playerTarget) {
     Player player = playerTarget.player();
     UUID uniqueId = player.getUniqueId();

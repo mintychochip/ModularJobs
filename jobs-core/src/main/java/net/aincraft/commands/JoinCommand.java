@@ -4,13 +4,12 @@ import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.mint.Mint;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Job;
 import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -38,8 +37,7 @@ final class JoinCommand implements JobsCommand {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
           if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("This command can only be used by players.")
-                .color(NamedTextColor.RED));
+            Mint.sendMessage(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -52,25 +50,17 @@ final class JoinCommand implements JobsCommand {
             // Try fuzzy matching for suggestions
             List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-            if (suggestions.isEmpty()) {
-              player.sendMessage(Component.text("Job not found: " + input)
-                  .color(NamedTextColor.RED));
-            } else {
-              player.sendMessage(Component.text("Job not found: " + input)
-                  .color(NamedTextColor.RED));
-              player.sendMessage(Component.text("Did you mean: " + String.join(", ", suggestions))
-                  .color(NamedTextColor.GRAY));
+            Mint.sendMessage(player, "<error>Job not found: " + input);
+            if (!suggestions.isEmpty()) {
+              Mint.sendMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
             }
             return 0;
           }
 
           if (jobService.joinJob(player.getUniqueId().toString(), job.key().toString())) {
-            player.sendMessage(Component.text("You joined: ")
-                .color(NamedTextColor.GREEN)
-                .append(job.displayName()));
+            Mint.sendMessage(player, "<accent>You joined: " + job.getPlainName());
           } else {
-            player.sendMessage(Component.text("You are already in this job.")
-                .color(NamedTextColor.YELLOW));
+            Mint.sendMessage(player, "<secondary>You are already in this job.");
           }
 
           return Command.SINGLE_SUCCESS;

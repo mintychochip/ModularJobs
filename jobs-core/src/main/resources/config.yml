@@ -5,3 +5,13 @@ pay-in-creative: true
 pay-while-riding: false
 
 trackable_entities:
+
+# Color scheme for all command outputs
+# Supports hex colors (e.g., #FFD700)
+colors:
+  primary: "#FFD700"      # Main highlights (titles, keys)
+  secondary: "#FFFF00"    # Secondary highlights (values)
+  accent: "#00FFFF"       # Accent colors (types)
+  tertiary: "#FF00FF"     # Tertiary colors (special info)
+  neutral: "#808080"      # Neutral/gray text (labels, borders)
+  error: "#FF0000"        # Error messages

@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import dev.mintychochip.mint.Mint;
 import net.aincraft.Job;
 import net.aincraft.JobTask;
 import net.aincraft.container.ActionType;
@@ -28,9 +29,7 @@ import net.aincraft.service.JobService;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -74,15 +73,13 @@ public class InfoCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      sender.sendMessage(Component.text("This command can only be used by players.")
-          .color(NamedTextColor.RED));
+      Mint.sendMessage(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      sender.sendMessage(Component.text("The job you specified does not exist.")
-          .color(NamedTextColor.RED));
+      Mint.sendMessage(sender, "<error>The job you specified does not exist.");
       return 0;
     }
 
@@ -90,12 +87,11 @@ public class InfoCommand implements JobsCommand {
     int totalPages = calculateTotalPages(tasks);
 
     if (page < 1 || page > totalPages) {
-      player.sendMessage(Component.text("Invalid page. Valid: 1-" + totalPages)
-          .color(NamedTextColor.RED));
+      Mint.sendMessage(player, "<error>Invalid page. Valid: 1-" + totalPages);
       return 0;
     }
 
-    Dialog dialog = buildDialog(job, tasks, page, jobService, jobResolver);
+    Dialog dialog = buildDialog(job, tasks, page);
     player.showDialog(dialog);
 
     return Command.SINGLE_SUCCESS;
@@ -105,8 +101,7 @@ public class InfoCommand implements JobsCommand {
     return Math.max(1, (int) Math.ceil((double) tasks.size() / ACTION_TYPES_PER_PAGE));
   }
 
-  public static Dialog buildDialog(Job job, Map<ActionType, List<JobTask>> tasks, int page,
-      JobService jobService, JobResolver jobResolver) {
+  public Dialog buildDialog(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
     DialogBase dialogBase = buildDialogBase(job, tasks, page);
 
     int totalPages = calculateTotalPages(tasks);
@@ -152,19 +147,19 @@ public class InfoCommand implements JobsCommand {
     );
   }
 
-  private static ActionButton createNavigationButton(String label, TextColor color,
+  private ActionButton createNavigationButton(String label, TextColor color,
       String tooltip, Key actionKey, String jobName, int currentPage) {
     BinaryTagHolder data = encodeNavigationData(jobName, currentPage);
     return ActionButton.builder(Component.text(label, color))
-        .tooltip(Component.text(tooltip, NamedTextColor.GRAY))
+        .tooltip(Component.text(tooltip, TextColor.color(0xAEB4BF)))
         .width(300)
         .action(DialogAction.customClick(actionKey, data))
         .build();
   }
 
-  private static ActionButton createDisabledButton(String label, String tooltip) {
-    return ActionButton.builder(Component.text(label, NamedTextColor.DARK_GRAY))
-        .tooltip(Component.text(tooltip, NamedTextColor.GRAY))
+  private ActionButton createDisabledButton(String label, String tooltip) {
+    return ActionButton.builder(Component.text(label, TextColor.color(0xAEB4BF)))
+        .tooltip(Component.text(tooltip, TextColor.color(0xAEB4BF)))
         .width(300)
         .action(null) // No action = disabled button
         .build();
@@ -176,12 +171,12 @@ public class InfoCommand implements JobsCommand {
     return BinaryTagHolder.binaryTagHolder(snbt);
   }
 
-  private static DialogBase buildDialogBase(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
+  private DialogBase buildDialogBase(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
     List<DialogBody> bodies = buildDialogBody(job, tasks, page);
 
     return DialogBase.create(
         Component.text()
-            .append(Component.text("Job Info: ", NamedTextColor.GRAY))
+            .append(Component.text("Job Info: ", TextColor.color(0xAEB4BF)))
             .append(job.displayName())
             .build(),
         null,
@@ -193,7 +188,7 @@ public class InfoCommand implements JobsCommand {
     );
   }
 
-  private static List<DialogBody> buildDialogBody(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
+  private List<DialogBody> buildDialogBody(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
     List<DialogBody> bodies = new ArrayList<>();
 
     // Header
@@ -216,26 +211,26 @@ public class InfoCommand implements JobsCommand {
     return bodies;
   }
 
-  private static PlainMessageDialogBody buildJobHeader(Job job) {
+  private PlainMessageDialogBody buildJobHeader(Job job) {
     Component header = Component.text()
-        .append(job.displayName().decoration(TextDecoration.BOLD, true))
+        .append(job.displayName())
         .append(Component.newline())
-        .append(job.description().color(NamedTextColor.GRAY))
+        .append(job.description().color(TextColor.color(0xAEB4BF)))
         .append(Component.newline())
-        .append(Component.text("Max Level: ", NamedTextColor.GRAY))
-        .append(Component.text(job.maxLevel(), NamedTextColor.GREEN))
+        .append(Component.text("Max Level: ", TextColor.color(0xAEB4BF)))
+        .append(Component.text(job.maxLevel(), TextColor.color(0xFF8600)))
         .build();
 
     return DialogBody.plainMessage(header, DIALOG_WIDTH);
   }
 
-  private static List<DialogBody> buildActionTypeSection(ActionType type, List<JobTask> tasks) {
+  private List<DialogBody> buildActionTypeSection(ActionType type, List<JobTask> tasks) {
     List<DialogBody> bodies = new ArrayList<>();
 
     Component header = Component.text()
-        .append(Component.text("━━ ", NamedTextColor.DARK_GRAY))
-        .append(Component.text(formatActionTypeName(type.name()), NamedTextColor.GOLD))
-        .append(Component.text(" ━━", NamedTextColor.DARK_GRAY))
+        .append(Component.text("━━ ", TextColor.color(0xAEB4BF)))
+        .append(Component.text(formatActionTypeName(type.name()), TextColor.color(0x3FB3D5)))
+        .append(Component.text(" ━━", TextColor.color(0xAEB4BF)))
         .build();
     bodies.add(DialogBody.plainMessage(header, DIALOG_WIDTH));
 
@@ -247,28 +242,28 @@ public class InfoCommand implements JobsCommand {
     return bodies;
   }
 
-  private static DialogBody buildTaskEntry(JobTask task) {
+  private DialogBody buildTaskEntry(JobTask task) {
     return DialogBody.plainMessage(
         Component.text()
-            .append(Component.text("  ● ", NamedTextColor.GRAY))
-            .append(Component.text(formatContextKey(task.contextKey()), NamedTextColor.WHITE))
-            .append(Component.text(" → ", NamedTextColor.DARK_GRAY))
+            .append(Component.text("  ● ", TextColor.color(0xAEB4BF)))
+            .append(Component.text(formatContextKey(task.contextKey()), TextColor.color(0xA1E0E0)))
+            .append(Component.text(" → ", TextColor.color(0xAEB4BF)))
             .append(buildPayableComponent(task.payables()))
             .build(),
         DIALOG_WIDTH
     );
   }
 
-  private static Component buildPayableComponent(List<Payable> payables) {
+  private Component buildPayableComponent(List<Payable> payables) {
     if (payables.isEmpty()) {
-      return Component.text("No rewards", NamedTextColor.GRAY);
+      return Component.text("No rewards", TextColor.color(0xAEB4BF));
     }
 
     Component result = Component.empty();
     for (int i = 0; i < payables.size(); i++) {
       result = result.append(payables.get(i).asComponent());
       if (i < payables.size() - 1) {
-        result = result.append(Component.text(", ", NamedTextColor.GRAY));
+        result = result.append(Component.text(", ", TextColor.color(0xAEB4BF)));
       }
     }
     return result;

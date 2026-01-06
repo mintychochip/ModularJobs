@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.mint.Mint;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Bridge;
@@ -12,7 +13,6 @@ import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
@@ -55,8 +55,7 @@ final class EditorCommand implements JobsCommand {
               CommandSender sender = source.getSender();
 
               if (!(sender instanceof Player player)) {
-                sender.sendMessage(Component.text("This command can only be used by players.")
-                    .color(NamedTextColor.RED));
+                Mint.sendMessage(sender, "<error>This command can only be used by players.");
                 return Command.SINGLE_SUCCESS;
               }
 
@@ -69,14 +68,9 @@ final class EditorCommand implements JobsCommand {
                 // Try fuzzy matching for suggestions
                 java.util.List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-                if (suggestions.isEmpty()) {
-                  player.sendMessage(Component.text("Job not found: " + input)
-                      .color(NamedTextColor.RED));
-                } else {
-                  player.sendMessage(Component.text("Job not found: " + input)
-                      .color(NamedTextColor.RED));
-                  player.sendMessage(Component.text("Did you mean: " + String.join(", ", suggestions))
-                      .color(NamedTextColor.GRAY));
+                Mint.sendMessage(player, "<error>Job not found: " + input);
+                if (!suggestions.isEmpty()) {
+                  Mint.sendMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
                 }
                 return 0;
               }
@@ -90,8 +84,7 @@ final class EditorCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("This command can only be used by players.")
-                .color(NamedTextColor.RED));
+            Mint.sendMessage(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -107,17 +100,14 @@ final class EditorCommand implements JobsCommand {
    * @param jobKey the job key to export, or null to export all jobs
    */
   private void handleExport(Player player, String jobKey) {
-    player.sendMessage(Component.text("Exporting job data to web editor...")
-        .color(NamedTextColor.GRAY));
+    Mint.sendMessage(player, "<neutral>Exporting job data to web editor...");
 
     editorService.exportTasks(jobKey, player.getUniqueId())
         .thenAccept(result -> {
           // Run on main thread to safely send messages
           Bukkit.getScheduler().runTask(Bridge.bridge().plugin(), () -> {
             Component message = Component.text("Click to open editor: ")
-                .color(NamedTextColor.GREEN)
                 .append(Component.text(result.webEditorUrl())
-                    .color(NamedTextColor.AQUA)
                     .clickEvent(ClickEvent.openUrl(result.webEditorUrl())));
 
             player.sendMessage(message);
@@ -126,8 +116,7 @@ final class EditorCommand implements JobsCommand {
         .exceptionally(throwable -> {
           // Run on main thread to safely send messages
           Bukkit.getScheduler().runTask(Bridge.bridge().plugin(), () -> {
-            player.sendMessage(Component.text("Failed to export job data: " + throwable.getMessage())
-                .color(NamedTextColor.RED));
+            Mint.sendMessage(player, "<error>Failed to export job data: " + throwable.getMessage());
           });
           return null;
         });

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import net.aincraft.boost.conditions.BiomeConditionImpl;
 import net.aincraft.boost.conditions.ComposableConditionImpl;
+import net.aincraft.boost.conditions.JobConditionImpl;
 import net.aincraft.boost.conditions.LiquidConditionImpl;
 import net.aincraft.boost.conditions.NegatingConditionImpl;
 import net.aincraft.boost.conditions.PlayerResourceConditionImpl;
@@ -104,6 +105,16 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory, P
   @Override
   public Condition weather(WeatherState state) {
     return new WeatherConditionImpl(state);
+  }
+
+  @Override
+  public Condition job(String jobKey) {
+    return new JobConditionImpl(jobKey);
+  }
+
+  @Override
+  public Condition jobAny(String... jobKeys) {
+    return new JobConditionImpl(jobKeys);
   }
 
   @Override
