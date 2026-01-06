@@ -39,4 +39,13 @@ public interface TimedBoostDataService {
 
   <T extends TimedBoostData & SerializableBoostData> void addData(T data, Target target);
 
+  /**
+   * Remove a timed boost from a target.
+   *
+   * @param target           the target (player or global)
+   * @param sourceIdentifier the boost source key string
+   * @return true if a boost was removed, false otherwise
+   */
+  boolean removeBoost(Target target, String sourceIdentifier);
+
 }

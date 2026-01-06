@@ -42,4 +42,8 @@ public interface ConditionFactory {
   Condition compose(Condition a, Condition b, LogicalOperator operator);
 
   Condition weather(WeatherState state);
+
+  Condition job(String jobKey);
+
+  Condition jobAny(String... jobKeys);
 }

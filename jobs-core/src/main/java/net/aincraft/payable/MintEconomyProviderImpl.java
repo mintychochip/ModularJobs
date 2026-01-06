@@ -1,5 +1,6 @@
 package net.aincraft.payable;
 
+import dev.mintychochip.mint.EconomyService;
 import dev.mintychochip.mint.Service;
 import dev.mintychochip.mint.ServiceHolder;
 import java.math.BigDecimal;
@@ -14,10 +15,10 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 final class MintEconomyProviderImpl implements EconomyProvider {
 
   private static final Logger LOGGER = Logger.getLogger(MintEconomyProviderImpl.class.getName());
-  private final ServiceHolder<Service> mintService;
+  private final ServiceHolder<EconomyService> mintService;
   private boolean checkedService = false;
 
-  MintEconomyProviderImpl(ServiceHolder<Service> mintService) {
+  MintEconomyProviderImpl(ServiceHolder<EconomyService> mintService) {
     this.mintService = mintService;
   }
 
@@ -32,6 +33,7 @@ final class MintEconomyProviderImpl implements EconomyProvider {
     LOGGER.info("Attempting to deposit " + amount + " to player " + player.getName());
     try {
       // Just deposit directly - let Choco handle account creation like /eco give does
+
       BigDecimal result = mintService.get().deposit(player.getUniqueId(), amount).join();
       LOGGER.info("Deposit result: " + result);
 

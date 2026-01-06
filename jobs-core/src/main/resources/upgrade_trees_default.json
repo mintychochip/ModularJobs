@@ -1,0 +1,163 @@
+{
+  "upgrade_trees": {
+    "miner": {
+      "job": "miner",
+      "skill_points_per_level": 1,
+      "root": "mining_basics",
+      "nodes": {
+        "mining_basics": {
+          "name": "Mining Basics",
+          "description": "The foundation of all mining knowledge",
+          "icon": "WOODEN_PICKAXE",
+          "cost": 0,
+          "children": ["efficiency_1", "fortune_1", "speed_1"],
+          "position": {"x": 4, "y": 0}
+        },
+        "efficiency_1": {
+          "name": "Efficiency I",
+          "description": "Gain 10% more XP from mining",
+          "icon": "IRON_PICKAXE",
+          "cost": 1,
+          "prerequisites": ["mining_basics"],
+          "children": ["efficiency_2"],
+          "effects": [
+            {"type": "boost", "target": "xp", "amount": 1.1}
+          ],
+          "position": {"x": 2, "y": 1}
+        },
+        "efficiency_2": {
+          "name": "Efficiency II",
+          "description": "Gain 20% more XP from mining",
+          "icon": "GOLDEN_PICKAXE",
+          "cost": 2,
+          "prerequisites": ["efficiency_1"],
+          "children": ["specialization_excavator", "specialization_prospector"],
+          "effects": [
+            {"type": "boost", "target": "xp", "amount": 1.2}
+          ],
+          "position": {"x": 2, "y": 2}
+        },
+        "fortune_1": {
+          "name": "Fortune I",
+          "description": "Earn 10% more money from mining",
+          "icon": "DIAMOND",
+          "cost": 1,
+          "prerequisites": ["mining_basics"],
+          "children": ["fortune_2"],
+          "effects": [
+            {"type": "boost", "target": "money", "amount": 1.1}
+          ],
+          "position": {"x": 4, "y": 1}
+        },
+        "fortune_2": {
+          "name": "Fortune II",
+          "description": "Earn 20% more money from mining",
+          "icon": "DIAMOND_BLOCK",
+          "cost": 2,
+          "prerequisites": ["fortune_1"],
+          "children": ["specialization_excavator", "specialization_prospector"],
+          "effects": [
+            {"type": "boost", "target": "money", "amount": 1.2}
+          ],
+          "position": {"x": 4, "y": 2}
+        },
+        "speed_1": {
+          "name": "Swift Miner I",
+          "description": "Move faster while mining",
+          "icon": "FEATHER",
+          "cost": 1,
+          "prerequisites": ["mining_basics"],
+          "children": ["speed_2"],
+          "effects": [
+            {"type": "passive", "ability": "speed_boost", "description": "5% movement speed while mining"}
+          ],
+          "position": {"x": 6, "y": 1}
+        },
+        "speed_2": {
+          "name": "Swift Miner II",
+          "description": "Move even faster while mining",
+          "icon": "RABBIT_FOOT",
+          "cost": 2,
+          "prerequisites": ["speed_1"],
+          "children": ["specialization_excavator", "specialization_prospector"],
+          "effects": [
+            {"type": "passive", "ability": "speed_boost", "description": "10% movement speed while mining"}
+          ],
+          "position": {"x": 6, "y": 2}
+        },
+        "specialization_excavator": {
+          "name": "Excavator",
+          "description": "Specialize in mass mining operations",
+          "icon": "TNT",
+          "cost": 5,
+          "type": "major",
+          "prerequisites": ["efficiency_2", "fortune_2", "speed_2"],
+          "exclusive": ["specialization_prospector"],
+          "children": ["tunnel_bore", "aoe_mining"],
+          "effects": [
+            {"type": "passive", "ability": "excavator", "description": "Unlock excavation abilities"}
+          ],
+          "position": {"x": 3, "y": 4}
+        },
+        "specialization_prospector": {
+          "name": "Prospector",
+          "description": "Specialize in finding rare materials",
+          "icon": "SPYGLASS",
+          "cost": 5,
+          "type": "major",
+          "prerequisites": ["efficiency_2", "fortune_2", "speed_2"],
+          "exclusive": ["specialization_excavator"],
+          "children": ["ore_sense", "gem_finder"],
+          "effects": [
+            {"type": "passive", "ability": "prospector", "description": "Unlock prospecting abilities"}
+          ],
+          "position": {"x": 5, "y": 4}
+        },
+        "tunnel_bore": {
+          "name": "Tunnel Bore",
+          "description": "Mine in a 3x3 area",
+          "icon": "PISTON",
+          "cost": 3,
+          "prerequisites": ["specialization_excavator"],
+          "effects": [
+            {"type": "passive", "ability": "tunnel_bore", "description": "3x3 mining area"}
+          ],
+          "position": {"x": 2, "y": 5}
+        },
+        "aoe_mining": {
+          "name": "Explosive Mining",
+          "description": "Chance to break nearby blocks",
+          "icon": "FIRE_CHARGE",
+          "cost": 3,
+          "prerequisites": ["specialization_excavator"],
+          "effects": [
+            {"type": "passive", "ability": "explosive", "description": "15% chance to break adjacent blocks"}
+          ],
+          "position": {"x": 4, "y": 5}
+        },
+        "ore_sense": {
+          "name": "Ore Sense",
+          "description": "Nearby ores glow through walls",
+          "icon": "ENDER_EYE",
+          "cost": 3,
+          "prerequisites": ["specialization_prospector"],
+          "effects": [
+            {"type": "passive", "ability": "ore_sense", "description": "See ores within 10 blocks"}
+          ],
+          "position": {"x": 4, "y": 5}
+        },
+        "gem_finder": {
+          "name": "Gem Finder",
+          "description": "Increased rare drop rates",
+          "icon": "EMERALD",
+          "cost": 3,
+          "prerequisites": ["specialization_prospector"],
+          "effects": [
+            {"type": "boost", "target": "money", "amount": 1.5}
+          ],
+          "position": {"x": 6, "y": 5}
+        }
+      }
+    }
+  }
+}
