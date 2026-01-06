@@ -17,6 +17,7 @@ import net.aincraft.registry.RegistryModule;
 import net.aincraft.repository.RepositoryModule;
 import net.aincraft.serialization.SerializationModule;
 import net.aincraft.service.ServiceModule;
+import net.aincraft.upgrade.UpgradeModule;
 import net.aincraft.util.UtilModule;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -49,6 +50,7 @@ public final class PluginModule extends AbstractModule {
     install(new BoostModule());
     install(new BoostSourceModule());
     install(new EditorModule());
+    install(new UpgradeModule());
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       install(new PlaceholderAPIModule());
     }

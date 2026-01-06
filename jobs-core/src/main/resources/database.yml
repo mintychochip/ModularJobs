@@ -1,1 +1,12 @@
 payable:
+  type: sqlite
+  file-path: jobs.db
+timed-boost:
+  type: sqlite
+  file-path: jobs.db
+progression:
+  type: sqlite
+  file-path: jobs.db
+upgrades:
+  type: sqlite
+  file-path: jobs.db

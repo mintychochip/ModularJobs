@@ -40,6 +40,7 @@ public final class ConditionConfigParser {
       case "potion_effect" -> parsePotionEffect(config);
       case "liquid" -> parseLiquid(config);
       case "weather" -> parseWeather(config);
+      case "job" -> parseJob(config);
       case "and" -> parseComposite(config, LogicalOperator.AND);
       case "or" -> parseComposite(config, LogicalOperator.OR);
       case "not" -> parseNegation(config);
@@ -134,6 +135,24 @@ public final class ConditionConfigParser {
     String weatherStr = (String) config.value();
     WeatherState state = WeatherState.valueOf(weatherStr.toUpperCase());
     return conditionFactory.weather(state);
+  }
+
+  private Condition parseJob(ConditionConfig config) {
+    // Single job key
+    if (config.value() != null) {
+      String jobKey = (String) config.value();
+      return conditionFactory.job(jobKey);
+    }
+
+    // Multiple job keys (any match)
+    if (config.values() != null) {
+      String[] jobKeys = config.values().stream()
+          .map(String::valueOf)
+          .toArray(String[]::new);
+      return conditionFactory.jobAny(jobKeys);
+    }
+
+    throw new IllegalArgumentException("job condition requires 'value' or 'values'");
   }
 
   private Condition parseComposite(ConditionConfig config, LogicalOperator operator) {

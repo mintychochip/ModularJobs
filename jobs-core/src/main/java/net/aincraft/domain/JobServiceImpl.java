@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.JobTask;
+import net.aincraft.LevelingCurve;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Context;
 import net.aincraft.domain.model.JobProgressionRecord;
@@ -113,8 +114,10 @@ final class JobServiceImpl implements JobService {
       return true;
     }
     if (record == null) {
+      Job job = jobMapper.toDomain(jobRecord);
+      BigDecimal startExperience = job.levelingCurve().evaluate(new LevelingCurve.Parameters(1));
       return progressionService.save(
-          new JobProgressionRecord(playerId, jobRecord, BigDecimal.ZERO));
+          new JobProgressionRecord(playerId, jobRecord, startExperience));
     }
     return false;
   }

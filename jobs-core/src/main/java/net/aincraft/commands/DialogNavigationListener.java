@@ -27,14 +27,16 @@ public class DialogNavigationListener implements Listener {
 
   private final JobService jobService;
   private final JobResolver jobResolver;
+  private final InfoCommand infoCommand;
   private static final String NAMESPACE = "modularjobs";
   private static final Key NEXT_KEY = Key.key(NAMESPACE, "info/next");
   private static final Key PREV_KEY = Key.key(NAMESPACE, "info/prev");
 
   @Inject
-  public DialogNavigationListener(JobService jobService, JobResolver jobResolver) {
+  public DialogNavigationListener(JobService jobService, JobResolver jobResolver, InfoCommand infoCommand) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
+    this.infoCommand = infoCommand;
   }
 
   private static final Pattern JOB_NAME_PATTERN = Pattern.compile("jobName:\"([^\"]+)\"");
@@ -75,7 +77,7 @@ public class DialogNavigationListener implements Listener {
     }
 
     Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
-    int totalPages = InfoCommand.calculateTotalPages(tasks);
+    int totalPages = infoCommand.calculateTotalPages(tasks);
 
     int newPage = clickKey.equals(NEXT_KEY) ? currentPage + 1 : currentPage - 1;
 
@@ -83,7 +85,7 @@ public class DialogNavigationListener implements Listener {
       return; // Invalid page, do nothing
     }
 
-    Dialog dialog = InfoCommand.buildDialog(job, tasks, newPage, jobService, jobResolver);
+    Dialog dialog = infoCommand.buildDialog(job, tasks, newPage);
     player.showDialog(dialog);
   }
 

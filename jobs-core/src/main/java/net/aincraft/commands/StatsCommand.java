@@ -9,13 +9,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import net.aincraft.JobProgression;
+import net.aincraft.config.ColorScheme;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import dev.mintychochip.mint.Mint;
 
 public class StatsCommand implements JobsCommand {
 
@@ -34,24 +35,19 @@ public class StatsCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("This command can only be used by players.")
-                .color(NamedTextColor.RED));
+            Mint.sendMessage(sender, "<error>This command can only be used by players.");
             return 0;
           }
 
           List<JobProgression> progressions = jobService.getProgressions(player);
 
           // Header
-          player.sendMessage(Component.text("━━━━━━━━━ ", NamedTextColor.GRAY)
-              .append(Component.text("Job Statistics", NamedTextColor.GOLD))
-              .append(Component.text(" ━━━━━━━━━", NamedTextColor.GRAY)));
+          Mint.sendMessage(player, "<neutral>━━━━━━━━━ <primary>Job Statistics<neutral> ━━━━━━━━━");
           player.sendMessage(Component.empty());
 
           if (progressions.isEmpty()) {
-            player.sendMessage(Component.text("  You are not in any jobs.", NamedTextColor.GRAY));
-            player.sendMessage(Component.text("  Use ", NamedTextColor.GRAY)
-                .append(Component.text("/jobs join", NamedTextColor.YELLOW))
-                .append(Component.text(" to join a job.", NamedTextColor.GRAY)));
+            Mint.sendMessage(player, "<neutral>  You are not in any jobs.");
+            Mint.sendMessage(player, "<neutral>  Use <secondary>/jobs join<neutral> to join a job.");
             player.sendMessage(Component.empty());
           } else {
             // Calculate max job name length for alignment
@@ -67,7 +63,7 @@ public class StatsCommand implements JobsCommand {
           }
 
           // Footer
-          player.sendMessage(Component.text("━━━━━━━━━━━━━━━━━━━━━━━━━━━", NamedTextColor.GRAY));
+          Mint.sendMessage(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
           return Command.SINGLE_SUCCESS;
         });
@@ -106,13 +102,13 @@ public class StatsCommand implements JobsCommand {
     // Bar on LEFT, job name on RIGHT - bars naturally align
     Component line = Component.text("  ")
         .append(createProgressBar(percentage))
-        .append(Component.text(" ", NamedTextColor.GRAY))
-        .append(Component.text(String.format("%.1f%%", percentage), NamedTextColor.YELLOW))
-        .append(Component.text(" (", NamedTextColor.GRAY))
-        .append(Component.text(xpCurrent, NamedTextColor.AQUA))
-        .append(Component.text("/", NamedTextColor.DARK_GRAY))
-        .append(Component.text(xpTotal, NamedTextColor.AQUA))
-        .append(Component.text(") ", NamedTextColor.GRAY))
+        .append(Component.text(" "))
+        .append(Component.text(String.format("%.1f%%", percentage)).color(TextColor.fromHexString("#FFFF00")))
+        .append(Component.text(" ("))
+        .append(Component.text(xpCurrent).color(TextColor.fromHexString("#00FFFF")))
+        .append(Component.text("/"))
+        .append(Component.text(xpTotal).color(TextColor.fromHexString("#00FFFF")))
+        .append(Component.text(") "))
         .append(progression.job().displayName())
         .hoverEvent(hoverInfo);
 
@@ -122,17 +118,17 @@ public class StatsCommand implements JobsCommand {
   private Component buildHoverMetadata(JobProgression progression, int currentLevel,
                                        BigDecimal currentXp, int maxLevel) {
     Component hover = Component.text()
-        .append(Component.text("Level: ", NamedTextColor.GRAY))
-        .append(Component.text(currentLevel, NamedTextColor.GREEN))
-        .append(Component.text(" / ", NamedTextColor.DARK_GRAY))
-        .append(Component.text(maxLevel, NamedTextColor.GREEN))
+        .append(Component.text("Level: ", TextColor.fromHexString("#808080")))
+        .append(Component.text(currentLevel, TextColor.fromHexString("#00FFFF")))
+        .append(Component.text(" / ", TextColor.fromHexString("#808080")))
+        .append(Component.text(maxLevel, TextColor.fromHexString("#00FFFF")))
         .append(Component.newline())
         .build();
 
     if (currentLevel >= maxLevel) {
-      hover = hover.append(Component.text("XP: ", NamedTextColor.GRAY))
-          .append(Component.text(formatNumber(currentXp), NamedTextColor.AQUA))
-          .append(Component.text(" (MAX)", NamedTextColor.GOLD));
+      hover = hover.append(Component.text("XP: ", TextColor.fromHexString("#808080")))
+          .append(Component.text(formatNumber(currentXp), TextColor.fromHexString("#00FFFF")))
+          .append(Component.text(" (MAX)", TextColor.fromHexString("#FFD700")));
     } else {
       BigDecimal currentLevelXp = progression.experienceForLevel(currentLevel);
       BigDecimal nextLevelXp = progression.experienceForLevel(currentLevel + 1);
@@ -145,50 +141,50 @@ public class StatsCommand implements JobsCommand {
           .doubleValue();
 
       hover = hover
-          .append(Component.text("XP: ", NamedTextColor.GRAY))
-          .append(Component.text(formatNumber(xpIntoLevel), NamedTextColor.AQUA))
-          .append(Component.text(" / ", NamedTextColor.DARK_GRAY))
-          .append(Component.text(formatNumber(xpNeeded), NamedTextColor.AQUA))
-          .append(Component.text(String.format(" (%.1f%%)", percentage), NamedTextColor.YELLOW))
+          .append(Component.text("XP: ", TextColor.fromHexString("#808080")))
+          .append(Component.text(formatNumber(xpIntoLevel), TextColor.fromHexString("#00FFFF")))
+          .append(Component.text(" / ", TextColor.fromHexString("#808080")))
+          .append(Component.text(formatNumber(xpNeeded), TextColor.fromHexString("#00FFFF")))
+          .append(Component.text(String.format(" (%.1f%%)", percentage), TextColor.fromHexString("#FFFF00")))
           .append(Component.newline())
-          .append(Component.text("Next Level: ", NamedTextColor.GRAY))
-          .append(Component.text(formatNumber(xpRemaining), NamedTextColor.GREEN))
-          .append(Component.text(" XP", NamedTextColor.GRAY));
+          .append(Component.text("Next Level: ", TextColor.fromHexString("#808080")))
+          .append(Component.text(formatNumber(xpRemaining), TextColor.fromHexString("#00FFFF")))
+          .append(Component.text(" XP", TextColor.fromHexString("#808080")));
     }
 
     return hover;
   }
 
   private Component createProgressBar(double percentage) {
-    int barLength = 20;  // Shorter bar for better alignment
+    int barLength = 20;
     int filled = (int) Math.round(percentage / 100.0 * barLength);
     filled = Math.min(barLength, Math.max(0, filled));
 
-    Component bar = Component.text("[", NamedTextColor.GRAY);
+    Component bar = Component.text("[", TextColor.fromHexString("#808080"));
 
     for (int i = 0; i < barLength; i++) {
       if (i < filled) {
         // Color gradient based on percentage
-        NamedTextColor color = getProgressColor(percentage);
-        bar = bar.append(Component.text("█", color));
+        TextColor color = getProgressColor(percentage);
+        bar = bar.append(Component.text("|", color));
       } else {
-        bar = bar.append(Component.text("█", NamedTextColor.DARK_GRAY));
+        bar = bar.append(Component.text("|", TextColor.fromHexString("#808080")));
       }
     }
 
-    bar = bar.append(Component.text("]", NamedTextColor.GRAY));
+    bar = bar.append(Component.text("]", TextColor.fromHexString("#808080")));
     return bar;
   }
 
-  private NamedTextColor getProgressColor(double percentage) {
+  private TextColor getProgressColor(double percentage) {
     if (percentage >= 75) {
-      return NamedTextColor.GREEN;
+      return TextColor.fromHexString("#00FFFF"); // accent
     } else if (percentage >= 50) {
-      return NamedTextColor.YELLOW;
+      return TextColor.fromHexString("#FFFF00"); // secondary
     } else if (percentage >= 25) {
-      return NamedTextColor.GOLD;
+      return TextColor.fromHexString("#FFD700"); // primary
     } else {
-      return NamedTextColor.RED;
+      return TextColor.fromHexString("#FF0000"); // error
     }
   }
 
