@@ -2,13 +2,10 @@ package net.aincraft;
 
 import com.google.inject.AbstractModule;
 import net.aincraft.boost.BoostModule;
-import net.aincraft.boost.BoostSourceModule;
 import net.aincraft.commands.CommandModule;
-import net.aincraft.editor.EditorModule;
 import net.aincraft.config.ConfigurationModule;
 import net.aincraft.domain.DomainModule;
 import net.aincraft.gui.GuiModule;
-import net.aincraft.listener.ListenerModule;
 import net.aincraft.math.MathModule;
 import net.aincraft.payable.PayableModule;
 // import net.aincraft.hooks.preferences.PreferenceModule; // Disabled - references missing Preferences plugin
@@ -19,7 +16,6 @@ import net.aincraft.registry.RegistryModule;
 import net.aincraft.repository.RepositoryModule;
 import net.aincraft.serialization.SerializationModule;
 import net.aincraft.service.ServiceModule;
-import net.aincraft.upgrade.UpgradeModule;
 import net.aincraft.util.UtilModule;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -44,7 +40,6 @@ public final class PluginModule extends AbstractModule {
     install(new RepositoryModule());
     install(new ServiceModule());
     install(new SerializationModule());
-    install(new ListenerModule());
     install(new UtilModule());
     install(new GuiModule());
     install(new CommandModule());
@@ -52,9 +47,6 @@ public final class PluginModule extends AbstractModule {
     install(new DomainModule());
     install(new MathModule());
     install(new BoostModule());
-    install(new BoostSourceModule());
-    install(new EditorModule());
-    install(new UpgradeModule());
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       install(new PlaceholderAPIModule());
     }

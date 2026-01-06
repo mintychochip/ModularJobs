@@ -65,6 +65,7 @@ final class BufferedExperienceHandlerImpl implements
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
     int newLevel = calculatedProgression.level();
 
+
     if (jobService.update(calculatedProgression) && player.isOnline()) {
       Player onlinePlayer = player.getPlayer();
 
