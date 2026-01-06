@@ -44,7 +44,8 @@ public record UpgradeTreeConfig(
       @Nullable String stat,
       @Nullable Integer value,
       @Nullable String unlock_type,
-      @Nullable String unlock_key
+      @Nullable String unlock_key,
+      @Nullable String permission
   ) {
   }
 

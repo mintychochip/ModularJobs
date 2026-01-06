@@ -2,13 +2,20 @@ package net.aincraft.upgrade;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import net.aincraft.JobProgression;
 import net.aincraft.registry.Registry;
+import net.aincraft.service.JobService;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,6 +26,8 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
   private final Registry<UpgradeTree> treeRegistry;
   private final PlayerUpgradeRepository repository;
+  private final JobService jobService;
+  private final UpgradeEffectApplier effectApplier;
 
   // In-memory cache: playerId -> jobKey -> data
   private final Map<String, Map<String, PlayerUpgradeDataImpl>> cache = new ConcurrentHashMap<>();
@@ -26,10 +35,14 @@ public final class UpgradeServiceImpl implements UpgradeService {
   @Inject
   public UpgradeServiceImpl(
       Registry<UpgradeTree> treeRegistry,
-      PlayerUpgradeRepository repository
+      PlayerUpgradeRepository repository,
+      JobService jobService,
+      UpgradeEffectApplier effectApplier
   ) {
     this.treeRegistry = treeRegistry;
     this.repository = repository;
+    this.jobService = jobService;
+    this.effectApplier = effectApplier;
   }
 
   @Override
@@ -37,6 +50,11 @@ public final class UpgradeServiceImpl implements UpgradeService {
     return treeRegistry.stream()
         .filter(tree -> tree.jobKey().equals(jobKey))
         .findFirst();
+  }
+
+  @Override
+  public @NotNull Collection<UpgradeTree> getAllTrees() {
+    return treeRegistry.stream().toList();
   }
 
   @Override
@@ -111,6 +129,13 @@ public final class UpgradeServiceImpl implements UpgradeService {
     // Unlock the node
     data.unlock(nodeKey);
 
+    // Apply effects if player is online
+    UUID uuid = UUID.fromString(playerId);
+    Player player = Bukkit.getPlayer(uuid);
+    if (player != null && player.isOnline()) {
+      effectApplier.applyNodeEffects(player, node);
+    }
+
     // Persist
     repository.savePlayerData(data);
 
@@ -129,9 +154,23 @@ public final class UpgradeServiceImpl implements UpgradeService {
   public boolean resetUpgrades(@NotNull String playerId, @NotNull String jobKey) {
     PlayerUpgradeDataImpl data = getOrLoadData(playerId, jobKey);
 
+    // Get player if online for effect unapplication
+    UUID uuid = UUID.fromString(playerId);
+    Player player = Bukkit.getPlayer(uuid);
+
+    // Get tree for node lookup
+    Optional<UpgradeTree> treeOpt = getTree(jobKey);
+
     // Clear all unlocks but keep total skill points
     Set<String> unlocked = new HashSet<>(data.unlockedNodes());
     for (String nodeKey : unlocked) {
+      // Unapply effects before locking
+      if (player != null && player.isOnline() && treeOpt.isPresent()) {
+        treeOpt.get().getNode(nodeKey).ifPresent(node ->
+            effectApplier.unapplyNodeEffects(player, node)
+        );
+      }
+
       data.lock(nodeKey);
     }
 
@@ -150,6 +189,54 @@ public final class UpgradeServiceImpl implements UpgradeService {
     if (loaded != null) {
       return loaded;
     }
+
+    // Calculate retroactive skill points based on current job level
+    int retroactiveSkillPoints = calculateRetroactiveSkillPoints(playerId, jobKey);
+
+    if (retroactiveSkillPoints > 0) {
+      // Create new data with calculated skill points
+      PlayerUpgradeDataImpl newData = new PlayerUpgradeDataImpl(playerId, jobKey, retroactiveSkillPoints, Set.of());
+      // Save to database immediately
+      repository.savePlayerData(newData);
+      return newData;
+    }
+
     return PlayerUpgradeDataImpl.empty(playerId, jobKey);
+  }
+
+  /**
+   * Calculate how many skill points a player should have based on their current job level.
+   * This is used for retroactive skill point calculation when the upgrade system is first accessed.
+   */
+  private int calculateRetroactiveSkillPoints(String playerId, String jobKey) {
+    // Check if this job has an upgrade tree
+    Optional<UpgradeTree> treeOpt = getTree(jobKey);
+    if (treeOpt.isEmpty()) {
+      return 0;
+    }
+
+    UpgradeTree tree = treeOpt.get();
+    int skillPointsPerLevel = tree.skillPointsPerLevel();
+
+    // Get player's current job progression
+    try {
+      UUID uuid = UUID.fromString(playerId);
+      OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+
+      JobProgression progression = jobService.getProgression(playerId, jobKey);
+      if (progression == null) {
+        return 0;
+      }
+
+      int currentLevel = progression.level();
+
+      // Players start at level 1 with 0 XP, so they get skill points starting from level 1
+      // If they're level 5, they should have: 5 * skillPointsPerLevel
+      return currentLevel * skillPointsPerLevel;
+
+    } catch (IllegalArgumentException e) {
+      // Invalid UUID or job key
+      return 0;
+    }
   }
 }

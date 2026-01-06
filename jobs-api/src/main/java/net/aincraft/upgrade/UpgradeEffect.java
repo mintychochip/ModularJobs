@@ -11,7 +11,8 @@ public sealed interface UpgradeEffect permits
     UpgradeEffect.BoostEffect,
     UpgradeEffect.PassiveEffect,
     UpgradeEffect.StatEffect,
-    UpgradeEffect.UnlockEffect {
+    UpgradeEffect.UnlockEffect,
+    UpgradeEffect.PermissionEffect {
 
   /**
    * Multiplier boost effect for XP or money.
@@ -43,5 +44,12 @@ public sealed interface UpgradeEffect permits
   record UnlockEffect(@NotNull String unlockType, @NotNull String unlockKey) implements UpgradeEffect {
     public static final String UNLOCK_TASK = "task";
     public static final String UNLOCK_FEATURE = "feature";
+  }
+
+  /**
+   * Grants a temporary permission via Bukkit PermissionAttachment.
+   * Permission is revoked on logout or tree reset.
+   */
+  record PermissionEffect(@NotNull String permission) implements UpgradeEffect {
   }
 }

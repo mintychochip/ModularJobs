@@ -20,7 +20,6 @@ public final class CommandModule extends AbstractModule {
     binder.addBinding().to(TopCommand.class);
     binder.addBinding().to(InfoCommand.class);
     binder.addBinding().to(LeaveCommand.class);
-    binder.addBinding().to(LeaveAllCommand.class);
     binder.addBinding().to(ApplyEditsCommand.class);
     binder.addBinding().to(EditorCommand.class);
     binder.addBinding().to(StatsCommand.class);
@@ -28,9 +27,11 @@ public final class CommandModule extends AbstractModule {
     // Unified boost command (replaces BoostsCommand, ItemBoostCommand, SourceCommand)
     binder.addBinding().to(BoostCommand.class);
     binder.addBinding().to(UpgradesCommand.class);
+    binder.addBinding().to(RegenerateTreeLayoutCommand.class);
     // binder.addBinding().to(UpgradeCommand.class); // Disabled - requires JobPets dependency
-    // binder.addBinding().to(SetLevelCommand.class); // Disabled - requires PerkSyncService
-    // binder.addBinding().to(AddLevelCommand.class); // Disabled - requires PerkSyncService
-    // binder.addBinding().to(SubtractLevelCommand.class); // Disabled - requires PerkSyncService
+    // Unified level command (replaces SetLevelCommand, AddLevelCommand, SubtractLevelCommand)
+    binder.addBinding().to(LevelCommand.class);
+    // Unified experience command (replaces SetExperienceCommand, AddExperienceCommand, SubtractExperienceCommand)
+    binder.addBinding().to(ExperienceCommand.class);
   }
 }

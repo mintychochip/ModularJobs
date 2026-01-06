@@ -157,7 +157,7 @@ public final class YamlJobTaskLoader {
 
   private void batchInsert(List<TaskEntry> tasks) {
     String insertTask = "INSERT INTO job_tasks (job_key, action_type_key, context_key) VALUES (?, ?, ?)";
-    String insertPayable = "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount, currency) VALUES (?, ?, ?, ?)";
+    String insertPayable = "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount, currency_identifier) VALUES (?, ?, ?, ?)";
 
     try (Connection connection = connectionSource.getConnection()) {
       connection.setAutoCommit(false);

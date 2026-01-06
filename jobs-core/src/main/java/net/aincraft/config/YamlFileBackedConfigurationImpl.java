@@ -19,11 +19,15 @@ final class YamlFileBackedConfigurationImpl implements FileBackedConfiguration {
     this.plugin = plugin;
     this.path = path;
     this.configFile = new File(plugin.getDataFolder(), path);
+    plugin.getSLF4JLogger().info("Loading config file: {}, exists: {}, data folder: {}", path, configFile.exists(), plugin.getDataFolder());
     if (!configFile.exists()) {
+      plugin.getSLF4JLogger().info("Config file doesn't exist, saving from resources...");
       plugin.saveResource(path, false);
+      plugin.getSLF4JLogger().info("Config file saved, exists now: {}", configFile.exists());
     }
     assert (configFile != null);
     config = YamlConfiguration.loadConfiguration(configFile);
+    plugin.getSLF4JLogger().info("Loaded config with keys: {}", config.getKeys(false));
   }
 
   static net.aincraft.config.YamlConfiguration create(Plugin plugin, String path) {

@@ -17,6 +17,10 @@ public final class RepositoryModule extends AbstractModule {
   @Singleton
   public ConnectionSource connectionSource(Plugin plugin,
       @Named("database") YamlConfiguration configuration) {
+    plugin.getSLF4JLogger().info("Loading database.yml, keys: {}", configuration.getKeys(false));
+    if (!configuration.contains("payable")) {
+      plugin.getSLF4JLogger().error("database.yml does not contain 'payable' section. Available keys: {}", configuration.getKeys(false));
+    }
     Preconditions.checkArgument(configuration.contains("payable"));
     ConfigurationSection repositoryConfiguration = configuration.getConfigurationSection("payable");
     return new ConnectionSourceFactory(plugin, repositoryConfiguration).create();

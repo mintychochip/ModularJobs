@@ -10,6 +10,7 @@ import java.util.Set;
 import net.aincraft.upgrade.UpgradeEffect;
 import net.aincraft.upgrade.UpgradeEffect.BoostEffect;
 import net.aincraft.upgrade.UpgradeEffect.PassiveEffect;
+import net.aincraft.upgrade.UpgradeEffect.PermissionEffect;
 import net.aincraft.upgrade.UpgradeEffect.StatEffect;
 import net.aincraft.upgrade.UpgradeEffect.UnlockEffect;
 import net.aincraft.upgrade.UpgradeNode;
@@ -130,6 +131,10 @@ public final class UpgradeTreeConfigParser {
         String unlockType = config.unlock_type() != null ? config.unlock_type() : UnlockEffect.UNLOCK_FEATURE;
         String unlockKey = config.unlock_key() != null ? config.unlock_key() : "unknown";
         yield new UnlockEffect(unlockType, unlockKey);
+      }
+      case "permission" -> {
+        String perm = config.permission() != null ? config.permission() : "jobs.unknown";
+        yield new PermissionEffect(perm);
       }
       default -> null;
     };

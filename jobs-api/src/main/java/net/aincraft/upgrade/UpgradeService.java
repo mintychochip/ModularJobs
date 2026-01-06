@@ -1,5 +1,6 @@
 package net.aincraft.upgrade;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,13 @@ public interface UpgradeService {
    * @return the upgrade tree, or empty if job has no tree
    */
   @NotNull Optional<UpgradeTree> getTree(@NotNull String jobKey);
+
+  /**
+   * Get all loaded upgrade trees.
+   *
+   * @return collection of all upgrade trees
+   */
+  @NotNull Collection<UpgradeTree> getAllTrees();
 
   /**
    * Get a player's upgrade data for a specific job.

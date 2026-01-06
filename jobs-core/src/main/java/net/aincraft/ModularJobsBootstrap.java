@@ -13,6 +13,7 @@ import java.util.Set;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.commands.JobsCommand;
 import net.aincraft.repository.ConnectionSource;
+import net.aincraft.upgrade.config.UpgradeTreeLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
@@ -32,6 +33,10 @@ public final class ModularJobsBootstrap extends JavaPlugin {
       Bukkit.getServicesManager()
           .register(Bridge.class, bridge, this,
               ServicePriority.High);
+
+      // Trigger upgrade tree loading (provider won't run otherwise)
+      injector.getInstance(UpgradeTreeLoader.class);
+
       Set<Listener> listeners = injector.getInstance(
           Key.get(new TypeLiteral<>() {
           })
