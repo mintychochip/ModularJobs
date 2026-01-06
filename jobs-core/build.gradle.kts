@@ -43,7 +43,7 @@ tasks {
                 languageVersion.set(JavaLanguageVersion.of(21))
             }
         )
-        minecraftVersion("1.21.11")
+        minecraftVersion("1.21.7")
         downloadPlugins {
             hangar("Bolt","1.1.78")
             hangar("Mint","1.3.0-52ae81b")
