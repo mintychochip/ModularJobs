@@ -29,8 +29,8 @@ public final class CommandModule extends AbstractModule {
     binder.addBinding().to(BoostCommand.class);
     binder.addBinding().to(UpgradesCommand.class);
     // binder.addBinding().to(UpgradeCommand.class); // Disabled - requires JobPets dependency
-    binder.addBinding().to(SetLevelCommand.class);
-    binder.addBinding().to(AddLevelCommand.class);
-    binder.addBinding().to(SubtractLevelCommand.class);
+    // binder.addBinding().to(SetLevelCommand.class); // Disabled - requires PerkSyncService
+    // binder.addBinding().to(AddLevelCommand.class); // Disabled - requires PerkSyncService
+    // binder.addBinding().to(SubtractLevelCommand.class); // Disabled - requires PerkSyncService
   }
 }
