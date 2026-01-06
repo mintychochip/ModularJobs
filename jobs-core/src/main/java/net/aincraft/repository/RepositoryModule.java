@@ -15,6 +15,15 @@ public final class RepositoryModule extends AbstractModule {
 
   @Provides
   @Singleton
+  public ConnectionSource connectionSource(Plugin plugin,
+      @Named("database") YamlConfiguration configuration) {
+    Preconditions.checkArgument(configuration.contains("payable"));
+    ConfigurationSection repositoryConfiguration = configuration.getConfigurationSection("payable");
+    return new ConnectionSourceFactory(plugin, repositoryConfiguration).create();
+  }
+
+  @Provides
+  @Singleton
   public TimedBoostRepository timedBoostRepository(Plugin plugin,
       @Named("database") YamlConfiguration configuration,
       CodecRegistry codecRegistry) {

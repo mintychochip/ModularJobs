@@ -15,7 +15,7 @@ final class BlockOwnershipServiceImpl implements BlockOwnershipService {
   private final BlockProtectionAdapter protectionAdapter;
 
   @Inject
-  BlockOwnershipServiceImpl(@Nullable BlockProtectionAdapter protectionAdapter) {
+  BlockOwnershipServiceImpl(@javax.annotation.Nullable BlockProtectionAdapter protectionAdapter) {
     this.protectionAdapter = protectionAdapter;
   }
 

@@ -65,12 +65,10 @@ final class ProgressionServiceImpl implements ProgressionService {
   private boolean migrate(JobProgressionRepository from, JobProgressionRepository to,
       String playerId, String jobKey) {
     JobProgressionRecord record = from.load(playerId, jobKey);
-    Bukkit.broadcastMessage("attempted to migrate" + jobKey);
     if (record == null) {
       return false;
     }
     if (to.save(record)) {
-      Bukkit.broadcastMessage("saved");
       return from.delete(playerId, jobKey);
     }
     return false;

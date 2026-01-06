@@ -37,25 +37,24 @@ public final class ConnectionSourceFactory {
       case MYSQL, MARIADB, POSTGRES -> new HikariSourceImpl(new HikariConfigProvider(configuration).create(),type);
       default -> null;
     };
-    if (!source.isSetup()) {
-      String[] tables = type.getSQLTables();
-      try (Connection connection = source.getConnection()) {
-        connection.setAutoCommit(false);
-        Savepoint savepoint = connection.setSavepoint();
+    // Always run schema - CREATE TABLE IF NOT EXISTS is idempotent
+    String[] tables = type.getSQLTables();
+    try (Connection connection = source.getConnection()) {
+      connection.setAutoCommit(false);
+      Savepoint savepoint = connection.setSavepoint();
 
-        try (Statement stmt = connection.createStatement()) {
-          for (String query : tables) {
-            stmt.addBatch(query);
-          }
-          stmt.executeBatch();
-          connection.commit();
-        } catch (SQLException e) {
-          connection.rollback(savepoint);
-          throw new SQLException("Error executing bulk SQL", e);
+      try (Statement stmt = connection.createStatement()) {
+        for (String query : tables) {
+          stmt.addBatch(query);
         }
+        stmt.executeBatch();
+        connection.commit();
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        connection.rollback(savepoint);
+        throw new SQLException("Error executing bulk SQL", e);
       }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
     return source;
   }

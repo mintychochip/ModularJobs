@@ -28,5 +28,9 @@ public final class CommandModule extends AbstractModule {
     // Unified boost command (replaces BoostsCommand, ItemBoostCommand, SourceCommand)
     binder.addBinding().to(BoostCommand.class);
     binder.addBinding().to(UpgradesCommand.class);
+    binder.addBinding().to(UpgradeCommand.class);
+    binder.addBinding().to(SetLevelCommand.class);
+    binder.addBinding().to(AddLevelCommand.class);
+    binder.addBinding().to(SubtractLevelCommand.class);
   }
 }

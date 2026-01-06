@@ -1,6 +1,7 @@
 package net.aincraft.domain;
 
 import com.google.inject.Inject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +60,73 @@ final class MemoryJobRepositoryImpl implements JobRepository {
           String curve = curveConfiguration.getString(curveKey);
           curves.put(curveKey, curve);
         }
+        
+        // Parse upgrade-level with default of 30
+        int upgradeLevel = jobConfiguration.getInt("upgrade-level", 30);
+        
+        // Parse perk-unlocks map
+        Map<Integer, List<String>> perkUnlocks = new HashMap<>();
+        if (jobConfiguration.contains("perk-unlocks")) {
+          ConfigurationSection perkUnlocksSection = jobConfiguration.getConfigurationSection("perk-unlocks");
+          if (perkUnlocksSection != null) {
+            for (String levelKey : perkUnlocksSection.getKeys(false)) {
+              try {
+                int level = Integer.parseInt(levelKey);
+                List<String> perks = perkUnlocksSection.getStringList(levelKey);
+                if (perks != null && !perks.isEmpty()) {
+                  perkUnlocks.put(level, perks);
+                }
+              } catch (NumberFormatException e) {
+                // Skip invalid level keys
+              }
+            }
+          }
+        }
+
+        // Parse pet-perks map (pet name -> level -> perks) and pet revokes
+        Map<String, Map<Integer, List<String>>> petPerks = new HashMap<>();
+        Map<String, List<String>> petRevokedPerks = new HashMap<>();
+        if (jobConfiguration.contains("pet-perks")) {
+          ConfigurationSection petPerksSection = jobConfiguration.getConfigurationSection("pet-perks");
+          if (petPerksSection != null) {
+            for (String petName : petPerksSection.getKeys(false)) {
+              ConfigurationSection petSection = petPerksSection.getConfigurationSection(petName);
+              if (petSection != null) {
+                // Check for revokes list
+                if (petSection.contains("revokes")) {
+                  List<String> revokes = petSection.getStringList("revokes");
+                  if (revokes != null && !revokes.isEmpty()) {
+                    petRevokedPerks.put(petName, revokes);
+                  }
+                }
+
+                // Parse level -> perks (skip "revokes" key)
+                Map<Integer, List<String>> petLevelPerks = new HashMap<>();
+                for (String levelKey : petSection.getKeys(false)) {
+                  if (levelKey.equals("revokes")) {
+                    continue; // Skip revokes when parsing level -> perks
+                  }
+                  try {
+                    int level = Integer.parseInt(levelKey);
+                    List<String> perks = petSection.getStringList(levelKey);
+                    if (perks != null && !perks.isEmpty()) {
+                      petLevelPerks.put(level, perks);
+                    }
+                  } catch (NumberFormatException e) {
+                    // Skip invalid level keys
+                  }
+                }
+                if (!petLevelPerks.isEmpty()) {
+                  petPerks.put(petName, petLevelPerks);
+                }
+              }
+            }
+          }
+        }
+
         jobs.put("modularjobs:" + jobKey,
             new JobRecord("modularjobs:" + jobKey, displayName, description, maxLevel,
-                levellingCurve, curves));
+                levellingCurve, curves, upgradeLevel, perkUnlocks, petPerks, petRevokedPerks));
       }
       return jobs;
     }

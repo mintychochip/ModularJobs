@@ -1,7 +1,7 @@
 builder:
   display-name: "<blue>Builder"
   description: "Builds structures and earns from placing blocks."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
@@ -10,7 +10,7 @@ builder:
 lumberjack:
   display-name: "<green>Lumberjack"
   description: "Chops trees and earns from breaking logs."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
@@ -19,16 +19,50 @@ lumberjack:
 miner:
   display-name: "<gray>Miner"
   description: "Mines ores and stones deep underground."
-  max-level: 200
+  max-level: 100
+  upgrade-level: 30
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
     economy: base + (base * (level - 1) * 0.01)
+  # Universal perks (all players get these)
+  perk-unlocks:
+    5: [lavaimmunity]
+    10: [petlantern, stoneskin]
+    15: [fargather, storage.tworows]
+    20: [netherlavaimmunity]
+    25: [explosionpetcollection]
+  # Pet-specific perks (only granted if player chose that pet)
+  pet-perks:
+    allay:
+      revokes: [petlantern]
+      30: [petlight, oresearch, storage.threerows]
+      35: [flowerporting]
+      40: [azaleaflowering]
+    bat:
+      revokes: [petlantern]
+      30: [silentwalk]
+      35: [tinywings]
+      40: [echolocation, tinywings.jumptwo]
+      45: [tinywings.jumpthree]
+    goat:
+      30: [sturdylegs, storage.fiverows]
+      35: [goatmount, blowhorncall]
+      40: [blowhornbonk, blowhornmegajump]
+      45: [blowhorntunnel]
+    copper_golem:
+      revokes: [stoneskin]
+      30: [blastradius, obsidianskin, storage.threerows]
+      35: [gunpowderdrop]
+      40: [stickyblast]
+      43: [stickyblast.chargetwo]
+      46: [stickyblast.chargethree]
+      50: [stickyblast.chargefour]
 
 farmer:
   display-name: "<yellow>Farmer"
   description: "Harvests crops and tends animals."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
@@ -37,7 +71,7 @@ farmer:
 hunter:
   display-name: "<red>Hunter"
   description: "Kills mobs and earns from combat."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
@@ -46,7 +80,7 @@ hunter:
 fisher:
   display-name: "<aqua>Fisher"
   description: "Fishes in lakes, rivers, and oceans."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
@@ -55,7 +89,7 @@ fisher:
 blacksmith:
   display-name: "<dark_gray>Blacksmith"
   description: "Smelts ores and crafts gear."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
@@ -64,7 +98,7 @@ blacksmith:
 enchanter:
   display-name: "<light_purple>Enchanter"
   description: "Earns from enchanting and repairing items."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
@@ -73,7 +107,7 @@ enchanter:
 alchemist:
   display-name: "<gold>Alchemist"
   description: "Brews potions and combines ingredients."
-  max-level: 200
+  max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
