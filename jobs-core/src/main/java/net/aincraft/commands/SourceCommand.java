@@ -143,7 +143,7 @@ public final class SourceCommand implements JobsCommand {
     String policyName = policy.getClass().getSimpleName()
         .replace("Impl", "")
         .replace("Policy", "");
-    Mint.sendMessage(sender, "<neutral>Policy: <tertiary>" + policyName);
+    Mint.sendMessage(sender, "<neutral>Policy: <info>" + policyName);
 
     // Rules info
     var rules = source.rules();

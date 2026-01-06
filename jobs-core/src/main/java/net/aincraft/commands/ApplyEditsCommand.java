@@ -43,7 +43,7 @@ final class ApplyEditsCommand implements JobsCommand {
                     // Run on main thread to safely send messages
                     org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
                       if (result.errors().isEmpty()) {
-                        Mint.sendMessage(player, "<accent>Successfully applied edits!");
+                        Mint.sendMessage(player, "<success>Successfully applied edits!");
                         Mint.sendMessage(player, "<accent>Tasks imported: " + result.tasksImported());
                         Mint.sendMessage(player, "<accent>Tasks deleted: " + result.tasksDeleted());
                       } else {

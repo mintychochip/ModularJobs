@@ -68,11 +68,12 @@ public final class PayableModule extends AbstractModule {
       LOGGER.info("Mint plugin found: " + (mint != null));
       if (mint != null) {
         LOGGER.info("Mint enabled: " + mint.isEnabled());
+        LOGGER.info("Mint ECONOMY_SERVICE loaded: " + Mint.ECONOMY_SERVICE.isLoaded());
       }
       if (mint != null && mint.isEnabled() && Mint.ECONOMY_SERVICE.isLoaded()) {
         return new MintEconomyProviderImpl(Mint.ECONOMY_SERVICE);
       }
-      LOGGER.warning("No economy provider available - Mint not found or not enabled");
+      LOGGER.warning("No economy provider available - Mint not found, not enabled, or economy service not loaded");
       return null;
     }
 

@@ -23,7 +23,7 @@
           "effects": [
             {"type": "boost", "target": "xp", "amount": 1.1}
           ],
-          "position": {"x": 2, "y": 1}
+          "position": {"x": 0, "y": 1}
         },
         "efficiency_2": {
           "name": "Efficiency II",
@@ -35,7 +35,7 @@
           "effects": [
             {"type": "boost", "target": "xp", "amount": 1.2}
           ],
-          "position": {"x": 2, "y": 2}
+          "position": {"x": 1, "y": 2}
         },
         "fortune_1": {
           "name": "Fortune I",
@@ -71,7 +71,7 @@
           "effects": [
             {"type": "passive", "ability": "speed_boost", "description": "5% movement speed while mining"}
           ],
-          "position": {"x": 6, "y": 1}
+          "position": {"x": 8, "y": 1}
         },
         "speed_2": {
           "name": "Swift Miner II",
@@ -83,7 +83,7 @@
           "effects": [
             {"type": "passive", "ability": "speed_boost", "description": "10% movement speed while mining"}
           ],
-          "position": {"x": 6, "y": 2}
+          "position": {"x": 7, "y": 2}
         },
         "specialization_excavator": {
           "name": "Excavator",
@@ -97,7 +97,7 @@
           "effects": [
             {"type": "passive", "ability": "excavator", "description": "Unlock excavation abilities"}
           ],
-          "position": {"x": 3, "y": 4}
+          "position": {"x": 2, "y": 4}
         },
         "specialization_prospector": {
           "name": "Prospector",
@@ -111,7 +111,7 @@
           "effects": [
             {"type": "passive", "ability": "prospector", "description": "Unlock prospecting abilities"}
           ],
-          "position": {"x": 5, "y": 4}
+          "position": {"x": 6, "y": 4}
         },
         "tunnel_bore": {
           "name": "Tunnel Bore",
@@ -122,7 +122,7 @@
           "effects": [
             {"type": "passive", "ability": "tunnel_bore", "description": "3x3 mining area"}
           ],
-          "position": {"x": 2, "y": 5}
+          "position": {"x": 1, "y": 5}
         },
         "aoe_mining": {
           "name": "Explosive Mining",
@@ -133,7 +133,7 @@
           "effects": [
             {"type": "passive", "ability": "explosive", "description": "15% chance to break adjacent blocks"}
           ],
-          "position": {"x": 4, "y": 5}
+          "position": {"x": 3, "y": 5}
         },
         "ore_sense": {
           "name": "Ore Sense",
@@ -144,7 +144,7 @@
           "effects": [
             {"type": "passive", "ability": "ore_sense", "description": "See ores within 10 blocks"}
           ],
-          "position": {"x": 4, "y": 5}
+          "position": {"x": 5, "y": 5}
         },
         "gem_finder": {
           "name": "Gem Finder",
@@ -155,7 +155,7 @@
           "effects": [
             {"type": "boost", "target": "money", "amount": 1.5}
           ],
-          "position": {"x": 6, "y": 5}
+          "position": {"x": 7, "y": 5}
         }
       }
     }
