@@ -48,7 +48,7 @@ final class UpgradeCommand implements JobsCommand {
                     CommandSourceStack source = context.getSource();
                     CommandSender sender = source.getSender();
                     if (!(sender instanceof Player player)) {
-                        Mint.sendMessage(sender, "<error>This command can only be used by players");
+                        Mint.sendThemedMessage(sender, "<error>This command can only be used by players");
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -60,7 +60,7 @@ final class UpgradeCommand implements JobsCommand {
                     try {
                         job = jobService.getJob(jobKey.toString());
                     } catch (IllegalArgumentException e) {
-                        Mint.sendMessage(player, "<error>Invalid job: " + jobName);
+                        Mint.sendThemedMessage(player, "<error>Invalid job: " + jobName);
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -75,7 +75,7 @@ final class UpgradeCommand implements JobsCommand {
                     }
 
                     if (playerProgression == null) {
-                        Mint.sendMessage(player, "<error>You haven't joined the " + job.displayName().toString() + " job!");
+                        Mint.sendThemedMessage(player, "<error>You haven't joined the " + job.displayName().toString() + " job!");
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -83,7 +83,7 @@ final class UpgradeCommand implements JobsCommand {
                     int currentLevel = playerProgression.level();
                     int upgradeLevel = job.upgradeLevel();
                     if (currentLevel < upgradeLevel) {
-                        Mint.sendMessage(player, "<error>You need to reach level <secondary>" + upgradeLevel
+                        Mint.sendThemedMessage(player, "<error>You need to reach level <secondary>" + upgradeLevel
                             + "<error> to upgrade. Current: <secondary>" + currentLevel);
                         return Command.SINGLE_SUCCESS;
                     }
@@ -91,15 +91,15 @@ final class UpgradeCommand implements JobsCommand {
                     // Check if available pets exist for this job
                     List<String> availablePets = petUpgradeService.getAvailablePets(jobKey.toString());
                     if (availablePets.isEmpty()) {
-                        Mint.sendMessage(player, "<error>No pet upgrades available for this job.");
+                        Mint.sendThemedMessage(player, "<error>No pet upgrades available for this job.");
                         return Command.SINGLE_SUCCESS;
                     }
 
                     // Check if player already has a pet for this job
                     String existingPet = petUpgradeService.getSelectedPet(player.getUniqueId(), jobKey.toString());
                     if (existingPet != null) {
-                        Mint.sendMessage(player, "<info>You already upgraded to: <success>" + formatPetName(existingPet));
-                        Mint.sendMessage(player, "<neutral>Job upgrades are permanent.");
+                        Mint.sendThemedMessage(player, "<info>You already upgraded to: <success>" + formatPetName(existingPet));
+                        Mint.sendThemedMessage(player, "<neutral>Job upgrades are permanent.");
                         return Command.SINGLE_SUCCESS;
                     }
 

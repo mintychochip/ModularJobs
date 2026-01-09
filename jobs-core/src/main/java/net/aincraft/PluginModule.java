@@ -37,7 +37,7 @@ public final class PluginModule extends AbstractModule {
     bind(Plugin.class).toInstance(plugin);
     bind(Bridge.class).to(BridgeImpl.class);
     install(new ConfigurationModule(plugin));
-    install(new PayableModule());
+    install(new PayableModule(plugin));
     install(new PaymentModule());
     install(new ProtectionModule());
     install(new RegistryModule());

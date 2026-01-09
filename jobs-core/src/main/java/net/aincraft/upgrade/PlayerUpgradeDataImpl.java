@@ -1,7 +1,9 @@
 package net.aincraft.upgrade;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +17,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   private final String jobKey;
   private int totalSkillPoints;
   private final Set<String> unlockedNodes;
+  private final Map<String, Integer> perkLevels;
 
   public PlayerUpgradeDataImpl(
       @NotNull String playerId,
@@ -26,6 +29,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
     this.jobKey = jobKey;
     this.totalSkillPoints = totalSkillPoints;
     this.unlockedNodes = new HashSet<>(unlockedNodes);
+    this.perkLevels = new HashMap<>();
   }
 
   /**
@@ -68,6 +72,11 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   }
 
   @Override
+  public @NotNull Map<String, Integer> perkLevels() {
+    return Collections.unmodifiableMap(perkLevels);
+  }
+
+  @Override
   public boolean hasUnlocked(@NotNull String nodeKey) {
     return unlockedNodes.contains(nodeKey);
   }
@@ -104,5 +113,28 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
    */
   public boolean lock(@NotNull String nodeKey) {
     return unlockedNodes.remove(nodeKey);
+  }
+
+  /**
+   * Set the level of a perk. Stores the max level.
+   *
+   * @param perkId perk identifier
+   * @param level level to set
+   */
+  public void setPerkLevel(@NotNull String perkId, int level) {
+    int current = perkLevels.getOrDefault(perkId, 0);
+    if (level > current) {
+      perkLevels.put(perkId, level);
+    }
+  }
+
+  /**
+   * Remove a perk level entry (for respec).
+   *
+   * @return the previous level, or 0 if not set
+   */
+  public int removePerkLevel(@NotNull String perkId) {
+    Integer previous = perkLevels.remove(perkId);
+    return previous != null ? previous : 0;
   }
 }

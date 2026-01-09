@@ -1,0 +1,2284 @@
+{
+  "comment": [
+    "Wynncraft-style upgrade tree format for ModularJobs",
+    "This format uses explicit connector items for visual paths and archetype-based branches",
+    "Connectors use box-drawing characters: │ ─ ┐ ┌ ┘ └ ┬ ┤ ┴ ├",
+    "",
+    "Each tree has unique archetypes and specializations matching the job theme"
+  ],
+  "miner_v1": {
+    "metadata": {
+      "job": "miner",
+      "skill_points_per_level": 1,
+      "root": "mining_basics",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "efficiency",
+        "name": "The Optimizer",
+        "description": "Focus on experience and efficiency",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#2ecc71",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#27ae60"
+        },
+        "icon": {
+          "id": "IRON_PICKAXE",
+          "custom_model_data": 100
+        }
+      },
+      {
+        "id": "fortune",
+        "name": "The Prospector",
+        "description": "Focus on wealth and rewards",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#3498db",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#2980b9"
+        },
+        "icon": {
+          "id": "DIAMOND",
+          "custom_model_data": 101
+        }
+      },
+      {
+        "id": "speed",
+        "name": "The Swift",
+        "description": "Focus on mobility and agility",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#f1c40f",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#f39c12"
+        },
+        "icon": {
+          "id": "FEATHER",
+          "custom_model_data": 102
+        }
+      }
+    ],
+    "layout": [
+      {
+        "comment": "=== ROOT NODE ===",
+        "id": "mining_basics",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["efficiency", "fortune", "speed"],
+        "meta": {
+          "name": "Mining Basics",
+          "icon": {
+            "id": "WOODEN_PICKAXE",
+            "custom_model_data": 1000
+          },
+          "cost": 0,
+          "required": true,
+          "description": [
+            "The foundation of all mining knowledge",
+            "Unlocks the path to specialization"
+          ],
+          "effects": []
+        }
+      },
+      {
+        "comment": "=== EFFICIENCY BRANCH ===",
+        "id": "path_root_eff1",
+        "type": "connector",
+        "coordinates": { "x": 4, "y": 1 },
+        "meta": {
+          "links": ["mining_basics", "efficiency_1"],
+          "shape": "┐",
+          "icon": {
+            "locked": { "id": "WHITE_STAINED_GLASS_PANE", "custom_model_data": 500 },
+            "unlocked": { "id": "LIME_STAINED_GLASS_PANE", "custom_model_data": 501 }
+          },
+          "description": ["Path to Efficiency I"]
+        }
+      },
+      {
+        "id": "efficiency_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["efficiency"],
+        "meta": {
+          "name": "Efficiency I",
+          "icon": {
+            "id": "IRON_PICKAXE",
+            "custom_model_data": 1100
+          },
+          "cost": 1,
+          "description": ["Gain 10% more XP from mining"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "efficiency_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["efficiency"],
+        "meta": {
+          "name": "Efficiency II",
+          "icon": {
+            "id": "GOLDEN_PICKAXE",
+            "custom_model_data": 1101
+          },
+          "cost": 2,
+          "description": ["Gain 20% more XP from mining"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "comment": "=== FORTUNE BRANCH ===",
+        "id": "fortune_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["fortune"],
+        "meta": {
+          "name": "Fortune I",
+          "icon": {
+            "id": "DIAMOND",
+            "custom_model_data": 1200
+          },
+          "cost": 1,
+          "description": ["Earn 10% more money from mining"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "fortune_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["fortune"],
+        "meta": {
+          "name": "Fortune II",
+          "icon": {
+            "id": "DIAMOND_BLOCK",
+            "custom_model_data": 1201
+          },
+          "cost": 2,
+          "description": ["Earn 20% more money from mining"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "comment": "=== SPEED BRANCH ===",
+        "id": "speed_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["speed"],
+        "meta": {
+          "name": "Swift Miner I",
+          "icon": {
+            "id": "FEATHER",
+            "custom_model_data": 1300
+          },
+          "cost": 1,
+          "description": ["Move faster while mining"],
+          "effects": [
+            { "type": "passive", "ability": "speed_boost", "description": "5% movement speed" }
+          ]
+        }
+      },
+      {
+        "id": "speed_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["speed"],
+        "meta": {
+          "name": "Swift Miner II",
+          "icon": {
+            "id": "RABBIT_FOOT",
+            "custom_model_data": 1301
+          },
+          "cost": 2,
+          "description": ["Move even faster while mining"],
+          "effects": [
+            { "type": "passive", "ability": "speed_boost", "description": "10% movement speed" }
+          ]
+        }
+      },
+      {
+        "comment": "=== SPECIALIZATIONS ===",
+        "id": "specialization_excavator",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["efficiency", "fortune"],
+        "meta": {
+          "name": "Excavator",
+          "icon": {
+            "id": "TNT",
+            "custom_model_data": 2000,
+            "glowing": true
+          },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_prospector"],
+          "description": ["Specialize in mass mining", "Unlocks explosive abilities"],
+          "effects": [
+            { "type": "passive", "ability": "excavator", "description": "Unlock excavation" }
+          ]
+        }
+      },
+      {
+        "id": "specialization_prospector",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["fortune", "speed"],
+        "meta": {
+          "name": "Prospector",
+          "icon": {
+            "id": "SPYGLASS",
+            "custom_model_data": 2001,
+            "glowing": true
+          },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_excavator"],
+          "description": ["Specialize in finding rare materials", "Unlocks detection abilities"],
+          "effects": [
+            { "type": "passive", "ability": "prospector", "description": "Unlock prospecting" }
+          ]
+        }
+      },
+      {
+        "comment": "=== EXCAVATOR ULTIMATES ===",
+        "id": "tunnel_bore",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["efficiency"],
+        "meta": {
+          "name": "Tunnel Bore",
+          "icon": {
+            "id": "PISTON",
+            "custom_model_data": 2100
+          },
+          "cost": 3,
+          "description": ["Mine in a 3x3 area", "Perfect for tunnels"],
+          "effects": [
+            { "type": "passive", "ability": "tunnel_bore", "description": "3x3 mining" }
+          ]
+        }
+      },
+      {
+        "id": "aoe_mining",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["efficiency", "fortune"],
+        "meta": {
+          "name": "Explosive Mining",
+          "icon": {
+            "id": "FIRE_CHARGE",
+            "custom_model_data": 2101
+          },
+          "cost": 3,
+          "description": ["Chance to break nearby blocks", "More destruction"],
+          "effects": [
+            { "type": "passive", "ability": "explosive", "description": "15% chain break" }
+          ]
+        }
+      },
+      {
+        "comment": "=== PROSPECTOR ULTIMATES ===",
+        "id": "ore_sense",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["speed"],
+        "meta": {
+          "name": "Ore Sense",
+          "icon": {
+            "id": "ENDER_EYE",
+            "custom_model_data": 2200
+          },
+          "cost": 3,
+          "description": ["Nearby ores glow", "Never miss deposits"],
+          "effects": [
+            { "type": "passive", "ability": "ore_sense", "description": "See ores within 10 blocks" }
+          ]
+        }
+      },
+      {
+        "id": "gem_finder",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["fortune"],
+        "meta": {
+          "name": "Gem Finder",
+          "icon": {
+            "id": "EMERALD",
+            "custom_model_data": 2201
+          },
+          "cost": 3,
+          "description": ["Increased rare drops", "Maximum wealth"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "efficiency_1": ["mining_basics"],
+      "efficiency_2": ["efficiency_1"],
+      "fortune_1": ["mining_basics"],
+      "fortune_2": ["fortune_1"],
+      "speed_1": ["mining_basics"],
+      "speed_2": ["speed_1"],
+      "specialization_excavator": ["efficiency_2", "fortune_2", "speed_2"],
+      "specialization_prospector": ["efficiency_2", "fortune_2", "speed_2"],
+      "tunnel_bore": ["specialization_excavator"],
+      "aoe_mining": ["specialization_excavator"],
+      "ore_sense": ["specialization_prospector"],
+      "gem_finder": ["specialization_prospector"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["specialization_excavator", "specialization_prospector"],
+        "description": "Choose one path"
+      }
+    ]
+  },
+  "builder_v1": {
+    "metadata": {
+      "job": "builder",
+      "skill_points_per_level": 1,
+      "root": "foundation",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "architect",
+        "name": "Architect",
+        "description": "Structural mastery and efficiency",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#3498db",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#2980b9"
+        },
+        "icon": { "id": "BLUE_WOOL", "custom_model_data": 110 }
+      },
+      {
+        "id": "artisan",
+        "name": "Artisan",
+        "description": "Aesthetic beauty and detail",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#e91e63",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#c2185b"
+        },
+        "icon": { "id": "PINK_WOOL", "custom_model_data": 111 }
+      },
+      {
+        "id": "engineer",
+        "name": "Engineer",
+        "description": "Technical innovation and automation",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#ff9800",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#f57c00"
+        },
+        "icon": { "id": "ORANGE_WOOL", "custom_model_data": 112 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "foundation",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["architect", "artisan", "engineer"],
+        "meta": {
+          "name": "Foundation",
+          "icon": { "id": "BRICK", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["Every structure starts with a foundation"],
+          "effects": []
+        }
+      },
+      {
+        "id": "efficiency_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["architect"],
+        "meta": {
+          "name": "Efficient Building",
+          "icon": { "id": "STONE_BRICKS", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["Place blocks 10% faster"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "structural_mastery",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["architect"],
+        "meta": {
+          "name": "Structural Mastery",
+          "icon": { "id": "QUARTZ_BLOCK", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["Earn 20% more XP from structural blocks"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "aesthetic_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["artisan"],
+        "meta": {
+          "name": "Aesthetic Touch",
+          "icon": { "id": "PEONY", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% bonus for decorative blocks"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "master_craftsman",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["artisan"],
+        "meta": {
+          "name": "Master Craftsman",
+          "icon": { "id": "FLOWER_BANNER_PATTERN", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% bonus for rare decorative blocks"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "redstone_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["engineer"],
+        "meta": {
+          "name": "Redstone Basics",
+          "icon": { "id": "REDSTONE", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["10% bonus for technical blocks"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "automation",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["engineer"],
+        "meta": {
+          "name": "Automation Expert",
+          "icon": { "id": "PISTON", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["20% bonus for mechanical blocks"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "specialization_monument",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["architect", "artisan"],
+        "meta": {
+          "name": "Monument Builder",
+          "icon": { "id": "BEACON", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_tech"],
+          "description": ["Specialize in grand structures", "Unlock monument bonuses"],
+          "effects": [{ "type": "passive", "ability": "monument", "description": "Monument mastery" }]
+        }
+      },
+      {
+        "id": "specialization_tech",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["artisan", "engineer"],
+        "meta": {
+          "name": "Technical Engineer",
+          "icon": { "id": "OBSERVER", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_monument"],
+          "description": ["Specialize in technical builds", "Unlock redstone mastery"],
+          "effects": [{ "type": "passive", "ability": "technical", "description": "Technical mastery" }]
+        }
+      },
+      {
+        "id": "grand_architect",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["architect"],
+        "meta": {
+          "name": "Grand Architect",
+          "icon": { "id": "GOLD_BLOCK", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Massive structures grant more XP", "Scale with your ambition"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "world_wonder",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["architect", "artisan"],
+        "meta": {
+          "name": "World Wonder",
+          "icon": { "id": "DRAGON_HEAD", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Create legendary structures", "Maximum prestige rewards"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "redstone_master",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["engineer"],
+        "meta": {
+          "name": "Redstone Master",
+          "icon": { "id": "COMPARATOR", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": ["Complex circuits grant massive bonuses", "Automation pays off"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "contraption",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["engineer", "artisan"],
+        "meta": {
+          "name": "Master Contraption",
+          "icon": { "id": "DAYLIGHT_DETECTOR", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Functional art pieces", "Beauty meets utility"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "efficiency_1": ["foundation"],
+      "structural_mastery": ["efficiency_1"],
+      "aesthetic_1": ["foundation"],
+      "master_craftsman": ["aesthetic_1"],
+      "redstone_1": ["foundation"],
+      "automation": ["redstone_1"],
+      "specialization_monument": ["structural_mastery", "master_craftsman", "automation"],
+      "specialization_tech": ["structural_mastery", "master_craftsman", "automation"],
+      "grand_architect": ["specialization_monument"],
+      "world_wonder": ["specialization_monument"],
+      "redstone_master": ["specialization_tech"],
+      "contraption": ["specialization_tech"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["specialization_monument", "specialization_tech"],
+        "description": "Choose your path"
+      }
+    ]
+  },
+  "lumberjack_v1": {
+    "metadata": {
+      "job": "lumberjack",
+      "skill_points_per_level": 1,
+      "root": "tree_feller",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "harvester",
+        "name": "Harvester",
+        "description": "Efficient wood collection",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#4caf50",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#388e3c"
+        },
+        "icon": { "id": "IRON_AXE", "custom_model_data": 120 }
+      },
+      {
+        "id": "naturalist",
+        "name": "Naturalist",
+        "description": "Connection with nature",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#8bc34a",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#689f38"
+        },
+        "icon": { "id": "OAK_SAPLING", "custom_model_data": 121 }
+      },
+      {
+        "id": "woodcutter",
+        "name": "Woodcutter",
+        "description": "Processing and refining",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#795548",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#5d4037"
+        },
+        "icon": { "id": "OAK_PLANKS", "custom_model_data": 122 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "tree_feller",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["harvester", "naturalist", "woodcutter"],
+        "meta": {
+          "name": "Tree Feller",
+          "icon": { "id": "WOODEN_AXE", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["The art of felling trees"],
+          "effects": []
+        }
+      },
+      {
+        "id": "swift_chop_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["harvester"],
+        "meta": {
+          "name": "Swift Chop I",
+          "icon": { "id": "STONE_AXE", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["Chop 10% faster"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "swift_chop_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["harvester"],
+        "meta": {
+          "name": "Swift Chop II",
+          "icon": { "id": "DIAMOND_AXE", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["Chop 20% faster"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "nature_bond_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["naturalist"],
+        "meta": {
+          "name": "Nature's Bond I",
+          "icon": { "id": "APPLE", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% bonus from saplings and fruit"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "nature_bond_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["naturalist"],
+        "meta": {
+          "name": "Nature's Bond II",
+          "icon": { "id": "GOLDEN_APPLE", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% bonus from natural drops"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "woodworker_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["woodcutter"],
+        "meta": {
+          "name": "Woodworker I",
+          "icon": { "id": "SAW", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["10% bonus from planks and stairs"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "woodworker_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["woodcutter"],
+        "meta": {
+          "name": "Woodworker II",
+          "icon": { "id": "WORKBENCH", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["20% bonus from processed wood"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "specialization_tree_lord",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["harvester", "naturalist"],
+        "meta": {
+          "name": "Tree Lord",
+          "icon": { "id": "JUNGLE_LEAVES", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_timber_master"],
+          "description": ["Master of the forest", "Unlock tree-felling abilities"],
+          "effects": [{ "type": "passive", "ability": "tree_lord", "description": "Forest mastery" }]
+        }
+      },
+      {
+        "id": "specialization_timber_master",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["naturalist", "woodcutter"],
+        "meta": {
+          "name": "Timber Master",
+          "icon": { "id": "SMITHING_TABLE", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_tree_lord"],
+          "description": ["Master of wood processing", "Unlock processing bonuses"],
+          "effects": [{ "type": "passive", "ability": "timber", "description": "Processing mastery" }]
+        }
+      },
+      {
+        "id": "forest_guardian",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["harvester"],
+        "meta": {
+          "name": "Forest Guardian",
+          "icon": { "id": "RESPAWN_ANCHOR", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Replant trees automatically", "Sustainable forestry"],
+          "effects": [{ "type": "passive", "ability": "auto_replant", "description": "Auto-replant" }]
+        }
+      },
+      {
+        "id": "ancient_woods",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["harvester", "naturalist"],
+        "meta": {
+          "name": "Ancient Woods",
+          "icon": { "id": "DARK_OAK_LOG", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Rare woods grant massive bonuses", "Seek ancient trees"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "sawmill_master",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["woodcutter"],
+        "meta": {
+          "name": "Sawmill Master",
+          "icon": { "id": "BARREL", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": ["Perfect processing efficiency", "Maximum wood yield"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "master_craftsman",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["woodcutter", "naturalist"],
+        "meta": {
+          "name": "Master Craftsman",
+          "icon": { "id": "FLETCHING_TABLE", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Premium wood products", "Artisan woodworking"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "swift_chop_1": ["tree_feller"],
+      "swift_chop_2": ["swift_chop_1"],
+      "nature_bond_1": ["tree_feller"],
+      "nature_bond_2": ["nature_bond_1"],
+      "woodworker_1": ["tree_feller"],
+      "woodworker_2": ["woodworker_1"],
+      "specialization_tree_lord": ["swift_chop_2", "nature_bond_2", "woodworker_2"],
+      "specialization_timber_master": ["swift_chop_2", "nature_bond_2", "woodworker_2"],
+      "forest_guardian": ["specialization_tree_lord"],
+      "ancient_woods": ["specialization_tree_lord"],
+      "sawmill_master": ["specialization_timber_master"],
+      "master_craftsman": ["specialization_timber_master"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["specialization_tree_lord", "specialization_timber_master"],
+        "description": "Choose your path"
+      }
+    ]
+  },
+  "farmer_v1": {
+    "metadata": {
+      "job": "farmer",
+      "skill_points_per_level": 1,
+      "root": "green_thumb",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "cultivator",
+        "name": "Cultivator",
+        "description": "Crop growth and yield",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#8bc34a",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#689f38"
+        },
+        "icon": { "id": "WHEAT", "custom_model_data": 130 }
+      },
+      {
+        "id": "rancher",
+        "name": "Rancher",
+        "description": "Animal husbandry",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#ff9800",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#f57c00"
+        },
+        "icon": { "id": "CARROT_ON_A_STICK", "custom_model_data": 131 }
+      },
+      {
+        "id": "botanist",
+        "name": "Botanist",
+        "description": "Exotic plants and magic",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#9c27b0",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#7b1fa2"
+        },
+        "icon": { "id": "PITCHER_POD", "custom_model_data": 132 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "green_thumb",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["cultivator", "rancher", "botanist"],
+        "meta": {
+          "name": "Green Thumb",
+          "icon": { "id": "IRON_HOE", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["A natural connection to the land"],
+          "effects": []
+        }
+      },
+      {
+        "id": "fertile_ground_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["cultivator"],
+        "meta": {
+          "name": "Fertile Ground I",
+          "icon": { "id": "DIRT", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["10% bonus crop yield"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "fertile_ground_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["cultivator"],
+        "meta": {
+          "name": "Fertile Ground II",
+          "icon": { "id": "FARMLAND", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["20% bonus crop yield"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "animal_friend_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["rancher"],
+        "meta": {
+          "name": "Animal Friend I",
+          "icon": { "id": "WHEAT_SEEDS", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% bonus from animals"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "animal_friend_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["rancher"],
+        "meta": {
+          "name": "Animal Friend II",
+          "icon": { "id": "GOLDEN_CARROT", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% bonus from breeding"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "exotic_harvest_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["botanist"],
+        "meta": {
+          "name": "Exotic Harvest I",
+          "icon": { "id": "SUSPICIOUS_STEW", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["10% bonus from rare crops"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "exotic_harvest_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["botanist"],
+        "meta": {
+          "name": "Exotic Harvest II",
+          "icon": { "id": "POTION", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["20% bonus from magical plants"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "specialization_agrarian",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["cultivator", "rancher"],
+        "meta": {
+          "name": "Master Agrarian",
+          "icon": { "id": "COMPOSTER", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_horticulturist"],
+          "description": ["Master of sustainable farming", "Unlock automation"],
+          "effects": [{ "type": "passive", "ability": "agrarian", "description": "Farming mastery" }]
+        }
+      },
+      {
+        "id": "specialization_horticulturist",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["rancher", "botanist"],
+        "meta": {
+          "name": "Royal Horticulturist",
+          "icon": { "id": "FLOWERING_AZALEA_LEAVES", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_agrarian"],
+          "description": ["Master of exotic plants", "Unlock rare mutations"],
+          "effects": [{ "type": "passive", "ability": "horticulture", "description": "Plant mastery" }]
+        }
+      },
+      {
+        "id": "bountiful_harvest",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["cultivator"],
+        "meta": {
+          "name": "Bountiful Harvest",
+          "icon": { "id": "HAY_BALE", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Massive crop yields", "Feed the server"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "sustainable_farming",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["cultivator", "rancher"],
+        "meta": {
+          "name": "Sustainable Farming",
+          "icon": { "id": "BREAD", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Auto-replant crops", "Efficient farming"],
+          "effects": [{ "type": "passive", "ability": "auto_plant", "description": "Auto-replant" }]
+        }
+      },
+      {
+        "id": "master_rancher",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["rancher"],
+        "meta": {
+          "name": "Master Rancher",
+          "icon": { "id": "SADDLE", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": ["Animal products yield more", "Premium livestock"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "legendary_botanist",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["botanist", "rancher"],
+        "meta": {
+          "name": "Legendary Botanist",
+          "icon": { "id": "ENCHANTED_GOLDEN_APPLE", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Grow impossible plants", "Magical harvests"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "fertile_ground_1": ["green_thumb"],
+      "fertile_ground_2": ["fertile_ground_1"],
+      "animal_friend_1": ["green_thumb"],
+      "animal_friend_2": ["animal_friend_1"],
+      "exotic_harvest_1": ["green_thumb"],
+      "exotic_harvest_2": ["exotic_harvest_1"],
+      "specialization_agrarian": ["fertile_ground_2", "animal_friend_2", "exotic_harvest_2"],
+      "specialization_horticulturist": ["fertile_ground_2", "animal_friend_2", "exotic_harvest_2"],
+      "bountiful_harvest": ["specialization_agrarian"],
+      "sustainable_farming": ["specialization_agrarian"],
+      "master_rancher": ["specialization_horticulturist"],
+      "legendary_botanist": ["specialization_horticulturist"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["specialization_agrarian", "specialization_horticulturist"],
+        "description": "Choose your path"
+      }
+    ]
+  },
+  "hunter_v1": {
+    "metadata": {
+      "job": "hunter",
+      "skill_points_per_level": 1,
+      "root": "hunt_begin",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "slayer",
+        "name": "Slayer",
+        "description": "Combat and damage",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#f44336",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#d32f2f"
+        },
+        "icon": { "id": "DIAMOND_SWORD", "custom_model_data": 140 }
+      },
+      {
+        "id": "ranger",
+        "name": "Ranger",
+        "description": "Ranged combat and tracking",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#4caf50",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#388e3c"
+        },
+        "icon": { "id": "BOW", "custom_model_data": 141 }
+      },
+      {
+        "id": "scout",
+        "name": "Scout",
+        "description": "Exploration and awareness",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#607d8b",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#455a64"
+        },
+        "icon": { "id": "COMPASS", "custom_model_data": 142 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "hunt_begin",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["slayer", "ranger", "scout"],
+        "meta": {
+          "name": "The Hunt Begins",
+          "icon": { "id": "STONE_SWORD", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["Every hunter starts somewhere"],
+          "effects": []
+        }
+      },
+      {
+        "id": "deadly_strikes_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["slayer"],
+        "meta": {
+          "name": "Deadly Strikes I",
+          "icon": { "id": "IRON_SWORD", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["10% more XP from melee kills"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "deadly_strikes_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["slayer"],
+        "meta": {
+          "name": "Deadly Strikes II",
+          "icon": { "id": "NETHERITE_SWORD", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["20% more XP from melee kills"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "sharpshooter_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["ranger"],
+        "meta": {
+          "name": "Sharpshooter I",
+          "icon": { "id": "CROSSBOW", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% more XP from ranged kills"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "sharpshooter_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["ranger"],
+        "meta": {
+          "name": "Sharpshooter II",
+          "icon": { "id": "FIREWORK_ROCKET", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% more money from ranged kills"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "tracker_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["scout"],
+        "meta": {
+          "name": "Tracker I",
+          "icon": { "id": "LEAD", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["See mobs from further away"],
+          "effects": [{ "type": "passive", "ability": "tracker", "description": "Extended range" }]
+        }
+      },
+      {
+        "id": "tracker_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["scout"],
+        "meta": {
+          "name": "Tracker II",
+          "icon": { "id": "SPYGLASS", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["Highlight nearby mobs"],
+          "effects": [{ "type": "passive", "ability": "highlight", "description": "Mob glow" }]
+        }
+      },
+      {
+        "id": "specialization_beast_master",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["slayer", "ranger"],
+        "meta": {
+          "name": "Beast Master",
+          "icon": { "id": "WOLF_SPAWN_EGG", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_monster_hunter"],
+          "description": ["Master of beast combat", "Unlock beast bonuses"],
+          "effects": [{ "type": "passive", "ability": "beast_master", "description": "Beast mastery" }]
+        }
+      },
+      {
+        "id": "specialization_monster_hunter",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["ranger", "scout"],
+        "meta": {
+          "name": "Monster Hunter",
+          "icon": { "id": "ZOMBIE_HEAD", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_beast_master"],
+          "description": ["Master of monster slaying", "Unlock monster bonuses"],
+          "effects": [{ "type": "passive", "ability": "monster_hunter", "description": "Monster mastery" }]
+        }
+      },
+      {
+        "id": "berserker",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["slayer"],
+        "meta": {
+          "name": "Berserker",
+          "icon": { "id": "AXE", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Melee combat grants massive XP", "Unleash fury"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "pack_leader",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["slayer", "ranger"],
+        "meta": {
+          "name": "Pack Leader",
+          "icon": { "id": "NAME_TAG", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Tamed companions fight better", "Lead the pack"],
+          "effects": [{ "type": "passive", "ability": "pack_leader", "description": "Pet bonus" }]
+        }
+      },
+      {
+        "id": "sniper",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["ranger"],
+        "meta": {
+          "name": "Sniper",
+          "icon": { "id": "ARROW", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": ["Ranged kills grant massive rewards", "Perfect accuracy"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "monster_slayer",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["scout", "ranger"],
+        "meta": {
+          "name": "Monster Slayer",
+          "icon": { "id": "BONE", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Rare monster drops", "Hunt the legendary"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "deadly_strikes_1": ["hunt_begin"],
+      "deadly_strikes_2": ["deadly_strikes_1"],
+      "sharpshooter_1": ["hunt_begin"],
+      "sharpshooter_2": ["sharpshooter_1"],
+      "tracker_1": ["hunt_begin"],
+      "tracker_2": ["tracker_1"],
+      "specialization_beast_master": ["deadly_strikes_2", "sharpshooter_2", "tracker_2"],
+      "specialization_monster_hunter": ["deadly_strikes_2", "sharpshooter_2", "tracker_2"],
+      "berserker": ["specialization_beast_master"],
+      "pack_leader": ["specialization_beast_master"],
+      "sniper": ["specialization_monster_hunter"],
+      "monster_slayer": ["specialization_monster_hunter"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["specialization_beast_master", "specialization_monster_hunter"],
+        "description": "Choose your path"
+      }
+    ]
+  },
+  "fisher_v1": {
+    "metadata": {
+      "job": "fisher",
+      "skill_points_per_level": 1,
+      "root": "casting_off",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "angler",
+        "name": "Angler",
+        "description": "Traditional fishing",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#2196f3",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#1976d2"
+        },
+        "icon": { "id": "FISHING_ROD", "custom_model_data": 150 }
+      },
+      {
+        "id": "mariner",
+        "name": "Mariner",
+        "description": "Ocean exploration",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#00bcd4",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#0097a7"
+        },
+        "icon": { "id": "NAUTILUS_SHELL", "custom_model_data": 151 }
+      },
+      {
+        "id": "treasure_hunter",
+        "name": "Treasure Hunter",
+        "description": "Seeking valuable finds",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#ffc107",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#ffa000"
+        },
+        "icon": { "id": "HEART_OF_THE_SEA", "custom_model_data": 152 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "casting_off",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["angler", "mariner", "treasure_hunter"],
+        "meta": {
+          "name": "Casting Off",
+          "icon": { "id": "COD", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["Every great catch starts with a cast"],
+          "effects": []
+        }
+      },
+      {
+        "id": "patient_fisher_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["angler"],
+        "meta": {
+          "name": "Patient Fisher I",
+          "icon": { "id": "SALMON", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["10% more XP from fishing"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "patient_fisher_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["angler"],
+        "meta": {
+          "name": "Patient Fisher II",
+          "icon": { "id": "TROPICAL_FISH", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["20% more XP from fishing"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "deep_waters_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["mariner"],
+        "meta": {
+          "name": "Deep Waters I",
+          "icon": { "id": "PRISMARINE_CRYSTALS", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% bonus from ocean fishing"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "deep_waters_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["mariner"],
+        "meta": {
+          "name": "Deep Waters II",
+          "icon": { "id": "SEA_LANTERN", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% bonus from rare ocean fish"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "lucky_catch_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["treasure_hunter"],
+        "meta": {
+          "name": "Lucky Catch I",
+          "icon": { "id": "BURIED_TREASURE_MAP", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["10% better treasure chance"],
+          "effects": [{ "type": "passive", "ability": "treasure", "description": "Treasure boost" }]
+        }
+      },
+      {
+        "id": "lucky_catch_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["treasure_hunter"],
+        "meta": {
+          "name": "Lucky Catch II",
+          "icon": { "id": "DREADNOUGHT_SHELL", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["20% better treasure chance"],
+          "effects": [{ "type": "passive", "ability": "treasure", "description": "Treasure boost+" }]
+        }
+      },
+      {
+        "id": "specialization_master_angler",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["angler", "mariner"],
+        "meta": {
+          "name": "Master Angler",
+          "icon": { "id": "PUFFERFISH", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_captain"],
+          "description": ["Legendary fisherman", "Unlock rare catches"],
+          "effects": [{ "type": "passive", "ability": "angler", "description": "Fishing mastery" }]
+        }
+      },
+      {
+        "id": "specialization_captain",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["mariner", "treasure_hunter"],
+        "meta": {
+          "name": "Sea Captain",
+          "icon": { "id": "TRIDENT", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["specialization_master_angler"],
+          "description": ["Master of the seas", "Unlock ocean treasures"],
+          "effects": [{ "type": "passive", "ability": "captain", "description": "Ocean mastery" }]
+        }
+      },
+      {
+        "id": "fish_monger",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["angler"],
+        "meta": {
+          "name": "Fish Monger",
+          "icon": { "id": "COD_BUCKET", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Massive fish yields", "Profitable fishing"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "legendary_catch",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["angler", "mariner"],
+        "meta": {
+          "name": "Legendary Catch",
+          "icon": { "id": "ELDER_GUARDIAN_SHELL", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Catch legendary fish", "Mythical rewards"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "ocean_master",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["mariner"],
+        "meta": {
+          "name": "Ocean Master",
+          "icon": { "id": "CONDUIT", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": ["Breathe underwater", "Master the depths"],
+          "effects": [{ "type": "passive", "ability": "water_breathing", "description": "Underwater" }]
+        }
+      },
+      {
+        "id": "treasure_seeker",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["treasure_hunter", "mariner"],
+        "meta": {
+          "name": "Treasure Seeker",
+          "icon": { "id": "TURTLE_HELMET", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Find buried treasure", "Rich beyond measure"],
+          "effects": [{ "type": "passive", "ability": "treasure_map", "description": "Treasure maps" }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "patient_fisher_1": ["casting_off"],
+      "patient_fisher_2": ["patient_fisher_1"],
+      "deep_waters_1": ["casting_off"],
+      "deep_waters_2": ["deep_waters_1"],
+      "lucky_catch_1": ["casting_off"],
+      "lucky_catch_2": ["lucky_catch_1"],
+      "specialization_master_angler": ["patient_fisher_2", "deep_waters_2", "lucky_catch_2"],
+      "specialization_captain": ["patient_fisher_2", "deep_waters_2", "lucky_catch_2"],
+      "fish_monger": ["specialization_master_angler"],
+      "legendary_catch": ["specialization_master_angler"],
+      "ocean_master": ["specialization_captain"],
+      "treasure_seeker": ["specialization_captain"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["specialization_master_angler", "specialization_captain"],
+        "description": "Choose your path"
+      }
+    ]
+  },
+  "blacksmith_v1": {
+    "metadata": {
+      "job": "blacksmith",
+      "skill_points_per_level": 1,
+      "root": "forge_lit",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "weaponsmith",
+        "name": "Weaponsmith",
+        "description": "Forge weapons of war",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#ff5722",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#e64a19"
+        },
+        "icon": { "id": "ANVIL", "custom_model_data": 160 }
+      },
+      {
+        "id": "armorsmith",
+        "name": "Armorsmith",
+        "description": "Forge protective gear",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#7f8c8d",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#566573"
+        },
+        "icon": { "id": "IRON_CHESTPLATE", "custom_model_data": 161 }
+      },
+      {
+        "id": "toolsmith",
+        "name": "Toolsmith",
+        "description": "Forge essential tools",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#8d6e63",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#6d4c41"
+        },
+        "icon": { "id": "SMITHING_TABLE", "custom_model_data": 162 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "forge_lit",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["weaponsmith", "armorsmith", "toolsmith"],
+        "meta": {
+          "name": "Forge Lit",
+          "icon": { "id": "CAMPFIRE", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["The fire is ready, time to craft"],
+          "effects": []
+        }
+      },
+      {
+        "id": "sharp_edge_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["weaponsmith"],
+        "meta": {
+          "name": "Sharp Edge I",
+          "icon": { "id": "GOLDEN_SWORD", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["10% more XP from weapons"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "sharp_edge_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["weaponsmith"],
+        "meta": {
+          "name": "Sharp Edge II",
+          "icon": { "id": "NETHERITE_SWORD", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["20% more XP from weapons"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "iron_skin_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["armorsmith"],
+        "meta": {
+          "name": "Iron Skin I",
+          "icon": { "id": "CHAINMAIL_CHESTPLATE", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% more money from armor"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "iron_skin_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["armorsmith"],
+        "meta": {
+          "name": "Iron Skin II",
+          "icon": { "id": "DIAMOND_CHESTPLATE", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% more money from armor"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "quality_tools_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["toolsmith"],
+        "meta": {
+          "name": "Quality Tools I",
+          "icon": { "id": "STONECUTTER", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["10% more XP from tools"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "quality_tools_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["toolsmith"],
+        "meta": {
+          "name": "Quality Tools II",
+          "icon": { "id": "GRINDSTONE", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["20% more XP from tools"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "speciality_master_weaponsmith",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["weaponsmith", "armorsmith"],
+        "meta": {
+          "name": "Master Weaponsmith",
+          "icon": { "id": "SMITHING_TABLE", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["speciality_master_armorer"],
+          "description": ["Legendary weapon crafter", "Unlock legendary weapons"],
+          "effects": [{ "type": "passive", "ability": "weaponsmith", "description": "Weapon mastery" }]
+        }
+      },
+      {
+        "id": "speciality_master_armorer",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["armorsmith", "toolsmith"],
+        "meta": {
+          "name": "Master Armorer",
+          "icon": { "id": "LOOM", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["speciality_master_weaponsmith"],
+          "description": ["Legendary armor crafter", "Unlock legendary armor"],
+          "effects": [{ "type": "passive", "ability": "armorer", "description": "Armor mastery" }]
+        }
+      },
+      {
+        "id": "blade_master",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["weaponsmith"],
+        "meta": {
+          "name": "Blade Master",
+          "icon": { "id": "DIAMOND_SWORD", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Legendary blade crafting", "Weapons of legend"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "war_forged",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["weaponsmith", "armorsmith"],
+        "meta": {
+          "name": "War Forged",
+          "icon": { "id": "BLAZE_POWDER", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Items forged in battle", "Combat bonuses"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "fortress",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["armorsmith"],
+        "meta": {
+          "name": "Fortress",
+          "icon": { "id": "SHIELD", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": ["Ultimate protection", "Impenetrable armor"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "artificer",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["toolsmith", "armorsmith"],
+        "meta": {
+          "name": "Artificer",
+          "icon": { "id": "ENCHANTED_BOOK", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Master of all crafts", "Ultimate versatility"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "sharp_edge_1": ["forge_lit"],
+      "sharp_edge_2": ["sharp_edge_1"],
+      "iron_skin_1": ["forge_lit"],
+      "iron_skin_2": ["iron_skin_1"],
+      "quality_tools_1": ["forge_lit"],
+      "quality_tools_2": ["quality_tools_1"],
+      "speciality_master_weaponsmith": ["sharp_edge_2", "iron_skin_2", "quality_tools_2"],
+      "speciality_master_armorer": ["sharp_edge_2", "iron_skin_2", "quality_tools_2"],
+      "blade_master": ["speciality_master_weaponsmith"],
+      "war_forged": ["speciality_master_weaponsmith"],
+      "fortress": ["speciality_master_armorer"],
+      "artificer": ["speciality_master_armorer"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["speciality_master_weaponsmith", "speciality_master_armorer"],
+        "description": "Choose your path"
+      }
+    ]
+  },
+  "enchanter_v1": {
+    "metadata": {
+      "job": "enchanter",
+      "skill_points_per_level": 1,
+      "root": "arcane_begin",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "spellblade",
+        "name": "Spellblade",
+        "description": "Enchant weapons",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#9c27b0",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#7b1fa2"
+        },
+        "icon": { "id": "ENCHANTING_TABLE", "custom_model_data": 170 }
+      },
+      {
+        "id": "arcane_shield",
+        "name": "Arcane Shield",
+        "description": "Enchant armor",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#3f51b5",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#303f9f"
+        },
+        "icon": { "id": "ENDER_CHEST", "custom_model_data": 171 }
+      },
+      {
+        "id": "mystic_artificer",
+        "name": "Mystic Artificer",
+        "description": "Enchant tools and books",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#00bcd4",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#0097a7"
+        },
+        "icon": { "id": "BOOKSHELF", "custom_model_data": 172 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "arcane_begin",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["spellblade", "arcane_shield", "mystic_artificer"],
+        "meta": {
+          "name": "Arcane Beginning",
+          "icon": { "id": "ENCHANTED_BOOK", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["Magic flows through everything"],
+          "effects": []
+        }
+      },
+      {
+        "id": "sharp_enchant_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["spellblade"],
+        "meta": {
+          "name": "Sharp Enchant I",
+          "icon": { "id": "DIAMOND_SWORD", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["10% more XP from weapon enchants"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "sharp_enchant_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["spellblade"],
+        "meta": {
+          "name": "Sharp Enchant II",
+          "icon": { "id": "NETHERITE_SWORD", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["20% more XP from weapon enchants"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "protective_ward_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["arcane_shield"],
+        "meta": {
+          "name": "Protective Ward I",
+          "icon": { "id": "TURTLE_HELMET", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% more money from armor enchants"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "protective_ward_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["arcane_shield"],
+        "meta": {
+          "name": "Protective Ward II",
+          "icon": { "id": "ELYTRA", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% more money from armor enchants"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "arcane_knowledge_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["mystic_artificer"],
+        "meta": {
+          "name": "Arcane Knowledge I",
+          "icon": { "id": "WRITABLE_BOOK", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["10% more XP from books and tools"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "arcane_knowledge_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["mystic_artificer"],
+        "meta": {
+          "name": "Arcane Knowledge II",
+          "icon": { "id": "KNOWLEDGE_BOOK", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["20% more XP from books and tools"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "speciality_archmage",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["spellblade", "arcane_shield"],
+        "meta": {
+          "name": "Archmage",
+          "icon": { "id": "END_CRYSTAL", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["speciality_mystic_master"],
+          "description": ["Master of combat enchantments", "Unlock power enchants"],
+          "effects": [{ "type": "passive", "ability": "archmage", "description": "Combat magic" }]
+        }
+      },
+      {
+        "id": "speciality_mystic_master",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["arcane_shield", "mystic_artificer"],
+        "meta": {
+          "name": "Mystic Master",
+          "icon": { "id": "RECOVERY_COMPASS", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["speciality_archmage"],
+          "description": ["Master of utility enchantments", "Unlock unique enchants"],
+          "effects": [{ "type": "passive", "ability": "mystic", "description": "Utility magic" }]
+        }
+      },
+      {
+        "id": "soul_blade",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["spellblade"],
+        "meta": {
+          "name": "Soul Blade",
+          "icon": { "id": "NETHERITE Sword", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Weapons of immense power", "Soul-stealing enchantments"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "ethereal_form",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["spellblade", "arcane_shield"],
+        "meta": {
+          "name": "Ethereal Form",
+          "icon": { "id": "SPECTRAL_ARROW", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Walk between realms", "Phasing enchantments"],
+          "effects": [{ "type": "passive", "ability": "phase", "description": "Phase ability" }]
+        }
+      },
+      {
+        "id": "arcane_sanctuary",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["arcane_shield"],
+        "meta": {
+          "name": "Arcane Sanctuary",
+          "icon": { "id": "BEACON", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": ["Ultimate protection", "Warding magic"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "forbidden_knowledge",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["mystic_artificer", "arcane_shield"],
+        "meta": {
+          "name": "Forbidden Knowledge",
+          "icon": { "id": "HEAD", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Unlock impossible enchantments", "Reality-bending magic"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "sharp_enchant_1": ["arcane_begin"],
+      "sharp_enchant_2": ["sharp_enchant_1"],
+      "protective_ward_1": ["arcane_begin"],
+      "protective_ward_2": ["protective_ward_1"],
+      "arcane_knowledge_1": ["arcane_begin"],
+      "arcane_knowledge_2": ["arcane_knowledge_1"],
+      "speciality_archmage": ["sharp_enchant_2", "protective_ward_2", "arcane_knowledge_2"],
+      "speciality_mystic_master": ["sharp_enchant_2", "protective_ward_2", "arcane_knowledge_2"],
+      "soul_blade": ["speciality_archmage"],
+      "ethereal_form": ["speciality_archmage"],
+      "arcane_sanctuary": ["speciality_mystic_master"],
+      "forbidden_knowledge": ["speciality_mystic_master"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["speciality_archmage", "speciality_mystic_master"],
+        "description": "Choose your path"
+      }
+    ]
+  },
+  "alchemist_v1": {
+    "metadata": {
+      "job": "alchemist",
+      "skill_points_per_level": 1,
+      "root": "brewing_start",
+      "version": "1.0"
+    },
+    "archetypes": [
+      {
+        "id": "potion_master",
+        "name": "Potion Master",
+        "description": "Combat and utility potions",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#e91e63",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#c2185b"
+        },
+        "icon": { "id": "POTION", "custom_model_data": 180 }
+      },
+      {
+        "id": "transmuter",
+        "name": "Transmuter",
+        "description": "Item transformation",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#ff9800",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#f57c00"
+        },
+        "icon": { "id": "REDSTONE", "custom_model_data": 181 }
+      },
+      {
+        "id": "chemist",
+        "name": "Chemist",
+        "description": "Explosives and splash",
+        "color": {
+          "locked": "#555555",
+          "unlocked": "#4caf50",
+          "locked_hover": "#777777",
+          "unlocked_hover": "#388e3c"
+        },
+        "icon": { "id": "GUNPOWDER", "custom_model_data": 182 }
+      }
+    ],
+    "layout": [
+      {
+        "id": "brewing_start",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 0 },
+        "archetype_refs": ["potion_master", "transmuter", "chemist"],
+        "meta": {
+          "name": "Brewing Begins",
+          "icon": { "id": "BREWING_STAND", "custom_model_data": 1000 },
+          "cost": 0,
+          "required": true,
+          "description": ["Every great potion starts here"],
+          "effects": []
+        }
+      },
+      {
+        "id": "potent_brew_1",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 1 },
+        "archetype_refs": ["potion_master"],
+        "meta": {
+          "name": "Potent Brew I",
+          "icon": { "id": "GLASS_BOTTLE", "custom_model_data": 1100 },
+          "cost": 1,
+          "description": ["10% more XP from potions"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "potent_brew_2",
+        "type": "ability",
+        "coordinates": { "x": 0, "y": 3 },
+        "archetype_refs": ["potion_master"],
+        "meta": {
+          "name": "Potent Brew II",
+          "icon": { "id": "HONEY_BOTTLE", "custom_model_data": 1101 },
+          "cost": 2,
+          "description": ["20% more XP from potions"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "alchemy_1",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 2 },
+        "archetype_refs": ["transmuter"],
+        "meta": {
+          "name": "Alchemy I",
+          "icon": { "id": "GOLD_NUGGET", "custom_model_data": 1200 },
+          "cost": 1,
+          "description": ["10% more money from brewing"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "alchemy_2",
+        "type": "ability",
+        "coordinates": { "x": 4, "y": 4 },
+        "archetype_refs": ["transmuter"],
+        "meta": {
+          "name": "Alchemy II",
+          "icon": { "id": "GOLD_INGOT", "custom_model_data": 1201 },
+          "cost": 2,
+          "description": ["20% more money from brewing"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "volatile_mix_1",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 1 },
+        "archetype_refs": ["chemist"],
+        "meta": {
+          "name": "Volatile Mix I",
+          "icon": { "id": "SPLASH_POTION", "custom_model_data": 1300 },
+          "cost": 1,
+          "description": ["10% more XP from splash potions"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.1 }]
+        }
+      },
+      {
+        "id": "volatile_mix_2",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 3 },
+        "archetype_refs": ["chemist"],
+        "meta": {
+          "name": "Volatile Mix II",
+          "icon": { "id": "LINGERING_POTION", "custom_model_data": 1301 },
+          "cost": 2,
+          "description": ["20% more XP from lingering potions"],
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.2 }]
+        }
+      },
+      {
+        "id": "speciality_grand_alchemist",
+        "type": "ability",
+        "coordinates": { "x": 2, "y": 6 },
+        "archetype_refs": ["potion_master", "transmuter"],
+        "meta": {
+          "name": "Grand Alchemist",
+          "icon": { "id": "DRAGON_BREATH", "custom_model_data": 2000, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["speciality_explosives_expert"],
+          "description": ["Master of transformation", "Unlock transmutation"],
+          "effects": [{ "type": "passive", "ability": "transmute", "description": "Transmute items" }]
+        }
+      },
+      {
+        "id": "speciality_explosives_expert",
+        "type": "ability",
+        "coordinates": { "x": 6, "y": 6 },
+        "archetype_refs": ["transmuter", "chemist"],
+        "meta": {
+          "name": "Explosives Expert",
+          "icon": { "id": "FIRE_CHARGE", "custom_model_data": 2001, "glowing": true },
+          "cost": 5,
+          "major": true,
+          "exclusive_with": ["speciality_grand_alchemist"],
+          "description": ["Master of volatile mixtures", "Unlock explosives"],
+          "effects": [{ "type": "passive", "ability": "explosive", "description": "Explosive brewing" }]
+        }
+      },
+      {
+        "id": "elixir_of_life",
+        "type": "ability",
+        "coordinates": { "x": 1, "y": 8 },
+        "archetype_refs": ["potion_master"],
+        "meta": {
+          "name": "Elixir of Life",
+          "icon": { "id": "ENCHANTED_GOLDEN_APPLE", "custom_model_data": 2100 },
+          "cost": 3,
+          "description": ["Brew impossible potions", "Life-giving elixirs"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "philosophers_stone",
+        "type": "ability",
+        "coordinates": { "x": 3, "y": 8 },
+        "archetype_refs": ["potion_master", "transmuter"],
+        "meta": {
+          "name": "Philosopher's Stone",
+          "icon": { "id": "EMERALD_BLOCK", "custom_model_data": 2101 },
+          "cost": 3,
+          "description": ["Transmute lead to gold", "Ultimate alchemy"],
+          "effects": [{ "type": "boost", "target": "money", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "deadly_concoction",
+        "type": "ability",
+        "coordinates": { "x": 5, "y": 8 },
+        "archetype_refs": ["chemist"],
+        "meta": {
+          "name": "Deadly Concoction",
+          "icon": { "id": "POISONOUS_POTATO", "custom_model_data": 2200 },
+          "cost": 3,
+          "description": "Lethal potions of power",
+          "effects": [{ "type": "boost", "target": "xp", "amount": 1.5 }]
+        }
+      },
+      {
+        "id": "chaos_brewing",
+        "type": "ability",
+        "coordinates": { "x": 7, "y": 8 },
+        "archetype_refs": ["chemist", "transmuter"],
+        "meta": {
+          "name": "Chaos Brewing",
+          "icon": { "id": "SHULKER_BOX", "custom_model_data": 2201 },
+          "cost": 3,
+          "description": ["Unpredictable but powerful", "Random magical effects"],
+          "effects": [{ "type": "passive", "ability": "chaos", "description": "Random effects" }]
+        }
+      }
+    ],
+    "prerequisites": {
+      "potent_brew_1": ["brewing_start"],
+      "potent_brew_2": ["potent_brew_1"],
+      "alchemy_1": ["brewing_start"],
+      "alchemy_2": ["alchemy_1"],
+      "volatile_mix_1": ["brewing_start"],
+      "volatile_mix_2": ["volatile_mix_1"],
+      "speciality_grand_alchemist": ["potent_brew_2", "alchemy_2", "volatile_mix_2"],
+      "speciality_explosives_expert": ["potent_brew_2", "alchemy_2", "volatile_mix_2"],
+      "elixir_of_life": ["speciality_grand_alchemist"],
+      "philosophers_stone": ["speciality_grand_alchemist"],
+      "deadly_concoction": ["speciality_explosives_expert"],
+      "chaos_brewing": ["speciality_explosives_expert"]
+    },
+    "exclusives": [
+      {
+        "group": "specialization",
+        "nodes": ["speciality_grand_alchemist", "speciality_explosives_expert"],
+        "description": "Choose your path"
+      }
+    ]
+  }
+}

@@ -27,7 +27,6 @@ public final class CommandModule extends AbstractModule {
     // Unified boost command (replaces BoostsCommand, ItemBoostCommand, SourceCommand)
     binder.addBinding().to(BoostCommand.class);
     binder.addBinding().to(UpgradesCommand.class);
-    binder.addBinding().to(RegenerateTreeLayoutCommand.class);
     // binder.addBinding().to(UpgradeCommand.class); // Disabled - requires JobPets dependency
     // Unified level command (replaces SetLevelCommand, AddLevelCommand, SubtractLevelCommand)
     binder.addBinding().to(LevelCommand.class);

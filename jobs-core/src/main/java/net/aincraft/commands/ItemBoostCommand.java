@@ -100,7 +100,7 @@ public final class ItemBoostCommand implements JobsCommand {
     try {
       material = Material.valueOf(materialName.toUpperCase());
     } catch (IllegalArgumentException e) {
-      Mint.sendMessage(sender, "<error>Invalid material: " + materialName);
+      Mint.sendThemedMessage(sender, "<error>Invalid material: " + materialName);
       return 0;
     }
 
@@ -108,7 +108,7 @@ public final class ItemBoostCommand implements JobsCommand {
     Key boostKey = Key.key(boostKeyStr);
     BoostSource boostSource = boostSourceRegistry.get(boostKey).orElse(null);
     if (boostSource == null) {
-      Mint.sendMessage(sender, "<error>Boost source not found: " + boostKeyStr);
+      Mint.sendThemedMessage(sender, "<error>Boost source not found: " + boostKeyStr);
       return 0;
     }
 
@@ -117,7 +117,7 @@ public final class ItemBoostCommand implements JobsCommand {
     try {
       slotSet = SlotSetParser.parse(slotSetSpec);
     } catch (IllegalArgumentException e) {
-      Mint.sendMessage(sender, "<error>Invalid slot specification: " + e.getMessage());
+      Mint.sendThemedMessage(sender, "<error>Invalid slot specification: " + e.getMessage());
       return 0;
     }
 
@@ -135,7 +135,7 @@ public final class ItemBoostCommand implements JobsCommand {
     // Give to player
     target.getInventory().addItem(item);
 
-    Mint.sendMessage(sender, "<accent>Gave <secondary>" + target.getName() + "<accent> an item with boost <primary>" + boostKeyStr);
+    Mint.sendThemedMessage(sender, "<accent>Gave <secondary>" + target.getName() + "<accent> an item with boost <primary>" + boostKeyStr);
 
     return Command.SINGLE_SUCCESS;
   }

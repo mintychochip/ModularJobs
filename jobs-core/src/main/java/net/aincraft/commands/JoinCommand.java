@@ -37,7 +37,7 @@ final class JoinCommand implements JobsCommand {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
           if (!(sender instanceof Player player)) {
-            Mint.sendMessage(sender, "<error>This command can only be used by players.");
+            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -50,17 +50,17 @@ final class JoinCommand implements JobsCommand {
             // Try fuzzy matching for suggestions
             List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-            Mint.sendMessage(player, "<error>Job not found: " + input);
+            Mint.sendThemedMessage(player, "<error>Job not found: " + input);
             if (!suggestions.isEmpty()) {
-              Mint.sendMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
+              Mint.sendThemedMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
             }
             return 0;
           }
 
           if (jobService.joinJob(player.getUniqueId().toString(), job.key().toString())) {
-            Mint.sendMessage(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
+            Mint.sendThemedMessage(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
           } else {
-            Mint.sendMessage(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
+            Mint.sendThemedMessage(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
           }
 
           return Command.SINGLE_SUCCESS;

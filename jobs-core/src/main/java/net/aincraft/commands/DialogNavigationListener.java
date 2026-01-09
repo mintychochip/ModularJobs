@@ -72,7 +72,7 @@ public class DialogNavigationListener implements Listener {
 
     Job job = jobResolver.resolveInNamespace(jobName, NAMESPACE);
     if (job == null) {
-      Mint.sendMessage(player, "<error>Job not found!");
+      Mint.sendThemedMessage(player, "<error>Job not found!");
       return;
     }
 

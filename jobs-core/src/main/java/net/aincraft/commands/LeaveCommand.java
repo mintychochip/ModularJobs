@@ -37,14 +37,14 @@ public class LeaveCommand implements JobsCommand {
               CommandSourceStack source = context.getSource();
               CommandSender sender = source.getSender();
               if (!(sender instanceof Player player)) {
-                Mint.sendMessage(sender, "<error>This command can only be used by players.");
+                Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
                 return 0;
               }
 
               List<JobProgression> progressions = jobService.getProgressions(player);
 
               if (progressions.isEmpty()) {
-                Mint.sendMessage(player, "<neutral>You are not in any jobs.");
+                Mint.sendThemedMessage(player, "<neutral>You are not in any jobs.");
                 return 0;
               }
 
@@ -56,11 +56,11 @@ public class LeaveCommand implements JobsCommand {
               }
 
               if (leftCount == 0) {
-                Mint.sendMessage(player, "<error>Failed to leave any jobs.");
+                Mint.sendThemedMessage(player, "<error>Failed to leave any jobs.");
               } else if (leftCount == 1) {
-                Mint.sendMessage(player, "<primary>✗ You left</primary> <secondary>1 job</secondary> <primary>!</primary>");
+                Mint.sendThemedMessage(player, "<primary>✗ You left</primary> <secondary>1 job</secondary> <primary>!</primary>");
               } else {
-                Mint.sendMessage(player, "<primary>✗ You left</primary> <secondary>" + leftCount + " jobs</secondary> <primary>!</primary>");
+                Mint.sendThemedMessage(player, "<primary>✗ You left</primary> <secondary>" + leftCount + " jobs</secondary> <primary>!</primary>");
               }
 
               return Command.SINGLE_SUCCESS;
@@ -73,7 +73,7 @@ public class LeaveCommand implements JobsCommand {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
           if (!(sender instanceof Player player)) {
-            Mint.sendMessage(sender, "<error>This command can only be used by players.");
+            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -86,17 +86,17 @@ public class LeaveCommand implements JobsCommand {
             // Try fuzzy matching for suggestions
             List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-            Mint.sendMessage(player, "<error>Job not found:</error> <secondary>" + input + "</secondary>");
+            Mint.sendThemedMessage(player, "<error>Job not found:</error> <secondary>" + input + "</secondary>");
             if (!suggestions.isEmpty()) {
-              Mint.sendMessage(player, "<neutral>Did you mean:</neutral> <secondary>" + String.join(", ", suggestions) + "</secondary>");
+              Mint.sendThemedMessage(player, "<neutral>Did you mean:</neutral> <secondary>" + String.join(", ", suggestions) + "</secondary>");
             }
             return 0;
           }
 
           if (jobService.leaveJob(player.getUniqueId().toString(), job.key().toString())) {
-            Mint.sendMessage(player, "<primary>✗ You left</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
+            Mint.sendThemedMessage(player, "<primary>✗ You left</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
           } else {
-            Mint.sendMessage(player, "<neutral>You are not in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
+            Mint.sendThemedMessage(player, "<neutral>You are not in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
           }
 
           return Command.SINGLE_SUCCESS;
