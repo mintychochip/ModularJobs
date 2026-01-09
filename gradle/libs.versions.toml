@@ -19,7 +19,6 @@ lwc = "2.4.0"
 bolt = "1.1.52"
 placeholderapi = "2.11.6"
 mint-api = "1.3"
-preferences = "631142d"
 
 # Development tools
 jetbrains-annotations = "24.1.0"
@@ -41,7 +40,6 @@ lwc = { module = "com.griefcraft:lwc", version.ref = "lwc" }
 bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }
 placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
 mint-api = { module = "dev.mintychochip:mint-api", version.ref = "mint-api" }
-preferences = { module = "com.github.mintychochip:preferences", version.ref = "preferences" }
 
 # Development
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }

@@ -73,13 +73,13 @@ public class InfoCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendMessage(sender, "<error>This command can only be used by players.");
+      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      Mint.sendMessage(sender, "<error>The job you specified does not exist.");
+      Mint.sendThemedMessage(sender, "<error>The job you specified does not exist.");
       return 0;
     }
 
@@ -87,7 +87,7 @@ public class InfoCommand implements JobsCommand {
     int totalPages = calculateTotalPages(tasks);
 
     if (page < 1 || page > totalPages) {
-      Mint.sendMessage(player, "<error>Invalid page. Valid: 1-" + totalPages);
+      Mint.sendThemedMessage(player, "<error>Invalid page. Valid: 1-" + totalPages);
       return 0;
     }
 

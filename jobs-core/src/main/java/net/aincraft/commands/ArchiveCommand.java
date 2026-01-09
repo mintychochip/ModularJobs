@@ -41,7 +41,7 @@ public class ArchiveCommand implements JobsCommand {
               OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
 
               if (target == null) {
-                Mint.sendMessage(sender, "<error>Player not found: " + playerName);
+                Mint.sendThemedMessage(sender, "<error>Player not found: " + playerName);
                 return 0;
               }
 
@@ -55,7 +55,7 @@ public class ArchiveCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            Mint.sendMessage(sender, "<error>This command can only be used by players.");
+            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
             return 0;
           }
 
@@ -73,10 +73,10 @@ public class ArchiveCommand implements JobsCommand {
         ? "<primary>Your Archived Jobs"
         : "<primary>" + targetName + "'s Archived Jobs";
 
-    Mint.sendMessage(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral>━━━━━━━━━");
+    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral>━━━━━━━━━");
 
     if (archivedProgressions.isEmpty()) {
-      Mint.sendMessage(viewer, "<neutral>  No archived jobs found.");
+      Mint.sendThemedMessage(viewer, "<neutral>  No archived jobs found.");
     } else {
       for (JobProgression progression : archivedProgressions) {
         displayJobEntry(viewer, progression);
@@ -84,15 +84,15 @@ public class ArchiveCommand implements JobsCommand {
     }
 
     // Footer
-    Mint.sendMessage(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   }
 
   private void displayJobEntry(CommandSender viewer, JobProgression progression) {
     int level = progression.level();
     BigDecimal experience = progression.experience();
 
-    Mint.sendMessage(viewer, "  " + progression.job().getPlainName() + " <neutral>- Level <accent>" + level);
-    Mint.sendMessage(viewer, "    <neutral>Total XP: <accent>" + formatNumber(experience));
+    Mint.sendThemedMessage(viewer, "  " + progression.job().getPlainName() + " <neutral>- Level <accent>" + level);
+    Mint.sendThemedMessage(viewer, "    <neutral>Total XP: <accent>" + formatNumber(experience));
   }
 
   private String formatNumber(BigDecimal number) {

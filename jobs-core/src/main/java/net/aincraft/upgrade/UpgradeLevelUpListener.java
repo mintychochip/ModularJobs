@@ -1,11 +1,10 @@
 package net.aincraft.upgrade;
 
 import com.google.inject.Inject;
+import dev.mintychochip.mint.Mint;
 import java.util.Optional;
 import net.aincraft.Job;
-import net.aincraft.config.ColorScheme;
 import net.aincraft.event.JobLevelEvent;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,19 +16,16 @@ import org.bukkit.event.Listener;
 public final class UpgradeLevelUpListener implements Listener {
 
   private final UpgradeService upgradeService;
-  private final ColorScheme colors;
 
   @Inject
-  public UpgradeLevelUpListener(UpgradeService upgradeService, ColorScheme colors) {
+  public UpgradeLevelUpListener(UpgradeService upgradeService) {
     this.upgradeService = upgradeService;
-    this.colors = colors;
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
   public void onJobLevelUp(JobLevelEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
-    int oldLevel = event.getOldLevel();
     int newLevel = event.getNewLevel();
 
     String playerId = player.getUniqueId().toString();
@@ -44,28 +40,30 @@ public final class UpgradeLevelUpListener implements Listener {
     UpgradeTree tree = treeOpt.get();
     int skillPointsPerLevel = tree.skillPointsPerLevel();
 
-    // Calculate total skill points to award (for level jumps)
-    int levelsGained = newLevel - oldLevel;
-    int totalPointsToAward = levelsGained * skillPointsPerLevel;
+    // Get current player data to check existing skill points
+    PlayerUpgradeData data = upgradeService.getPlayerData(playerId, jobKey);
 
-    if (totalPointsToAward <= 0) {
-      return;
+    // Calculate expected total skill points for the new level
+    int expectedTotalSkillPoints = newLevel * skillPointsPerLevel;
+    int currentTotalSkillPoints = data.totalSkillPoints();
+
+    // Only award if player has fewer skill points than expected
+    int pointsToAward = expectedTotalSkillPoints - currentTotalSkillPoints;
+
+    if (pointsToAward <= 0) {
+      return; // Already has appropriate skill points
     }
 
     // Award the skill points
-    upgradeService.awardSkillPoints(playerId, jobKey, totalPointsToAward);
+    upgradeService.awardSkillPoints(playerId, jobKey, pointsToAward);
 
-    // Notify the player
-    PlayerUpgradeData data = upgradeService.getPlayerData(playerId, jobKey);
+    // Refresh data after awarding
+    PlayerUpgradeData updatedData = upgradeService.getPlayerData(playerId, jobKey);
 
-    Component message = Component.text()
-        .append(Component.text("+", colors.accent()))
-        .append(Component.text(totalPointsToAward + " Skill Point" + (totalPointsToAward > 1 ? "s" : ""), colors.primary()))
-        .append(Component.text(" (", colors.neutral()))
-        .append(Component.text(data.availableSkillPoints() + " available", colors.secondary()))
-        .append(Component.text(")", colors.neutral()))
-        .build();
-
-    player.sendMessage(message);
+    // Use Mint's per-player theming with MiniMessage tags
+    String pointsText = pointsToAward > 1 ? "Skill Points" : "Skill Point";
+    String message = String.format("<accent>+<primary> %d %s<neutral> (<secondary>%d available<neutral>)",
+        pointsToAward, pointsText, updatedData.availableSkillPoints());
+    Mint.sendThemedMessage(player, message);
   }
 }

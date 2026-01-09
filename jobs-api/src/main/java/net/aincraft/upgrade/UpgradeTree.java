@@ -24,7 +24,30 @@ public final class UpgradeTree implements Keyed {
   private final String rootNodeKey;
   private final int skillPointsPerLevel;
   private final Map<String, UpgradeNode> nodes;
+  private final Map<String, ConnectorNode> connectors;
+  private final Map<String, PerkPolicy> perkPolicies;
 
+  public UpgradeTree(
+      @NotNull Key key,
+      @NotNull String jobKey,
+      @NotNull String rootNodeKey,
+      int skillPointsPerLevel,
+      @NotNull Map<String, UpgradeNode> nodes,
+      @NotNull Map<String, ConnectorNode> connectors,
+      @NotNull Map<String, PerkPolicy> perkPolicies
+  ) {
+    this.key = key;
+    this.jobKey = jobKey;
+    this.rootNodeKey = rootNodeKey;
+    this.skillPointsPerLevel = skillPointsPerLevel;
+    this.nodes = new HashMap<>(nodes);
+    this.connectors = new HashMap<>(connectors);
+    this.perkPolicies = new HashMap<>(perkPolicies);
+  }
+
+  /**
+   * Constructor for backward compatibility (no connectors, no perk policies).
+   */
   public UpgradeTree(
       @NotNull Key key,
       @NotNull String jobKey,
@@ -32,11 +55,21 @@ public final class UpgradeTree implements Keyed {
       int skillPointsPerLevel,
       @NotNull Map<String, UpgradeNode> nodes
   ) {
-    this.key = key;
-    this.jobKey = jobKey;
-    this.rootNodeKey = rootNodeKey;
-    this.skillPointsPerLevel = skillPointsPerLevel;
-    this.nodes = new HashMap<>(nodes);
+    this(key, jobKey, rootNodeKey, skillPointsPerLevel, nodes, new HashMap<>(), new HashMap<>());
+  }
+
+  /**
+   * Constructor for backward compatibility (no perk policies).
+   */
+  public UpgradeTree(
+      @NotNull Key key,
+      @NotNull String jobKey,
+      @NotNull String rootNodeKey,
+      int skillPointsPerLevel,
+      @NotNull Map<String, UpgradeNode> nodes,
+      @NotNull Map<String, ConnectorNode> connectors
+  ) {
+    this(key, jobKey, rootNodeKey, skillPointsPerLevel, nodes, connectors, new HashMap<>());
   }
 
   @Override
@@ -66,6 +99,24 @@ public final class UpgradeTree implements Keyed {
   }
 
   /**
+   * Get all perk policies for this tree.
+   * Maps perkId -> policy for how multiple levels are applied.
+   */
+  @NotNull
+  public Map<String, PerkPolicy> perkPolicies() {
+    return Collections.unmodifiableMap(perkPolicies);
+  }
+
+  /**
+   * Get the policy for a specific perk.
+   * @return the policy, or MAX if not specified (default behavior)
+   */
+  @NotNull
+  public PerkPolicy getPerkPolicy(@NotNull String perkId) {
+    return perkPolicies.getOrDefault(perkId, PerkPolicy.MAX);
+  }
+
+  /**
    * Get the root node of this tree.
    */
   public @NotNull Optional<UpgradeNode> rootNode() {
@@ -84,6 +135,20 @@ public final class UpgradeTree implements Keyed {
    */
   public @NotNull Collection<UpgradeNode> allNodes() {
     return Collections.unmodifiableCollection(nodes.values());
+  }
+
+  /**
+   * Get all connector nodes in this tree.
+   */
+  public @NotNull Collection<ConnectorNode> allConnectors() {
+    return Collections.unmodifiableCollection(connectors.values());
+  }
+
+  /**
+   * Get a connector by its key.
+   */
+  public @NotNull Optional<ConnectorNode> getConnector(@NotNull String connectorKey) {
+    return Optional.ofNullable(connectors.get(connectorKey));
   }
 
   /**

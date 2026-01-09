@@ -8,6 +8,9 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import net.aincraft.config.YamlConfiguration;
+import net.aincraft.container.boost.factories.BoostFactory;
+import net.aincraft.container.boost.factories.ConditionFactory;
+import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.gui.UpgradeTreeGui;
 import net.aincraft.registry.Registry;
 import net.aincraft.registry.SimpleRegistryImpl;
@@ -34,6 +37,7 @@ public final class UpgradeModule extends AbstractModule {
     // Effect application services
     bind(UpgradePermissionManager.class).in(Singleton.class);
     bind(UpgradeEffectApplier.class).in(Singleton.class);
+    bind(UpgradeBoostDataService.class).to(UpgradeBoostDataServiceImpl.class).in(Singleton.class);
 
     // Register upgrade listeners
     Multibinder<Listener> listenerBinder = Multibinder.newSetBinder(binder(), Listener.class);
@@ -61,8 +65,12 @@ public final class UpgradeModule extends AbstractModule {
   public UpgradeTreeLoader upgradeTreeLoader(
       Plugin plugin,
       Gson gson,
-      Registry<UpgradeTree> registry) {
-    UpgradeTreeLoader loader = new UpgradeTreeLoader(plugin, gson, registry);
+      Registry<UpgradeTree> registry,
+      ConditionFactory conditionFactory,
+      PolicyFactory policyFactory,
+      BoostFactory boostFactory) {
+    UpgradeTreeLoader loader = new UpgradeTreeLoader(
+        plugin, gson, registry, conditionFactory, policyFactory, boostFactory);
     loader.load();
     return loader;
   }

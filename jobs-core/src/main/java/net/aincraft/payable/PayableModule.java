@@ -32,11 +32,17 @@ public final class PayableModule extends AbstractModule {
 
   private static final String ECONOMY_TYPE = "modularjobs:economy";
   private static final String EXPERIENCE_TYPE = "modularjobs:experience";
+  private final Plugin plugin;
+
+  public PayableModule(Plugin plugin) {
+    this.plugin = plugin;
+  }
 
   @Override
   protected void configure() {
-    // Default color provider (blue bar) - was previously in PreferenceModule
-    bind(ExperienceBarColorProvider.class).toInstance(player -> net.kyori.adventure.bossbar.BossBar.Color.BLUE);
+    // Install preference module for experience bar color customization
+    // Falls back to theme-based provider if preference service unavailable
+    install(new PreferenceModule());
     install(new EconomyModule());
     install(new ExperienceModule());
     Multibinder<PayableType> set = Multibinder.newSetBinder(binder(), PayableType.class);

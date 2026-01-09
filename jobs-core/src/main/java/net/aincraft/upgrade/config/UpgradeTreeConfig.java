@@ -2,6 +2,8 @@ package net.aincraft.upgrade.config;
 
 import java.util.List;
 import java.util.Map;
+import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
+import net.aincraft.boost.config.BoostSourceConfig.PolicyConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +27,9 @@ public record UpgradeTreeConfig(
       @Nullable List<String> exclusive,
       @Nullable List<String> children,
       @Nullable List<EffectConfig> effects,
-      @Nullable PositionConfig position
+      @Nullable PositionConfig position,
+      @Nullable String perkId,
+      @Nullable Integer level
   ) {
     /**
      * Default to MINOR if not specified.
@@ -35,6 +39,10 @@ public record UpgradeTreeConfig(
     }
   }
 
+  /**
+   * Effect configuration for upgrade nodes.
+   * Supports both simple boosts and ruled boosts with conditions.
+   */
   public record EffectConfig(
       @NotNull String type,
       @Nullable String target,
@@ -45,7 +53,30 @@ public record UpgradeTreeConfig(
       @Nullable Integer value,
       @Nullable String unlock_type,
       @Nullable String unlock_key,
-      @Nullable String permission
+      @Nullable String permission,
+      // For ruled_boost type: use the same structure as boost_sources
+      @Nullable PolicyConfig policy,
+      @Nullable List<RuleConfig> rules
+  ) {
+  }
+
+  /**
+   * Rule configuration for ruled boost effects.
+   * Same structure as boost source rules.
+   */
+  public record RuleConfig(
+      int priority,
+      @NotNull ConditionConfig conditions,
+      @NotNull BoostConfig boost
+  ) {
+  }
+
+  /**
+   * Boost amount configuration.
+   */
+  public record BoostConfig(
+      @NotNull String type,
+      double amount
   ) {
   }
 

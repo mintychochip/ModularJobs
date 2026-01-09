@@ -13,7 +13,6 @@ dependencies {
     implementation(libs.caffeine)
     implementation(libs.gson)
 
-    compileOnly(libs.preferences)
     compileOnly(libs.placeholderapi)
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.mint.api)
@@ -46,7 +45,7 @@ tasks {
         minecraftVersion("1.21.11")
         downloadPlugins {
             hangar("Bolt","1.1.78")
-            hangar("Mint","1.3.0-3191a75")
+            hangar("Mint","1.3.6-b552e58")
         }
 
     }
