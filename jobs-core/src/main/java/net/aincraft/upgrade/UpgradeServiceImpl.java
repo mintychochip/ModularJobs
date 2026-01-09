@@ -47,8 +47,27 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
   @Override
   public @NotNull Optional<UpgradeTree> getTree(@NotNull String jobKey) {
+    // Extract the plain job key (without namespace) for matching
+    String plainJobKey = jobKey;
+    if (jobKey.contains(":")) {
+      plainJobKey = jobKey.substring(jobKey.indexOf(':') + 1);
+    }
+
+    final String finalPlainJobKey = plainJobKey;
+
+    // Debug: log available trees
+    if (treeRegistry.stream().findAny().isEmpty()) {
+      Bukkit.getLogger().warning("[UpgradeService] No trees registered in registry!");
+    } else {
+      treeRegistry.stream().forEach(tree ->
+          Bukkit.getLogger().info("[UpgradeService] Available tree: jobKey=" + tree.jobKey())
+      );
+    }
+
+    Bukkit.getLogger().info("[UpgradeService] Looking for tree with jobKey=" + finalPlainJobKey + " (from input=" + jobKey + ")");
+
     return treeRegistry.stream()
-        .filter(tree -> tree.jobKey().equals(jobKey))
+        .filter(tree -> tree.jobKey().equals(finalPlainJobKey))
         .findFirst();
   }
 
@@ -128,6 +147,9 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     // Unlock the node
     data.unlock(nodeKey);
+
+    // Track perk level
+    data.setPerkLevel(node.perkId(), node.level());
 
     // Apply effects if player is online
     UUID uuid = UUID.fromString(playerId);

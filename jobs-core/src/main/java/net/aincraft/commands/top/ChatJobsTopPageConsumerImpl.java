@@ -24,7 +24,7 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
   public void consume(Component jobName, Page<JobProgression> page, CommandSender sender,
       int maxPages) {
     String jobNameText = PlainTextComponentSerializer.plainText().serialize(jobName);
-    Mint.sendMessage(sender, "<primary>Jobs Top </primary><accent>" + jobNameText + "</accent>");
+    Mint.sendThemedMessage(sender, "<primary>Jobs Top </primary><accent>" + jobNameText + "</accent>");
     Component body = Component.empty();
     List<JobProgression> data = page.data();
     int pageNumber = page.pageNumber();

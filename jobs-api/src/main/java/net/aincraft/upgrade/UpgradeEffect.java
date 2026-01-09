@@ -1,21 +1,22 @@
 package net.aincraft.upgrade;
 
 import java.math.BigDecimal;
+import java.util.List;
+import net.aincraft.container.BoostSource;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents an effect granted by an upgrade node.
- * Currently a mock interface - implementations can be added later.
  */
 public sealed interface UpgradeEffect permits
     UpgradeEffect.BoostEffect,
-    UpgradeEffect.PassiveEffect,
-    UpgradeEffect.StatEffect,
-    UpgradeEffect.UnlockEffect,
+    UpgradeEffect.RuledBoostEffect,
     UpgradeEffect.PermissionEffect {
 
   /**
-   * Multiplier boost effect for XP or money.
+   * Simple boost effect for XP or money (legacy format).
+   * For complex conditions, use {@link RuledBoostEffect}.
    */
   record BoostEffect(@NotNull String target, @NotNull BigDecimal multiplier) implements UpgradeEffect {
     public static final String TARGET_XP = "xp";
@@ -24,26 +25,16 @@ public sealed interface UpgradeEffect permits
   }
 
   /**
-   * Passive ability effect (auto-smelt, fortune, etc.).
-   * Implementation is a placeholder for now.
+   * Boost effect that uses the full BoostSource composition API with rules/conditions.
+   * Supports same condition types as item boosts (weather, biome, potion effects, etc).
+   *
+   * @param target      target payable type (xp/money/all)
+   * @param boostSource the boost source with rules and conditions
    */
-  record PassiveEffect(@NotNull String ability, @NotNull String description) implements UpgradeEffect {
-  }
-
-  /**
-   * Stat modification effect (+max jobs, reduced cooldowns, etc.).
-   */
-  record StatEffect(@NotNull String stat, int value) implements UpgradeEffect {
-    public static final String STAT_MAX_JOBS = "max_jobs";
-    public static final String STAT_COOLDOWN_REDUCTION = "cooldown_reduction";
-  }
-
-  /**
-   * Unlocks new content (tasks, features, etc.).
-   */
-  record UnlockEffect(@NotNull String unlockType, @NotNull String unlockKey) implements UpgradeEffect {
-    public static final String UNLOCK_TASK = "task";
-    public static final String UNLOCK_FEATURE = "feature";
+  record RuledBoostEffect(
+      @NotNull String target,
+      @NotNull BoostSource boostSource
+  ) implements UpgradeEffect {
   }
 
   /**

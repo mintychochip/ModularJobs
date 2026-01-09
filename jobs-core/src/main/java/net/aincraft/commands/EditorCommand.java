@@ -55,7 +55,7 @@ final class EditorCommand implements JobsCommand {
               CommandSender sender = source.getSender();
 
               if (!(sender instanceof Player player)) {
-                Mint.sendMessage(sender, "<error>This command can only be used by players.");
+                Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
                 return Command.SINGLE_SUCCESS;
               }
 
@@ -68,9 +68,9 @@ final class EditorCommand implements JobsCommand {
                 // Try fuzzy matching for suggestions
                 java.util.List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-                Mint.sendMessage(player, "<error>Job not found: " + input);
+                Mint.sendThemedMessage(player, "<error>Job not found: " + input);
                 if (!suggestions.isEmpty()) {
-                  Mint.sendMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
+                  Mint.sendThemedMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
                 }
                 return 0;
               }
@@ -84,7 +84,7 @@ final class EditorCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            Mint.sendMessage(sender, "<error>This command can only be used by players.");
+            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -100,7 +100,7 @@ final class EditorCommand implements JobsCommand {
    * @param jobKey the job key to export, or null to export all jobs
    */
   private void handleExport(Player player, String jobKey) {
-    Mint.sendMessage(player, "<neutral>Exporting job data to web editor...");
+    Mint.sendThemedMessage(player, "<neutral>Exporting job data to web editor...");
 
     editorService.exportTasks(jobKey, player.getUniqueId())
         .thenAccept(result -> {
@@ -116,7 +116,7 @@ final class EditorCommand implements JobsCommand {
         .exceptionally(throwable -> {
           // Run on main thread to safely send messages
           Bukkit.getScheduler().runTask(Bridge.bridge().plugin(), () -> {
-            Mint.sendMessage(player, "<error>Failed to export job data: " + throwable.getMessage());
+            Mint.sendThemedMessage(player, "<error>Failed to export job data: " + throwable.getMessage());
           });
           return null;
         });

@@ -3,19 +3,20 @@ package net.aincraft.commands;
 import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import net.aincraft.JobProgression;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import dev.mintychochip.mint.Mint;
@@ -32,44 +33,73 @@ public class StatsCommand implements JobsCommand {
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("stats")
+        // /jobs stats <playerName> - admin variant
+        .then(Commands.argument("player", StringArgumentType.word())
+            .requires(source -> source.getSender().hasPermission("jobs.command.admin.stats"))
+            .executes(context -> {
+              CommandSourceStack source = context.getSource();
+              CommandSender sender = source.getSender();
+
+              String playerName = context.getArgument("player", String.class);
+              OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+
+              if (target == null) {
+                Mint.sendThemedMessage(sender, "<error>Player not found: " + playerName);
+                return 0;
+              }
+
+              displayStats(sender, target);
+              return Command.SINGLE_SUCCESS;
+            }))
+        // /jobs stats - player variant
+        .requires(source -> source.getSender().hasPermission("jobs.command.stats"))
         .executes(context -> {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            Mint.sendMessage(sender, "<error>This command can only be used by players.");
+            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
             return 0;
           }
 
-          List<JobProgression> progressions = jobService.getProgressions(player);
-
-          // Header
-          Mint.sendMessage(player, "");
-          Mint.sendMessage(player, "<neutral>━━━━━━━━━ <primary>Job Statistics<neutral> ━━━━━━━━━");
-          Mint.sendMessage(player, "");
-
-          if (progressions.isEmpty()) {
-            Mint.sendMessage(player, "<neutral>  You are not in any jobs.");
-            Mint.sendMessage(player, "<neutral>  Use <secondary>/jobs join<neutral> to join a job.");
-            Mint.sendMessage(player, "");
-          } else {
-            PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
-
-            for (JobProgression progression : progressions) {
-              displayJobStats(player, progression, serializer);
-            }
-          }
-
-          // Footer
-          Mint.sendMessage(player, "");
-          Mint.sendMessage(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-          Mint.sendMessage(player, "");
-
+          displayStats(player, player);
           return Command.SINGLE_SUCCESS;
         });
   }
 
-  private void displayJobStats(Player player, JobProgression progression,
+  private void displayStats(CommandSender viewer, OfflinePlayer target) {
+    List<JobProgression> progressions = jobService.getProgressions(target);
+
+    String targetName = target.getName() != null ? target.getName() : "Unknown";
+    String header = viewer.equals(target)
+        ? "<primary>Job Statistics"
+        : "<primary>" + targetName + "'s Job Statistics";
+
+    Mint.sendThemedMessage(viewer, "");
+    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral> ━━━━━━━━━");
+    Mint.sendThemedMessage(viewer, "");
+
+    if (progressions.isEmpty()) {
+      String message = viewer.equals(target)
+          ? "<neutral>  You are not in any jobs."
+          : "<neutral>  " + targetName + " is not in any jobs.";
+      Mint.sendThemedMessage(viewer, message);
+      Mint.sendThemedMessage(viewer, "<neutral>  Use <secondary>/jobs join<neutral> to join a job.");
+      Mint.sendThemedMessage(viewer, "");
+    } else {
+      PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
+
+      for (JobProgression progression : progressions) {
+        displayJobStats(viewer, progression, serializer);
+      }
+    }
+
+    Mint.sendThemedMessage(viewer, "");
+    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Mint.sendThemedMessage(viewer, "");
+  }
+
+  private void displayJobStats(CommandSender viewer, JobProgression progression,
                                PlainTextComponentSerializer serializer) {
     int currentLevel = progression.level();
     BigDecimal currentXp = progression.experience();
@@ -77,37 +107,55 @@ public class StatsCommand implements JobsCommand {
 
     // Calculate percentage and XP values for display
     double percentage;
-    String xpCurrent;
-    String xpTotal;
+    BigDecimal xpCurrent;
+    BigDecimal xpTotal;
 
     if (currentLevel >= maxLevel) {
       percentage = 100.0;
-      xpCurrent = formatNumber(currentXp);
-      xpTotal = "MAX";
+      xpCurrent = currentXp;
+      xpTotal = null; // MAX level
     } else {
       BigDecimal currentLevelXp = progression.experienceForLevel(currentLevel);
       BigDecimal nextLevelXp = progression.experienceForLevel(currentLevel + 1);
-      BigDecimal xpIntoLevel = currentXp.subtract(currentLevelXp);
-      BigDecimal xpNeeded = nextLevelXp.subtract(currentLevelXp);
-      percentage = xpIntoLevel.divide(xpNeeded, 4, RoundingMode.HALF_UP)
+      xpCurrent = currentXp.subtract(currentLevelXp);
+      xpTotal = nextLevelXp.subtract(currentLevelXp);
+      percentage = xpCurrent.divide(xpTotal, 4, RoundingMode.HALF_UP)
           .multiply(BigDecimal.valueOf(100))
           .doubleValue();
-      xpCurrent = formatNumber(xpIntoLevel);
-      xpTotal = formatNumber(xpNeeded);
     }
 
-    // Build progress bar message with Mint tags
+    // Build hover text with all metadata
+    Component hoverText = buildHoverText(viewer, currentLevel, maxLevel, currentXp, xpCurrent, xpTotal, percentage);
+
+    // Build main display: bar + Lvl. [level] + [name]
     String bar = createProgressBar(percentage);
+    Component barComponent = Mint.createThemedComponent(viewer,bar);
+    Component jobName = progression.job().displayName();
+    Component mainDisplay = Component.text("  ")
+        .append(barComponent)
+        .append(Component.space())
+        .append(Mint.createThemedComponent(viewer, "<neutral>Lvl. "))
+        .append(Mint.createThemedComponent(viewer, "<secondary>" + currentLevel))
+        .append(Component.space())
+        .append(jobName)
+        .hoverEvent(HoverEvent.showText(hoverText));
+
+    viewer.sendMessage(mainDisplay);
+  }
+
+  private Component buildHoverText(CommandSender viewer, int currentLevel, int maxLevel, BigDecimal currentXp,
+                                   BigDecimal xpCurrent, BigDecimal xpTotal, double percentage) {
     String percentageStr = String.format("%.1f%%", percentage);
-    String jobNamePlain = serializer.serialize(progression.job().displayName());
+    String xpCurrentStr = formatFullNumber(xpCurrent);
+    String xpTotalStr = xpTotal != null ? formatFullNumber(xpTotal) : "MAX";
+    String totalXpStr = formatFullNumber(currentXp);
+    String progressColor = getProgressColorTag(percentage);
 
-    // Extract job color from displayName
-    String jobColorTag = extractJobColorTag(progression.job().displayName());
-
-    String message = "  " + bar + " <accent>" + percentageStr + " <neutral>(<secondary>" +
-        xpCurrent + "<neutral>/<secondary>" + xpTotal + "<neutral>) <" + jobColorTag + ">" + jobNamePlain;
-
-    Mint.sendMessage(player, message);
+    return Mint.createThemedComponent(viewer,
+        "<neutral>Level: <primary>" + currentLevel + " / " + maxLevel +
+        "\n<neutral>Progress: <" + progressColor + ">" + percentageStr +
+        "\n<neutral>XP in level: <secondary>" + xpCurrentStr + " / " + xpTotalStr +
+        "\n<neutral>Total XP: <accent>" + totalXpStr);
   }
 
 
@@ -143,33 +191,7 @@ public class StatsCommand implements JobsCommand {
     }
   }
 
-  private String extractJobColorTag(Component displayName) {
-    // Try to extract color from the Component
-    if (displayName.color() != null) {
-      return displayName.color().asHexString();
-    }
-
-    // Fallback: serialize and extract from MiniMessage tags
-    GsonComponentSerializer gson = GsonComponentSerializer.gson();
-    String json = gson.serialize(displayName);
-
-    // Extract hex color from JSON if present
-    Pattern hexPattern = Pattern.compile("\"color\":\"(#[0-9A-Fa-f]{6})\"");
-    Matcher matcher = hexPattern.matcher(json);
-    if (matcher.find()) {
-      return matcher.group(1);
-    }
-
-    return "#FFD700"; // Fallback to gold if no color found
-  }
-
-  private String formatNumber(BigDecimal number) {
-    if (number.compareTo(BigDecimal.valueOf(1_000_000)) >= 0) {
-      return number.divide(BigDecimal.valueOf(1_000_000), 2, RoundingMode.HALF_UP) + "M";
-    } else if (number.compareTo(BigDecimal.valueOf(1_000)) >= 0) {
-      return number.divide(BigDecimal.valueOf(1_000), 2, RoundingMode.HALF_UP) + "K";
-    } else {
-      return number.setScale(0, RoundingMode.HALF_UP).toString();
-    }
+  private String formatFullNumber(BigDecimal number) {
+    return String.format("%,d", number.setScale(0, RoundingMode.HALF_UP).intValue());
   }
 }

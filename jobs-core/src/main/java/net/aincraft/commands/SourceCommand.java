@@ -85,23 +85,23 @@ public final class SourceCommand implements JobsCommand {
     var sources = boostSourceRegistry.stream().collect(Collectors.toList());
 
     if (sources.isEmpty()) {
-      Mint.sendMessage(sender, "<secondary>No boost sources registered");
+      Mint.sendThemedMessage(sender, "<secondary>No boost sources registered");
       return 0;
     }
 
-    Mint.sendMessage(sender, "<neutral>━━━━ <primary>Boost Sources <neutral>━━━━");
+    Mint.sendThemedMessage(sender, "<neutral>━━━━ <primary>Boost Sources <neutral>━━━━");
 
     for (BoostSource boostSource : sources) {
-      Mint.sendMessage(sender, "<neutral>  • <secondary>" + boostSource.key().asString());
+      Mint.sendThemedMessage(sender, "<neutral>  • <secondary>" + boostSource.key().asString());
 
       // Add description inline if available
       String description = boostSource.description();
       if (description != null && !description.isEmpty()) {
-        Mint.sendMessage(sender, "<neutral>    " + description);
+        Mint.sendThemedMessage(sender, "<neutral>    " + description);
       }
     }
 
-    Mint.sendMessage(sender, "<neutral>Total: " + sources.size());
+    Mint.sendThemedMessage(sender, "<neutral>Total: " + sources.size());
 
     return Command.SINGLE_SUCCESS;
   }
@@ -113,21 +113,21 @@ public final class SourceCommand implements JobsCommand {
     BoostSource boostSource = boostSourceRegistry.get(boostKey).orElse(null);
 
     if (boostSource == null) {
-      Mint.sendMessage(sender, "<error>Boost source not found: " + boostKeyStr);
+      Mint.sendThemedMessage(sender, "<error>Boost source not found: " + boostKeyStr);
       return 0;
     }
 
-    Mint.sendMessage(sender, "<neutral>━━━━ <primary>Boost Source Info <neutral>━━━━");
+    Mint.sendThemedMessage(sender, "<neutral>━━━━ <primary>Boost Source Info <neutral>━━━━");
 
-    Mint.sendMessage(sender, "<neutral>Key: <secondary>" + boostSource.key().asString());
+    Mint.sendThemedMessage(sender, "<neutral>Key: <secondary>" + boostSource.key().asString());
 
     // Show description if available
     String description = boostSource.description();
     if (description != null && !description.isEmpty()) {
-      Mint.sendMessage(sender, "<neutral>Description: <secondary>" + description);
+      Mint.sendThemedMessage(sender, "<neutral>Description: <secondary>" + description);
     }
 
-    Mint.sendMessage(sender, "<neutral>Type: <accent>" + boostSource.getClass().getSimpleName());
+    Mint.sendThemedMessage(sender, "<neutral>Type: <accent>" + boostSource.getClass().getSimpleName());
 
     // Show detailed info for RuledBoostSource
     if (boostSource instanceof RuledBoostSource ruledSource) {
@@ -143,31 +143,31 @@ public final class SourceCommand implements JobsCommand {
     String policyName = policy.getClass().getSimpleName()
         .replace("Impl", "")
         .replace("Policy", "");
-    Mint.sendMessage(sender, "<neutral>Policy: <info>" + policyName);
+    Mint.sendThemedMessage(sender, "<neutral>Policy: <info>" + policyName);
 
     // Rules info
     var rules = source.rules();
-    Mint.sendMessage(sender, "<neutral>Rules: <secondary>" + rules.size() + " rule(s)");
+    Mint.sendThemedMessage(sender, "<neutral>Rules: <secondary>" + rules.size() + " rule(s)");
 
     sender.sendMessage(Component.empty());
 
     // List each rule
     for (int i = 0; i < rules.size(); i++) {
       Rule rule = rules.get(i);
-      Mint.sendMessage(sender, "<secondary>  Rule #" + (i + 1));
+      Mint.sendThemedMessage(sender, "<secondary>  Rule #" + (i + 1));
 
-      Mint.sendMessage(sender, "<neutral>    Priority: <secondary>" + rule.priority());
+      Mint.sendThemedMessage(sender, "<neutral>    Priority: <secondary>" + rule.priority());
 
       // Boost info
       Boost boost = rule.boost();
       String boostInfo = formatBoost(boost);
-      Mint.sendMessage(sender, "<neutral>    Boost: <accent>" + boostInfo);
+      Mint.sendThemedMessage(sender, "<neutral>    Boost: <accent>" + boostInfo);
 
       // Condition tree
-      Mint.sendMessage(sender, "<neutral>    Condition:");
+      Mint.sendThemedMessage(sender, "<neutral>    Condition:");
       List<String> conditionTree = formatConditionTree(rule.condition(), "      ");
       for (String line : conditionTree) {
-        Mint.sendMessage(sender, "<accent>" + line);
+        Mint.sendThemedMessage(sender, "<accent>" + line);
       }
 
       if (i < rules.size() - 1) {
@@ -261,11 +261,11 @@ public final class SourceCommand implements JobsCommand {
   private int reloadBoostSources(CommandSourceStack source) {
     CommandSender sender = source.getSender();
 
-    Mint.sendMessage(sender, "<secondary>Reloading boost sources...");
+    Mint.sendThemedMessage(sender, "<secondary>Reloading boost sources...");
 
     int count = boostSourceLoader.reload();
 
-    Mint.sendMessage(sender, "<accent>Reloaded <primary>" + count + "<accent> boost source(s)");
+    Mint.sendThemedMessage(sender, "<accent>Reloaded <primary>" + count + "<accent> boost source(s)");
 
     return Command.SINGLE_SUCCESS;
   }

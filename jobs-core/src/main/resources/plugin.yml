@@ -6,7 +6,6 @@ api-version: '1.13'
 depend:
   - Mint
 softdepend:
-  - Preferences
   - Choco
 commands:
   test:

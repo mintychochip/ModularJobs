@@ -30,30 +30,30 @@ final class ApplyEditsCommand implements JobsCommand {
               CommandSender sender = source.getSender();
 
               if (!(sender instanceof Player player)) {
-                Mint.sendMessage(sender, "<error>This command can only be executed by players");
+                Mint.sendThemedMessage(sender, "<error>This command can only be executed by players");
                 return Command.SINGLE_SUCCESS;
               }
 
               String code = context.getArgument("code", String.class);
 
-              Mint.sendMessage(player, "<primary>Applying edits...");
+              Mint.sendThemedMessage(player, "<primary>Applying edits...");
 
               editorService.importTasks(code, player.getUniqueId())
                   .thenAccept(result -> {
                     // Run on main thread to safely send messages
                     org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
                       if (result.errors().isEmpty()) {
-                        Mint.sendMessage(player, "<success>Successfully applied edits!");
-                        Mint.sendMessage(player, "<accent>Tasks imported: " + result.tasksImported());
-                        Mint.sendMessage(player, "<accent>Tasks deleted: " + result.tasksDeleted());
+                        Mint.sendThemedMessage(player, "<success>Successfully applied edits!");
+                        Mint.sendThemedMessage(player, "<accent>Tasks imported: " + result.tasksImported());
+                        Mint.sendThemedMessage(player, "<accent>Tasks deleted: " + result.tasksDeleted());
                       } else {
-                        Mint.sendMessage(player, "<primary>Edits applied with errors:");
-                        Mint.sendMessage(player, "<accent>Tasks imported: " + result.tasksImported());
-                        Mint.sendMessage(player, "<accent>Tasks deleted: " + result.tasksDeleted());
-                        Mint.sendMessage(player, "<error>Errors:");
+                        Mint.sendThemedMessage(player, "<primary>Edits applied with errors:");
+                        Mint.sendThemedMessage(player, "<accent>Tasks imported: " + result.tasksImported());
+                        Mint.sendThemedMessage(player, "<accent>Tasks deleted: " + result.tasksDeleted());
+                        Mint.sendThemedMessage(player, "<error>Errors:");
 
                         for (String error : result.errors()) {
-                          Mint.sendMessage(player, "<error>  - " + error);
+                          Mint.sendThemedMessage(player, "<error>  - " + error);
                         }
                       }
                     });
@@ -61,7 +61,7 @@ final class ApplyEditsCommand implements JobsCommand {
                   .exceptionally(throwable -> {
                     // Run on main thread to safely send messages
                     org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
-                      Mint.sendMessage(player, "<error>Failed to apply edits: " + throwable.getMessage());
+                      Mint.sendThemedMessage(player, "<error>Failed to apply edits: " + throwable.getMessage());
                     });
                     return null;
                   });
