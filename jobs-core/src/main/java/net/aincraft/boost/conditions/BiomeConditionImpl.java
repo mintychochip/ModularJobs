@@ -7,6 +7,10 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+/**
+ * Record condition that checks if the player is in a specific biome.
+ * Delegates to {@link Conditions#biome(Key)} for implementation.
+ */
 public record BiomeConditionImpl(Key biomeKey) implements Condition {
 
   @Override
@@ -16,5 +20,4 @@ public record BiomeConditionImpl(Key biomeKey) implements Condition {
     World world = location.getWorld();
     return biomeKey.equals(world.getBiome(location).getKey());
   }
-
 }

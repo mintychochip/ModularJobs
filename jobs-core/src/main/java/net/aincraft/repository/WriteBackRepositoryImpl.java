@@ -17,9 +17,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
-public final class WriteBackRepositoryImpl<K, V> implements Repository<K, V> {
+public final class WriteBackRepositoryImpl<K, V> {
 
-  private final Repository<K, V> delegate;
+  private final RelationalRepositoryImpl<K, V> delegate;
 
   private final Cache<K, V> readCache = Caffeine.newBuilder()
       .expireAfterAccess(Duration.ofMinutes(1)).maximumSize(100).build();
@@ -29,18 +29,17 @@ public final class WriteBackRepositoryImpl<K, V> implements Repository<K, V> {
 
   private final AtomicBoolean flushing = new AtomicBoolean(false);
 
-  public WriteBackRepositoryImpl(Repository<K, V> delegate) {
+  public WriteBackRepositoryImpl(RelationalRepositoryImpl<K, V> delegate) {
     this.delegate = delegate;
   }
 
-  public static <K, V> Repository<K,V> create(Plugin plugin, Repository<K,V> delegate, long periodSeconds) {
+  public static <K, V> WriteBackRepositoryImpl<K,V> create(Plugin plugin, RelationalRepositoryImpl<K,V> delegate, long periodSeconds) {
     WriteBackRepositoryImpl<K, V> writeBehindRepository = new WriteBackRepositoryImpl<>(delegate);
     Bukkit.getAsyncScheduler().runAtFixedRate(plugin, task -> writeBehindRepository.flush(), 0L, periodSeconds, TimeUnit.SECONDS);
     return writeBehindRepository;
   }
 
 
-  @Override
   public @Nullable V load(K key) {
     if (pendingDeletes.contains(key)) {
       return null;
@@ -52,7 +51,6 @@ public final class WriteBackRepositoryImpl<K, V> implements Repository<K, V> {
     return readCache.get(key, delegate::load);
   }
 
-  @Override
   public boolean save(K key, V value) {
     pendingDeletes.remove(key);
     pendingUpserts.put(key, value);
@@ -60,7 +58,6 @@ public final class WriteBackRepositoryImpl<K, V> implements Repository<K, V> {
     return true;
   }
 
-  @Override
   public void delete(K key) {
     pendingUpserts.remove(key);
     pendingDeletes.add(key);

@@ -13,6 +13,7 @@ import net.aincraft.JobTask;
 import net.aincraft.LevelingCurve;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Context;
+import net.aincraft.container.PayableType;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.model.JobTaskRecord;
@@ -23,48 +24,48 @@ import net.aincraft.event.JobJoinEvent;
 import net.aincraft.event.JobLeaveEvent;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
-import net.aincraft.util.DomainMapper;
 import net.aincraft.util.KeyResolver;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 final class JobServiceImpl implements JobService {
 
-  private final DomainMapper<JobProgression, JobProgressionRecord> progressionMapper;
-  private final DomainMapper<Job, JobRecord> jobMapper;
-  private final DomainMapper<JobTask, JobTaskRecord> jobTaskMapper;
   private final Registry<ActionType> actionTypeRegistry;
+  private final Registry<PayableType> payableTypeRegistry;
   private final JobTaskRepository jobTaskRepository;
   private final KeyResolver keyResolver;
   private final JobRepository jobRepository;
   private final ProgressionService progressionService;
+  private final Plugin plugin;
 
   @Inject
   public JobServiceImpl(
-      DomainMapper<JobProgression, JobProgressionRecord> progressionMapper,
-      DomainMapper<Job, JobRecord> jobMapper,
-      DomainMapper<JobTask, JobTaskRecord> jobTaskMapper,
       Registry<ActionType> actionTypeRegistry,
+      Registry<PayableType> payableTypeRegistry,
       JobTaskRepository jobTaskRepository,
       KeyResolver keyResolver,
-      JobRepository jobRepository, ProgressionService progressionService) {
-    this.progressionMapper = progressionMapper;
-    this.jobMapper = jobMapper;
-    this.jobTaskMapper = jobTaskMapper;
+      JobRepository jobRepository,
+      ProgressionService progressionService,
+      Plugin plugin) {
     this.actionTypeRegistry = actionTypeRegistry;
+    this.payableTypeRegistry = payableTypeRegistry;
     this.jobTaskRepository = jobTaskRepository;
     this.keyResolver = keyResolver;
     this.jobRepository = jobRepository;
     this.progressionService = progressionService;
+    this.plugin = plugin;
   }
 
   @Override
   public @NotNull List<Job> getJobs() {
-    return jobRepository.getJobs().stream().map(jobMapper::toDomain).toList();
+    return jobRepository.getJobs().stream()
+        .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
+        .toList();
   }
 
   @Override
@@ -73,7 +74,7 @@ final class JobServiceImpl implements JobService {
     if (record == null) {
       throw new IllegalArgumentException();
     }
-    return jobMapper.toDomain(record);
+    return PersistenceConverters.fromRecord(record, plugin, payableTypeRegistry);
   }
 
   @Override
@@ -84,7 +85,7 @@ final class JobServiceImpl implements JobService {
     }
     JobTaskRecord record = jobTaskRepository.load(job.key().toString(), type.key().toString(),
         contextKey.toString());
-    return jobTaskMapper.toDomain(record);
+    return PersistenceConverters.fromRecord(record, keyString -> payableTypeRegistry.getOrThrow(Key.key(keyString)));
   }
 
   @Override
@@ -95,7 +96,7 @@ final class JobServiceImpl implements JobService {
     for (Entry<String, List<JobTaskRecord>> entry : records.entrySet()) {
       ActionType type = actionTypeRegistry.getOrThrow(NamespacedKey.fromString(entry.getKey()));
       List<JobTask> tasks = entry.getValue().stream()
-          .map(jobTaskMapper::toDomain)
+          .map(r -> PersistenceConverters.fromRecord(r, keyString -> payableTypeRegistry.getOrThrow(Key.key(keyString))))
           .toList();
       domain.put(type, tasks);
     }
@@ -104,7 +105,7 @@ final class JobServiceImpl implements JobService {
 
   @Override
   public boolean update(JobProgression progression) {
-    return progressionService.save(progressionMapper.toRecord(progression));
+    return progressionService.save(PersistenceConverters.toRecord(progression));
   }
 
   @Override
@@ -116,13 +117,13 @@ final class JobServiceImpl implements JobService {
 
     UUID uuid = UUID.fromString(playerId);
     Player player = Bukkit.getPlayer(uuid);
-    Job job = jobMapper.toDomain(jobRecord);
+    Job job = PersistenceConverters.fromRecord(jobRecord, plugin, payableTypeRegistry);
 
     // Try to restore from archive first (rejoin case)
     if (progressionService.restore(playerId, jobKey)) {
       if (player != null) {
         JobProgressionRecord restored = progressionService.load(playerId, jobKey);
-        int level = progressionMapper.toDomain(restored).level();
+        int level = PersistenceConverters.fromRecord(restored, plugin, payableTypeRegistry).level();
         Bukkit.getPluginManager().callEvent(new JobJoinEvent(player, job, level, true));
       }
       return true;
@@ -152,7 +153,7 @@ final class JobServiceImpl implements JobService {
       return false;
     }
     // Convert record to domain to get level
-    JobProgression progression = progressionMapper.toDomain(record);
+    JobProgression progression = PersistenceConverters.fromRecord(record, plugin, payableTypeRegistry);
     int finalLevel = progression.level();
     Job job = progression.job();
 
@@ -177,24 +178,27 @@ final class JobServiceImpl implements JobService {
     if (record == null) {
       return null;
     }
-    return progressionMapper.toDomain(record);
+    return PersistenceConverters.fromRecord(record, plugin, payableTypeRegistry);
   }
 
   @Override
   public List<JobProgression> getProgressions(OfflinePlayer player) {
     return progressionService.loadAllForPlayer(player.getUniqueId().toString(), 100).stream()
-        .map(progressionMapper::toDomain).toList();
+        .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
+        .toList();
   }
 
   @Override
   public List<JobProgression> getProgressions(Key jobKey, int limit) {
     return progressionService.loadAllForJob(jobKey.toString(), limit).stream()
-        .map(progressionMapper::toDomain).toList();
+        .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
+        .toList();
   }
 
   @Override
   public List<JobProgression> getArchivedProgressions(OfflinePlayer player) {
     return progressionService.loadAllArchivedForPlayer(player.getUniqueId().toString(), 100).stream()
-        .map(progressionMapper::toDomain).toList();
+        .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
+        .toList();
   }
 }

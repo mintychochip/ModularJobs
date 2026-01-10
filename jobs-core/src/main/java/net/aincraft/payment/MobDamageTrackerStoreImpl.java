@@ -2,32 +2,18 @@ package net.aincraft.payment;
 
 import com.google.inject.Inject;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
-import net.aincraft.container.Context.EntityContext;
 import net.aincraft.payment.MobDamageTracker.DamageContribution;
-import net.aincraft.util.KeyResolver;
-import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Entity;
 
 final class MobDamageTrackerStoreImpl implements MobDamageTrackerStore {
 
-  private final Set<Key> trackableEntities = new HashSet<>();
-  private final KeyResolver keyResolver;
   private final Map<UUID, DamageContribution> damageContributions = new HashMap<>();
 
   @Inject
-  public MobDamageTrackerStoreImpl(KeyResolver keyResolver) {
-    this.keyResolver = keyResolver;
-  }
-
-  @Override
-  public boolean isTrackable(Entity entity) {
-    Key resolved = keyResolver.resolve(new EntityContext(entity));
-    return trackableEntities.contains(resolved);
+  public MobDamageTrackerStoreImpl() {
   }
 
   @Override

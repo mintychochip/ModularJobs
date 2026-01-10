@@ -38,9 +38,22 @@ public sealed interface UpgradeEffect permits
   }
 
   /**
-   * Grants a temporary permission via Bukkit PermissionAttachment.
-   * Permission is revoked on logout or tree reset.
+   * Grants one or more temporary permissions via Bukkit PermissionAttachment.
+   * Permissions are revoked on logout or tree reset.
    */
-  record PermissionEffect(@NotNull String permission) implements UpgradeEffect {
+  record PermissionEffect(@NotNull List<String> permissions) implements UpgradeEffect {
+    /**
+     * Convenience constructor for a single permission.
+     */
+    public PermissionEffect(String permission) {
+      this(List.of(permission));
+    }
+
+    /**
+     * Get the first/primary permission (for backward compatibility).
+     */
+    public String permission() {
+      return permissions.isEmpty() ? "" : permissions.get(0);
+    }
   }
 }

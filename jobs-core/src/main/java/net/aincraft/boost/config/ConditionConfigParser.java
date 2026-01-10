@@ -141,18 +141,32 @@ public final class ConditionConfigParser {
     // Single job key
     if (config.value() != null) {
       String jobKey = (String) config.value();
-      return conditionFactory.job(jobKey);
+      String namespacedKey = namespaceJobKey(jobKey);
+      return conditionFactory.job(namespacedKey);
     }
 
     // Multiple job keys (any match)
     if (config.values() != null) {
       String[] jobKeys = config.values().stream()
           .map(String::valueOf)
+          .map(this::namespaceJobKey)
           .toArray(String[]::new);
       return conditionFactory.jobAny(jobKeys);
     }
 
     throw new IllegalArgumentException("job condition requires 'value' or 'values'");
+  }
+
+  /**
+   * Ensure job key is properly namespaced.
+   * If the key already contains a colon, return as-is.
+   * Otherwise, prepend "modularjobs:" namespace.
+   */
+  private String namespaceJobKey(String jobKey) {
+    if (jobKey.contains(":")) {
+      return jobKey;
+    }
+    return "modularjobs:" + jobKey;
   }
 
   private Condition parseComposite(ConditionConfig config, LogicalOperator operator) {

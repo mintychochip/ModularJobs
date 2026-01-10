@@ -160,7 +160,7 @@ public class StatsCommand implements JobsCommand {
 
 
   private String createProgressBar(double percentage) {
-    int barLength = 30;
+    int barLength = 32;
     int filled = (int) Math.round(percentage / 100.0 * barLength);
     filled = Math.min(barLength, Math.max(0, filled));
 

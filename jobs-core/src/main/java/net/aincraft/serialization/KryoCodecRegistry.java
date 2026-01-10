@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +30,8 @@ import net.aincraft.boost.conditions.SneakConditionImpl;
 import net.aincraft.boost.conditions.SprintConditionImpl;
 import net.aincraft.boost.conditions.WeatherConditionImpl;
 import net.aincraft.boost.conditions.WorldConditionImpl;
-import net.aincraft.boost.policy.AllApplicablePolicyImpl;
-import net.aincraft.boost.policy.GetFirstPolicyImpl;
-import net.aincraft.boost.policy.TopKPolicyImpl;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
-import net.aincraft.container.SlotSet;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
 import net.aincraft.container.boost.Condition;
@@ -42,11 +39,9 @@ import net.aincraft.container.boost.LogicalOperator;
 import net.aincraft.container.boost.PlayerResourceType;
 import net.aincraft.container.boost.PotionConditionType;
 import net.aincraft.container.boost.RelationalOperator;
-import net.aincraft.container.boost.RuledBoostSource.Policy;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.WeatherState;
 import net.aincraft.container.Store;
-import net.aincraft.job.SlotSetImpl;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -98,34 +93,29 @@ public final class KryoCodecRegistry implements CodecRegistry {
     kryo.register(WeatherState.class, id++);
     kryo.register(PotionConditionType.class, id++);
 
-    // SlotSet
-    kryo.register(SlotSetImpl.class, new SlotSetSerializer(), id++);
+    // BitSet
+    kryo.register(BitSet.class, new BitSetSerializer(), id++);
 
     // Boosts
-    kryo.register(AdditiveBoostImpl.class, new AdditiveBoostSerializer(), id++);
-    kryo.register(MultiplicativeBoostImpl.class, new MultiplicativeBoostSerializer(), id++);
+    kryo.register(AdditiveBoostImpl.class, obj(AdditiveBoostImpl::amount, AdditiveBoostImpl::new, BigDecimal.class), id++);
+    kryo.register(MultiplicativeBoostImpl.class, obj(MultiplicativeBoostImpl::amount, MultiplicativeBoostImpl::new, BigDecimal.class), id++);
 
     // Boost data
     kryo.register(ConsumableBoostData.class, new ConsumableBoostDataSerializer(), id++);
     kryo.register(PassiveBoostData.class, new PassiveBoostDataSerializer(), id++);
 
-    // Policies
-    kryo.register(AllApplicablePolicyImpl.class, id++);
-    kryo.register(GetFirstPolicyImpl.class, id++);
-    kryo.register(TopKPolicyImpl.class, new TopKPolicySerializer(), id++);
-
     // Conditions
     kryo.register(ComposableConditionImpl.class, new ComposableConditionSerializer(), id++);
     kryo.register(NegatingConditionImpl.class, new NegatingConditionSerializer(), id++);
-    kryo.register(SneakConditionImpl.class, new SneakConditionSerializer(), id++);
-    kryo.register(SprintConditionImpl.class, new SprintConditionSerializer(), id++);
-    kryo.register(WorldConditionImpl.class, new WorldConditionSerializer(), id++);
-    kryo.register(BiomeConditionImpl.class, new BiomeConditionSerializer(), id++);
+    kryo.register(SneakConditionImpl.class, bool(SneakConditionImpl::state, SneakConditionImpl::new), id++);
+    kryo.register(SprintConditionImpl.class, bool(SprintConditionImpl::state, SprintConditionImpl::new), id++);
+    kryo.register(WorldConditionImpl.class, simple((k,o,v) -> k.writeObject(o, v.worldKey()), (k,i) -> new WorldConditionImpl(k.readObject(i, NamespacedKey.class))), id++);
+    kryo.register(BiomeConditionImpl.class, simple((k,o,v) -> k.writeObject(o, v.biomeKey()), (k,i) -> new BiomeConditionImpl(k.readObject(i, NamespacedKey.class))), id++);
     kryo.register(PlayerResourceConditionImpl.class, new PlayerResourceConditionSerializer(), id++);
     kryo.register(PotionTypeConditionImpl.class, new PotionTypeConditionSerializer(), id++);
     kryo.register(PotionConditionImpl.class, new PotionConditionSerializer(), id++);
-    kryo.register(LiquidConditionImpl.class, new LiquidConditionSerializer(), id++);
-    kryo.register(WeatherConditionImpl.class, new WeatherConditionSerializer(), id++);
+    kryo.register(LiquidConditionImpl.class, obj(LiquidConditionImpl::liquid, LiquidConditionImpl::new, Material.class), id++);
+    kryo.register(WeatherConditionImpl.class, obj(WeatherConditionImpl::state, WeatherConditionImpl::new, WeatherState.class), id++);
 
     // Rules & RuledBoostSource
     kryo.register(Rule.class, new RuleSerializer(), id++);
@@ -160,6 +150,38 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   // ============ Custom Serializers ============
+
+  // ========== Generic Serializer Factories ==========
+
+  @FunctionalInterface
+  interface Writer<T> { void write(Kryo kryo, Output output, T value); }
+  @FunctionalInterface
+  interface Reader<T> { T read(Kryo kryo, Input input); }
+
+  private static <T> Serializer<T> simple(Writer<T> writer, Reader<T> reader) {
+    return new Serializer<T>() {
+      @Override public void write(Kryo kryo, Output output, T value) { writer.write(kryo, output, value); }
+      @Override public T read(Kryo kryo, Input input, Class<? extends T> type) { return reader.read(kryo, input); }
+    };
+  }
+
+  private static <T> Serializer<T> bool(java.util.function.Function<T, Boolean> get, java.util.function.Function<Boolean, T> make) {
+    return simple((k, o, v) -> o.writeBoolean(get.apply(v)), (k, i) -> make.apply(i.readBoolean()));
+  }
+
+  private static <T> Serializer<T> intField(java.util.function.ToIntFunction<T> get, java.util.function.IntFunction<T> make) {
+    return simple((k, o, v) -> o.writeVarInt(get.applyAsInt(v), true), (k, i) -> make.apply(i.readVarInt(true)));
+  }
+
+  private static <T> Serializer<T> longField(java.util.function.ToLongFunction<T> get, java.util.function.LongFunction<T> make) {
+    return simple((k, o, v) -> o.writeVarLong(get.applyAsLong(v), false), (k, i) -> make.apply(i.readVarLong(false)));
+  }
+
+  private static <T, F> Serializer<T> obj(java.util.function.Function<T, F> get, java.util.function.Function<F, T> make, Class<F> clazz) {
+    return simple((k, o, v) -> k.writeObject(o, get.apply(v)), (k, i) -> make.apply(k.readObject(i, clazz)));
+  }
+
+  // ========== Built-in Type Serializers ==========
 
   private static final class BigDecimalSerializer extends Serializer<BigDecimal> {
     @Override
@@ -249,41 +271,21 @@ public final class KryoCodecRegistry implements CodecRegistry {
     }
   }
 
-  private static final class SlotSetSerializer extends Serializer<SlotSetImpl> {
+  private static final class BitSetSerializer extends Serializer<BitSet> {
     @Override
-    public void write(Kryo kryo, Output output, SlotSetImpl value) {
-      output.writeVarLong(value.asLong(), false);
+    public void write(Kryo kryo, Output output, BitSet bitSet) {
+      long[] arr = bitSet.toLongArray();
+      long value = arr.length > 0 ? arr[0] : 0L;
+      output.writeVarLong(value, false);
     }
 
     @Override
-    public SlotSetImpl read(Kryo kryo, Input input, Class<? extends SlotSetImpl> type) {
-      return new SlotSetImpl(input.readVarLong(false));
+    public BitSet read(Kryo kryo, Input input, Class<? extends BitSet> type) {
+      long value = input.readVarLong(false);
+      return BitSet.valueOf(new long[]{value});
     }
   }
 
-  private static final class AdditiveBoostSerializer extends Serializer<AdditiveBoostImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, AdditiveBoostImpl value) {
-      kryo.writeObject(output, value.amount());
-    }
-
-    @Override
-    public AdditiveBoostImpl read(Kryo kryo, Input input, Class<? extends AdditiveBoostImpl> type) {
-      return new AdditiveBoostImpl(kryo.readObject(input, BigDecimal.class));
-    }
-  }
-
-  private static final class MultiplicativeBoostSerializer extends Serializer<MultiplicativeBoostImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, MultiplicativeBoostImpl value) {
-      kryo.writeObject(output, value.amount());
-    }
-
-    @Override
-    public MultiplicativeBoostImpl read(Kryo kryo, Input input, Class<? extends MultiplicativeBoostImpl> type) {
-      return new MultiplicativeBoostImpl(kryo.readObject(input, BigDecimal.class));
-    }
-  }
 
   private static final class ConsumableBoostDataSerializer extends Serializer<ConsumableBoostData> {
     @Override
@@ -304,28 +306,17 @@ public final class KryoCodecRegistry implements CodecRegistry {
     @Override
     public void write(Kryo kryo, Output output, PassiveBoostData value) {
       kryo.writeClassAndObject(output, value.boostSource());
-      kryo.writeObject(output, (SlotSetImpl) value.slotSet());
+      kryo.writeObject(output, value.slotSet());
     }
 
     @Override
     public PassiveBoostData read(Kryo kryo, Input input, Class<? extends PassiveBoostData> type) {
       BoostSource boostSource = (BoostSource) kryo.readClassAndObject(input);
-      SlotSet slotSet = kryo.readObject(input, SlotSetImpl.class);
+      BitSet slotSet = kryo.readObject(input, BitSet.class);
       return new PassiveBoostData(boostSource, slotSet);
     }
   }
 
-  private static final class TopKPolicySerializer extends Serializer<TopKPolicyImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, TopKPolicyImpl value) {
-      output.writeVarInt(value.k(), true);
-    }
-
-    @Override
-    public TopKPolicyImpl read(Kryo kryo, Input input, Class<? extends TopKPolicyImpl> type) {
-      return new TopKPolicyImpl(input.readVarInt(true));
-    }
-  }
 
   private static final class ComposableConditionSerializer extends Serializer<ComposableConditionImpl> {
     @Override
@@ -357,55 +348,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
     }
   }
 
-  private static final class SneakConditionSerializer extends Serializer<SneakConditionImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, SneakConditionImpl value) {
-      output.writeBoolean(value.state());
-    }
-
-    @Override
-    public SneakConditionImpl read(Kryo kryo, Input input, Class<? extends SneakConditionImpl> type) {
-      return new SneakConditionImpl(input.readBoolean());
-    }
-  }
-
-  private static final class SprintConditionSerializer extends Serializer<SprintConditionImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, SprintConditionImpl value) {
-      output.writeBoolean(value.state());
-    }
-
-    @Override
-    public SprintConditionImpl read(Kryo kryo, Input input, Class<? extends SprintConditionImpl> type) {
-      return new SprintConditionImpl(input.readBoolean());
-    }
-  }
-
-  private static final class WorldConditionSerializer extends Serializer<WorldConditionImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, WorldConditionImpl value) {
-      kryo.writeObject(output, value.worldKey());
-    }
-
-    @Override
-    public WorldConditionImpl read(Kryo kryo, Input input, Class<? extends WorldConditionImpl> type) {
-      Key key = kryo.readObject(input, NamespacedKey.class);
-      return new WorldConditionImpl(key);
-    }
-  }
-
-  private static final class BiomeConditionSerializer extends Serializer<BiomeConditionImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, BiomeConditionImpl value) {
-      kryo.writeObject(output, value.biomeKey());
-    }
-
-    @Override
-    public BiomeConditionImpl read(Kryo kryo, Input input, Class<? extends BiomeConditionImpl> type) {
-      Key biomeKey = kryo.readObject(input, NamespacedKey.class);
-      return new BiomeConditionImpl(biomeKey);
-    }
-  }
 
   private static final class PlayerResourceConditionSerializer extends Serializer<PlayerResourceConditionImpl> {
     @Override
@@ -458,31 +400,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
     }
   }
 
-  private static final class LiquidConditionSerializer extends Serializer<LiquidConditionImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, LiquidConditionImpl value) {
-      kryo.writeObject(output, value.liquid());
-    }
-
-    @Override
-    public LiquidConditionImpl read(Kryo kryo, Input input, Class<? extends LiquidConditionImpl> type) {
-      Material liquid = kryo.readObject(input, Material.class);
-      return new LiquidConditionImpl(liquid);
-    }
-  }
-
-  private static final class WeatherConditionSerializer extends Serializer<WeatherConditionImpl> {
-    @Override
-    public void write(Kryo kryo, Output output, WeatherConditionImpl value) {
-      kryo.writeObject(output, value.state());
-    }
-
-    @Override
-    public WeatherConditionImpl read(Kryo kryo, Input input, Class<? extends WeatherConditionImpl> type) {
-      WeatherState state = kryo.readObject(input, WeatherState.class);
-      return new WeatherConditionImpl(state);
-    }
-  }
 
   private static final class RuleSerializer extends Serializer<Rule> {
     @Override
@@ -504,7 +421,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
   private static final class RuledBoostSourceSerializer extends Serializer<RuledBoostSourceImpl> {
     @Override
     public void write(Kryo kryo, Output output, RuledBoostSourceImpl value) {
-      kryo.writeClassAndObject(output, value.policy());
       kryo.writeObject(output, value.key());
       output.writeString(value.description());
       List<Rule> rules = value.rules();
@@ -516,7 +432,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
 
     @Override
     public RuledBoostSourceImpl read(Kryo kryo, Input input, Class<? extends RuledBoostSourceImpl> type) {
-      Policy policy = (Policy) kryo.readClassAndObject(input);
       Key key = kryo.readObject(input, NamespacedKey.class);
       String description = input.readString();
       int size = input.readVarInt(true);
@@ -524,7 +439,7 @@ public final class KryoCodecRegistry implements CodecRegistry {
       for (int i = 0; i < size; i++) {
         rules.add(kryo.readObject(input, Rule.class));
       }
-      return new RuledBoostSourceImpl(rules, policy, key, description);
+      return new RuledBoostSourceImpl(rules, key, description);
     }
   }
 

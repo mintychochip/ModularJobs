@@ -13,7 +13,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-final class ChunkExplorationStoreImpl implements ChunkExplorationStore {
+final class PlayerChunkExplorationServiceImpl implements PlayerChunkExplorationService {
 
   private static final NamespacedKey CHUNK_KEY = new NamespacedKey("jobs", "chunk");
 

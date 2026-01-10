@@ -5,6 +5,10 @@ import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.WeatherState;
 import org.bukkit.World;
 
+/**
+ * Record condition that checks the current weather state.
+ * Delegates to {@link Conditions#weather(WeatherState)} for implementation.
+ */
 public record WeatherConditionImpl(WeatherState state) implements Condition {
 
   @Override
@@ -16,5 +20,4 @@ public record WeatherConditionImpl(WeatherState state) implements Condition {
                 WeatherState.CLEAR;
     return this.state == current;
   }
-
 }

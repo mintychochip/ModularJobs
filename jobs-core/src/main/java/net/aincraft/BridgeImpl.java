@@ -7,7 +7,6 @@ import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.service.JobService;
 import org.bukkit.plugin.Plugin;
@@ -28,11 +27,6 @@ record BridgeImpl(Plugin plugin,
 
   @Override
   public BoostFactory boostFactory() {
-    return null;
-  }
-
-  @Override
-  public PolicyFactory policyFactory() {
     return null;
   }
 

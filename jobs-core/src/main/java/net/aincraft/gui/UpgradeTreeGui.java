@@ -46,9 +46,10 @@ import org.bukkit.plugin.Plugin;
  */
 public final class UpgradeTreeGui implements Listener {
 
-  private static final int GUI_SIZE = 54; // 6 rows
-  private static final int GUI_ROWS = 6;
+  private static final int GUI_SIZE = 54; // 6 rows total
+  private static final int GUI_ROWS = 5; // Rows for node rendering (bottom row reserved for controls)
   private static final int GUI_COLS = 9;
+  private static final int CONTROL_ROW_START = 45; // First slot of bottom control row (row 5)
 
   private final Plugin plugin;
   private final UpgradeService upgradeService;
@@ -56,9 +57,6 @@ public final class UpgradeTreeGui implements Listener {
 
   // Track open GUIs: player UUID -> session data
   private final Map<UUID, GuiSession> openGuis = new HashMap<>();
-
-  // Store player inventories while GUI is open
-  private final Map<UUID, ItemStack[]> savedInventories = new HashMap<>();
 
   private static class GuiSession {
     final Job job;
@@ -104,10 +102,8 @@ public final class UpgradeTreeGui implements Listener {
     // Place nodes based on their positions (with scroll offset)
     renderNodes(gui, session, data);
 
-    // Save and clear player inventory, then add navigation arrows and info book
-    savedInventories.put(playerId, player.getInventory().getContents().clone());
-    player.getInventory().clear();
-    updateNavigationArrows(player, session, data);
+    // Add navigation arrows and info book to control row
+    updateNavigationArrows(gui, session, data);
 
     player.openInventory(gui);
   }
@@ -137,8 +133,8 @@ public final class UpgradeTreeGui implements Listener {
     fillBackground(gui);
     renderNodes(gui, session, data);
 
-    // Update navigation arrows and info book
-    updateNavigationArrows(player, session, data);
+    // Update navigation arrows and info book in control row
+    updateNavigationArrows(gui, session, data);
   }
 
   /**
@@ -149,18 +145,9 @@ public final class UpgradeTreeGui implements Listener {
     Set<UpgradeNode> available = session.tree.getAvailableNodes(unlocked);
 
     // First, render connection lines between nodes
-    renderConnections(gui, session, unlocked);
+    renderConnections(gui, session, unlocked, available);
 
-    // Then render connector nodes (so they appear below ability nodes)
-    for (net.aincraft.upgrade.ConnectorNode connector : session.tree.allConnectors()) {
-      int slot = calculateSlotWithScroll(connector.position(), session.scrollOffset);
-      if (slot < 0 || slot >= GUI_SIZE) {
-        continue; // Outside visible area
-      }
-      renderConnector(gui, connector, unlocked, session.tree);
-    }
-
-    // Finally render ability nodes (so they appear on top of connectors)
+    // Then render ability nodes
     for (UpgradeNode node : session.tree.allNodes()) {
       int slot = calculateSlotWithScroll(node.position(), session.scrollOffset);
       if (slot < 0 || slot >= GUI_SIZE) {
@@ -173,204 +160,105 @@ public final class UpgradeTreeGui implements Listener {
   }
 
   /**
-   * Render connection lines between parent and child nodes.
-   * Deduplicates segments to prevent overlapping paths and illegal T-junctions.
+   * Render connection lines using flood-fill from unlocked nodes.
+   * Path segments light up only if they lead to immediately available (unlockable) nodes.
+   * BFS is done in absolute coordinates to find connections across pages.
    */
-  private void renderConnections(Inventory gui, GuiSession session, Set<String> unlocked) {
-    // Collect all path segments with their unlock status
-    Map<GridPoint, PathSegment> segments = new HashMap<>();
+  private void renderConnections(Inventory gui, GuiSession session, Set<String> unlocked, Set<UpgradeNode> available) {
+    int scrollOffset = session.scrollOffset;
 
+    // Step 1: Collect all path points in ABSOLUTE coordinates (no scroll offset)
+    Set<GridPoint> allPathPoints = new HashSet<>();
+    for (Position p : session.tree.paths()) {
+      allPathPoints.add(new GridPoint(p.x(), p.y()));
+    }
+
+    // Step 2: Collect node positions in ABSOLUTE coordinates
+    Set<GridPoint> unlockedNodePositions = new HashSet<>();
+    Set<GridPoint> allNodePositions = new HashSet<>();
     for (UpgradeNode node : session.tree.allNodes()) {
+      if (node.position() == null) continue;
+      GridPoint point = new GridPoint(node.position().x(), node.position().y());
+      allNodePositions.add(point);
       String nodeKey = getShortKey(node);
-      boolean nodeUnlocked = unlocked.contains(nodeKey);
+      if (unlocked.contains(nodeKey)) {
+        unlockedNodePositions.add(point);
+      }
+    }
 
-      // Process connections to children
-      for (String childKey : node.children()) {
-        UpgradeNode child = session.tree.getNode(childKey).orElse(null);
-        if (child == null || child.position() == null || node.position() == null) {
-          continue; // Skip null nodes and nodes without positions
-        }
+    // Step 3: Find paths that connect unlocked nodes using BFS in absolute coordinates
+    Set<GridPoint> litPathPoints = new HashSet<>();
+    int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
-        boolean childUnlocked = unlocked.contains(childKey);
-        boolean pathUnlocked = nodeUnlocked && childUnlocked;
+    // BFS from each unlocked node to find connections to other unlocked nodes
+    for (GridPoint startNode : unlockedNodePositions) {
+      Map<GridPoint, GridPoint> parent = new HashMap<>();
+      java.util.Queue<GridPoint> queue = new java.util.LinkedList<>();
+      Set<GridPoint> visited = new HashSet<>();
 
-        // Build path from parent position through child's path points to child position
-        List<GridPoint> path = new ArrayList<>();
+      queue.add(startNode);
+      visited.add(startNode);
 
-        // Start at parent position (adjusted for scroll)
-        int parentX = node.position().x();
-        int parentY = node.position().y() - session.scrollOffset;
-        path.add(new GridPoint(parentX, parentY));
+      while (!queue.isEmpty()) {
+        GridPoint current = queue.poll();
 
-        // Add child's explicit path points (adjusted for scroll)
-        for (Position pathPoint : child.pathPoints()) {
-          int x = pathPoint.x();
-          int y = pathPoint.y() - session.scrollOffset;
-          path.add(new GridPoint(x, y));
-        }
+        for (int[] dir : directions) {
+          GridPoint neighbor = new GridPoint(current.x + dir[0], current.y + dir[1]);
 
-        // End at child position (adjusted for scroll)
-        int childX = child.position().x();
-        int childY = child.position().y() - session.scrollOffset;
-        path.add(new GridPoint(childX, childY));
+          if (visited.contains(neighbor)) continue;
+          visited.add(neighbor);
+          parent.put(neighbor, current);
 
-        // Add path segments (skip start node, include path points and end at child-1)
-        for (int i = 1; i < path.size() - 1; i++) {
-          GridPoint point = path.get(i);
-          if (point.y >= 0 && point.y < GUI_ROWS) {
-            // If segment already exists, upgrade it to unlocked if this path is unlocked
-            PathSegment existing = segments.get(point);
-            if (existing == null || (pathUnlocked && !existing.unlocked)) {
-              segments.put(point, new PathSegment(point, pathUnlocked, path, i));
+          // If neighbor is an unlocked node, trace back and light the connecting path
+          if (unlockedNodePositions.contains(neighbor)) {
+            GridPoint trace = neighbor;
+            while (trace != null && parent.containsKey(trace)) {
+              GridPoint prev = parent.get(trace);
+              if (allPathPoints.contains(trace)) {
+                litPathPoints.add(trace);
+              }
+              trace = prev;
             }
+            queue.add(neighbor); // Continue to find more connections
           }
+          // If neighbor is a path point, continue BFS (but don't light yet)
+          else if (allPathPoints.contains(neighbor)) {
+            queue.add(neighbor);
+          }
+          // If neighbor is a non-unlocked node (available/locked), stop traversal
         }
       }
     }
 
-    // Draw all unique segments
-    for (PathSegment segment : segments.values()) {
-      drawSegment(gui, segment);
-    }
-  }
+    // Step 4: Draw only VISIBLE path points (apply scroll offset for rendering)
+    for (GridPoint pathPoint : allPathPoints) {
+      int screenY = pathPoint.y - scrollOffset;
+      // Only render if visible on current page
+      if (screenY < 0 || screenY >= GUI_ROWS || pathPoint.x < 0 || pathPoint.x >= GUI_COLS) {
+        continue;
+      }
 
-  /**
-   * Draw a single path segment at a specific position.
-   */
-  private void drawSegment(Inventory gui, PathSegment segment) {
-    Material lineMaterial = segment.unlocked ? Material.CYAN_STAINED_GLASS_PANE : Material.WHITE_STAINED_GLASS_PANE;
-    String segmentType = detectSegmentType(segment.fullPath, segment.indexInPath);
+      boolean isLit = litPathPoints.contains(pathPoint);
+      Material material = isLit ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE;
 
-    ItemStack lineItem = new ItemStack(lineMaterial);
-    ItemMeta meta = lineItem.getItemMeta();
-    meta.displayName(Component.text(segmentType, NamedTextColor.WHITE)
-        .decoration(TextDecoration.ITALIC, false));
-    lineItem.setItemMeta(meta);
+      ItemStack lineItem = new ItemStack(material);
+      ItemMeta meta = lineItem.getItemMeta();
+      meta.displayName(Component.text(" "));
+      lineItem.setItemMeta(meta);
 
-    int slot = segment.point.y * GUI_COLS + segment.point.x;
-    if (slot >= 0 && slot < GUI_SIZE) {
-      gui.setItem(slot, lineItem);
-    }
-  }
-
-  /**
-   * Render a CONNECTOR node with state-based icon.
-   * Connector is unlocked when BOTH linked nodes are unlocked.
-   */
-  private void renderConnector(Inventory gui, net.aincraft.upgrade.ConnectorNode connector, Set<String> unlocked,
-                               UpgradeTree tree) {
-    // Get linked nodes
-    List<String> links = connector.links();
-    if (links.size() < 2) {
-      return; // Invalid connector - needs at least 2 links
-    }
-
-    // Connector is unlocked if ALL linked nodes are unlocked
-    boolean connectorUnlocked = unlocked.containsAll(links);
-
-    // Create item based on state
-    Material icon = connectorUnlocked ? connector.unlockedIcon() : connector.icon();
-    int cmd = connectorUnlocked ? connector.unlockedCustomModelData() : connector.lockedCustomModelData();
-
-    ItemStack item = new ItemStack(icon);
-    ItemMeta meta = item.getItemMeta();
-
-    // Set custom model data for resource pack icons
-    if (cmd > 0) {
-      meta.setCustomModelData(cmd);
-    }
-
-    // Set display name
-    NamedTextColor nameColor = connectorUnlocked ? NamedTextColor.GREEN : NamedTextColor.GRAY;
-    meta.displayName(Component.text("Path", nameColor)
-        .decoration(TextDecoration.ITALIC, false));
-
-    // Build lore
-    List<Component> lore = new ArrayList<>();
-
-    // Show linked nodes
-    lore.add(Component.text("Connects:", NamedTextColor.GRAY)
-        .decoration(TextDecoration.ITALIC, false));
-    for (String link : links) {
-      // Get short key for display
-      String shortLink = link.contains(":") ? link.substring(link.indexOf(':') + 1) : link;
-
-      // Check if this linked node is unlocked
-      boolean linkUnlocked = unlocked.contains(link);
-      NamedTextColor linkColor = linkUnlocked ? NamedTextColor.GREEN : NamedTextColor.RED;
-
-      lore.add(Component.text("  " + (linkUnlocked ? "✓" : "✗") + " " + shortLink, linkColor)
-          .decoration(TextDecoration.ITALIC, false));
-    }
-
-    lore.add(Component.empty());
-
-    // Status message
-    Component status = connectorUnlocked
-        ? Component.text("Path Unlocked", NamedTextColor.GREEN)
-        : Component.text("Path Locked", NamedTextColor.GRAY);
-    lore.add(status.decoration(TextDecoration.ITALIC, false));
-
-    meta.lore(lore);
-    item.setItemMeta(meta);
-
-    // Place at connector's position
-    Position pos = connector.position();
-    int slot = pos.y() * GUI_COLS + pos.x();
-    if (slot >= 0 && slot < GUI_SIZE) {
-      gui.setItem(slot, item);
-    }
-  }
-
-  /**
-   * Represents a path segment at a specific position.
-   */
-  private static class PathSegment {
-    final GridPoint point;
-    final boolean unlocked;
-    final List<GridPoint> fullPath;
-    final int indexInPath;
-
-    PathSegment(GridPoint point, boolean unlocked, List<GridPoint> fullPath, int indexInPath) {
-      this.point = point;
-      this.unlocked = unlocked;
-      this.fullPath = fullPath;
-      this.indexInPath = indexInPath;
+      int slot = screenY * GUI_COLS + pathPoint.x;
+      if (slot >= 0 && slot < GUI_SIZE) {
+        gui.setItem(slot, lineItem);
+      }
     }
   }
 
 
   /**
-   * Create Wynncraft-style path: go horizontal first, then vertical DOWN.
-   * Only creates valid downward-flowing joints: ┐ ┌ │ ─
-   * Pattern: (x1,y1) → horizontal → (x2,y1) [corner] → vertical DOWN → (x2,y2)
-   *
-   * IMPORTANT: Corners (┐ ┌) are only valid if within 1 space of an endpoint.
-   * Longer L-shaped paths require explicit connector nodes and are NOT rendered.
+   * Creates path segments between two points (horizontal first, then vertical).
    */
   private List<GridPoint> createWynnPath(int x1, int y1, int x2, int y2) {
     List<GridPoint> path = new ArrayList<>();
-
-    // VALIDATION: Ensure path only goes down (y2 >= y1)
-    if (y2 < y1) {
-      plugin.getLogger().warning(String.format(
-          "Invalid path: cannot go upward from (%d,%d) to (%d,%d)", x1, y1, x2, y2));
-      // Return empty path - don't render invalid paths
-      return path;
-    }
-
-    // VALIDATION: If both x and y differ, check if corner is within 1 space of an endpoint
-    // Otherwise, this needs an explicit connector node (not auto-rendered)
-    int cornerX = x2;
-    int cornerY = y1;
-    if (x1 != x2 && y1 != y2) {
-      int distFromStart = Math.abs(cornerX - x1) + Math.abs(cornerY - y1);
-      int distFromEnd = Math.abs(cornerX - x2) + Math.abs(cornerY - y2);
-      if (distFromStart > 2 || distFromEnd > 2) {
-        // Corner is too far - skip this path (requires connector node)
-        return path;
-      }
-    }
 
     // Start point
     path.add(new GridPoint(x1, y1));
@@ -381,14 +269,14 @@ public final class UpgradeTreeGui implements Listener {
       for (int x = x1 + xDir; x != x2; x += xDir) {
         path.add(new GridPoint(x, y1));
       }
-      // Corner point at (x2, y1) - will be either ┐ (right-down) or ┌ (left-down)
+      // Corner point at (x2, y1)
       path.add(new GridPoint(x2, y1));
     }
 
-    // Vertical segment from y1 DOWN to y2 at x2 (only if y changes)
+    // Vertical segment from y1 to y2 at x2 (only if y changes)
     if (y1 != y2) {
-      // Always go DOWN (y increases)
-      for (int y = y1 + 1; y != y2; y++) {
+      int yDir = y2 > y1 ? 1 : -1;
+      for (int y = y1 + yDir; y != y2; y += yDir) {
         path.add(new GridPoint(x2, y));
       }
     }
@@ -402,8 +290,7 @@ public final class UpgradeTreeGui implements Listener {
   }
 
   /**
-   * Detect specific joint type: ┐ (right-down), ┌ (left-down), │ (vertical), ─ (horizontal), ┬ (T-down)
-   * These are the ONLY valid joints for a downward-flowing tree.
+   * Detect segment type for display purposes.
    */
   private String detectSegmentType(List<GridPoint> path, int index) {
     if (index <= 0 || index >= path.size() - 1) {
@@ -424,28 +311,14 @@ public final class UpgradeTreeGui implements Listener {
 
     // Check if direction changes (indicates a corner)
     if (dx1 != dx2 || dy1 != dy2) {
-      // Corner detected - determine which type
-      // Coming from horizontal, going vertical down
-      if (dy1 == 0 && dy2 > 0) {
-        if (dx1 > 0) {
-          // Moving RIGHT then DOWN: →┐ = Right-Down
-          return "┐ Right-Down";
-        } else if (dx1 < 0) {
-          // Moving LEFT then DOWN: ┌← = Left-Down
-          return "┌ Left-Down";
-        }
-      }
-      // Invalid corner (going up or other)
-      return "⚠ Invalid Corner";
+      return "Corner";
     }
 
     // Straight segments
     if (dx1 != 0 && dy1 == 0) {
       return "─ Horizontal";
-    } else if (dx1 == 0 && dy1 > 0) {
-      return "│ Vertical Down";
-    } else if (dx1 == 0 && dy1 < 0) {
-      return "⚠ Vertical Up"; // Invalid!
+    } else if (dx1 == 0 && dy1 != 0) {
+      return "│ Vertical";
     }
 
     return "Path";
@@ -577,11 +450,9 @@ public final class UpgradeTreeGui implements Listener {
   }
 
   /**
-   * Update navigation arrows and info book in the player's bottom inventory.
+   * Update navigation arrows and info book in the GUI bottom control row.
    */
-  private void updateNavigationArrows(Player player, GuiSession session, PlayerUpgradeData data) {
-    Inventory playerInv = player.getInventory();
-
+  private void updateNavigationArrows(Inventory gui, GuiSession session, PlayerUpgradeData data) {
     // Calculate max scroll based on tree bounds
     int maxY = session.tree.allNodes().stream()
         .map(UpgradeNode::position)
@@ -600,43 +471,47 @@ public final class UpgradeTreeGui implements Listener {
         maxY, maxScroll, session.scrollOffset, canScrollUp, canScrollDown
     ));
 
-    // Navigation arrows with cyan/blue theme
-    // Up arrow in slot 0 (bottom-left of player inventory)
+    // Fill control row background
+    for (int i = CONTROL_ROW_START; i < GUI_SIZE; i++) {
+      ItemStack pane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+      ItemMeta paneMeta = pane.getItemMeta();
+      paneMeta.displayName(Component.text(" "));
+      pane.setItemMeta(paneMeta);
+      gui.setItem(i, pane);
+    }
+
+    // Up arrow in control row slot 0 (GUI slot 45)
     ItemStack upArrow = new ItemStack(canScrollUp ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE);
     ItemMeta upMeta = upArrow.getItemMeta();
     upMeta.displayName(Component.text(
         canScrollUp ? "Scroll Up" : "Scroll Up (At Top)",
         canScrollUp ? NamedTextColor.AQUA : NamedTextColor.GRAY)
         .decoration(TextDecoration.ITALIC, false));
-    if (canScrollUp) {
-      upMeta.getPersistentDataContainer().set(
-          new NamespacedKey(plugin, "scroll_action"),
-          PersistentDataType.STRING,
-          "up"
-      );
-    }
+    upMeta.getPersistentDataContainer().set(
+        new NamespacedKey(plugin, "scroll_action"),
+        PersistentDataType.STRING,
+        "up"
+    );
     upArrow.setItemMeta(upMeta);
-    playerInv.setItem(0, upArrow);
+    gui.setItem(CONTROL_ROW_START, upArrow);
 
-    // Down arrow in slot 8 (bottom-right of player inventory)
+    // Down arrow in control row slot 8 (GUI slot 53)
     ItemStack downArrow = new ItemStack(canScrollDown ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE);
     ItemMeta downMeta = downArrow.getItemMeta();
     downMeta.displayName(Component.text(
         canScrollDown ? "Scroll Down" : "Scroll Down (At Bottom)",
         canScrollDown ? NamedTextColor.AQUA : NamedTextColor.GRAY)
         .decoration(TextDecoration.ITALIC, false));
-    if (canScrollDown) {
-      downMeta.getPersistentDataContainer().set(
-          new NamespacedKey(plugin, "scroll_action"),
-          PersistentDataType.STRING,
-          "down"
-      );
-    }
+    downMeta.getPersistentDataContainer().set(
+        new NamespacedKey(plugin, "scroll_action"),
+        PersistentDataType.STRING,
+        "down"
+    );
     downArrow.setItemMeta(downMeta);
-    playerInv.setItem(8, downArrow);
+    gui.setItem(CONTROL_ROW_START + 8, downArrow);
 
-    // Info book in center of hotbar (slot 4)
-    playerInv.setItem(4, createInfoItem(session.job, session.tree, data));
+    // Info book in control row center slot (GUI slot 49)
+    gui.setItem(CONTROL_ROW_START + 4, createInfoItem(session.job, session.tree, data));
   }
 
   private void fillBackground(Inventory gui) {
@@ -645,7 +520,8 @@ public final class UpgradeTreeGui implements Listener {
     meta.displayName(Component.text(" "));
     pane.setItemMeta(meta);
 
-    for (int i = 0; i < GUI_SIZE; i++) {
+    // Only fill node rendering area (rows 0-4), control row is handled separately
+    for (int i = 0; i < CONTROL_ROW_START; i++) {
       gui.setItem(i, pane);
     }
   }
@@ -707,8 +583,9 @@ public final class UpgradeTreeGui implements Listener {
   }
 
   private ItemStack createNodeItem(UpgradeNode node, NodeStatus status, PlayerUpgradeData data, UpgradeTree tree) {
+    boolean unlocked = status == NodeStatus.UNLOCKED;
     Material material = switch (status) {
-      case UNLOCKED -> node.icon();
+      case UNLOCKED -> node.unlockedIcon();
       case AVAILABLE -> node.icon();
       case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE; // Lighter gray for locked nodes
       case EXCLUDED -> Material.RED_STAINED_GLASS_PANE; // Red pane instead of barrier for excluded
@@ -733,8 +610,10 @@ public final class UpgradeTreeGui implements Listener {
 
     // Description
     if (node.description() != null && !node.description().isEmpty()) {
-      lore.add(Component.text(node.description(), NamedTextColor.GRAY)
-          .decoration(TextDecoration.ITALIC, false));
+      for (String line : node.description().split("\n")) {
+        lore.add(Component.text(line, NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false));
+      }
     }
 
     lore.add(Component.empty());
@@ -798,6 +677,15 @@ public final class UpgradeTreeGui implements Listener {
     }
 
     meta.lore(lore);
+
+    // Set custom item model if available (for UNLOCKED, AVAILABLE, and LOCKED nodes)
+    String itemModel = node.getItemModelForState(unlocked);
+    if (itemModel != null) {
+      NamespacedKey modelKey = NamespacedKey.fromString(itemModel);
+      if (modelKey != null) {
+        meta.setItemModel(modelKey);
+      }
+    }
 
     // Add enchant glow for unlocked and available nodes
     if (status == NodeStatus.UNLOCKED || status == NodeStatus.AVAILABLE) {
@@ -958,11 +846,11 @@ public final class UpgradeTreeGui implements Listener {
         .orElse(0);
     int maxScroll = Math.max(0, maxY - GUI_ROWS + 1);
 
-    // Update scroll offset
+    // Update scroll offset by full page
     if ("up".equals(action) && session.scrollOffset > 0) {
-      session.scrollOffset--;
+      session.scrollOffset = Math.max(0, session.scrollOffset - GUI_ROWS);
     } else if ("down".equals(action) && session.scrollOffset < maxScroll) {
-      session.scrollOffset++;
+      session.scrollOffset = Math.min(maxScroll, session.scrollOffset + GUI_ROWS);
     } else {
       return; // No change needed
     }
@@ -976,12 +864,6 @@ public final class UpgradeTreeGui implements Listener {
     if (event.getPlayer() instanceof Player player) {
       UUID playerId = player.getUniqueId();
       openGuis.remove(playerId);
-
-      // Restore player inventory
-      ItemStack[] saved = savedInventories.remove(playerId);
-      if (saved != null) {
-        player.getInventory().setContents(saved);
-      }
     }
   }
 

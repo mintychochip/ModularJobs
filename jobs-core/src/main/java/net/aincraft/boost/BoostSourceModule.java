@@ -8,7 +8,6 @@ import net.aincraft.boost.config.BoostSourceLoader;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.Registry;
 import net.aincraft.registry.SimpleRegistryImpl;
 import org.bukkit.plugin.Plugin;
@@ -35,7 +34,6 @@ public final class BoostSourceModule extends AbstractModule {
       Plugin plugin,
       Gson gson,
       ConditionFactory conditionFactory,
-      PolicyFactory policyFactory,
       BoostFactory boostFactory,
       Registry<BoostSource> boostSourceRegistry
   ) {
@@ -43,7 +41,6 @@ public final class BoostSourceModule extends AbstractModule {
         plugin,
         gson,
         conditionFactory,
-        policyFactory,
         boostFactory,
         boostSourceRegistry
     );

@@ -9,7 +9,6 @@ import net.aincraft.config.ConfigurationModule;
 import net.aincraft.domain.DomainModule;
 // import net.aincraft.gui.GuiModule; // Disabled - JobPets dependency not available
 // import net.aincraft.listener.ListenerModule; // Disabled - JobPets dependency not available
-import net.aincraft.math.MathModule;
 import net.aincraft.payable.PayableModule;
 // import net.aincraft.hooks.preferences.PreferenceModule; // Disabled - references missing Preferences plugin
 import net.aincraft.payment.PaymentModule;
@@ -50,7 +49,6 @@ public final class PluginModule extends AbstractModule {
     install(new CommandModule());
     // install(new PreferenceModule()); // Disabled - references missing Preferences plugin
     install(new DomainModule());
-    install(new MathModule());
     install(new BoostModule());
     install(new BoostSourceModule());
     install(new EditorModule());

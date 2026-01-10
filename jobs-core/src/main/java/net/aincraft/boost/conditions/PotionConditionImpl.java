@@ -10,10 +10,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+/**
+ * Record condition that checks a potion effect value against an expected value.
+ * Delegates to {@link Conditions#potion(PotionEffectType, int, PotionConditionType, RelationalOperator)} for implementation.
+ */
 public record PotionConditionImpl(PotionEffectType type,
                            int expected, PotionConditionType conditionType,
-                           RelationalOperator relationalOperator) implements
-    Condition {
+                           RelationalOperator relationalOperator) implements Condition {
 
   @Override
   public boolean applies(BoostContext context) {
@@ -27,5 +30,4 @@ public record PotionConditionImpl(PotionEffectType type,
     }
     return false;
   }
-
 }

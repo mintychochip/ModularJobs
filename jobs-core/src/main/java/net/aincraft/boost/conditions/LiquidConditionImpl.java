@@ -6,6 +6,10 @@ import net.aincraft.container.boost.Condition;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
+/**
+ * Record condition that checks if the player is in a specific liquid (water or lava).
+ * Delegates to {@link Conditions#liquid(Material)} for implementation.
+ */
 public record LiquidConditionImpl(Material liquid) implements Condition {
 
   public LiquidConditionImpl {
@@ -21,5 +25,4 @@ public record LiquidConditionImpl(Material liquid) implements Condition {
     }
     return player.isInLava();
   }
-
 }

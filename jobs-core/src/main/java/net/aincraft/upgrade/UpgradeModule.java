@@ -10,13 +10,16 @@ import com.google.inject.name.Named;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.gui.UpgradeTreeGui;
 import net.aincraft.registry.Registry;
 import net.aincraft.registry.SimpleRegistryImpl;
 import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.ConnectionSourceFactory;
 import net.aincraft.upgrade.config.UpgradeTreeLoader;
+import net.aincraft.upgrade.editor.TreeEditorExporter;
+import net.aincraft.upgrade.editor.TreeEditorGui;
+import net.aincraft.upgrade.editor.TreeEditorNodeGui;
+import net.aincraft.upgrade.editor.TreeEditorSettingsGui;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -34,6 +37,12 @@ public final class UpgradeModule extends AbstractModule {
     bind(UpgradeService.class).to(UpgradeServiceImpl.class).in(Singleton.class);
     bind(UpgradeTreeGui.class).in(Singleton.class);
 
+    // Tree editor
+    bind(TreeEditorExporter.class).in(Singleton.class);
+    bind(TreeEditorNodeGui.class).in(Singleton.class);
+    bind(TreeEditorSettingsGui.class).in(Singleton.class);
+    bind(TreeEditorGui.class).in(Singleton.class);
+
     // Effect application services
     bind(UpgradePermissionManager.class).in(Singleton.class);
     bind(UpgradeEffectApplier.class).in(Singleton.class);
@@ -44,6 +53,9 @@ public final class UpgradeModule extends AbstractModule {
     listenerBinder.addBinding().to(UpgradeLevelUpListener.class);
     listenerBinder.addBinding().to(UpgradeTreeGui.class);
     listenerBinder.addBinding().to(UpgradePermissionRestoreListener.class);
+
+    // Note: Tree editor GUIs use Triumph GUI which handles events internally,
+    // so they don't need to be registered as listeners
   }
 
   @Provides
@@ -67,10 +79,9 @@ public final class UpgradeModule extends AbstractModule {
       Gson gson,
       Registry<UpgradeTree> registry,
       ConditionFactory conditionFactory,
-      PolicyFactory policyFactory,
       BoostFactory boostFactory) {
     UpgradeTreeLoader loader = new UpgradeTreeLoader(
-        plugin, gson, registry, conditionFactory, policyFactory, boostFactory);
+        plugin, gson, registry, conditionFactory, boostFactory);
     loader.load();
     return loader;
   }

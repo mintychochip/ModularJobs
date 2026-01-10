@@ -9,9 +9,9 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
+import java.util.BitSet;
 import net.aincraft.boost.SlotSetParser;
 import net.aincraft.container.BoostSource;
-import net.aincraft.container.SlotSet;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
 import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.registry.Registry;
@@ -113,7 +113,7 @@ public final class ItemBoostCommand implements JobsCommand {
     }
 
     // Parse slot set
-    SlotSet slotSet;
+    BitSet slotSet;
     try {
       slotSet = SlotSetParser.parse(slotSetSpec);
     } catch (IllegalArgumentException e) {
