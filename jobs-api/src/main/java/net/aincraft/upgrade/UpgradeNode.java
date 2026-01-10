@@ -28,6 +28,12 @@ import org.jetbrains.annotations.Nullable;
  * @param pathPoints       explicit path points from this node back to its parent (empty for root)
  * @param perkId           perk identifier (e.g., "crit_chance", "fortune_spec")
  * @param level            perk level (1, 2, 3...)
+ * @param maxLevel         max upgradeable level (0 or 1 = not upgradeable, >1 = upgradeable in place)
+ * @param levelCosts       cost per level upgrade [lvl1, lvl2, lvl3], empty = use cost for all
+ * @param levelDescriptions description per level [lvl1, lvl2, lvl3], empty = use base description
+ * @param levelEffects     effects per level [[lvl1 effects], [lvl2 effects], ...], empty = use base effects
+ * @param levelIcons       icon material per level [lvl1, lvl2, lvl3], empty = use base icon
+ * @param levelItemModels  item model per level [lvl1, lvl2, lvl3], empty = use base model
  */
 public record UpgradeNode(
     @NotNull Key key,
@@ -45,8 +51,115 @@ public record UpgradeNode(
     @Nullable Position position,
     @NotNull List<Position> pathPoints,
     @NotNull String perkId,
-    int level
+    int level,
+    int maxLevel,
+    @NotNull List<Integer> levelCosts,
+    @NotNull List<String> levelDescriptions,
+    @NotNull List<List<UpgradeEffect>> levelEffects,
+    @NotNull List<Material> levelIcons,
+    @NotNull List<String> levelItemModels
 ) implements Keyed {
+
+  /**
+   * Check if this node supports in-place upgrades (maxLevel > 1).
+   */
+  public boolean isUpgradeable() {
+    return maxLevel > 1;
+  }
+
+  /**
+   * Get the cost to upgrade to a specific level.
+   *
+   * @param targetLevel the level to upgrade to (1 = initial unlock)
+   * @return SP cost for that level
+   */
+  public int getCostForLevel(int targetLevel) {
+    if (levelCosts.isEmpty()) {
+      return cost; // Fallback to base cost
+    }
+    int index = targetLevel - 1; // Level 1 = index 0
+    if (index < 0 || index >= levelCosts.size()) {
+      return cost; // Fallback
+    }
+    return levelCosts.get(index);
+  }
+
+  /**
+   * Get description for a specific level (1-indexed).
+   * Falls back to base description if not available.
+   *
+   * @param targetLevel the level (1, 2, 3...)
+   * @return description for that level
+   */
+  @Nullable
+  public String getDescriptionForLevel(int targetLevel) {
+    if (levelDescriptions.isEmpty()) {
+      return description;
+    }
+    int index = targetLevel - 1;
+    if (index < 0 || index >= levelDescriptions.size()) {
+      return description;
+    }
+    return levelDescriptions.get(index);
+  }
+
+  /**
+   * Get effects for a specific level (1-indexed).
+   * Falls back to base effects if not available.
+   *
+   * @param targetLevel the level (1, 2, 3...)
+   * @return effects for that level
+   */
+  @NotNull
+  public List<UpgradeEffect> getEffectsForLevel(int targetLevel) {
+    if (levelEffects.isEmpty()) {
+      return effects;
+    }
+    int index = targetLevel - 1;
+    if (index < 0 || index >= levelEffects.size()) {
+      return effects;
+    }
+    return levelEffects.get(index);
+  }
+
+  /**
+   * Get icon material for a specific level (1-indexed).
+   * Falls back to unlockedIcon if not available.
+   *
+   * @param targetLevel the level (1, 2, 3...)
+   * @return icon material for that level
+   */
+  @NotNull
+  public Material getIconForLevel(int targetLevel) {
+    if (levelIcons.isEmpty()) {
+      return unlockedIcon;
+    }
+    int index = targetLevel - 1;
+    if (index < 0 || index >= levelIcons.size()) {
+      return unlockedIcon;
+    }
+    return levelIcons.get(index);
+  }
+
+  /**
+   * Get item model for a specific level (1-indexed).
+   * Falls back to unlockedItemModel if not available.
+   *
+   * @param targetLevel the level (1, 2, 3...)
+   * @return item model namespace:key for that level (null if none)
+   */
+  @Nullable
+  public String getItemModelForLevel(int targetLevel) {
+    if (levelItemModels.isEmpty()) {
+      return unlockedItemModel;
+    }
+    int index = targetLevel - 1;
+    if (index < 0 || index >= levelItemModels.size()) {
+      return unlockedItemModel;
+    }
+    String model = levelItemModels.get(index);
+    return model != null && !model.isEmpty() ? model : unlockedItemModel;
+  }
 
   /**
    * Check if this node is a root node (no prerequisites).

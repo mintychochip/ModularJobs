@@ -18,6 +18,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   private int totalSkillPoints;
   private final Set<String> unlockedNodes;
   private final Map<String, Integer> perkLevels;
+  private final Map<String, Integer> nodeLevels;
 
   public PlayerUpgradeDataImpl(
       @NotNull String playerId,
@@ -25,11 +26,22 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
       int totalSkillPoints,
       @NotNull Set<String> unlockedNodes
   ) {
+    this(playerId, jobKey, totalSkillPoints, unlockedNodes, Map.of());
+  }
+
+  public PlayerUpgradeDataImpl(
+      @NotNull String playerId,
+      @NotNull String jobKey,
+      int totalSkillPoints,
+      @NotNull Set<String> unlockedNodes,
+      @NotNull Map<String, Integer> nodeLevels
+  ) {
     this.playerId = playerId;
     this.jobKey = jobKey;
     this.totalSkillPoints = totalSkillPoints;
     this.unlockedNodes = new HashSet<>(unlockedNodes);
     this.perkLevels = new HashMap<>();
+    this.nodeLevels = new HashMap<>(nodeLevels);
   }
 
   /**
@@ -136,5 +148,37 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   public int removePerkLevel(@NotNull String perkId) {
     Integer previous = perkLevels.remove(perkId);
     return previous != null ? previous : 0;
+  }
+
+  @Override
+  public int getNodeLevel(@NotNull String nodeKey) {
+    return nodeLevels.getOrDefault(nodeKey, hasUnlocked(nodeKey) ? 1 : 0);
+  }
+
+  /**
+   * Set the level of a node (for in-place upgrades).
+   *
+   * @param nodeKey node key
+   * @param level   level to set (1 = initial unlock, 2+ = upgraded)
+   */
+  public void setNodeLevel(@NotNull String nodeKey, int level) {
+    nodeLevels.put(nodeKey, level);
+  }
+
+  /**
+   * Remove a node level entry (for respec).
+   *
+   * @return the previous level, or 0 if not set
+   */
+  public int removeNodeLevel(@NotNull String nodeKey) {
+    Integer previous = nodeLevels.remove(nodeKey);
+    return previous != null ? previous : 0;
+  }
+
+  /**
+   * Get the raw node levels map for repository persistence.
+   */
+  public @NotNull Map<String, Integer> nodeLevels() {
+    return Collections.unmodifiableMap(nodeLevels);
   }
 }

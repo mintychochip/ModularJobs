@@ -104,7 +104,13 @@ public final class WynncraftTreeConfigParser {
               parent.position(),
               parent.pathPoints(),
               parent.perkId(),
-              parent.level()
+              parent.level(),
+              parent.maxLevel(),
+              parent.levelCosts(),
+              parent.levelDescriptions(),
+              parent.levelEffects(),
+              parent.levelIcons(),
+              parent.levelItemModels()
           ));
         }
       }
@@ -188,6 +194,44 @@ public final class WynncraftTreeConfigParser {
       }
     }
 
+    // Parse maxLevel and levelCosts for in-place upgrades
+    int maxLevel = meta.maxLevel() != null && meta.maxLevel() > 0 ? meta.maxLevel() : 1;
+    List<Integer> levelCosts = meta.levelCosts() != null ? meta.levelCosts() : List.of();
+
+    // Parse per-level descriptions
+    List<String> levelDescriptions = meta.levelDescriptions() != null ? meta.levelDescriptions() : List.of();
+
+    // Parse per-level effects
+    List<List<UpgradeEffect>> levelEffects = List.of();
+    if (meta.levelEffects() != null && !meta.levelEffects().isEmpty()) {
+      List<List<UpgradeEffect>> parsedLevelEffects = new ArrayList<>();
+      for (List<EffectConfig> levelEffectConfigs : meta.levelEffects()) {
+        List<UpgradeEffect> parsedEffects = new ArrayList<>();
+        for (EffectConfig effectConfig : levelEffectConfigs) {
+          UpgradeEffect effect = parseEffect(effectConfig);
+          if (effect != null) {
+            parsedEffects.add(effect);
+          }
+        }
+        parsedLevelEffects.add(parsedEffects);
+      }
+      levelEffects = parsedLevelEffects;
+    }
+
+    // Parse per-level icons
+    List<Material> levelIcons = List.of();
+    List<String> levelItemModels = List.of();
+    if (meta.levelIcons() != null && !meta.levelIcons().isEmpty()) {
+      List<Material> parsedIcons = new ArrayList<>();
+      List<String> parsedModels = new ArrayList<>();
+      for (var iconConfig : meta.levelIcons()) {
+        parsedIcons.add(iconConfig.toMaterial());
+        parsedModels.add(iconConfig.itemModel());
+      }
+      levelIcons = parsedIcons;
+      levelItemModels = parsedModels;
+    }
+
     return new UpgradeNode(
         key,
         meta.name(),
@@ -204,7 +248,13 @@ public final class WynncraftTreeConfigParser {
         position,
         List.of(), // paths are now at tree level, not per-node
         perkId,
-        level
+        level,
+        maxLevel,
+        levelCosts,
+        levelDescriptions,
+        levelEffects,
+        levelIcons,
+        levelItemModels
     );
   }
 

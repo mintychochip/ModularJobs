@@ -19,8 +19,13 @@ import org.jetbrains.annotations.Nullable;
  * @param effects       list of effects granted by this ability
  * @param required      whether this node is required (always unlocked)
  * @param major         whether this is a major/specialization node
- * @param perkId        optional perk identifier for leveled perks (e.g., "crit_chance")
- * @param level         optional perk level (1, 2, 3...)
+ * @param perkId            optional perk identifier for leveled perks (e.g., "crit_chance")
+ * @param level             optional perk level (1, 2, 3...)
+ * @param maxLevel          optional max level for in-place upgrades (>1 enables upgrades)
+ * @param levelCosts        optional per-level costs [lvl1, lvl2, lvl3] (null = use cost for all)
+ * @param levelDescriptions optional per-level descriptions (null = use base description)
+ * @param levelEffects      optional per-level effects (null = use base effects)
+ * @param levelIcons        optional per-level icons (null = use base icon)
  */
 public record AbilityMeta(
     @NotNull String name,
@@ -33,7 +38,12 @@ public record AbilityMeta(
     boolean required,
     boolean major,
     @Nullable String perkId,
-    @Nullable Integer level
+    @Nullable Integer level,
+    @Nullable Integer maxLevel,
+    @Nullable List<Integer> levelCosts,
+    @Nullable List<String> levelDescriptions,
+    @Nullable List<List<EffectConfig>> levelEffects,
+    @Nullable List<IconConfig> levelIcons
 ) implements LayoutItemMeta {
   /**
    * Combined description as a single string with newlines.

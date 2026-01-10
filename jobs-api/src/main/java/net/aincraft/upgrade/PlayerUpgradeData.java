@@ -58,4 +58,13 @@ public interface PlayerUpgradeData {
   default int getPerkLevel(@NotNull String perkId) {
     return perkLevels().getOrDefault(perkId, 0);
   }
+
+  /**
+   * Get current upgrade level for a node (1 = unlocked at base, 2+ = upgraded).
+   * Returns 0 if node not unlocked.
+   *
+   * @param nodeKey the node key
+   * @return current level (0 if not unlocked, 1+ if unlocked)
+   */
+  int getNodeLevel(@NotNull String nodeKey);
 }
