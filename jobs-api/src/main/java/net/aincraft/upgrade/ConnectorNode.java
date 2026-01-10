@@ -12,6 +12,10 @@ import org.jetbrains.annotations.NotNull;
  * Connector nodes are visual path segments that connect ability nodes.
  * They have different visual states for locked and unlocked paths.
  *
+ * @deprecated Connector nodes are deprecated in favor of {@code path_from_parent} on ability nodes.
+ *             Use the {@code path_from_parent} field in {@code AbilityMeta} to define visual paths.
+ *             This class will be removed in a future version.
+ *
  * @param key            unique identifier (e.g., "miner:connector_basics_to_eff1")
  * @param name           display name (typically "Connector" or similar)
  * @param icon           locked state icon
@@ -21,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
  * @param lockedCustomModelData   custom model data for locked state (0 if unused)
  * @param unlockedCustomModelData custom model data for unlocked state (0 if unused)
  */
+@Deprecated(since = "1.0", forRemoval = true)
 public record ConnectorNode(
     @NotNull Key key,
     @NotNull String name,

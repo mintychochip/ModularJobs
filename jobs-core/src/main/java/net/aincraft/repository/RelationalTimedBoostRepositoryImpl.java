@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepository {
 
   private final ConnectionSource connectionSource;
-  private final Repository<String, ActiveBoostData> repository;
+  private final WriteBackRepositoryImpl<String, ActiveBoostData> repository;
   private final CodecRegistry codecRegistry;
   // Track boost keys per target to handle write-back cache delay
   private final Map<String, Set<String>> knownBoostKeys = new ConcurrentHashMap<>();

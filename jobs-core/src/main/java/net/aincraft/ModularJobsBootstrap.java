@@ -9,6 +9,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.commands.JobsCommand;
@@ -49,12 +50,16 @@ public final class ModularJobsBootstrap extends JavaPlugin {
       }
       Set<JobsCommand> commands = injector.getInstance(Key.get(new TypeLiteral<>() {
       }));
-      LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("jobs");
-      for (JobsCommand command : commands) {
-        root.then(command.build());
-      }
+
+      // Register as "jobs" and "j" aliases
       getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, c -> {
-        c.registrar().register(root.build());
+        for (String alias : List.of("jobs", "j")) {
+          LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(alias);
+          for (JobsCommand command : commands) {
+            root.then(command.build());
+          }
+          c.registrar().register(root.build());
+        }
       });
       Bukkit.getPluginCommand("test").setExecutor(injector.getInstance(Command.class));
     } catch (Exception e) {

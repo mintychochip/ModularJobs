@@ -3,7 +3,7 @@ package net.aincraft.payment;
 import org.bukkit.Chunk;
 import org.bukkit.OfflinePlayer;
 
-public interface ChunkExplorationStore {
+public interface PlayerChunkExplorationService {
 
   /**
    * Checks if the player has explored the given chunk.

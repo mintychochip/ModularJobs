@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,6 @@ import net.aincraft.boost.AdditiveBoostImpl;
 import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
-import net.aincraft.container.SlotSet;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
 import net.aincraft.container.boost.ItemBoostDataService;
@@ -175,8 +175,8 @@ public class BoostsCommand implements JobsCommand {
       }
 
       if (dataOpt.get() instanceof PassiveBoostData passiveData) {
-        SlotSet slotSet = passiveData.slotSet();
-        if (slotSet.contains(slot)) {
+        BitSet slotSet = passiveData.slotSet();
+        if (slotSet.get(slot)) {
           BoostSource source = passiveData.boostSource();
           String key = source.key().asString();
 

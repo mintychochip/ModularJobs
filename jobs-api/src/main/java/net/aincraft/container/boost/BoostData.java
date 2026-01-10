@@ -1,9 +1,9 @@
 package net.aincraft.container.boost;
 
 import java.time.Duration;
+import java.util.BitSet;
 import java.util.Optional;
 import net.aincraft.container.BoostSource;
-import net.aincraft.container.SlotSet;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
@@ -27,7 +27,7 @@ public sealed interface BoostData permits SerializableBoostData {
       }
     }
 
-    record PassiveBoostData(@NotNull BoostSource boostSource, @NotNull SlotSet slotSet) implements
+    record PassiveBoostData(@NotNull BoostSource boostSource, @NotNull BitSet slotSet) implements
         SerializableBoostData {
 
     }

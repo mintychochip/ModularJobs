@@ -15,10 +15,8 @@ import net.aincraft.upgrade.Position;
 import net.aincraft.upgrade.wynncraft.AbilityMeta;
 import net.aincraft.upgrade.wynncraft.AbilityMeta.BoostConfig;
 import net.aincraft.upgrade.wynncraft.AbilityMeta.EffectConfig;
-import net.aincraft.upgrade.wynncraft.AbilityMeta.PolicyConfig;
 import net.aincraft.upgrade.wynncraft.AbilityMeta.RuleConfig;
 import net.aincraft.upgrade.wynncraft.Archetype;
-import net.aincraft.upgrade.wynncraft.ConnectorMeta;
 import net.aincraft.upgrade.wynncraft.IconConfig;
 import net.aincraft.upgrade.wynncraft.LayoutItem;
 import net.aincraft.upgrade.wynncraft.LayoutItemType;
@@ -40,17 +38,20 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
 
     // Parse metadata for job info
     String job = null;
+    String description = null;
     int skillPointsPerLevel = 1;
     String rootId = null;
 
     if (root.has("metadata")) {
       JsonObject metadata = root.getAsJsonObject("metadata");
       job = getString(metadata, "job");
+      description = metadata.has("description") ? metadata.get("description").getAsString() : null;
       skillPointsPerLevel = metadata.has("skill_points_per_level") ? metadata.get("skill_points_per_level").getAsInt() : 1;
       rootId = getString(metadata, "root");
     } else {
       // Fallback to top-level fields
       job = getString(root, "job");
+      description = root.has("description") ? root.get("description").getAsString() : null;
       skillPointsPerLevel = root.has("skill_points_per_level") ? root.get("skill_points_per_level").getAsInt() : 1;
       rootId = getString(root, "root");
     }
@@ -89,7 +90,19 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       }
     }
 
-    return new WynncraftTreeConfig(treeId, displayName, job, skillPointsPerLevel, rootId, archetypes, layout, perkPolicies);
+    // Parse paths array (tree-level path coordinates)
+    List<Position> paths = new ArrayList<>();
+    if (root.has("paths")) {
+      for (JsonElement elem : root.getAsJsonArray("paths")) {
+        JsonObject posObj = elem.getAsJsonObject();
+        paths.add(new Position(
+            posObj.get("x").getAsInt(),
+            posObj.get("y").getAsInt()
+        ));
+      }
+    }
+
+    return new WynncraftTreeConfig(treeId, displayName, description, job, skillPointsPerLevel, rootId, paths, archetypes, layout, perkPolicies);
   }
 
   private LayoutItem deserializeLayoutItem(JsonObject itemObj, JsonDeserializationContext context) {
@@ -131,8 +144,6 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
 
     if (type == LayoutItemType.ABILITY) {
       metaObj = deserializeAbilityMeta(meta);
-    } else if (type == LayoutItemType.CONNECTOR) {
-      metaObj = deserializeConnectorMeta(meta);
     } else {
       throw new IllegalArgumentException("Unknown layout item type: " + type);
     }
@@ -143,12 +154,33 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
   private AbilityMeta deserializeAbilityMeta(JsonObject meta) {
     String name = getString(meta, "name");
 
-    // Parse icon
+    // Parse icon - supports both new format (locked/unlocked) and legacy format (single icon)
     JsonObject iconObj = meta.getAsJsonObject("icon");
-    IconConfig icon = new IconConfig(
-        getString(iconObj, "id"),
-        iconObj.has("custom_model_data") ? iconObj.get("custom_model_data").getAsInt() : 0
-    );
+    AbilityMeta.AbilityIcons icons;
+
+    if (iconObj.has("locked") && iconObj.has("unlocked")) {
+      // New format: separate locked and unlocked icons
+      JsonObject lockedObj = iconObj.getAsJsonObject("locked");
+      JsonObject unlockedObj = iconObj.getAsJsonObject("unlocked");
+
+      IconConfig locked = new IconConfig(
+          getString(lockedObj, "id"),
+          lockedObj.has("item_model") ? lockedObj.get("item_model").getAsString() : null
+      );
+      IconConfig unlocked = new IconConfig(
+          getString(unlockedObj, "id"),
+          unlockedObj.has("item_model") ? unlockedObj.get("item_model").getAsString() : null
+      );
+
+      icons = new AbilityMeta.AbilityIcons(locked, unlocked);
+    } else {
+      // Legacy format: single icon for both states
+      IconConfig singleIcon = new IconConfig(
+          getString(iconObj, "id"),
+          iconObj.has("item_model") ? iconObj.get("item_model").getAsString() : null
+      );
+      icons = new AbilityMeta.AbilityIcons(singleIcon, singleIcon);
+    }
 
     int cost = meta.has("cost") ? meta.get("cost").getAsInt() : 0;
     boolean required = meta.has("required") && meta.get("required").getAsBoolean();
@@ -186,20 +218,6 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       }
     }
 
-    // Parse path_from_parent - optional list of path points from parent to this node
-    List<Position> pathFromParent = null;
-    if (meta.has("path_from_parent")) {
-      pathFromParent = new ArrayList<>();
-      for (JsonElement elem : meta.getAsJsonArray("path_from_parent")) {
-        JsonObject posObj = elem.getAsJsonObject();
-        Position pos = new Position(
-            posObj.get("x").getAsInt(),
-            posObj.get("y").getAsInt()
-        );
-        pathFromParent.add(pos);
-      }
-    }
-
     // Parse optional perk_id for leveled perks (e.g., "crit_chance")
     String perkId = null;
     if (meta.has("perk_id")) {
@@ -212,55 +230,10 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       level = meta.get("level").getAsInt();
     }
 
-    return new AbilityMeta(name, icon, cost, description, prerequisites, exclusiveWith, effects, required, major, pathFromParent, perkId, level);
-  }
-
-  private ConnectorMeta deserializeConnectorMeta(JsonObject meta) {
-    // Parse links
-    List<String> links = new ArrayList<>();
-    if (meta.has("links")) {
-      for (JsonElement elem : meta.getAsJsonArray("links")) {
-        links.add(elem.getAsString());
-      }
-    }
-
-    // Parse icon shapes (supports both "icon" and "shapes" field names)
-    JsonObject iconObj = null;
-    if (meta.has("icon")) {
-      iconObj = meta.getAsJsonObject("icon");
-    } else if (meta.has("shapes")) {
-      iconObj = meta.getAsJsonObject("shapes");
-    } else {
-      throw new IllegalArgumentException("Connector meta must have 'icon' or 'shapes' field");
-    }
-
-    JsonObject lockedObj = iconObj.getAsJsonObject("locked");
-    JsonObject unlockedObj = iconObj.getAsJsonObject("unlocked");
-
-    IconConfig lockedIcon = new IconConfig(
-        getString(lockedObj, "id"),
-        lockedObj.has("custom_model_data") ? lockedObj.get("custom_model_data").getAsInt() : 0
-    );
-
-    IconConfig unlockedIcon = new IconConfig(
-        getString(unlockedObj, "id"),
-        unlockedObj.has("custom_model_data") ? unlockedObj.get("custom_model_data").getAsInt() : 0
-    );
-
-    return new ConnectorMeta(links, new ConnectorMeta.ConnectorShapes(lockedIcon, unlockedIcon));
+    return new AbilityMeta(name, icons, cost, description, prerequisites, exclusiveWith, effects, required, major, perkId, level);
   }
 
   private EffectConfig deserializeEffectConfig(JsonObject effectObj) {
-    // Parse policy for ruled_boost effects
-    PolicyConfig policy = null;
-    if (effectObj.has("policy")) {
-      JsonObject policyObj = effectObj.getAsJsonObject("policy");
-      policy = new PolicyConfig(
-          getString(policyObj, "type"),
-          policyObj.has("topK") ? policyObj.get("topK").getAsInt() : null
-      );
-    }
-
     // Parse rules for ruled_boost effects
     List<RuleConfig> rules = null;
     if (effectObj.has("rules")) {
@@ -286,6 +259,15 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       }
     }
 
+    // Parse permissions array for permission effects
+    List<String> permissions = null;
+    if (effectObj.has("permissions")) {
+      permissions = new ArrayList<>();
+      for (JsonElement permElem : effectObj.getAsJsonArray("permissions")) {
+        permissions.add(permElem.getAsString());
+      }
+    }
+
     return new EffectConfig(
         getString(effectObj, "type"),
         effectObj.has("target") ? getString(effectObj, "target") : null,
@@ -297,7 +279,7 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
         effectObj.has("unlock_type") ? getString(effectObj, "unlock_type") : null,
         effectObj.has("unlock_key") ? getString(effectObj, "unlock_key") : null,
         effectObj.has("permission") ? getString(effectObj, "permission") : null,
-        policy,
+        permissions,
         rules
     );
   }

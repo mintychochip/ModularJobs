@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public record UpgradeTreeConfig(
     @NotNull String job,
+    @Nullable String description,
     int skill_points_per_level,
     @NotNull String root,
     @NotNull Map<String, NodeConfig> nodes
@@ -22,7 +23,6 @@ public record UpgradeTreeConfig(
       @Nullable String description,
       @NotNull String icon,
       int cost,
-      @Nullable String type,
       @Nullable List<String> prerequisites,
       @Nullable List<String> exclusive,
       @Nullable List<String> children,
@@ -31,12 +31,6 @@ public record UpgradeTreeConfig(
       @Nullable String perkId,
       @Nullable Integer level
   ) {
-    /**
-     * Default to MINOR if not specified.
-     */
-    public String resolvedType() {
-      return type != null ? type : "minor";
-    }
   }
 
   /**
@@ -54,8 +48,8 @@ public record UpgradeTreeConfig(
       @Nullable String unlock_type,
       @Nullable String unlock_key,
       @Nullable String permission,
+      @Nullable List<String> permissions,
       // For ruled_boost type: use the same structure as boost_sources
-      @Nullable PolicyConfig policy,
       @Nullable List<RuleConfig> rules
   ) {
   }

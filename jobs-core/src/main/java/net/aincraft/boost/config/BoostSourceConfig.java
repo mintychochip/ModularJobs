@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 public record BoostSourceConfig(
     @NotNull String key,
     @Nullable String description,
-    @NotNull PolicyConfig policy,
+    @Nullable PolicyConfig policy,
     @NotNull List<RuleConfig> rules
 ) {
 

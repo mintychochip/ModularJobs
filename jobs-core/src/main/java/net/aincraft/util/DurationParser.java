@@ -1,26 +1,23 @@
 package net.aincraft.util;
 
 import java.time.Duration;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.spongepowered.configurate.BasicConfigurationNode;
+import org.spongepowered.configurate.ConfigurationNode;
 
 /**
- * Parses duration strings like "1h30m", "30s", "2d", "1h 30m 15s".
+ * Parses duration strings like "1h30m", "30s", "2d", "1h 30m 15s" using Configurate's serializer.
+ * Handles spaces, case-insensitive input, and various common formats.
  */
 public final class DurationParser {
-
-  private static final Pattern DURATION_PATTERN = Pattern.compile(
-      "(?:(\\d+)d)?\\s*(?:(\\d+)h)?\\s*(?:(\\d+)m)?\\s*(?:(\\d+)s)?",
-      Pattern.CASE_INSENSITIVE
-  );
 
   private DurationParser() {
   }
 
   /**
    * Parse a duration string into a Duration object.
+   * Accepts formats: "1h30m", "2d", "30s", "1h 30m 15s", "1 hour 30 minutes", etc.
    *
-   * @param input duration string (e.g., "1h30m", "2d", "30s", "1h 30m 15s")
+   * @param input duration string
    * @return parsed Duration
    * @throws IllegalArgumentException if the format is invalid
    */
@@ -29,32 +26,17 @@ public final class DurationParser {
       throw new IllegalArgumentException("Duration string cannot be empty");
     }
 
-    String normalized = input.trim().toLowerCase();
-    Matcher matcher = DURATION_PATTERN.matcher(normalized);
-
-    if (!matcher.matches()) {
-      throw new IllegalArgumentException("Invalid duration format: " + input);
+    try {
+      ConfigurationNode node = BasicConfigurationNode.root();
+      node.set(input);
+      Duration duration = node.get(Duration.class);
+      if (duration == null) {
+        throw new IllegalArgumentException("Invalid duration format: " + input);
+      }
+      return duration;
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid duration format: " + input, e);
     }
-
-    String daysStr = matcher.group(1);
-    String hoursStr = matcher.group(2);
-    String minutesStr = matcher.group(3);
-    String secondsStr = matcher.group(4);
-
-    // Check if at least one component was provided
-    if (daysStr == null && hoursStr == null && minutesStr == null && secondsStr == null) {
-      throw new IllegalArgumentException("Invalid duration format: " + input);
-    }
-
-    long days = daysStr != null ? Long.parseLong(daysStr) : 0;
-    long hours = hoursStr != null ? Long.parseLong(hoursStr) : 0;
-    long minutes = minutesStr != null ? Long.parseLong(minutesStr) : 0;
-    long seconds = secondsStr != null ? Long.parseLong(secondsStr) : 0;
-
-    return Duration.ofDays(days)
-        .plusHours(hours)
-        .plusMinutes(minutes)
-        .plusSeconds(seconds);
   }
 
   /**

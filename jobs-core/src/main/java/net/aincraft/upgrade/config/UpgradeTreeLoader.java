@@ -5,14 +5,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Map;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.PolicyFactory;
-import net.aincraft.gui.SugiyamaLayout;
 import net.aincraft.registry.Registry;
 import net.aincraft.upgrade.Position;
 import net.aincraft.upgrade.UpgradeTree;
@@ -25,6 +24,7 @@ public final class UpgradeTreeLoader {
 
   private static final String CONFIG_FILE = "upgrade_trees.json";
   private static final String DEFAULT_RESOURCE = "upgrade_trees_default.json";
+  private static final String TREES_FOLDER = "upgrade_trees";
 
   private final Plugin plugin;
   private final Gson gson;
@@ -38,36 +38,115 @@ public final class UpgradeTreeLoader {
       Gson gson,
       Registry<UpgradeTree> registry,
       ConditionFactory conditionFactory,
-      PolicyFactory policyFactory,
       BoostFactory boostFactory
   ) {
     this.plugin = plugin;
     this.gson = gson;
-    this.legacyParser = new UpgradeTreeConfigParser(conditionFactory, policyFactory, boostFactory);
-    this.wynncraftParser = new WynncraftTreeConfigParser(conditionFactory, policyFactory, boostFactory);
+    this.legacyParser = new UpgradeTreeConfigParser(conditionFactory, boostFactory);
+    this.wynncraftParser = new WynncraftTreeConfigParser(conditionFactory, boostFactory);
     this.wynncraftDeserializer = new WynncraftTreeConfigDeserializer();
     this.registry = registry;
   }
 
   /**
    * Load upgrade trees from configuration file.
-   * Creates default config if it doesn't exist.
+   * Tries folder first, falls back to single file.
    *
    * @return number of upgrade trees loaded
    */
   public int load() {
-    File configFile = new File(plugin.getDataFolder(), CONFIG_FILE);
+    // Try folder-based loading first
+    File treesFolder = new File(plugin.getDataFolder(), TREES_FOLDER);
+    if (treesFolder.exists() && treesFolder.isDirectory()) {
+      int count = loadFromFolder(treesFolder);
+      if (count > 0) {
+        plugin.getLogger().info("Loaded " + count + " tree(s) from folder: " + TREES_FOLDER);
+        return count;
+      }
+    }
 
+    // Fallback to single-file loading
+    File configFile = new File(plugin.getDataFolder(), CONFIG_FILE);
     if (!configFile.exists()) {
+      // Create folder structure for future saves
+      if (!treesFolder.exists()) {
+        treesFolder.mkdirs();
+      }
       createDefaultConfig(configFile);
     }
 
     try (FileReader reader = new FileReader(configFile)) {
-      return loadFromReader(reader);
+      int count = loadFromReader(reader);
+      plugin.getLogger().info("Loaded " + count + " tree(s) from file: " + CONFIG_FILE);
+      return count;
     } catch (IOException e) {
       plugin.getLogger().warning("Failed to load upgrade trees: " + e.getMessage());
       return 0;
     }
+  }
+
+  /**
+   * Load upgrade trees from a folder containing individual JSON files.
+   *
+   * @param folder the folder containing tree JSON files
+   * @return number of upgrade trees loaded
+   */
+  public int loadFromFolder(File folder) {
+    int count = 0;
+    File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+
+    if (files == null || files.length == 0) {
+      plugin.getLogger().info("No JSON files found in folder: " + folder.getName());
+      return 0;
+    }
+
+    for (File file : files) {
+      try (FileReader reader = new FileReader(file)) {
+        JsonObject treeObj = gson.fromJson(reader, JsonObject.class);
+        if (treeObj == null) continue;
+
+        // Get tree ID from filename (without .json extension)
+        String treeId = file.getName().replace(".json", "");
+
+        // Inject tree_id if not present
+        if (!treeObj.has("tree_id")) {
+          treeObj.addProperty("tree_id", treeId);
+        }
+
+        // Check if Wynncraft format (has layout)
+        UpgradeTree tree;
+        if (treeObj.has("layout")) {
+          net.aincraft.upgrade.wynncraft.WynncraftTreeConfig config =
+              wynncraftDeserializer.deserialize(treeObj, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+          tree = wynncraftParser.parse(config);
+        } else {
+          // Legacy format - needs wrapping
+          UpgradeTreeConfig config = gson.fromJson(treeObj, UpgradeTreeConfig.class);
+          tree = legacyParser.parse(config);
+
+          // Verify all nodes have positions (Wynncraft format is required now)
+          boolean missingPositions = tree.allNodes().stream()
+              .anyMatch(node -> node.position() == null);
+
+          if (missingPositions) {
+            throw new IllegalArgumentException(
+                "Tree '" + treeId + "' uses legacy format but is missing positions. " +
+                "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+            );
+          }
+        }
+
+        registry.register(tree);
+        count++;
+        plugin.getLogger().info("Loaded tree: " + treeId + " (job=" + tree.jobKey() + ")");
+
+      } catch (Exception e) {
+        plugin.getLogger().warning("Failed to load tree from " + file.getName() + ": " + e.getMessage());
+        e.printStackTrace();
+      }
+    }
+
+    return count;
   }
 
   /**
@@ -150,7 +229,7 @@ public final class UpgradeTreeLoader {
       registry.register(tree);
 
       plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + config.treeId() + " (jobKey=" + tree.jobKey() + ") with " +
-          tree.allNodes().size() + " nodes and " + tree.allConnectors().size() + " connectors");
+          tree.allNodes().size() + " nodes");
       return 1;
     } catch (Exception e) {
       plugin.getLogger().warning("Failed to parse flat Wynncraft format: " + e.getMessage());
@@ -195,7 +274,7 @@ public final class UpgradeTreeLoader {
           registry.register(tree);
 
           plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + treeId + " (jobKey=" + tree.jobKey() + ") with " +
-              tree.allNodes().size() + " nodes and " + tree.allConnectors().size() + " connectors");
+              tree.allNodes().size() + " nodes");
           count++;
         } catch (Exception e) {
           plugin.getLogger().warning("Failed to parse Wynncraft tree '" + entry.getKey() + "': " + e.getMessage());
@@ -248,7 +327,7 @@ public final class UpgradeTreeLoader {
           tree = wynncraftParser.parse(config);
 
           plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ") with " +
-              tree.allNodes().size() + " nodes and " + tree.allConnectors().size() + " connectors");
+              tree.allNodes().size() + " nodes");
           registry.register(tree);
           count++;
           continue;
@@ -259,47 +338,16 @@ public final class UpgradeTreeLoader {
         UpgradeTreeConfig config = gson.fromJson(entry.getValue(), UpgradeTreeConfig.class);
         tree = legacyParser.parse(config);
 
-        // Check if tree already has manual positions
-        boolean hasManualPositions = tree.allNodes().stream()
-            .anyMatch(node -> node.position() != null);
+        // Verify all nodes have positions (Wynncraft format is required now)
+        boolean missingPositions = tree.allNodes().stream()
+            .anyMatch(node -> node.position() == null);
 
-        Map<String, Position> positions;
-        if (hasManualPositions) {
-          // Use manual positions from JSON, only auto-generate missing ones
-          positions = new java.util.HashMap<>();
-          plugin.getLogger().info("Using manual positions for " + config.job() + ":");
-
-          // First, collect all manual positions
-          for (net.aincraft.upgrade.UpgradeNode node : tree.allNodes()) {
-            if (node.position() != null) {
-              String key = getShortKey(node);
-              positions.put(key, node.position());
-              plugin.getLogger().info("  " + key + " -> manual (" + node.position().x() + ", " + node.position().y() + ")");
-            }
-          }
-
-          // Auto-generate only for nodes without positions
-          Map<String, Position> autoPositions = SugiyamaLayout.generateLayout(tree);
-          for (net.aincraft.upgrade.UpgradeNode node : tree.allNodes()) {
-            String key = getShortKey(node);
-            if (node.position() == null && autoPositions.containsKey(key)) {
-              Position pos = autoPositions.get(key);
-              positions.put(key, pos);
-              plugin.getLogger().info("  " + key + " -> auto (" + pos.x() + ", " + pos.y() + ")");
-            }
-          }
-        } else {
-          // No manual positions, auto-generate everything
-          positions = SugiyamaLayout.generateLayout(tree);
-          plugin.getLogger().info("Generated auto layout for " + config.job() + ":");
-          for (Map.Entry<String, Position> posEntry : positions.entrySet()) {
-            Position pos = posEntry.getValue();
-            plugin.getLogger().info("  " + posEntry.getKey() + " -> (" + pos.x() + ", " + pos.y() + ")");
-          }
+        if (missingPositions) {
+          throw new IllegalArgumentException(
+              "Tree '" + entry.getKey() + "' uses legacy format but is missing positions. " +
+              "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+          );
         }
-
-        // Apply positions to tree
-        tree = applyPositions(tree, positions);
 
         registry.register(tree);
         count++;
@@ -318,49 +366,104 @@ public final class UpgradeTreeLoader {
   }
 
   /**
-   * Apply generated positions to an existing upgrade tree by creating new node instances.
+   * Save an individual tree to a JSON file in the upgrade_trees folder.
+   *
+   * @param treeId the tree ID (used as filename without .json extension)
+   * @param json the JSON content to write
+   * @return true if saved successfully
    */
-  private UpgradeTree applyPositions(UpgradeTree tree, Map<String, Position> positions) {
-    Map<String, net.aincraft.upgrade.UpgradeNode> updatedNodes = new java.util.HashMap<>();
-
-    for (net.aincraft.upgrade.UpgradeNode node : tree.allNodes()) {
-      String shortKey = getShortKey(node);
-      Position newPosition = positions.get(shortKey);
-
-      // Create new node with updated position (or keep existing if no new position)
-      net.aincraft.upgrade.UpgradeNode updatedNode = new net.aincraft.upgrade.UpgradeNode(
-          node.key(),
-          node.name(),
-          node.description(),
-          node.icon(),
-          node.cost(),
-          node.nodeType(),
-          node.prerequisites(),
-          node.exclusive(),
-          node.children(),
-          node.effects(),
-          newPosition != null ? newPosition : node.position(),
-          node.pathPoints(), // preserve path points
-          node.perkId(),
-          node.level()
-      );
-      updatedNodes.put(shortKey, updatedNode);
+  public boolean saveTree(String treeId, String json) {
+    File treesFolder = new File(plugin.getDataFolder(), TREES_FOLDER);
+    if (!treesFolder.exists()) {
+      treesFolder.mkdirs();
     }
 
-    // Create new tree with updated nodes
-    return new UpgradeTree(
-        tree.key(),
-        tree.jobKey(),
-        tree.rootNodeKey(),
-        tree.skillPointsPerLevel(),
-        updatedNodes
-    );
+    File treeFile = new File(treesFolder, treeId + ".json");
+    try (FileWriter writer = new FileWriter(treeFile)) {
+      gson.toJson(new com.google.gson.JsonParser().parse(json), writer);
+    } catch (Exception e) {
+      plugin.getLogger().warning("Failed to save tree " + treeId + ": " + e.getMessage());
+      e.printStackTrace();
+      return false;
+    }
+
+    plugin.getLogger().info("Saved tree: " + treeId + " to " + treeFile.getPath());
+
+    // Reload tree into registry so changes take effect immediately (after file is closed)
+    loadSingleTree(treeId).ifPresent(tree -> {
+      registry.register(tree);
+      plugin.getLogger().info("Reloaded tree into registry: " + treeId);
+    });
+
+    return true;
   }
 
-  private String getShortKey(net.aincraft.upgrade.UpgradeNode node) {
-    String full = node.key().asString();
-    int colonIndex = full.indexOf(':');
-    return colonIndex >= 0 ? full.substring(colonIndex + 1) : full;
+  /**
+   * Get the folder where individual tree files are stored.
+   *
+   * @return the upgrade_trees folder
+   */
+  public File getTreesFolder() {
+    File folder = new File(plugin.getDataFolder(), TREES_FOLDER);
+    if (!folder.exists()) {
+      folder.mkdirs();
+    }
+    return folder;
+  }
+
+  /**
+   * Load a single tree from its JSON file.
+   * Useful for reloading after manual edits.
+   *
+   * @param treeId the tree ID (filename without .json extension)
+   * @return the loaded tree, or empty if not found
+   */
+  public java.util.Optional<UpgradeTree> loadSingleTree(String treeId) {
+    File treeFile = new File(getTreesFolder(), treeId + ".json");
+    if (!treeFile.exists()) {
+      return java.util.Optional.empty();
+    }
+
+    try (FileReader reader = new FileReader(treeFile)) {
+      JsonObject treeObj = gson.fromJson(reader, JsonObject.class);
+      if (treeObj == null) {
+        return java.util.Optional.empty();
+      }
+
+      // Inject tree_id if not present
+      if (!treeObj.has("tree_id")) {
+        treeObj.addProperty("tree_id", treeId);
+      }
+
+      // Check if Wynncraft format (has layout)
+      UpgradeTree tree;
+      if (treeObj.has("layout")) {
+        net.aincraft.upgrade.wynncraft.WynncraftTreeConfig config =
+            wynncraftDeserializer.deserialize(treeObj, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+        tree = wynncraftParser.parse(config);
+      } else {
+        // Legacy format - requires manual positions
+        UpgradeTreeConfig config = gson.fromJson(treeObj, UpgradeTreeConfig.class);
+        tree = legacyParser.parse(config);
+
+        // Verify all nodes have positions
+        boolean missingPositions = tree.allNodes().stream()
+            .anyMatch(node -> node.position() == null);
+
+        if (missingPositions) {
+          throw new IllegalArgumentException(
+              "Tree '" + treeId + "' uses legacy format but is missing positions. " +
+              "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+          );
+        }
+      }
+
+      return java.util.Optional.of(tree);
+    } catch (Exception e) {
+      plugin.getLogger().warning("Failed to load tree '" + treeId + "': " + e.getMessage());
+      e.printStackTrace();
+      return java.util.Optional.empty();
+    }
   }
 
   private void createDefaultConfig(File configFile) {

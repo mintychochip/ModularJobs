@@ -138,13 +138,6 @@ public final class SourceCommand implements JobsCommand {
   }
 
   private void showRuledBoostSourceDetails(CommandSender sender, RuledBoostSource source) {
-    // Policy info
-    RuledBoostSource.Policy policy = source.policy();
-    String policyName = policy.getClass().getSimpleName()
-        .replace("Impl", "")
-        .replace("Policy", "");
-    Mint.sendThemedMessage(sender, "<neutral>Policy: <info>" + policyName);
-
     // Rules info
     var rules = source.rules();
     Mint.sendThemedMessage(sender, "<neutral>Rules: <secondary>" + rules.size() + " rule(s)");
@@ -186,76 +179,46 @@ public final class SourceCommand implements JobsCommand {
     String connector = isLast ? "└── " : "├── ";
     String childPrefix = isLast ? "    " : "│   ";
 
-    if (condition instanceof ComposableConditionImpl composite) {
-      String operator = composite.logicalOperator().name();
-      lines.add(baseIndent + prefix + connector + operator);
-      formatConditionTreeRecursive(composite.a(), baseIndent, prefix + childPrefix, false, lines);
-      formatConditionTreeRecursive(composite.b(), baseIndent, prefix + childPrefix, true, lines);
-
-    } else if (condition instanceof NegatingConditionImpl negated) {
-      lines.add(baseIndent + prefix + connector + "NOT");
-      formatConditionTreeRecursive(negated.condition(), baseIndent, prefix + childPrefix, true, lines);
-
-    } else if (condition instanceof BiomeConditionImpl biome) {
-      lines.add(baseIndent + prefix + connector + "Biome: " + biome.biomeKey().value());
-
-    } else if (condition instanceof WorldConditionImpl world) {
-      lines.add(baseIndent + prefix + connector + "World: " + world.worldKey().value());
-
-    } else if (condition instanceof SneakConditionImpl sneak) {
-      lines.add(baseIndent + prefix + connector + "Sneaking: " + sneak.state());
-
-    } else if (condition instanceof SprintConditionImpl sprint) {
-      lines.add(baseIndent + prefix + connector + "Sprinting: " + sprint.state());
-
-    } else if (condition instanceof PlayerResourceConditionImpl resource) {
-      String opSymbol = switch (resource.operator()) {
-        case LESS_THAN -> "<";
-        case LESS_THAN_OR_EQUAL -> "<=";
-        case GREATER_THAN -> ">";
-        case GREATER_THAN_OR_EQUAL -> ">=";
-        case EQUAL -> "==";
-        case NOT_EQUAL -> "!=";
-      };
-      lines.add(baseIndent + prefix + connector + resource.type() + " " + opSymbol + " " + resource.expected());
-
-    } else if (condition instanceof PotionConditionImpl potion) {
-      String opSymbol = switch (potion.relationalOperator()) {
-        case LESS_THAN -> "<";
-        case LESS_THAN_OR_EQUAL -> "<=";
-        case GREATER_THAN -> ">";
-        case GREATER_THAN_OR_EQUAL -> ">=";
-        case EQUAL -> "==";
-        case NOT_EQUAL -> "!=";
-      };
-      lines.add(baseIndent + prefix + connector + "Potion: " + potion.type().key().value() + " " + potion.conditionType() + " " + opSymbol + " " + potion.expected());
-
-    } else if (condition instanceof PotionTypeConditionImpl potionType) {
-      lines.add(baseIndent + prefix + connector + "Has Potion: " + potionType.type().key().value());
-
-    } else if (condition instanceof WeatherConditionImpl weather) {
-      lines.add(baseIndent + prefix + connector + "Weather: " + weather.state());
-
-    } else if (condition instanceof LiquidConditionImpl liquid) {
-      lines.add(baseIndent + prefix + connector + "In Liquid: " + liquid.liquid().name().toLowerCase());
-
-    } else {
-      // Fallback for unknown condition types
-      String type = condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", "");
-      lines.add(baseIndent + prefix + connector + type);
+    switch (condition) {
+      case ComposableConditionImpl composite -> {
+        lines.add(baseIndent + prefix + connector + composite.logicalOperator().name());
+        formatConditionTreeRecursive(composite.a(), baseIndent, prefix + childPrefix, false, lines);
+        formatConditionTreeRecursive(composite.b(), baseIndent, prefix + childPrefix, true, lines);
+      }
+      case NegatingConditionImpl negated -> {
+        lines.add(baseIndent + prefix + connector + "NOT");
+        formatConditionTreeRecursive(negated.condition(), baseIndent, prefix + childPrefix, true, lines);
+      }
+      case BiomeConditionImpl b -> lines.add(baseIndent + prefix + connector + "Biome: " + b.biomeKey().value());
+      case WorldConditionImpl w -> lines.add(baseIndent + prefix + connector + "World: " + w.worldKey().value());
+      case SneakConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sneaking: " + s.state());
+      case SprintConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sprinting: " + s.state());
+      case PlayerResourceConditionImpl r -> lines.add(baseIndent + prefix + connector + r.type() + " " + formatOperator(r.operator()) + " " + r.expected());
+      case PotionConditionImpl p -> lines.add(baseIndent + prefix + connector + "Potion: " + p.type().key().value() + " " + p.conditionType() + " " + formatOperator(p.relationalOperator()) + " " + p.expected());
+      case PotionTypeConditionImpl p -> lines.add(baseIndent + prefix + connector + "Has Potion: " + p.type().key().value());
+      case WeatherConditionImpl w -> lines.add(baseIndent + prefix + connector + "Weather: " + w.state());
+      case LiquidConditionImpl l -> lines.add(baseIndent + prefix + connector + "In Liquid: " + l.liquid().name().toLowerCase());
+      default -> lines.add(baseIndent + prefix + connector + condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", ""));
     }
   }
 
+  private String formatOperator(net.aincraft.container.boost.RelationalOperator op) {
+    return switch (op) {
+      case LESS_THAN -> "<";
+      case LESS_THAN_OR_EQUAL -> "<=";
+      case GREATER_THAN -> ">";
+      case GREATER_THAN_OR_EQUAL -> ">=";
+      case EQUAL -> "==";
+      case NOT_EQUAL -> "!=";
+    };
+  }
+
   private String formatBoost(Boost boost) {
-    if (boost instanceof MultiplicativeBoostImpl multi) {
-      BigDecimal amount = multi.amount();
-      return "×" + amount + " (multiplicative)";
-    } else if (boost instanceof AdditiveBoostImpl add) {
-      BigDecimal amount = add.amount();
-      return "+" + amount + " (additive)";
-    } else {
-      return boost.getClass().getSimpleName();
-    }
+    return switch (boost) {
+      case MultiplicativeBoostImpl m -> "×" + m.amount() + " (multiplicative)";
+      case AdditiveBoostImpl a -> "+" + a.amount() + " (additive)";
+      default -> boost.getClass().getSimpleName();
+    };
   }
 
   private int reloadBoostSources(CommandSourceStack source) {

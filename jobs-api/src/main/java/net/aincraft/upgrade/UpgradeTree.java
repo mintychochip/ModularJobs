@@ -21,32 +21,35 @@ public final class UpgradeTree implements Keyed {
 
   private final Key key;
   private final String jobKey;
+  private final String description;
   private final String rootNodeKey;
   private final int skillPointsPerLevel;
   private final Map<String, UpgradeNode> nodes;
-  private final Map<String, ConnectorNode> connectors;
   private final Map<String, PerkPolicy> perkPolicies;
+  private final Set<Position> paths;
 
   public UpgradeTree(
       @NotNull Key key,
       @NotNull String jobKey,
+      @Nullable String description,
       @NotNull String rootNodeKey,
       int skillPointsPerLevel,
       @NotNull Map<String, UpgradeNode> nodes,
-      @NotNull Map<String, ConnectorNode> connectors,
-      @NotNull Map<String, PerkPolicy> perkPolicies
+      @NotNull Map<String, PerkPolicy> perkPolicies,
+      @NotNull Set<Position> paths
   ) {
     this.key = key;
     this.jobKey = jobKey;
+    this.description = description;
     this.rootNodeKey = rootNodeKey;
     this.skillPointsPerLevel = skillPointsPerLevel;
     this.nodes = new HashMap<>(nodes);
-    this.connectors = new HashMap<>(connectors);
     this.perkPolicies = new HashMap<>(perkPolicies);
+    this.paths = Set.copyOf(paths);
   }
 
   /**
-   * Constructor for backward compatibility (no connectors, no perk policies).
+   * Constructor for backward compatibility (no description, no perk policies).
    */
   public UpgradeTree(
       @NotNull Key key,
@@ -55,7 +58,7 @@ public final class UpgradeTree implements Keyed {
       int skillPointsPerLevel,
       @NotNull Map<String, UpgradeNode> nodes
   ) {
-    this(key, jobKey, rootNodeKey, skillPointsPerLevel, nodes, new HashMap<>(), new HashMap<>());
+    this(key, jobKey, null, rootNodeKey, skillPointsPerLevel, nodes, new HashMap<>(), Set.of());
   }
 
   /**
@@ -64,12 +67,12 @@ public final class UpgradeTree implements Keyed {
   public UpgradeTree(
       @NotNull Key key,
       @NotNull String jobKey,
+      @Nullable String description,
       @NotNull String rootNodeKey,
       int skillPointsPerLevel,
-      @NotNull Map<String, UpgradeNode> nodes,
-      @NotNull Map<String, ConnectorNode> connectors
+      @NotNull Map<String, UpgradeNode> nodes
   ) {
-    this(key, jobKey, rootNodeKey, skillPointsPerLevel, nodes, connectors, new HashMap<>());
+    this(key, jobKey, description, rootNodeKey, skillPointsPerLevel, nodes, new HashMap<>(), Set.of());
   }
 
   @Override
@@ -82,6 +85,13 @@ public final class UpgradeTree implements Keyed {
    */
   public @NotNull String jobKey() {
     return jobKey;
+  }
+
+  /**
+   * The description of this upgrade tree.
+   */
+  public @Nullable String description() {
+    return description;
   }
 
   /**
@@ -117,6 +127,15 @@ public final class UpgradeTree implements Keyed {
   }
 
   /**
+   * Get all path coordinates for this tree.
+   * These are the walkable connection points between nodes.
+   */
+  @NotNull
+  public Set<Position> paths() {
+    return paths;
+  }
+
+  /**
    * Get the root node of this tree.
    */
   public @NotNull Optional<UpgradeNode> rootNode() {
@@ -135,29 +154,6 @@ public final class UpgradeTree implements Keyed {
    */
   public @NotNull Collection<UpgradeNode> allNodes() {
     return Collections.unmodifiableCollection(nodes.values());
-  }
-
-  /**
-   * Get all connector nodes in this tree.
-   */
-  public @NotNull Collection<ConnectorNode> allConnectors() {
-    return Collections.unmodifiableCollection(connectors.values());
-  }
-
-  /**
-   * Get a connector by its key.
-   */
-  public @NotNull Optional<ConnectorNode> getConnector(@NotNull String connectorKey) {
-    return Optional.ofNullable(connectors.get(connectorKey));
-  }
-
-  /**
-   * Get all specialization (major) nodes.
-   */
-  public @NotNull Collection<UpgradeNode> specializations() {
-    return nodes.values().stream()
-        .filter(UpgradeNode::isSpecialization)
-        .collect(Collectors.toUnmodifiableList());
   }
 
   /**

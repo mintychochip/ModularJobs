@@ -3,9 +3,6 @@
     "mining_boost": {
       "key": "modularjobs:mining_boost",
       "description": "Enhanced mining rewards - Highest boost in the Nether while sneaking",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -42,9 +39,6 @@
     "combat_boost": {
       "key": "modularjobs:combat_boost",
       "description": "Combat rewards amplifier - Massive boost when low on health with Strength",
-      "policy": {
-        "type": "first"
-      },
       "rules": [
         {
           "priority": 100,
@@ -93,10 +87,6 @@
     "farming_boost": {
       "key": "modularjobs:farming_boost",
       "description": "Farming efficiency enhancer - Weather and movement-based bonuses",
-      "policy": {
-        "type": "top_k",
-        "k": 2
-      },
       "rules": [
         {
           "priority": 100,
@@ -145,9 +135,6 @@
     "ocean_explorer_boost": {
       "key": "modularjobs:ocean_explorer",
       "description": "Deep sea diving rewards - Huge boost when underwater with water breathing",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -185,9 +172,6 @@
     "desert_survivor_boost": {
       "key": "modularjobs:desert_survivor",
       "description": "Desert endurance bonus - Better rewards in hot biomes during day",
-      "policy": {
-        "type": "first"
-      },
       "rules": [
         {
           "priority": 100,
@@ -225,9 +209,6 @@
     "hardcore_adrenaline_boost": {
       "key": "modularjobs:hardcore_adrenaline",
       "description": "Risk vs reward - Extreme boost at critical health",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -270,9 +251,6 @@
     "speed_demon_boost": {
       "key": "modularjobs:speed_demon",
       "description": "Gotta go fast - Rewards for sprinting with speed effects",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -310,9 +288,6 @@
     "end_conqueror_boost": {
       "key": "modularjobs:end_conqueror",
       "description": "End dimension mastery - Massive rewards in the End",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -330,9 +305,6 @@
     "potion_master_boost": {
       "key": "modularjobs:potion_master",
       "description": "Alchemist's advantage - Stacking bonuses for multiple effects",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -372,9 +344,6 @@
     "stealth_operative_boost": {
       "key": "modularjobs:stealth_operative",
       "description": "Sneaky profits - Enhanced rewards for sneaking with invisibility",
-      "policy": {
-        "type": "first"
-      },
       "rules": [
         {
           "priority": 100,
@@ -412,9 +381,6 @@
     "full_belly_boost": {
       "key": "modularjobs:full_belly",
       "description": "Well fed worker - Better performance when satiated",
-      "policy": {
-        "type": "first"
-      },
       "rules": [
         {
           "priority": 100,
@@ -447,9 +413,6 @@
     "rainy_day_boost": {
       "key": "modularjobs:rainy_day",
       "description": "Weather worker - Rewards for working in the rain",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -480,10 +443,6 @@
     "extreme_conditions_boost": {
       "key": "modularjobs:extreme_conditions",
       "description": "Ultimate survivor - Massive rewards for working under extreme conditions",
-      "policy": {
-        "type": "top_k",
-        "k": 3
-      },
       "rules": [
         {
           "priority": 150,
@@ -602,9 +561,6 @@
     "tactical_advantage_boost": {
       "key": "modularjobs:tactical_advantage",
       "description": "Strategic gameplay - Complex conditions for skilled players",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 120,
@@ -690,9 +646,6 @@
     "perfectionist_boost": {
       "key": "modularjobs:perfectionist",
       "description": "Peak performance - Requires full health, food, and beneficial effects",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 200,
@@ -783,9 +736,6 @@
     "dimensional_traveler_boost": {
       "key": "modularjobs:dimensional_traveler",
       "description": "Multiverse mastery - Different bonuses across dimensions",
-      "policy": {
-        "type": "first"
-      },
       "rules": [
         {
           "priority": 100,
@@ -897,9 +847,6 @@
     "miner_specialist_boost": {
       "key": "modularjobs:miner_specialist",
       "description": "Dedicated miner bonus - Enhanced rewards for miner job only",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,
@@ -917,9 +864,6 @@
     "combat_jobs_boost": {
       "key": "modularjobs:combat_jobs",
       "description": "Combat professions bonus - Applies to warrior, hunter, and mercenary jobs",
-      "policy": {
-        "type": "first"
-      },
       "rules": [
         {
           "priority": 100,
@@ -928,7 +872,11 @@
             "conditions": [
               {
                 "type": "job",
-                "values": ["modularjobs:warrior", "modularjobs:hunter", "modularjobs:mercenary"]
+                "values": [
+                  "modularjobs:warrior",
+                  "modularjobs:hunter",
+                  "modularjobs:mercenary"
+                ]
               },
               {
                 "type": "world",
@@ -945,7 +893,11 @@
           "priority": 50,
           "conditions": {
             "type": "job",
-            "values": ["modularjobs:warrior", "modularjobs:hunter", "modularjobs:mercenary"]
+            "values": [
+              "modularjobs:warrior",
+              "modularjobs:hunter",
+              "modularjobs:mercenary"
+            ]
           },
           "boost": {
             "type": "multiplicative",
@@ -957,9 +909,6 @@
     "farmer_weather_boost": {
       "key": "modularjobs:farmer_weather",
       "description": "Farmer-specific weather bonus - Better rewards for farmers working in rain",
-      "policy": {
-        "type": "all_applicable"
-      },
       "rules": [
         {
           "priority": 100,

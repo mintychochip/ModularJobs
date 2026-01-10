@@ -97,7 +97,7 @@ final class JobPaymentListener implements Listener {
   private final JobsPaymentHandler paymentHandler;
   private final EntityValidationService entityValidationService;
   private final ExploitService exploitService;
-  private final ChunkExplorationStore chunkExplorationStore;
+  private final PlayerChunkExplorationService chunkExplorationStore;
   private final Cache<LocationKey, Player> breakCache = CacheBuilder.newBuilder().expireAfterWrite(
       Duration.ofSeconds(10)).build();
 
@@ -118,7 +118,7 @@ final class JobPaymentListener implements Listener {
 
   @Inject
   JobPaymentListener(BlockOwnershipService blockOwnershipService, MobDamageTracker mobDamageTracker, JobsPaymentHandler paymentHandler,
-      EntityValidationService entityValidationService, ExploitService exploitService, ChunkExplorationStore chunkExplorationStore) {
+      EntityValidationService entityValidationService, ExploitService exploitService, PlayerChunkExplorationService chunkExplorationStore) {
     this.blockOwnershipService = blockOwnershipService;
     this.mobDamageTracker = mobDamageTracker;
     this.paymentHandler = paymentHandler;
@@ -491,8 +491,11 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Material material = block.getType();
-    // Check for sweet berry bush or cave vines with berries
-    if (material != Material.SWEET_BERRY_BUSH && material != Material.CAVE_VINES && material != Material.CAVE_VINES_PLANT) {
+    // Check for harvestable blocks: sweet berry bush, cave vines with berries, or cocoa
+    if (material != Material.SWEET_BERRY_BUSH
+        && material != Material.CAVE_VINES
+        && material != Material.CAVE_VINES_PLANT
+        && material != Material.COCOA) {
       return;
     }
     Player player = event.getPlayer();
@@ -503,28 +506,36 @@ final class JobPaymentListener implements Listener {
         .or(IS_CITIZEN).test(player)) {
       return;
     }
-    // For sweet berry bush, check age (only harvestable at age 2 or 3)
+    BlockState state = block.getState();
+
+    // Check age/state requirements for each block type
     if (material == Material.SWEET_BERRY_BUSH) {
-      BlockState state = block.getState();
       if (state.getBlockData() instanceof org.bukkit.block.data.Ageable ageable) {
         if (ageable.getAge() < 2) {
-          return;
+          return; // Only harvestable at age 2 or 3
         }
       }
-    }
-    // For cave vines, check if berries are present
-    if (material == Material.CAVE_VINES || material == Material.CAVE_VINES_PLANT) {
-      BlockState state = block.getState();
+    } else if (material == Material.COCOA) {
+      if (state.getBlockData() instanceof org.bukkit.block.data.type.Cocoa cocoa) {
+        if (cocoa.getAge() < cocoa.getMaximumAge()) {
+          return; // Only harvestable when fully grown
+        }
+      }
+    } else if (material == Material.CAVE_VINES || material == Material.CAVE_VINES_PLANT) {
       if (state.getBlockData() instanceof org.bukkit.block.data.type.CaveVinesPlant caveVines) {
         if (!caveVines.isBerries()) {
-          return;
+          return; // Only harvestable when berries are present
         }
       }
     }
+
     // Determine the collected item
-    ItemStack collectedItem = material == Material.SWEET_BERRY_BUSH
-        ? new ItemStack(Material.SWEET_BERRIES)
-        : new ItemStack(Material.GLOW_BERRIES);
+    ItemStack collectedItem = switch (material) {
+      case SWEET_BERRY_BUSH -> new ItemStack(Material.SWEET_BERRIES);
+      case COCOA -> new ItemStack(Material.COCOA_BEANS);
+      default -> new ItemStack(Material.GLOW_BERRIES); // CAVE_VINES*
+    };
+
     paymentHandler.pay(player, ActionTypes.COLLECT, new ItemContext(collectedItem));
   }
 

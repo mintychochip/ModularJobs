@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.mint.Mint;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.time.Duration;
@@ -380,23 +381,49 @@ final class TopCommand implements JobsCommand {
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("top")
+        // /jobs top - overall leaderboard
+        .executes(context -> {
+          CommandSourceStack source = context.getSource();
+          CommandSender sender = source.getSender();
+          displayOverallLeaderboard(sender, 1);
+          return 1;
+        })
         .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
           jobService.getJobs().stream().map(job -> job.getPlainName().toLowerCase(Locale.ENGLISH))
               .forEach(builder::suggest);
           return builder.buildFuture();
-        }).then(Commands.argument("pageNumber", IntegerArgumentType.integer()).executes(context -> {
-          CommandSourceStack source = context.getSource();
-          CommandSender sender = source.getSender();
-          String jobKey = context.getArgument("job", String.class);
-          int page = context.getArgument("pageNumber", Integer.class);
-          Key key = KeyUtils.parseKey(plugin, jobKey);
-          //TODO: add limits
-          ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
-          int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
-          consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
-              context.getSource().getSender(), maxPages);
-          return 1;
-        })));
+        })
+            // /jobs top <job> <page> - with page number
+            .then(Commands.argument("pageNumber", IntegerArgumentType.integer()).executes(context -> {
+              CommandSourceStack source = context.getSource();
+              CommandSender sender = source.getSender();
+              String jobKey = context.getArgument("job", String.class);
+              int page = context.getArgument("pageNumber", Integer.class);
+              Key key = KeyUtils.parseKey(plugin, jobKey);
+              ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
+              int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
+              consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
+                  sender, maxPages, resultProvider.getAllEntries(key));
+              return 1;
+            }))
+            // /jobs top <job> - defaults to page 1
+            .executes(context -> {
+              CommandSourceStack source = context.getSource();
+              CommandSender sender = source.getSender();
+              String jobKey = context.getArgument("job", String.class);
+              int page = 1; // Default to page 1
+              Key key = KeyUtils.parseKey(plugin, jobKey);
+              ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
+              int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
+              consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
+                  sender, maxPages, resultProvider.getAllEntries(key));
+              return 1;
+            }));
+  }
+
+  private void displayOverallLeaderboard(CommandSender sender, int page) {
+    Mint.sendThemedMessage(sender,
+        "<error>Overall leaderboard is not yet implemented. Please specify a job: <secondary>/jobs top <job>");
   }
 
   static final class JobTopPageProviderImpl implements JobTopPageProvider {
@@ -428,6 +455,13 @@ final class TopCommand implements JobsCommand {
 
       List<JobProgression> slice = progressions.subList(from, to);
       return new Page<>(slice, clamped, pageSize);
+    }
+
+    @Override
+    public List<JobProgression> getAllEntries(Key jobKey) {
+      List<JobProgression> progressions = readCache.get(jobKey,
+          __ -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
+      return progressions != null ? progressions : List.of();
     }
   }
 }

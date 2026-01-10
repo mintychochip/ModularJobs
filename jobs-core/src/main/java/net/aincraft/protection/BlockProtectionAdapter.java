@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
+@FunctionalInterface
 @Internal
 interface BlockProtectionAdapter {
 
