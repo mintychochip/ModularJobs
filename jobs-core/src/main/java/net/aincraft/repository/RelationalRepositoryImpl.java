@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import org.jetbrains.annotations.Nullable;
 
-public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
+public final class RelationalRepositoryImpl<K, V> {
 
   private final ConnectionSource connectionSource;
 
@@ -24,7 +24,6 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
     this.context = context;
   }
 
-  @Override
   @Nullable
   public V load(K key) {
     return readCache.get(key, ignored -> {
@@ -40,7 +39,6 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
     });
   }
 
-  @Override
   public boolean save(K key, V value) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(context.getSaveQuery())) {
@@ -52,7 +50,6 @@ public final class RelationalRepositoryImpl<K, V> implements Repository<K, V> {
     }
   }
 
-  @Override
   public void delete(K key) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(context.getDeleteQuery())) {

@@ -16,11 +16,9 @@ import net.aincraft.boost.config.ConditionConfigParser;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.Condition;
-import net.aincraft.container.boost.RuledBoostSource.Policy;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.upgrade.Position;
 import net.aincraft.upgrade.PerkPolicy;
 import net.aincraft.upgrade.UpgradeEffect;
@@ -28,15 +26,11 @@ import net.aincraft.upgrade.UpgradeEffect.BoostEffect;
 import net.aincraft.upgrade.UpgradeEffect.PermissionEffect;
 import net.aincraft.upgrade.UpgradeEffect.RuledBoostEffect;
 import net.aincraft.upgrade.UpgradeNode;
-import net.aincraft.upgrade.UpgradeNode.NodeType;
 import net.aincraft.upgrade.UpgradeTree;
-import net.aincraft.upgrade.ConnectorNode;
 import net.aincraft.upgrade.wynncraft.AbilityMeta;
 import net.aincraft.upgrade.wynncraft.AbilityMeta.EffectConfig;
-import net.aincraft.upgrade.wynncraft.AbilityMeta.PolicyConfig;
 import net.aincraft.upgrade.wynncraft.AbilityMeta.RuleConfig;
 import net.aincraft.upgrade.wynncraft.AbilityMeta.BoostConfig;
-import net.aincraft.upgrade.wynncraft.ConnectorMeta;
 import net.aincraft.upgrade.wynncraft.LayoutItem;
 import net.aincraft.upgrade.wynncraft.LayoutItemType;
 import net.aincraft.upgrade.wynncraft.WynncraftTreeConfig;
@@ -45,23 +39,20 @@ import org.bukkit.Material;
 
 /**
  * Parses WynncraftTreeConfig into UpgradeTree instances.
- * Supports the new Wynncraft-style JSON format with archetypes, connectors, and explicit positioning.
+ * Supports the new Wynncraft-style JSON format with archetypes and explicit positioning.
  */
 public final class WynncraftTreeConfigParser {
 
   private static final int DEFAULT_SKILL_POINTS_PER_LEVEL = 1;
 
-  private final PolicyFactory policyFactory;
   private final BoostFactory boostFactory;
   private final ConditionConfigParser conditionParser;
   private final Gson gson;
 
   public WynncraftTreeConfigParser(
       ConditionFactory conditionFactory,
-      PolicyFactory policyFactory,
       BoostFactory boostFactory
   ) {
-    this.policyFactory = policyFactory;
     this.boostFactory = boostFactory;
     this.conditionParser = new ConditionConfigParser(conditionFactory);
     this.gson = new Gson();
@@ -78,16 +69,13 @@ public final class WynncraftTreeConfigParser {
     Key treeKey = Key.key("modularjobs", "upgrade_tree/" + jobKey);
 
     Map<String, UpgradeNode> nodes = new HashMap<>();
-    Map<String, ConnectorNode> connectors = new HashMap<>();
     String rootNodeKey = config.root();  // Use root from config
 
-    // Parse all ability nodes - each node owns its own path_from_parent
+    // Parse all ability nodes
     for (LayoutItem item : config.layout()) {
       if (item.type() == LayoutItemType.ABILITY) {
         AbilityMeta meta = item.abilityMeta().orElseThrow();
-        // Use pathFromParent from meta (null if not specified = empty path)
-        List<Position> pathPoints = meta.pathFromParent() != null ? meta.pathFromParent() : List.of();
-        UpgradeNode node = parseAbilityNode(jobKey, item.id(), item.coordinates(), meta, pathPoints);
+        UpgradeNode node = parseAbilityNode(jobKey, item.id(), item.coordinates(), meta);
         nodes.put(item.id(), node);
       }
     }
@@ -105,8 +93,10 @@ public final class WynncraftTreeConfigParser {
               parent.name(),
               parent.description(),
               parent.icon(),
+              parent.unlockedIcon(),
+              parent.itemModel(),
+              parent.unlockedItemModel(),
               parent.cost(),
-              parent.nodeType(),
               parent.prerequisites(),
               parent.exclusive(),
               updatedChildren,
@@ -120,15 +110,6 @@ public final class WynncraftTreeConfigParser {
       }
     }
 
-    // Also parse any connector items for their icons (backward compatibility)
-    for (LayoutItem item : config.layout()) {
-      if (item.type() == LayoutItemType.CONNECTOR) {
-        ConnectorMeta meta = item.connectorMeta().orElseThrow();
-        ConnectorNode connector = parseConnectorNode(jobKey, item.id(), item.coordinates(), meta);
-        connectors.put(item.id(), connector);
-      }
-    }
-
     if (rootNodeKey == null) {
       throw new IllegalArgumentException("No root node found in tree " + jobKey);
     }
@@ -139,28 +120,32 @@ public final class WynncraftTreeConfigParser {
       perkPolicies = new HashMap<>();
     }
 
+    // Get paths from config, default to empty set
+    Set<Position> paths = config.paths() != null ? new HashSet<>(config.paths()) : Set.of();
+
     return new UpgradeTree(
         treeKey,
         jobKey,
+        config.description(),
         rootNodeKey,
         config.skillPointsPerLevel(),
         nodes,
-        connectors,
-        perkPolicies
+        perkPolicies,
+        paths
     );
   }
 
   /**
    * Parse an ability layout item into an UpgradeNode.
    */
-  private UpgradeNode parseAbilityNode(String jobKey, String nodeId, Position position, AbilityMeta meta,
-                                       List<Position> pathPoints) {
+  private UpgradeNode parseAbilityNode(String jobKey, String nodeId, Position position, AbilityMeta meta) {
     Key key = Key.key(jobKey, nodeId);
 
-    Material icon = meta.icon().toMaterial();
-
-    // Determine node type based on major field or default to MINOR
-    NodeType nodeType = meta.major() ? NodeType.MAJOR : NodeType.MINOR;
+    // Extract locked and unlocked icons
+    Material lockedIcon = meta.icons().locked().toMaterial();
+    Material unlockedIcon = meta.icons().unlocked().toMaterial();
+    String lockedItemModel = meta.icons().locked().itemModel();
+    String unlockedItemModel = meta.icons().unlocked().itemModel();
 
     Set<String> prerequisites = new HashSet<>(meta.prerequisites());
     Set<String> exclusive = new HashSet<>(meta.exclusiveWith());
@@ -207,42 +192,19 @@ public final class WynncraftTreeConfigParser {
         key,
         meta.name(),
         description,
-        icon,
+        lockedIcon,
+        unlockedIcon,
+        lockedItemModel,
+        unlockedItemModel,
         meta.cost(),
-        nodeType,
         prerequisites,
         exclusive,
         children,
         effects,
         position,
-        pathPoints,
+        List.of(), // paths are now at tree level, not per-node
         perkId,
         level
-    );
-  }
-
-  /**
-   * Parse a connector layout item into a ConnectorNode.
-   */
-  private ConnectorNode parseConnectorNode(String jobKey, String connectorId, Position position, ConnectorMeta meta) {
-    Key key = Key.key(jobKey, connectorId);
-
-    Material lockedIcon = meta.shapes().locked().toMaterial();
-    Material unlockedIcon = meta.shapes().unlocked().toMaterial();
-    int lockedCustomModelData = meta.shapes().locked().customModelData();
-    int unlockedCustomModelData = meta.shapes().unlocked().customModelData();
-
-    List<String> links = new ArrayList<>(meta.links());
-
-    return new ConnectorNode(
-        key,
-        "Connector", // Generic name
-        lockedIcon, // locked state icon
-        unlockedIcon, // unlocked state icon
-        links,
-        position,
-        lockedCustomModelData,
-        unlockedCustomModelData
     );
   }
 
@@ -268,8 +230,13 @@ public final class WynncraftTreeConfigParser {
         yield new BoostEffect(target, amount);
       }
       case "permission" -> {
-        String perm = config.permission() != null ? config.permission() : "jobs.unknown";
-        yield new PermissionEffect(perm);
+        // Prefer permissions array if available, otherwise fall back to single permission
+        if (config.permissions() != null && !config.permissions().isEmpty()) {
+          yield new PermissionEffect(config.permissions());
+        } else {
+          String perm = config.permission() != null ? config.permission() : "jobs.unknown";
+          yield new PermissionEffect(perm);
+        }
       }
       case "ruled_boost" -> {
         String target = config.target() != null ? config.target() : BoostEffect.TARGET_ALL;
@@ -285,9 +252,6 @@ public final class WynncraftTreeConfigParser {
    * Parse a ruled_boost effect configuration into a RuledBoostSource.
    */
   private BoostSource parseRuledBoostSource(EffectConfig config, String target, String description) {
-    // Parse policy
-    Policy policy = parsePolicy(config.policy());
-
     // Parse rules
     List<Rule> rules = new ArrayList<>();
     if (config.rules() != null) {
@@ -300,28 +264,7 @@ public final class WynncraftTreeConfigParser {
     }
 
     Key key = Key.key("modularjobs", "upgrade_boost/" + target);
-    return new RuledBoostSourceImpl(rules, policy, key, description);
-  }
-
-  /**
-   * Parse policy configuration.
-   */
-  private Policy parsePolicy(PolicyConfig policyConfig) {
-    if (policyConfig == null) {
-      return policyFactory.allApplicable();
-    }
-
-    return switch (policyConfig.type().toLowerCase()) {
-      case "all_applicable" -> policyFactory.allApplicable();
-      case "first" -> policyFactory.first();
-      case "top_k" -> {
-        if (policyConfig.topK() == null) {
-          throw new IllegalArgumentException("top_k policy requires 'topK' parameter");
-        }
-        yield policyFactory.topKBoosts(policyConfig.topK());
-      }
-      default -> throw new IllegalArgumentException("Unknown policy type: " + policyConfig.type());
-    };
+    return new RuledBoostSourceImpl(rules, key, description);
   }
 
   /**

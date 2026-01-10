@@ -25,7 +25,8 @@ public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsu
   }
 
   @Override
-  public void consume(Component jobName, Page<JobProgression> page, CommandSender sender, int maxPages) {
+  public void consume(Component jobName, Page<JobProgression> page, CommandSender sender, int maxPages,
+      List<JobProgression> allEntries) {
     if (!(sender instanceof Player player)) {
       return;
     }

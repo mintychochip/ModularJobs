@@ -7,11 +7,12 @@ dependencies {
     implementation(libs.kryo)
     implementation(libs.guice)
     implementation(project(":jobs-api"))
-    implementation(libs.undertow.core)
     implementation(libs.exp4j)
     implementation(libs.hikaricp)
     implementation(libs.caffeine)
     implementation(libs.gson)
+    implementation(libs.configurate.core)
+    implementation(libs.triumph.gui)
 
     compileOnly(libs.placeholderapi)
     compileOnly(libs.jetbrains.annotations)
@@ -29,6 +30,7 @@ dependencies {
 tasks {
     shadowJar {
         mergeServiceFiles()
+        relocate("dev.triumphteam.gui", "net.aincraft.libs.triumphgui")
     }
 
     build {
@@ -45,7 +47,7 @@ tasks {
         minecraftVersion("1.21.11")
         downloadPlugins {
             hangar("Bolt","1.1.78")
-            hangar("Mint","1.3.6-b552e58")
+            hangar("Mint","1.4.0")
         }
 
     }

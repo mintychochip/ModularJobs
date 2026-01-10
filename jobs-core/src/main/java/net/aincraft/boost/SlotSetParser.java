@@ -1,8 +1,6 @@
 package net.aincraft.boost;
 
 import java.util.BitSet;
-import net.aincraft.container.SlotSet;
-import net.aincraft.job.SlotSetImpl;
 import org.bukkit.inventory.PlayerInventory;
 
 /**
@@ -14,7 +12,7 @@ public final class SlotSetParser {
   }
 
   /**
-   * Parse a slot specification string into a SlotSet.
+   * Parse a slot specification string into a BitSet.
    * <p>
    * Supported formats:
    * - "all" - all slots (0-40)
@@ -32,10 +30,10 @@ public final class SlotSetParser {
    * - "0,9,36" - comma-separated slots
    *
    * @param spec the slot specification
-   * @return the parsed SlotSet
+   * @return the parsed BitSet
    * @throws IllegalArgumentException if the specification is invalid
    */
-  public static SlotSet parse(String spec) throws IllegalArgumentException {
+  public static BitSet parse(String spec) throws IllegalArgumentException {
     if (spec == null || spec.isBlank()) {
       throw new IllegalArgumentException("Slot specification cannot be null or blank");
     }
@@ -57,7 +55,7 @@ public final class SlotSetParser {
       default -> parseCustom(bitSet, trimmed);
     }
 
-    return new SlotSetImpl(toLong(bitSet));
+    return bitSet;
   }
 
   private static void parseCustom(BitSet bitSet, String spec) {
@@ -110,10 +108,5 @@ public final class SlotSetParser {
     for (int i = start; i <= end; i++) {
       bitSet.set(i);
     }
-  }
-
-  private static long toLong(BitSet bitSet) {
-    long[] arr = bitSet.toLongArray();
-    return arr.length > 0 ? arr[0] : 0L;
   }
 }

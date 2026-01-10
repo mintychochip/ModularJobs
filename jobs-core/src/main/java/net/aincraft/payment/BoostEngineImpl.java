@@ -3,6 +3,7 @@ package net.aincraft.payment;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +17,6 @@ import net.aincraft.container.BoostContext;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.Context;
 import net.aincraft.container.Payable;
-import net.aincraft.container.SlotSet;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
 import net.aincraft.container.boost.ItemBoostDataService;
@@ -128,9 +128,9 @@ final class BoostEngineImpl implements BoostEngine {
       }
       SerializableBoostData serializableBoostData = data.get();
       if (serializableBoostData instanceof PassiveBoostData passiveBoostData) {
-        SlotSet slotSet = passiveBoostData.slotSet();
+        BitSet slotSet = passiveBoostData.slotSet();
         BoostSource boostSource = passiveBoostData.boostSource();
-        if (slotSet.contains(i) && !boostSourceKeys.contains(boostSource.key())) {
+        if (slotSet.get(i) && !boostSourceKeys.contains(boostSource.key())) {
           sources.add(boostSource);
           boostSourceKeys.add(boostSource.key());
         }

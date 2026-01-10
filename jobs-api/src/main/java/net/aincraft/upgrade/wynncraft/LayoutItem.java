@@ -34,7 +34,10 @@ public record LayoutItem(
 
   /**
    * Get the connector metadata if this is a connector node.
+   *
+   * @deprecated Connector nodes are deprecated. Use {@code path_from_parent} on ability nodes instead.
    */
+  @Deprecated(since = "1.0", forRemoval = true)
   public Optional<ConnectorMeta> connectorMeta() {
     return meta instanceof ConnectorMeta cm ? Optional.of(cm) : Optional.empty();
   }

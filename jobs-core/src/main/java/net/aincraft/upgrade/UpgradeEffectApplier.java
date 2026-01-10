@@ -23,7 +23,9 @@ public final class UpgradeEffectApplier {
   public void applyNodeEffects(Player player, UpgradeNode node) {
     for (UpgradeEffect effect : node.effects()) {
       if (effect instanceof UpgradeEffect.PermissionEffect perm) {
-        permissionManager.grantPermission(player, perm.permission());
+        for (String permission : perm.permissions()) {
+          permissionManager.grantPermission(player, permission);
+        }
       }
       // Future: handle other effect types (BoostEffect, PassiveEffect, StatEffect)
     }
@@ -35,7 +37,9 @@ public final class UpgradeEffectApplier {
   public void unapplyNodeEffects(Player player, UpgradeNode node) {
     for (UpgradeEffect effect : node.effects()) {
       if (effect instanceof UpgradeEffect.PermissionEffect perm) {
-        permissionManager.revokePermission(player, perm.permission());
+        for (String permission : perm.permissions()) {
+          permissionManager.revokePermission(player, permission);
+        }
       }
       // Future: handle other effect types
     }

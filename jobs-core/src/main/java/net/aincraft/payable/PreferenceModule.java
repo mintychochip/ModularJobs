@@ -19,14 +19,15 @@ public final class PreferenceModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        // Bind the fallback provider (used when preferences unavailable)
+        bind(ExperienceBarColorProvider.class)
+                .annotatedWith(Fallback.class)
+                .to(DefaultExperienceBarColorProvider.class)
+                .in(Singleton.class);
+
         // Bind the primary provider (preference-based)
         bind(ExperienceBarColorProvider.class)
                 .to(PreferenceExperienceBarColorProvider.class);
-
-        // Bind the fallback provider (theme-based)
-        bind(ExperienceBarColorProvider.class)
-                .annotatedWith(Fallback.class)
-                .to(ThemeExperienceBarColorProvider.class);
 
         // Register preferences with Mint (eagerly, so it runs at startup)
         bind(PreferenceRegistrar.class).asEagerSingleton();
@@ -56,7 +57,7 @@ public final class PreferenceModule extends AbstractModule {
                 ExperienceBarColorPreference preference) {
             if (Mint.PREFERENCE_SERVICE.isLoaded()) {
                 service.registerType(new EnumPreferenceType<>(Color.class));
-                service.registerDisplayable(preference);
+                service.register(preference);
             }
         }
     }

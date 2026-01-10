@@ -4,7 +4,13 @@ import java.math.BigDecimal;
 import net.aincraft.Job;
 import net.aincraft.LevelingCurve.Parameters;
 import net.aincraft.JobProgression;
+import net.aincraft.container.PayableType;
+import net.aincraft.domain.model.JobProgressionRecord;
+import net.aincraft.domain.model.JobRecord;
+import net.aincraft.registry.Registry;
+import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.plugin.Plugin;
 
 final class JobProgressionImpl implements JobProgression {
 
@@ -82,5 +88,27 @@ final class JobProgressionImpl implements JobProgression {
         ", experience=" + experience +
         ", level=" + level() +
         "]";
+  }
+
+  public JobProgressionRecord toRecord() {
+    JobRecord jobRecord = ((JobImpl) job).toRecord();
+    return new JobProgressionRecord(
+        player.getUniqueId().toString(),
+        jobRecord,
+        experience
+    );
+  }
+
+  public static JobProgressionImpl fromRecord(
+      JobProgressionRecord record,
+      Plugin plugin,
+      Registry<PayableType> payableTypeRegistry
+  ) {
+    Job job = JobImpl.fromRecord(record.jobRecord(), plugin, payableTypeRegistry);
+    return new JobProgressionImpl(
+        plugin.getServer().getOfflinePlayer(java.util.UUID.fromString(record.playerId())),
+        job,
+        record.experience()
+    );
   }
 }

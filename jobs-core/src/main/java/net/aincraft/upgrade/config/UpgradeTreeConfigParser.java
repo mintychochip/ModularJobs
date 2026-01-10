@@ -9,22 +9,18 @@ import java.util.Map;
 import java.util.Set;
 import net.aincraft.boost.RuledBoostSourceImpl;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
-import net.aincraft.boost.config.BoostSourceConfig.PolicyConfig;
 import net.aincraft.boost.config.ConditionConfigParser;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.Condition;
-import net.aincraft.container.boost.RuledBoostSource.Policy;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.upgrade.UpgradeEffect;
 import net.aincraft.upgrade.UpgradeEffect.BoostEffect;
 import net.aincraft.upgrade.UpgradeEffect.PermissionEffect;
 import net.aincraft.upgrade.UpgradeEffect.RuledBoostEffect;
 import net.aincraft.upgrade.UpgradeNode;
-import net.aincraft.upgrade.UpgradeNode.NodeType;
 import net.aincraft.upgrade.Position;
 import net.aincraft.upgrade.UpgradeTree;
 import net.aincraft.upgrade.config.UpgradeTreeConfig.EffectConfig;
@@ -42,19 +38,19 @@ import org.bukkit.Material;
 public final class UpgradeTreeConfigParser {
 
   private final ConditionFactory conditionFactory;
-  private final PolicyFactory policyFactory;
   private final BoostFactory boostFactory;
   private final ConditionConfigParser conditionParser;
+  private final net.aincraft.boost.config.BoostSourceConfigParser boostSourceParser;
 
   public UpgradeTreeConfigParser(
       ConditionFactory conditionFactory,
-      PolicyFactory policyFactory,
       BoostFactory boostFactory
   ) {
     this.conditionFactory = conditionFactory;
-    this.policyFactory = policyFactory;
     this.boostFactory = boostFactory;
     this.conditionParser = new ConditionConfigParser(conditionFactory);
+    this.boostSourceParser = new net.aincraft.boost.config.BoostSourceConfigParser(
+        conditionFactory, boostFactory);
   }
 
   public UpgradeTree parse(UpgradeTreeConfig config) {
@@ -73,9 +69,12 @@ public final class UpgradeTreeConfigParser {
     return new UpgradeTree(
         treeKey,
         jobKey,
+        config.description(),
         config.root(),
         config.skill_points_per_level(),
-        nodes
+        nodes,
+        new HashMap<>(),   // No perk policies in legacy format
+        Set.of()          // No paths in legacy format
     );
   }
 
@@ -88,11 +87,6 @@ public final class UpgradeTreeConfigParser {
     } catch (IllegalArgumentException e) {
       icon = Material.BARRIER; // Fallback
     }
-
-    NodeType nodeType = switch (config.resolvedType().toLowerCase()) {
-      case "major", "specialization" -> NodeType.MAJOR;
-      default -> NodeType.MINOR;
-    };
 
     Set<String> prerequisites = config.prerequisites() != null
         ? new HashSet<>(config.prerequisites())
@@ -152,9 +146,11 @@ public final class UpgradeTreeConfigParser {
         key,
         config.name(),
         config.description(),
-        icon,
+        icon,           // locked icon
+        icon,           // unlocked icon (same as locked for legacy format)
+        null,           // itemModel (not supported in legacy)
+        null,           // unlockedItemModel (not supported in legacy)
         config.cost(),
-        nodeType,
         prerequisites,
         exclusive,
         children,
@@ -191,50 +187,16 @@ public final class UpgradeTreeConfigParser {
 
   private BoostSource parseRuledBoostSource(EffectConfig config, String jobKey, String nodeKey) {
     Key key = Key.key("modularjobs", "upgrade/" + jobKey + "/" + nodeKey);
-    Policy policy = parsePolicy(config.policy());
     List<Rule> rules = new ArrayList<>();
 
     if (config.rules() != null) {
       for (RuleConfig ruleConfig : config.rules()) {
-        Rule rule = parseRule(ruleConfig);
+        Rule rule = boostSourceParser.parseRule(ruleConfig);
         rules.add(rule);
       }
     }
 
     String desc = config.description() != null ? config.description() : nodeKey + " upgrade boost";
-    return new RuledBoostSourceImpl(rules, policy, key, desc);
-  }
-
-  private Policy parsePolicy(PolicyConfig config) {
-    if (config == null) {
-      return policyFactory.allApplicable();
-    }
-    return switch (config.type().toLowerCase()) {
-      case "all_applicable" -> policyFactory.allApplicable();
-      case "first" -> policyFactory.first();
-      case "top_k" -> {
-        if (config.k() == null) {
-          throw new IllegalArgumentException("top_k policy requires 'k' parameter");
-        }
-        yield policyFactory.topKBoosts(config.k());
-      }
-      default -> throw new IllegalArgumentException("Unknown policy type: " + config.type());
-    };
-  }
-
-  private Rule parseRule(RuleConfig config) {
-    Condition condition = conditionParser.parse(config.conditions());
-    Boost boost = parseBoost(config.boost());
-    int priority = config.priority();
-    return new Rule(condition, priority, boost);
-  }
-
-  private Boost parseBoost(BoostConfig config) {
-    BigDecimal amount = BigDecimal.valueOf(config.amount());
-    return switch (config.type().toLowerCase()) {
-      case "multiplicative" -> boostFactory.multiplicative(amount);
-      case "additive" -> boostFactory.additive(amount);
-      default -> throw new IllegalArgumentException("Unknown boost type: " + config.type());
-    };
+    return new RuledBoostSourceImpl(rules, key, desc);
   }
 }

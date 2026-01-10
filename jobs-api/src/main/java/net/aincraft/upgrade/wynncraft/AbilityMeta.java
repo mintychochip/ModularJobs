@@ -2,7 +2,6 @@ package net.aincraft.upgrade.wynncraft;
 
 import java.util.List;
 import java.util.Optional;
-import net.aincraft.upgrade.Position;
 import net.aincraft.upgrade.UpgradeEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
  * Ability nodes are playable upgrades that grant effects.
  *
  * @param name          display name
- * @param icon          icon configuration
+ * @param icons         icon configurations for locked and unlocked states
  * @param cost          skill point cost to unlock
  * @param description   list of description lines (supports multi-line lore)
  * @param prerequisites list of node IDs that must be unlocked first
@@ -25,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public record AbilityMeta(
     @NotNull String name,
-    @NotNull IconConfig icon,
+    @NotNull AbilityIcons icons,
     int cost,
     @NotNull List<String> description,
     @NotNull List<String> prerequisites,
@@ -33,7 +32,6 @@ public record AbilityMeta(
     @NotNull List<EffectConfig> effects,
     boolean required,
     boolean major,
-    @Nullable List<Position> pathFromParent,
     @Nullable String perkId,
     @Nullable Integer level
 ) implements LayoutItemMeta {
@@ -56,8 +54,8 @@ public record AbilityMeta(
    * @param value      stat value for stat effects
    * @param unlockType unlock type for unlock effects
    * @param unlockKey  unlock key for unlock effects
-   * @param permission permission string for permission effects
-   * @param policy     policy config for ruled_boost effects
+   * @param permission permission string for permission effects (deprecated, use permissions)
+   * @param permissions list of permissions for permission effects
    * @param rules      list of rules for ruled_boost effects
    */
   public record EffectConfig(
@@ -71,17 +69,8 @@ public record AbilityMeta(
       @Nullable String unlockType,
       @Nullable String unlockKey,
       @Nullable String permission,
-      @Nullable PolicyConfig policy,
+      @Nullable java.util.List<String> permissions,
       @Nullable java.util.List<RuleConfig> rules
-  ) {
-  }
-
-  /**
-   * Policy configuration for ruled_boost effects.
-   */
-  public record PolicyConfig(
-      @NotNull String type,
-      @Nullable Integer topK
   ) {
   }
 
@@ -101,6 +90,18 @@ public record AbilityMeta(
   public record BoostConfig(
       @NotNull String type,
       @NotNull Double amount
+  ) {
+  }
+
+  /**
+   * Icon configurations for ability node states.
+   *
+   * @param locked   icon shown when node is locked (not yet unlocked)
+   * @param unlocked icon shown when node is unlocked
+   */
+  public record AbilityIcons(
+      @NotNull IconConfig locked,
+      @NotNull IconConfig unlocked
   ) {
   }
 }

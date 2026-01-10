@@ -24,9 +24,9 @@ import org.bukkit.entity.Player;
  * Command for viewing and managing job upgrades.
  *
  * Usage:
- * - /jobs upgrades <job> - View upgrade tree
- * - /jobs upgrades <job> unlock <node> - Unlock a node
- * - /jobs upgrades <job> reset - Reset all upgrades
+ * - /jobs upgrade <job> - View upgrade tree
+ * - /jobs upgrade <job> unlock <node> - Unlock a node
+ * - /jobs upgrade <job> reset - Reset all upgrades
  */
 public class UpgradesCommand implements JobsCommand {
 
@@ -48,7 +48,7 @@ public class UpgradesCommand implements JobsCommand {
 
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
-    return Commands.literal("upgrades")
+    return Commands.literal("upgrade")
         .then(Commands.argument("job", StringArgumentType.string())
             .suggests((context, builder) -> {
               jobResolver.getPlainNames().forEach(builder::suggest);

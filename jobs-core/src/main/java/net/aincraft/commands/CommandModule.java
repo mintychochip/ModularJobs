@@ -17,6 +17,8 @@ public final class CommandModule extends AbstractModule {
 
     Multibinder<JobsCommand> binder = Multibinder.newSetBinder(binder(), JobsCommand.class);
     binder.addBinding().to(JoinCommand.class);
+    binder.addBinding().to(ListCommand.class);
+    binder.addBinding().to(BrowseCommand.class);
     binder.addBinding().to(TopCommand.class);
     binder.addBinding().to(InfoCommand.class);
     binder.addBinding().to(LeaveCommand.class);
@@ -27,6 +29,7 @@ public final class CommandModule extends AbstractModule {
     // Unified boost command (replaces BoostsCommand, ItemBoostCommand, SourceCommand)
     binder.addBinding().to(BoostCommand.class);
     binder.addBinding().to(UpgradesCommand.class);
+    binder.addBinding().to(TreeEditorCommand.class);
     // binder.addBinding().to(UpgradeCommand.class); // Disabled - requires JobPets dependency
     // Unified level command (replaces SetLevelCommand, AddLevelCommand, SubtractLevelCommand)
     binder.addBinding().to(LevelCommand.class);

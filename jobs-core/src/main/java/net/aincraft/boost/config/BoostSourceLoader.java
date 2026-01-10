@@ -13,7 +13,6 @@ import java.util.Map;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.aincraft.container.boost.factories.PolicyFactory;
 import net.aincraft.registry.Registry;
 import org.bukkit.plugin.Plugin;
 
@@ -34,13 +33,12 @@ public final class BoostSourceLoader {
       Plugin plugin,
       Gson gson,
       ConditionFactory conditionFactory,
-      PolicyFactory policyFactory,
       BoostFactory boostFactory,
       Registry<BoostSource> registry
   ) {
     this.plugin = plugin;
     this.gson = gson;
-    this.parser = new BoostSourceConfigParser(conditionFactory, policyFactory, boostFactory);
+    this.parser = new BoostSourceConfigParser(conditionFactory, boostFactory);
     this.registry = registry;
   }
 
@@ -126,9 +124,6 @@ public final class BoostSourceLoader {
             "boost_sources": {
               "example_boost": {
                 "key": "modularjobs:example_boost",
-                "policy": {
-                  "type": "all_applicable"
-                },
                 "rules": [
                   {
                     "priority": 10,

@@ -34,7 +34,7 @@ public final class PaymentModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(BoostEngine.class).to(BoostEngineImpl.class).in(Singleton.class);
-    bind(ChunkExplorationStore.class).to(ChunkExplorationStoreImpl.class).in(Singleton.class);
+    bind(PlayerChunkExplorationService.class).to(PlayerChunkExplorationServiceImpl.class).in(Singleton.class);
     bind(MobDamageTrackerStore.class).to(MobDamageTrackerStoreImpl.class).in(Singleton.class);
     bind(EntityValidationService.class).to(EntityValidationServiceImpl.class).in(Singleton.class);
     bind(MobDamageTracker.class).to(MobDamageTrackerImpl.class).in(Singleton.class);
