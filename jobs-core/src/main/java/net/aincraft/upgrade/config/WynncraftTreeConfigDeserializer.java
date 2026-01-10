@@ -230,7 +230,53 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       level = meta.get("level").getAsInt();
     }
 
-    return new AbilityMeta(name, icons, cost, description, prerequisites, exclusiveWith, effects, required, major, perkId, level);
+    // Parse optional max_level for in-place upgrades
+    Integer maxLevel = null;
+    if (meta.has("max_level")) {
+      maxLevel = meta.get("max_level").getAsInt();
+    }
+
+    // Parse optional level_costs array for per-level costs
+    List<Integer> levelCosts = null;
+    if (meta.has("level_costs")) {
+      levelCosts = new ArrayList<>();
+      for (JsonElement costElem : meta.getAsJsonArray("level_costs")) {
+        levelCosts.add(costElem.getAsInt());
+      }
+    }
+
+    // Parse optional level_descriptions array for per-level descriptions
+    List<String> levelDescriptions = null;
+    if (meta.has("level_descriptions")) {
+      levelDescriptions = new ArrayList<>();
+      for (JsonElement descElem : meta.getAsJsonArray("level_descriptions")) {
+        levelDescriptions.add(descElem.getAsString());
+      }
+    }
+
+    // Parse optional level_effects array for per-level effects
+    List<List<EffectConfig>> levelEffects = null;
+    if (meta.has("level_effects")) {
+      levelEffects = new ArrayList<>();
+      for (JsonElement levelElem : meta.getAsJsonArray("level_effects")) {
+        List<EffectConfig> levelEffectList = new ArrayList<>();
+        for (JsonElement effectElem : levelElem.getAsJsonArray()) {
+          levelEffectList.add(deserializeEffectConfig(effectElem.getAsJsonObject()));
+        }
+        levelEffects.add(levelEffectList);
+      }
+    }
+
+    // Parse optional level_icons array for per-level icons
+    List<IconConfig> levelIcons = null;
+    if (meta.has("level_icons")) {
+      levelIcons = new ArrayList<>();
+      for (JsonElement iconElem : meta.getAsJsonArray("level_icons")) {
+        levelIcons.add(deserializeIconConfig(iconElem.getAsJsonObject()));
+      }
+    }
+
+    return new AbilityMeta(name, icons, cost, description, prerequisites, exclusiveWith, effects, required, major, perkId, level, maxLevel, levelCosts, levelDescriptions, levelEffects, levelIcons);
   }
 
   private EffectConfig deserializeEffectConfig(JsonObject effectObj) {
@@ -281,6 +327,13 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
         effectObj.has("permission") ? getString(effectObj, "permission") : null,
         permissions,
         rules
+    );
+  }
+
+  private IconConfig deserializeIconConfig(JsonObject iconObj) {
+    return new IconConfig(
+        getString(iconObj, "id"),
+        iconObj.has("item_model") ? iconObj.get("item_model").getAsString() : null
     );
   }
 

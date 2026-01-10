@@ -127,6 +127,21 @@ public final class UpgradeTree implements Keyed {
   }
 
   /**
+   * Get the maximum level available for a perk in this tree.
+   * Scans all nodes to find the highest level for nodes with the given perkId.
+   *
+   * @param perkId the perk identifier (e.g., "far_gather", "crit_chance")
+   * @return the highest level node for this perk, or 0 if not found
+   */
+  public int getMaxPerkLevel(@NotNull String perkId) {
+    return nodes.values().stream()
+        .filter(n -> perkId.equals(n.perkId()))
+        .mapToInt(UpgradeNode::level)
+        .max()
+        .orElse(0);
+  }
+
+  /**
    * Get all path coordinates for this tree.
    * These are the walkable connection points between nodes.
    */

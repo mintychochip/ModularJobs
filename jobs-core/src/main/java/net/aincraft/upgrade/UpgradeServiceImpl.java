@@ -117,10 +117,11 @@ public final class UpgradeServiceImpl implements UpgradeService {
       return new UnlockResult.AlreadyUnlocked(nodeKey);
     }
 
-    // Check cost
+    // Check cost - use per-level cost for level 1 if available
+    int unlockCost = node.isUpgradeable() ? node.getCostForLevel(1) : node.cost();
     int available = data.availableSkillPoints();
-    if (node.cost() > available) {
-      return new UnlockResult.InsufficientPoints(node.cost(), available);
+    if (unlockCost > available) {
+      return new UnlockResult.InsufficientPoints(unlockCost, available);
     }
 
     // Check prerequisites
@@ -147,6 +148,11 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     // Unlock the node
     data.unlock(nodeKey);
+
+    // Set initial node level for upgradeable nodes
+    if (node.isUpgradeable()) {
+      data.setNodeLevel(nodeKey, 1);
+    }
 
     // Track perk level
     data.setPerkLevel(node.perkId(), node.level());
@@ -194,10 +200,72 @@ public final class UpgradeServiceImpl implements UpgradeService {
       }
 
       data.lock(nodeKey);
+      data.removeNodeLevel(nodeKey); // Clear node level for upgradeable nodes
+    }
+
+    // Clear all perk levels
+    for (String perkId : new HashSet<>(data.perkLevels().keySet())) {
+      data.removePerkLevel(perkId);
     }
 
     repository.savePlayerData(data);
     return true;
+  }
+
+  @Override
+  public @NotNull UnlockResult upgradeNode(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey) {
+    // Get tree
+    Optional<UpgradeTree> treeOpt = getTree(jobKey);
+    if (treeOpt.isEmpty()) {
+      return new UnlockResult.TreeNotFound(jobKey);
+    }
+    UpgradeTree tree = treeOpt.get();
+
+    // Get node
+    Optional<UpgradeNode> nodeOpt = tree.getNode(nodeKey);
+    if (nodeOpt.isEmpty()) {
+      return new UnlockResult.NodeNotFound(nodeKey);
+    }
+    UpgradeNode node = nodeOpt.get();
+
+    // Check node is upgradeable
+    if (!node.isUpgradeable()) {
+      return new UnlockResult.AlreadyMaxLevel(nodeKey, 1);
+    }
+
+    // Get player data
+    PlayerUpgradeDataImpl data = getOrLoadData(playerId, jobKey);
+
+    // Check node is unlocked
+    if (!data.hasUnlocked(nodeKey)) {
+      return new UnlockResult.NodeNotUnlocked(nodeKey);
+    }
+
+    // Check current level
+    int currentLevel = data.getNodeLevel(nodeKey);
+    if (currentLevel >= node.maxLevel()) {
+      return new UnlockResult.AlreadyMaxLevel(nodeKey, node.maxLevel());
+    }
+
+    // Get cost for next level
+    int nextLevel = currentLevel + 1;
+    int upgradeCost = node.getCostForLevel(nextLevel);
+
+    // Check cost
+    int available = data.availableSkillPoints();
+    if (upgradeCost > available) {
+      return new UnlockResult.InsufficientPoints(upgradeCost, available);
+    }
+
+    // Upgrade
+    data.setNodeLevel(nodeKey, nextLevel);
+    data.setPerkLevel(node.perkId(), nextLevel); // Update perk level for scaling
+
+    // Persist
+    repository.savePlayerData(data);
+
+    int remaining = data.availableSkillPoints();
+    return new UnlockResult.NodeUpgraded(nodeKey, nextLevel, node.maxLevel(), remaining);
   }
 
   private PlayerUpgradeDataImpl getOrLoadData(String playerId, String jobKey) {

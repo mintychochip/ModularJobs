@@ -584,11 +584,21 @@ public final class UpgradeTreeGui implements Listener {
 
   private ItemStack createNodeItem(UpgradeNode node, NodeStatus status, PlayerUpgradeData data, UpgradeTree tree) {
     boolean unlocked = status == NodeStatus.UNLOCKED;
+    String nodeKey = getShortKey(node);
+    int currentLevel = data.getNodeLevel(nodeKey);
+
+    // Determine material - use per-level icon for unlocked upgradeable nodes
     Material material = switch (status) {
-      case UNLOCKED -> node.unlockedIcon();
+      case UNLOCKED -> {
+        if (node.isUpgradeable() && currentLevel > 0) {
+          yield node.getIconForLevel(currentLevel);
+        } else {
+          yield node.unlockedIcon();
+        }
+      }
       case AVAILABLE -> node.icon();
-      case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE; // Lighter gray for locked nodes
-      case EXCLUDED -> Material.RED_STAINED_GLASS_PANE; // Red pane instead of barrier for excluded
+      case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE;
+      case EXCLUDED -> Material.RED_STAINED_GLASS_PANE;
     };
 
     ItemStack item = new ItemStack(material);
@@ -608,9 +618,18 @@ public final class UpgradeTreeGui implements Listener {
     // Build lore
     List<Component> lore = new ArrayList<>();
 
-    // Description
-    if (node.description() != null && !node.description().isEmpty()) {
-      for (String line : node.description().split("\n")) {
+    // Description - use per-level description for unlocked upgradeable nodes
+    String displayDescription;
+    if (node.isUpgradeable() && status == NodeStatus.UNLOCKED && currentLevel > 0) {
+      displayDescription = node.getDescriptionForLevel(currentLevel);
+    } else if (node.isUpgradeable() && status == NodeStatus.AVAILABLE) {
+      displayDescription = node.getDescriptionForLevel(1);
+    } else {
+      displayDescription = node.description();
+    }
+
+    if (displayDescription != null && !displayDescription.isEmpty()) {
+      for (String line : displayDescription.split("\n")) {
         lore.add(Component.text(line, NamedTextColor.GRAY)
             .decoration(TextDecoration.ITALIC, false));
       }
@@ -618,19 +637,56 @@ public final class UpgradeTreeGui implements Listener {
 
     lore.add(Component.empty());
 
-    // Cost
-    lore.add(Component.text()
-        .append(Component.text("Cost: ", NamedTextColor.GRAY))
-        .append(Component.text(node.cost() + " SP", NamedTextColor.AQUA))
-        .decoration(TextDecoration.ITALIC, false)
-        .build());
+    // Show level for upgradeable nodes
+    if (node.isUpgradeable()) {
+      int maxLevel = node.maxLevel();
+      lore.add(Component.text()
+          .append(Component.text("Level: ", NamedTextColor.GRAY))
+          .append(Component.text(currentLevel + "/" + maxLevel, NamedTextColor.AQUA))
+          .decoration(TextDecoration.ITALIC, false)
+          .build());
+    }
 
-    // Effects
-    if (!node.effects().isEmpty()) {
+    // Cost - show next upgrade cost for unlocked upgradeable nodes
+    int displayCost;
+    if (node.isUpgradeable()) {
+      if (status == NodeStatus.UNLOCKED && currentLevel > 0 && currentLevel < node.maxLevel()) {
+        // Show cost for next level
+        displayCost = node.getCostForLevel(currentLevel + 1);
+      } else if (status == NodeStatus.UNLOCKED && currentLevel >= node.maxLevel()) {
+        // At max level, show 0 or skip cost line
+        displayCost = 0;
+      } else {
+        // Not unlocked yet, show level 1 cost
+        displayCost = node.getCostForLevel(1);
+      }
+    } else {
+      displayCost = node.cost();
+    }
+
+    if (displayCost > 0 || !node.isUpgradeable() || status != NodeStatus.UNLOCKED) {
+      lore.add(Component.text()
+          .append(Component.text("Cost: ", NamedTextColor.GRAY))
+          .append(Component.text(displayCost + " SP", NamedTextColor.AQUA))
+          .decoration(TextDecoration.ITALIC, false)
+          .build());
+    }
+
+    // Effects - use per-level effects for unlocked upgradeable nodes
+    List<UpgradeEffect> displayEffects;
+    if (node.isUpgradeable() && status == NodeStatus.UNLOCKED && currentLevel > 0) {
+      displayEffects = node.getEffectsForLevel(currentLevel);
+    } else if (node.isUpgradeable() && status == NodeStatus.AVAILABLE) {
+      displayEffects = node.getEffectsForLevel(1);
+    } else {
+      displayEffects = node.effects();
+    }
+
+    if (!displayEffects.isEmpty()) {
       lore.add(Component.empty());
       lore.add(Component.text("Effects:", NamedTextColor.GOLD)
           .decoration(TextDecoration.ITALIC, false));
-      for (UpgradeEffect effect : node.effects()) {
+      for (UpgradeEffect effect : displayEffects) {
         lore.add(Component.text("  \u2022 " + formatEffect(effect), NamedTextColor.WHITE)
             .decoration(TextDecoration.ITALIC, false));
       }
@@ -651,10 +707,31 @@ public final class UpgradeTreeGui implements Listener {
 
     // Action hint
     Component actionHint = switch (status) {
-      case UNLOCKED -> Component.text("\u2714 Unlocked!", NamedTextColor.GREEN);
+      case UNLOCKED -> {
+        if (node.isUpgradeable()) {
+          if (currentLevel < node.maxLevel()) {
+            int nextLevel = currentLevel + 1;
+            int upgradeCost = node.getCostForLevel(nextLevel);
+            if (data.availableSkillPoints() >= upgradeCost) {
+              yield Component.text("Click to upgrade", NamedTextColor.YELLOW);
+            } else {
+              yield Component.text("Not enough SP to upgrade", NamedTextColor.RED);
+            }
+          } else {
+            yield Component.text("\u2714 Max Level!", NamedTextColor.GREEN);
+          }
+        } else {
+          yield Component.text("\u2714 Unlocked!", NamedTextColor.GREEN);
+        }
+      }
       case AVAILABLE -> {
-        if (data.availableSkillPoints() >= node.cost()) {
-          yield Component.text("Click to unlock", NamedTextColor.YELLOW);
+        int unlockCost = node.isUpgradeable() ? node.getCostForLevel(1) : node.cost();
+        if (data.availableSkillPoints() >= unlockCost) {
+          if (node.isUpgradeable()) {
+            yield Component.text("Click to unlock (upgradeable to Lv." + node.maxLevel() + ")", NamedTextColor.YELLOW);
+          } else {
+            yield Component.text("Click to unlock", NamedTextColor.YELLOW);
+          }
         } else {
           yield Component.text("Not enough SP!", NamedTextColor.RED);
         }
@@ -791,11 +868,16 @@ public final class UpgradeTreeGui implements Listener {
       return; // Clicked on non-node item (background, info)
     }
 
-    // Attempt to unlock
+    // Attempt to unlock or upgrade
     String playerId = player.getUniqueId().toString();
     String jobKey = session.job.key().value();
 
     UnlockResult result = upgradeService.unlock(playerId, jobKey, nodeKey);
+
+    // If already unlocked, try to upgrade instead
+    if (result instanceof UnlockResult.AlreadyUnlocked) {
+      result = upgradeService.upgradeNode(playerId, jobKey, nodeKey);
+    }
 
     switch (result) {
       case UnlockResult.Success success -> {
@@ -804,6 +886,21 @@ public final class UpgradeTreeGui implements Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
         // Refresh the GUI
         refresh(player);
+      }
+      case UnlockResult.NodeUpgraded upgraded -> {
+        Mint.sendThemedMessage(player, "<accent>Upgraded to level <primary>" + upgraded.newLevel() + "/" + upgraded.maxLevel()
+            + " <neutral>(<secondary>" + upgraded.remainingPoints() + " SP remaining<neutral>)");
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f);
+        // Refresh the GUI
+        refresh(player);
+      }
+      case UnlockResult.AlreadyMaxLevel maxLvl -> {
+        Mint.sendThemedMessage(player, "<warning>Already at max level!");
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
+      }
+      case UnlockResult.NodeNotUnlocked notUnlocked -> {
+        Mint.sendThemedMessage(player, "<error>Node not unlocked yet!");
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.InsufficientPoints ip -> {
         Mint.sendThemedMessage(player, "<error>Not enough SP! Need <secondary>" + ip.required()
@@ -819,7 +916,7 @@ public final class UpgradeTreeGui implements Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.AlreadyUnlocked au -> {
-        // Already unlocked - play a subtle click sound
+        // This shouldn't happen anymore since we try upgrade, but keep as fallback
         player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f);
       }
       case UnlockResult.NodeNotFound nf -> {

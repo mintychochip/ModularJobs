@@ -134,6 +134,19 @@ public class UpgradesCommand implements JobsCommand {
             + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
       }
+      case UnlockResult.NodeUpgraded upgraded -> {
+        Mint.sendThemedMessage(player, "<accent>Upgraded to level <primary>" + upgraded.newLevel() + "/" + upgraded.maxLevel()
+            + " <neutral>(<secondary>" + upgraded.remainingPoints() + " SP remaining<neutral>)");
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f);
+      }
+      case UnlockResult.AlreadyMaxLevel maxLvl -> {
+        Mint.sendThemedMessage(player, "<warning>Already at max level: " + maxLvl.nodeKey());
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
+      }
+      case UnlockResult.NodeNotUnlocked notUnlocked -> {
+        Mint.sendThemedMessage(player, "<error>Node not unlocked yet: " + notUnlocked.nodeKey());
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
       case UnlockResult.InsufficientPoints ip -> {
         Mint.sendThemedMessage(player, "<error>Not enough skill points. Need <secondary>" + ip.required()
             + "<error>, have <secondary>" + ip.available());

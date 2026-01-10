@@ -158,7 +158,13 @@ public final class UpgradeTreeConfigParser {
         position,
         List.of(), // pathPoints - empty for legacy format
         perkId,
-        level
+        level,
+        1,              // maxLevel - not supported in legacy format
+        List.of(),      // levelCosts - not supported in legacy format
+        List.of(),      // levelDescriptions - not supported in legacy format
+        List.of(),      // levelEffects - not supported in legacy format
+        List.of(),      // levelIcons - not supported in legacy format
+        List.of()       // levelItemModels - not supported in legacy format
     );
   }
 

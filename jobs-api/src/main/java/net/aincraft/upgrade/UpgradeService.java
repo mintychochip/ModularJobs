@@ -72,7 +72,18 @@ public interface UpgradeService {
   boolean resetUpgrades(@NotNull String playerId, @NotNull String jobKey);
 
   /**
-   * Result of an unlock attempt.
+   * Attempt to upgrade an already-unlocked node to the next level.
+   * Only works for nodes with maxLevel > 1 (upgradeable nodes).
+   *
+   * @param playerId the player's UUID
+   * @param jobKey   the job key
+   * @param nodeKey  the node to upgrade
+   * @return result of the upgrade attempt
+   */
+  @NotNull UnlockResult upgradeNode(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey);
+
+  /**
+   * Result of an unlock or upgrade attempt.
    */
   sealed interface UnlockResult permits
       UnlockResult.Success,
@@ -81,7 +92,10 @@ public interface UpgradeService {
       UnlockResult.ExcludedByChoice,
       UnlockResult.AlreadyUnlocked,
       UnlockResult.NodeNotFound,
-      UnlockResult.TreeNotFound {
+      UnlockResult.TreeNotFound,
+      UnlockResult.NodeUpgraded,
+      UnlockResult.AlreadyMaxLevel,
+      UnlockResult.NodeNotUnlocked {
 
     record Success(@NotNull UpgradeNode node, int remainingPoints) implements UnlockResult {
     }
@@ -102,6 +116,24 @@ public interface UpgradeService {
     }
 
     record TreeNotFound(@NotNull String jobKey) implements UnlockResult {
+    }
+
+    /**
+     * Node was successfully upgraded to the next level.
+     */
+    record NodeUpgraded(@NotNull String nodeKey, int newLevel, int maxLevel, int remainingPoints) implements UnlockResult {
+    }
+
+    /**
+     * Node is already at maximum level.
+     */
+    record AlreadyMaxLevel(@NotNull String nodeKey, int maxLevel) implements UnlockResult {
+    }
+
+    /**
+     * Node has not been unlocked yet (cannot upgrade).
+     */
+    record NodeNotUnlocked(@NotNull String nodeKey) implements UnlockResult {
     }
   }
 }
