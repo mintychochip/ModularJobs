@@ -13,9 +13,10 @@ import org.jetbrains.annotations.Nullable;
  * @param name          display name
  * @param icons         icon configurations for locked and unlocked states
  * @param cost          skill point cost to unlock
- * @param description   list of description lines (supports multi-line lore)
- * @param prerequisites list of node IDs that must be unlocked first
- * @param exclusiveWith list of node IDs that become locked if this is unlocked
+ * @param description     list of description lines (supports multi-line lore)
+ * @param prerequisites   list of node IDs that must ALL be unlocked first (AND logic)
+ * @param prerequisitesOr list of node IDs where at least ONE must be unlocked (OR logic)
+ * @param exclusiveWith   list of node IDs that become locked if this is unlocked
  * @param effects       list of effects granted by this ability
  * @param required      whether this node is required (always unlocked)
  * @param major         whether this is a major/specialization node
@@ -33,6 +34,7 @@ public record AbilityMeta(
     int cost,
     @NotNull List<String> description,
     @NotNull List<String> prerequisites,
+    @NotNull List<String> prerequisitesOr,
     @NotNull List<String> exclusiveWith,
     @NotNull List<EffectConfig> effects,
     boolean required,

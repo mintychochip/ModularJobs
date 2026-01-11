@@ -194,11 +194,19 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       }
     }
 
-    // Parse prerequisites
+    // Parse prerequisites (AND - all required)
     List<String> prerequisites = new ArrayList<>();
     if (meta.has("prerequisites")) {
       for (JsonElement elem : meta.getAsJsonArray("prerequisites")) {
         prerequisites.add(elem.getAsString());
+      }
+    }
+
+    // Parse prerequisites_or (OR - any one required)
+    List<String> prerequisitesOr = new ArrayList<>();
+    if (meta.has("prerequisites_or")) {
+      for (JsonElement elem : meta.getAsJsonArray("prerequisites_or")) {
+        prerequisitesOr.add(elem.getAsString());
       }
     }
 
@@ -276,7 +284,7 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       }
     }
 
-    return new AbilityMeta(name, icons, cost, description, prerequisites, exclusiveWith, effects, required, major, perkId, level, maxLevel, levelCosts, levelDescriptions, levelEffects, levelIcons);
+    return new AbilityMeta(name, icons, cost, description, prerequisites, prerequisitesOr, exclusiveWith, effects, required, major, perkId, level, maxLevel, levelCosts, levelDescriptions, levelEffects, levelIcons);
   }
 
   private EffectConfig deserializeEffectConfig(JsonObject effectObj) {

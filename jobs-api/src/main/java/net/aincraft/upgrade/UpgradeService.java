@@ -89,6 +89,7 @@ public interface UpgradeService {
       UnlockResult.Success,
       UnlockResult.InsufficientPoints,
       UnlockResult.PrerequisitesNotMet,
+      UnlockResult.OrPrerequisitesNotMet,
       UnlockResult.ExcludedByChoice,
       UnlockResult.AlreadyUnlocked,
       UnlockResult.NodeNotFound,
@@ -104,6 +105,12 @@ public interface UpgradeService {
     }
 
     record PrerequisitesNotMet(@NotNull Set<String> missing) implements UnlockResult {
+    }
+
+    /**
+     * None of the OR prerequisites were met (at least one required).
+     */
+    record OrPrerequisitesNotMet(@NotNull Set<String> options) implements UnlockResult {
     }
 
     record ExcludedByChoice(@NotNull Set<String> conflicting) implements UnlockResult {

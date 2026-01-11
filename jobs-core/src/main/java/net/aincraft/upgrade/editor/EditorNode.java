@@ -30,6 +30,7 @@ public final class EditorNode {
   private int level;
 
   private final Set<String> prerequisites = new HashSet<>();
+  private final Set<String> prerequisitesOr = new HashSet<>();
   private final Set<String> exclusive = new HashSet<>();
   private final List<String> children = new ArrayList<>();
   private final List<EditorEffect> effects = new ArrayList<>();
@@ -72,6 +73,7 @@ public final class EditorNode {
     node.level = source.level();
 
     node.prerequisites.addAll(source.prerequisites());
+    node.prerequisitesOr.addAll(source.prerequisitesOr());
     node.exclusive.addAll(source.exclusive());
     node.children.addAll(source.children());
 
@@ -122,6 +124,7 @@ public final class EditorNode {
   public void setLevel(int level) { this.level = Math.max(1, level); }
 
   public Set<String> prerequisites() { return prerequisites; }
+  public Set<String> prerequisitesOr() { return prerequisitesOr; }
   public Set<String> exclusive() { return exclusive; }
   public List<String> children() { return children; }
   public List<EditorEffect> effects() { return effects; }
@@ -153,6 +156,7 @@ public final class EditorNode {
     copy.perkId = this.perkId;
     copy.level = this.level;
     copy.prerequisites.addAll(this.prerequisites);
+    copy.prerequisitesOr.addAll(this.prerequisitesOr);
     copy.exclusive.addAll(this.exclusive);
     copy.children.addAll(this.children);
     copy.effects.addAll(this.effects.stream().map(EditorEffect::copy).toList());

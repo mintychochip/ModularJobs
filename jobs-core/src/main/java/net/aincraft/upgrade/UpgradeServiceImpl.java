@@ -126,7 +126,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
       return new UnlockResult.InsufficientPoints(unlockCost, available);
     }
 
-    // Check prerequisites
+    // Check AND prerequisites (all must be met)
     Set<String> missingPrereqs = new HashSet<>();
     for (String prereq : node.prerequisites()) {
       if (!data.hasUnlocked(prereq)) {
@@ -135,6 +135,15 @@ public final class UpgradeServiceImpl implements UpgradeService {
     }
     if (!missingPrereqs.isEmpty()) {
       return new UnlockResult.PrerequisitesNotMet(missingPrereqs);
+    }
+
+    // Check OR prerequisites (at least one must be met)
+    if (!node.prerequisitesOr().isEmpty()) {
+      boolean anyOrMet = node.prerequisitesOr().stream()
+          .anyMatch(data::hasUnlocked);
+      if (!anyOrMet) {
+        return new UnlockResult.OrPrerequisitesNotMet(node.prerequisitesOr());
+      }
     }
 
     // Check if excluded by any already-unlocked node
