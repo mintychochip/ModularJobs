@@ -20,13 +20,14 @@ import org.jetbrains.annotations.Nullable;
 public final class PlayerUpgradeRepositoryImpl implements PlayerUpgradeRepository {
 
   private static final String SELECT_QUERY =
-      "SELECT total_skill_points, unlocked_nodes, node_levels FROM player_upgrades WHERE player_id = ? AND job_key = ?";
+      "SELECT total_skill_points, spent_skill_points, unlocked_nodes, node_levels FROM player_upgrades WHERE player_id = ? AND job_key = ?";
 
   private static final String UPSERT_QUERY =
-      "INSERT INTO player_upgrades (player_id, job_key, total_skill_points, unlocked_nodes, node_levels) " +
-          "VALUES (?, ?, ?, ?, ?) " +
+      "INSERT INTO player_upgrades (player_id, job_key, total_skill_points, spent_skill_points, unlocked_nodes, node_levels) " +
+          "VALUES (?, ?, ?, ?, ?, ?) " +
           "ON CONFLICT(player_id, job_key) DO UPDATE SET " +
           "total_skill_points = excluded.total_skill_points, " +
+          "spent_skill_points = excluded.spent_skill_points, " +
           "unlocked_nodes = excluded.unlocked_nodes, " +
           "node_levels = excluded.node_levels";
 
@@ -36,6 +37,9 @@ public final class PlayerUpgradeRepositoryImpl implements PlayerUpgradeRepositor
   private static final String ADD_NODE_LEVELS_COLUMN =
       "ALTER TABLE player_upgrades ADD COLUMN node_levels TEXT NOT NULL DEFAULT ''";
 
+  private static final String ADD_SPENT_SKILL_POINTS_COLUMN =
+      "ALTER TABLE player_upgrades ADD COLUMN spent_skill_points INTEGER NOT NULL DEFAULT 0";
+
   private final ConnectionSource connectionSource;
   private boolean migrationChecked = false;
 
@@ -44,7 +48,7 @@ public final class PlayerUpgradeRepositoryImpl implements PlayerUpgradeRepositor
   }
 
   /**
-   * Ensure the node_levels column exists (migration for existing databases).
+   * Ensure required columns exist (migration for existing databases).
    */
   private synchronized void ensureMigration() {
     if (migrationChecked) {
@@ -62,9 +66,19 @@ public final class PlayerUpgradeRepositoryImpl implements PlayerUpgradeRepositor
           }
         }
       }
+
+      // Check if spent_skill_points column exists
+      try (ResultSet rs = connection.getMetaData().getColumns(null, null, "player_upgrades", "spent_skill_points")) {
+        if (!rs.next()) {
+          // Column doesn't exist, add it
+          try (PreparedStatement ps = connection.prepareStatement(ADD_SPENT_SKILL_POINTS_COLUMN)) {
+            ps.executeUpdate();
+          }
+        }
+      }
     } catch (SQLException e) {
       // Log but don't fail - column might already exist or table might not exist yet
-      System.err.println("[ModularJobs] Migration check for node_levels column: " + e.getMessage());
+      System.err.println("[ModularJobs] Migration check failed: " + e.getMessage());
     }
   }
 
@@ -80,11 +94,12 @@ public final class PlayerUpgradeRepositoryImpl implements PlayerUpgradeRepositor
       try (ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
           int totalSkillPoints = rs.getInt("total_skill_points");
+          int spentSkillPoints = rs.getInt("spent_skill_points");
           String unlockedNodesStr = rs.getString("unlocked_nodes");
           String nodeLevelsStr = rs.getString("node_levels");
           Set<String> unlockedNodes = parseNodeSet(unlockedNodesStr);
           Map<String, Integer> nodeLevels = parseNodeLevels(nodeLevelsStr);
-          return new PlayerUpgradeDataImpl(playerId, jobKey, totalSkillPoints, unlockedNodes, nodeLevels);
+          return new PlayerUpgradeDataImpl(playerId, jobKey, totalSkillPoints, spentSkillPoints, unlockedNodes, nodeLevels);
         }
       }
     } catch (SQLException e) {
@@ -101,8 +116,9 @@ public final class PlayerUpgradeRepositoryImpl implements PlayerUpgradeRepositor
       ps.setString(1, data.playerId());
       ps.setString(2, data.jobKey());
       ps.setInt(3, data.totalSkillPoints());
-      ps.setString(4, serializeNodeSet(data.unlockedNodes()));
-      ps.setString(5, serializeNodeLevels(data.nodeLevels()));
+      ps.setInt(4, data.spentSkillPoints());
+      ps.setString(5, serializeNodeSet(data.unlockedNodes()));
+      ps.setString(6, serializeNodeLevels(data.nodeLevels()));
 
       ps.executeUpdate();
     } catch (SQLException e) {

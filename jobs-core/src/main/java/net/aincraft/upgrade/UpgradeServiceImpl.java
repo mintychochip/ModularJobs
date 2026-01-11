@@ -154,6 +154,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     // Unlock the node
     data.unlock(nodeKey);
+    data.spendSkillPoints(unlockCost);
 
     // Set initial node level for upgradeable nodes
     if (node.isUpgradeable()) {
@@ -219,6 +220,9 @@ public final class UpgradeServiceImpl implements UpgradeService {
       data.removePerkLevel(perkId);
     }
 
+    // Reset spent skill points
+    data.resetSpentSkillPoints();
+
     repository.savePlayerData(data);
 
     // Fire reset event
@@ -276,6 +280,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     // Upgrade
     data.setNodeLevel(nodeKey, nextLevel);
+    data.spendSkillPoints(upgradeCost);
     data.setPerkLevel(node.perkId(), nextLevel); // Update perk level for scaling
 
     // Persist

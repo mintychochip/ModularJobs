@@ -16,6 +16,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   private final String playerId;
   private final String jobKey;
   private int totalSkillPoints;
+  private int spentSkillPoints;
   private final Set<String> unlockedNodes;
   private final Map<String, Integer> perkLevels;
   private final Map<String, Integer> nodeLevels;
@@ -26,7 +27,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
       int totalSkillPoints,
       @NotNull Set<String> unlockedNodes
   ) {
-    this(playerId, jobKey, totalSkillPoints, unlockedNodes, Map.of());
+    this(playerId, jobKey, totalSkillPoints, 0, unlockedNodes, Map.of());
   }
 
   public PlayerUpgradeDataImpl(
@@ -36,9 +37,21 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
       @NotNull Set<String> unlockedNodes,
       @NotNull Map<String, Integer> nodeLevels
   ) {
+    this(playerId, jobKey, totalSkillPoints, 0, unlockedNodes, nodeLevels);
+  }
+
+  public PlayerUpgradeDataImpl(
+      @NotNull String playerId,
+      @NotNull String jobKey,
+      int totalSkillPoints,
+      int spentSkillPoints,
+      @NotNull Set<String> unlockedNodes,
+      @NotNull Map<String, Integer> nodeLevels
+  ) {
     this.playerId = playerId;
     this.jobKey = jobKey;
     this.totalSkillPoints = totalSkillPoints;
+    this.spentSkillPoints = spentSkillPoints;
     this.unlockedNodes = new HashSet<>(unlockedNodes);
     this.perkLevels = new HashMap<>();
     this.nodeLevels = new HashMap<>(nodeLevels);
@@ -73,9 +86,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
 
   @Override
   public int spentSkillPoints() {
-    // This would need to be calculated from actual node costs
-    // For now, track it separately or recalculate from tree
-    return unlockedNodes.size(); // Placeholder - should sum actual costs
+    return spentSkillPoints;
   }
 
   @Override
@@ -107,6 +118,20 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
    */
   public void setTotalSkillPoints(int points) {
     this.totalSkillPoints = points;
+  }
+
+  /**
+   * Spend skill points (increment spent counter).
+   */
+  public void spendSkillPoints(int amount) {
+    this.spentSkillPoints += amount;
+  }
+
+  /**
+   * Reset spent skill points to zero (for respec).
+   */
+  public void resetSpentSkillPoints() {
+    this.spentSkillPoints = 0;
   }
 
   /**

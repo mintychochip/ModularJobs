@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS player_upgrades
     player_id          TEXT    NOT NULL,
     job_key            TEXT    NOT NULL,
     total_skill_points INTEGER NOT NULL DEFAULT 0,
+    spent_skill_points INTEGER NOT NULL DEFAULT 0,
     unlocked_nodes     TEXT    NOT NULL DEFAULT '',
     node_levels        TEXT    NOT NULL DEFAULT '',
     PRIMARY KEY (player_id, job_key)
