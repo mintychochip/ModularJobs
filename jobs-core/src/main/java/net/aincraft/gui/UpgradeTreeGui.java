@@ -691,13 +691,32 @@ public final class UpgradeTreeGui implements Listener {
     }
 
     // Prerequisites for locked nodes
-    if (status == NodeStatus.LOCKED && !node.prerequisites().isEmpty()) {
-      lore.add(Component.empty());
-      lore.add(Component.text("Requires:", NamedTextColor.RED)
-          .decoration(TextDecoration.ITALIC, false));
-      for (String prereq : node.prerequisites()) {
-        lore.add(Component.text("  \u2022 " + prereq, NamedTextColor.GRAY)
+    if (status == NodeStatus.LOCKED) {
+      boolean hasAndPrereqs = !node.prerequisites().isEmpty();
+      boolean hasOrPrereqs = !node.prerequisitesOr().isEmpty();
+
+      if (hasAndPrereqs || hasOrPrereqs) {
+        lore.add(Component.empty());
+      }
+
+      // AND prerequisites (all required)
+      if (hasAndPrereqs) {
+        lore.add(Component.text("Requires (all):", NamedTextColor.RED)
             .decoration(TextDecoration.ITALIC, false));
+        for (String prereq : node.prerequisites()) {
+          lore.add(Component.text("  \u2022 " + prereq, NamedTextColor.GRAY)
+              .decoration(TextDecoration.ITALIC, false));
+        }
+      }
+
+      // OR prerequisites (any one required)
+      if (hasOrPrereqs) {
+        lore.add(Component.text("Requires (any one):", NamedTextColor.GOLD)
+            .decoration(TextDecoration.ITALIC, false));
+        for (String prereq : node.prerequisitesOr()) {
+          lore.add(Component.text("  \u2022 " + prereq, NamedTextColor.GRAY)
+              .decoration(TextDecoration.ITALIC, false));
+        }
       }
     }
 
@@ -910,6 +929,10 @@ public final class UpgradeTreeGui implements Listener {
       }
       case UnlockResult.PrerequisitesNotMet pm -> {
         Mint.sendThemedMessage(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case UnlockResult.OrPrerequisitesNotMet opm -> {
+        Mint.sendThemedMessage(player, "<error>Need one of: <secondary>" + String.join(", ", opm.options()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.ExcludedByChoice ec -> {

@@ -203,10 +203,15 @@ public final class UpgradeTree implements Keyed {
         continue;
       }
 
-      // Check if all prerequisites are met
-      boolean prerequisitesMet = node.prerequisites().isEmpty()
+      // Check if all AND prerequisites are met
+      boolean andPrereqsMet = node.prerequisites().isEmpty()
           || unlockedNodeKeys.containsAll(node.prerequisites());
-      if (prerequisitesMet) {
+
+      // Check if at least one OR prerequisite is met (or if there are none)
+      boolean orPrereqsMet = node.prerequisitesOr().isEmpty()
+          || node.prerequisitesOr().stream().anyMatch(unlockedNodeKeys::contains);
+
+      if (andPrereqsMet && orPrereqsMet) {
         available.add(node);
       }
     }
@@ -247,9 +252,15 @@ public final class UpgradeTree implements Keyed {
       return false;
     }
 
-    // Check prerequisites
-    return node.prerequisites().isEmpty()
+    // Check AND prerequisites (all must be met)
+    boolean andPrereqsMet = node.prerequisites().isEmpty()
         || unlockedNodeKeys.containsAll(node.prerequisites());
+
+    // Check OR prerequisites (at least one must be met)
+    boolean orPrereqsMet = node.prerequisitesOr().isEmpty()
+        || node.prerequisitesOr().stream().anyMatch(unlockedNodeKeys::contains);
+
+    return andPrereqsMet && orPrereqsMet;
   }
 
   /**

@@ -156,6 +156,10 @@ public class UpgradesCommand implements JobsCommand {
         Mint.sendThemedMessage(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
+      case UnlockResult.OrPrerequisitesNotMet opm -> {
+        Mint.sendThemedMessage(player, "<error>Need one of: <secondary>" + String.join(", ", opm.options()));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
       case UnlockResult.ExcludedByChoice ec -> {
         Mint.sendThemedMessage(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);

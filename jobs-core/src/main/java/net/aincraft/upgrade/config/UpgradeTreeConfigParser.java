@@ -92,6 +92,10 @@ public final class UpgradeTreeConfigParser {
         ? new HashSet<>(config.prerequisites())
         : Set.of();
 
+    Set<String> prerequisitesOr = config.prerequisitesOr() != null
+        ? new HashSet<>(config.prerequisitesOr())
+        : Set.of();
+
     Set<String> exclusive = config.exclusive() != null
         ? new HashSet<>(config.exclusive())
         : Set.of();
@@ -152,6 +156,7 @@ public final class UpgradeTreeConfigParser {
         null,           // unlockedItemModel (not supported in legacy)
         config.cost(),
         prerequisites,
+        prerequisitesOr,
         exclusive,
         children,
         effects,
