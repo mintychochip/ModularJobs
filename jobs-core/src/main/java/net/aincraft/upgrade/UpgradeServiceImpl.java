@@ -135,15 +135,10 @@ public final class UpgradeServiceImpl implements UpgradeService {
       return new UnlockResult.PrerequisitesNotMet(missingPrereqs);
     }
 
-    // Check exclusives
-    Set<String> conflicting = new HashSet<>();
-    for (String exclusive : node.exclusive()) {
-      if (data.hasUnlocked(exclusive)) {
-        conflicting.add(exclusive);
-      }
-    }
-    if (!conflicting.isEmpty()) {
-      return new UnlockResult.ExcludedByChoice(conflicting);
+    // Check if excluded by any already-unlocked node
+    Set<String> excludingNodes = tree.getExcludingNodes(nodeKey, data.unlockedNodes());
+    if (!excludingNodes.isEmpty()) {
+      return new UnlockResult.ExcludedByChoice(excludingNodes);
     }
 
     // Unlock the node
