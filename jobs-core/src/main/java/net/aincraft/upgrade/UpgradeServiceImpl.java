@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.aincraft.JobProgression;
+import net.aincraft.event.NodeResetEvent;
+import net.aincraft.event.NodeUnlockEvent;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
 import org.bukkit.Bukkit;
@@ -162,6 +164,11 @@ public final class UpgradeServiceImpl implements UpgradeService {
     // Persist
     repository.savePlayerData(data);
 
+    // Fire unlock event
+    if (player != null && player.isOnline()) {
+      Bukkit.getPluginManager().callEvent(new NodeUnlockEvent(player, jobKey, node));
+    }
+
     int remaining = data.availableSkillPoints();
     return new UnlockResult.Success(node, remaining);
   }
@@ -204,6 +211,12 @@ public final class UpgradeServiceImpl implements UpgradeService {
     }
 
     repository.savePlayerData(data);
+
+    // Fire reset event
+    if (player != null && player.isOnline()) {
+      Bukkit.getPluginManager().callEvent(new NodeResetEvent(player, jobKey, unlocked));
+    }
+
     return true;
   }
 
