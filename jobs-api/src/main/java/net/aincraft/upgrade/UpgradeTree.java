@@ -191,15 +191,15 @@ public final class UpgradeTree implements Keyed {
     Set<UpgradeNode> available = new HashSet<>();
 
     for (UpgradeNode node : nodes.values()) {
+      String nodeKey = getShortKey(node);
+
       // Skip already unlocked
-      if (unlockedNodeKeys.contains(getShortKey(node))) {
+      if (unlockedNodeKeys.contains(nodeKey)) {
         continue;
       }
 
-      // Check if any exclusive node is already unlocked
-      boolean excludedByExclusive = node.exclusive().stream()
-          .anyMatch(unlockedNodeKeys::contains);
-      if (excludedByExclusive) {
+      // Check if excluded by any already-unlocked node
+      if (isExcludedByUnlockedNode(nodeKey, unlockedNodeKeys)) {
         continue;
       }
 
@@ -242,16 +242,50 @@ public final class UpgradeTree implements Keyed {
       return false;
     }
 
-    // Check exclusives
-    boolean excludedByExclusive = node.exclusive().stream()
-        .anyMatch(unlockedNodeKeys::contains);
-    if (excludedByExclusive) {
+    // Check if excluded by any already-unlocked node
+    if (isExcludedByUnlockedNode(nodeKey, unlockedNodeKeys)) {
       return false;
     }
 
     // Check prerequisites
     return node.prerequisites().isEmpty()
         || unlockedNodeKeys.containsAll(node.prerequisites());
+  }
+
+  /**
+   * Check if a node is excluded by any already-unlocked node.
+   * A node is excluded if any unlocked node lists it in its exclusive set.
+   *
+   * @param nodeKey          the node to check
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @return true if this node is excluded by an unlocked node's exclusive set
+   */
+  public boolean isExcludedByUnlockedNode(@NotNull String nodeKey, @NotNull Set<String> unlockedNodeKeys) {
+    for (String unlockedKey : unlockedNodeKeys) {
+      UpgradeNode unlockedNode = nodes.get(unlockedKey);
+      if (unlockedNode != null && unlockedNode.exclusive().contains(nodeKey)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Get the set of unlocked nodes that exclude a given node.
+   *
+   * @param nodeKey          the node to check
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @return set of unlocked node keys that have this node in their exclusive set
+   */
+  public @NotNull Set<String> getExcludingNodes(@NotNull String nodeKey, @NotNull Set<String> unlockedNodeKeys) {
+    Set<String> excluding = new HashSet<>();
+    for (String unlockedKey : unlockedNodeKeys) {
+      UpgradeNode unlockedNode = nodes.get(unlockedKey);
+      if (unlockedNode != null && unlockedNode.exclusive().contains(nodeKey)) {
+        excluding.add(unlockedKey);
+      }
+    }
+    return excluding;
   }
 
   private String getShortKey(UpgradeNode node) {

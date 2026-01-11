@@ -153,7 +153,7 @@ public final class UpgradeTreeGui implements Listener {
       if (slot < 0 || slot >= GUI_SIZE) {
         continue; // Outside visible area
       }
-      NodeStatus status = getNodeStatus(node, unlocked, available);
+      NodeStatus status = getNodeStatus(node, unlocked, available, session.tree);
       ItemStack item = createNodeItem(node, status, data, session.tree);
       gui.setItem(slot, item);
     }
@@ -526,7 +526,7 @@ public final class UpgradeTreeGui implements Listener {
     }
   }
 
-  private NodeStatus getNodeStatus(UpgradeNode node, Set<String> unlocked, Set<UpgradeNode> available) {
+  private NodeStatus getNodeStatus(UpgradeNode node, Set<String> unlocked, Set<UpgradeNode> available, UpgradeTree tree) {
     String shortKey = getShortKey(node);
 
     // Check if unlocked
@@ -534,11 +534,9 @@ public final class UpgradeTreeGui implements Listener {
       return NodeStatus.UNLOCKED;
     }
 
-    // Check if excluded by an exclusive node that's already unlocked
-    for (String exclusiveKey : node.exclusive()) {
-      if (unlocked.contains(exclusiveKey)) {
-        return NodeStatus.EXCLUDED;
-      }
+    // Check if excluded by any already-unlocked node
+    if (tree.isExcludedByUnlockedNode(shortKey, unlocked)) {
+      return NodeStatus.EXCLUDED;
     }
 
     // Check if available to unlock
@@ -742,15 +740,18 @@ public final class UpgradeTreeGui implements Listener {
     lore.add(actionHint.decoration(TextDecoration.ITALIC, false));
 
     // Show which exclusive node locked this path
-    if (status == NodeStatus.EXCLUDED && !node.exclusive().isEmpty()) {
-      List<String> exclusiveNames = node.exclusive().stream()
-          .map(tree::getNode)
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .map(UpgradeNode::name)
-          .toList();
-      lore.add(Component.text("Blocked by: " + String.join(", ", exclusiveNames), NamedTextColor.DARK_RED)
-          .decoration(TextDecoration.ITALIC, false));
+    if (status == NodeStatus.EXCLUDED) {
+      Set<String> excludingNodeKeys = tree.getExcludingNodes(getShortKey(node), data.unlockedNodes());
+      if (!excludingNodeKeys.isEmpty()) {
+        List<String> exclusiveNames = excludingNodeKeys.stream()
+            .map(tree::getNode)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(UpgradeNode::name)
+            .toList();
+        lore.add(Component.text("Blocked by: " + String.join(", ", exclusiveNames), NamedTextColor.DARK_RED)
+            .decoration(TextDecoration.ITALIC, false));
+      }
     }
 
     meta.lore(lore);
