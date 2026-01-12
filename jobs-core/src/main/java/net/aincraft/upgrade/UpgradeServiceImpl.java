@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.aincraft.JobProgression;
 import net.aincraft.event.NodeResetEvent;
 import net.aincraft.event.NodeUnlockEvent;
+import net.aincraft.event.NodeUpgradeEvent;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
 import org.bukkit.Bukkit;
@@ -206,9 +208,19 @@ public final class UpgradeServiceImpl implements UpgradeService {
     for (String nodeKey : unlocked) {
       // Unapply effects before locking
       if (player != null && player.isOnline() && treeOpt.isPresent()) {
-        treeOpt.get().getNode(nodeKey).ifPresent(node ->
-            effectApplier.unapplyNodeEffects(player, node)
-        );
+        treeOpt.get().getNode(nodeKey).ifPresent(node -> {
+          // Revoke base effects
+          effectApplier.unapplyNodeEffects(player, node);
+
+          // Revoke level-specific effects for upgraded nodes
+          int nodeLevel = data.getNodeLevel(nodeKey);
+          if (node.isUpgradeable() && nodeLevel > 1) {
+            for (int lvl = 2; lvl <= nodeLevel; lvl++) {
+              List<UpgradeEffect> levelEffects = node.getEffectsForLevel(lvl);
+              effectApplier.revokeEffects(player, levelEffects);
+            }
+          }
+        });
       }
 
       data.lock(nodeKey);
@@ -285,6 +297,17 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     // Persist
     repository.savePlayerData(data);
+
+    // Apply level-specific effects and fire event if player is online
+    UUID uuid = UUID.fromString(playerId);
+    Player player = Bukkit.getPlayer(uuid);
+    if (player != null && player.isOnline()) {
+      List<UpgradeEffect> levelEffects = node.getEffectsForLevel(nextLevel);
+      effectApplier.applyEffects(player, levelEffects);
+
+      Bukkit.getPluginManager().callEvent(
+          new NodeUpgradeEvent(player, jobKey, node, currentLevel, nextLevel));
+    }
 
     int remaining = data.availableSkillPoints();
     return new UnlockResult.NodeUpgraded(nodeKey, nextLevel, node.maxLevel(), remaining);

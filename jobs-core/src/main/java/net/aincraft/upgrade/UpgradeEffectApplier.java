@@ -2,6 +2,7 @@ package net.aincraft.upgrade;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.util.List;
 import java.util.Set;
 import org.bukkit.entity.Player;
 
@@ -46,12 +47,44 @@ public final class UpgradeEffectApplier {
   }
 
   /**
+   * Apply a list of effects to a player.
+   * Used for level-specific effects on node upgrades.
+   */
+  public void applyEffects(Player player, List<UpgradeEffect> effects) {
+    for (UpgradeEffect effect : effects) {
+      if (effect instanceof UpgradeEffect.PermissionEffect perm) {
+        for (String permission : perm.permissions()) {
+          permissionManager.grantPermission(player, permission);
+        }
+      }
+      // Future: handle other effect types (BoostEffect, etc.)
+    }
+  }
+
+  /**
+   * Revoke a list of effects from a player.
+   * Used for level-specific effects on tree reset.
+   */
+  public void revokeEffects(Player player, List<UpgradeEffect> effects) {
+    for (UpgradeEffect effect : effects) {
+      if (effect instanceof UpgradeEffect.PermissionEffect perm) {
+        for (String permission : perm.permissions()) {
+          permissionManager.revokePermission(player, permission);
+        }
+      }
+      // Future: handle other effect types
+    }
+  }
+
+  /**
    * Restore all effects from unlocked nodes on player login.
    * Respects perk policies - for MAX policy perks, only the highest level is applied.
+   * Also restores level-specific effects for upgraded nodes.
    */
-  public void restoreEffects(Player player, UpgradeTree tree, Set<String> unlockedNodeKeys) {
+  public void restoreEffects(Player player, UpgradeTree tree, PlayerUpgradeData data) {
     // Filter nodes based on perk policies
     java.util.Map<String, UpgradeNode> activeNodes = new java.util.HashMap<>();
+    Set<String> unlockedNodeKeys = data.unlockedNodes();
 
     for (String nodeKey : unlockedNodeKeys) {
       var nodeOpt = tree.getNode(nodeKey);
@@ -77,7 +110,18 @@ public final class UpgradeEffectApplier {
 
     // Apply effects from filtered nodes
     for (UpgradeNode node : activeNodes.values()) {
+      // Apply base effects
       applyNodeEffects(player, node);
+
+      // Apply level-specific effects for upgraded nodes
+      String nodeKey = node.key().value();
+      int nodeLevel = data.getNodeLevel(nodeKey);
+      if (node.isUpgradeable() && nodeLevel > 1) {
+        for (int lvl = 2; lvl <= nodeLevel; lvl++) {
+          List<UpgradeEffect> levelEffects = node.getEffectsForLevel(lvl);
+          applyEffects(player, levelEffects);
+        }
+      }
     }
   }
 }
