@@ -18,8 +18,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -28,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Sub-GUI for editing tree-level settings using Triumph GUI.
  */
-public final class TreeEditorSettingsGui {
+public final class TreeEditorSettingsGui implements Listener {
 
   private static final int GUI_SIZE = 54;
   private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacySection();
@@ -57,6 +60,8 @@ public final class TreeEditorSettingsGui {
   @Inject
   public TreeEditorSettingsGui(Plugin plugin) {
     this.plugin = plugin;
+    // Register as listener for cleanup on player quit
+    plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
 
   /**
@@ -509,5 +514,18 @@ public final class TreeEditorSettingsGui {
     if (mainEditor != null) {
       Bukkit.getScheduler().runTask(plugin, () -> mainEditor.reopenFor(player));
     }
+  }
+
+  /**
+   * Clean up all session data when player quits to prevent memory leaks.
+   */
+  @EventHandler
+  public void onPlayerQuit(PlayerQuitEvent event) {
+    UUID playerId = event.getPlayer().getUniqueId();
+
+    // Clean up all maps
+    editSessions.remove(playerId);
+    chatInputHandlers.remove(playerId);
+    openGuis.remove(playerId);
   }
 }

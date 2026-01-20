@@ -48,10 +48,12 @@ public final class UpgradePermissionRestoreListener implements Listener {
   }
 
   /**
-   * Cleanup all permission attachments when player quits.
+   * Cleanup all permission attachments and cached data when player quits.
    */
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerQuit(PlayerQuitEvent event) {
+    String playerId = event.getPlayer().getUniqueId().toString();
     permissionManager.cleanupPlayer(event.getPlayer().getUniqueId());
+    upgradeService.evictPlayer(playerId);
   }
 }

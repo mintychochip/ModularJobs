@@ -96,9 +96,8 @@ public final class WriteBackRepositoryImpl<K, V> {
     Iterator<K> keyIterator = this.pendingDeletes.iterator();
     while (keyIterator.hasNext() && deletes.size() < maxBatch) {
       K deletedKey = keyIterator.next();
-      if (deletes.remove(deletedKey)) {
-        deletes.add(deletedKey);
-      }
+      keyIterator.remove();
+      deletes.add(deletedKey);
     }
 
     if (deletes.isEmpty() && upserts.isEmpty()) {

@@ -83,6 +83,14 @@ public interface UpgradeService {
   @NotNull UnlockResult upgradeNode(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey);
 
   /**
+   * Evict a player's cached upgrade data from memory.
+   * Should be called when player disconnects to prevent memory leaks.
+   *
+   * @param playerId the player's UUID
+   */
+  void evictPlayer(@NotNull String playerId);
+
+  /**
    * Result of an unlock or upgrade attempt.
    */
   sealed interface UnlockResult permits
