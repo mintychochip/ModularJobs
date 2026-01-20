@@ -313,6 +313,11 @@ public final class UpgradeServiceImpl implements UpgradeService {
     return new UnlockResult.NodeUpgraded(nodeKey, nextLevel, node.maxLevel(), remaining);
   }
 
+  @Override
+  public void evictPlayer(@NotNull String playerId) {
+    cache.remove(playerId);
+  }
+
   private PlayerUpgradeDataImpl getOrLoadData(String playerId, String jobKey) {
     return cache
         .computeIfAbsent(playerId, k -> new HashMap<>())
