@@ -2,8 +2,6 @@ package net.aincraft.gui;
 
 import com.google.inject.Inject;
 import dev.mintychochip.mint.Mint;
-import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.CustomModelData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -290,15 +288,14 @@ public final class UpgradeTreeGui implements Listener {
       boolean litW = litPoints.contains(new GridPoint(pathPoint.x - 1, pathPoint.y));
       boolean litE = litPoints.contains(new GridPoint(pathPoint.x + 1, pathPoint.y));
 
-      float customModelDataValue = getBranchCustomModelData(branchType, isLit, litN, litS, litE, litW);
+      String itemModelKey = getBranchItemModel(branchType, isLit, litN, litS, litE, litW);
 
       ItemStack lineItem = new ItemStack(Material.PAPER);
       ItemMeta meta = lineItem.getItemMeta();
       meta.setHideTooltip(true);
+      // Use item_model data component to reference custom model directly (no vanilla override needed)
+      meta.setItemModel(new NamespacedKey("modularjobs", itemModelKey));
       lineItem.setItemMeta(meta);
-      // Use new Data Component API for custom model data (1.21.4+)
-      lineItem.setData(DataComponentTypes.CUSTOM_MODEL_DATA,
-          CustomModelData.customModelData().addFloat(customModelDataValue).build());
 
       int slot = screenY * GUI_COLS + pathPoint.x;
       if (slot >= 0 && slot < GUI_SIZE) {
@@ -307,22 +304,10 @@ public final class UpgradeTreeGui implements Listener {
     }
   }
 
-  // Node texture color constants for CustomModelData thresholds
-  // Each color has 4 states: locked, available (pulse), active, fragment
-  // Threshold = colorBase + stateOffset (locked=0, available=1, active=2, fragment=3)
-  private static final Map<String, Float> NODE_TEXTURE_BASE = Map.of(
-      "blue", 1.0f,
-      "purple", 5.0f,
-      "red", 9.0f,
-      "white", 13.0f,
-      "yellow", 17.0f,
-      "warrior", 21.0f
+  // Valid node texture colors that have corresponding item definitions
+  private static final Set<String> VALID_NODE_TEXTURES = Set.of(
+      "blue", "purple", "red", "white", "yellow", "warrior"
   );
-
-  private static final int NODE_STATE_LOCKED = 0;
-  private static final int NODE_STATE_AVAILABLE = 1;  // With pulse overlay
-  private static final int NODE_STATE_ACTIVE = 2;
-  private static final int NODE_STATE_FRAGMENT = 3;
 
   // Branch type constants (direction-based)
   private static final int BRANCH_CROSS = 0;      // N, E, S, W (4-way)
@@ -376,60 +361,38 @@ public final class UpgradeTreeGui implements Listener {
   }
 
   /**
-   * Get CustomModelData float value for branch type, active state, and lit directions.
-   * Supports partial activation variants for cross and T-junction types.
-   *
-   * Threshold mapping:
-   * - Type 0 (cross): 1-12 (1=inactive, 2-12=active variants 0-10)
-   * - Type 1 (T no-S): 13-17 (13=inactive, 14-17=active variants 0-3)
-   * - Type 2 (T no-W): 18-22 (18=inactive, 19-22=active variants 0-3)
-   * - Type 3 (T no-N): 23-27 (23=inactive, 24-27=active variants 0-3)
-   * - Type 4 (T no-E): 28-32 (28=inactive, 29-32=active variants 0-3)
-   * - Type 5-10: 33-44 (2 each: inactive, active)
+   * Get item model key for branch type, active state, and lit directions.
+   * Returns keys like "branch/cross", "branch/cross_active_1", etc.
    */
-  private float getBranchCustomModelData(int branchType, boolean isLit,
+  private String getBranchItemModel(int branchType, boolean isLit,
       boolean litN, boolean litS, boolean litE, boolean litW) {
+    String baseName = getBranchBaseName(branchType);
     if (!isLit) {
-      // Inactive - return base threshold for this type
-      return getInactiveThreshold(branchType);
+      return "branch/" + baseName;
     }
 
     // Active - determine variant based on which directions are lit
     int variant = getActiveVariant(branchType, litN, litS, litE, litW);
-    return getActiveThreshold(branchType, variant);
+    if (variant == 0) {
+      return "branch/" + baseName + "_active";
+    }
+    return "branch/" + baseName + "_active_" + variant;
   }
 
-  private float getInactiveThreshold(int branchType) {
+  private String getBranchBaseName(int branchType) {
     return switch (branchType) {
-      case BRANCH_CROSS -> 1.0f;
-      case BRANCH_T_NO_S -> 13.0f;
-      case BRANCH_T_NO_W -> 18.0f;
-      case BRANCH_T_NO_N -> 23.0f;
-      case BRANCH_T_NO_E -> 28.0f;
-      case BRANCH_CORNER_NW -> 33.0f;
-      case BRANCH_CORNER_NE -> 35.0f;
-      case BRANCH_CORNER_SE -> 37.0f;
-      case BRANCH_CORNER_SW -> 39.0f;
-      case BRANCH_VERTICAL -> 41.0f;
-      case BRANCH_HORIZONTAL -> 43.0f;
-      default -> 1.0f;
-    };
-  }
-
-  private float getActiveThreshold(int branchType, int variant) {
-    return switch (branchType) {
-      case BRANCH_CROSS -> 2.0f + variant;        // 2-12 for variants 0-10
-      case BRANCH_T_NO_S -> 14.0f + variant;      // 14-17 for variants 0-3
-      case BRANCH_T_NO_W -> 19.0f + variant;      // 19-22 for variants 0-3
-      case BRANCH_T_NO_N -> 24.0f + variant;      // 24-27 for variants 0-3
-      case BRANCH_T_NO_E -> 29.0f + variant;      // 29-32 for variants 0-3
-      case BRANCH_CORNER_NW -> 34.0f;             // Only one active variant
-      case BRANCH_CORNER_NE -> 36.0f;
-      case BRANCH_CORNER_SE -> 38.0f;
-      case BRANCH_CORNER_SW -> 40.0f;
-      case BRANCH_VERTICAL -> 42.0f;
-      case BRANCH_HORIZONTAL -> 44.0f;
-      default -> 2.0f;
+      case BRANCH_CROSS -> "cross";
+      case BRANCH_T_NO_S -> "t_no_s";
+      case BRANCH_T_NO_W -> "t_no_w";
+      case BRANCH_T_NO_N -> "t_no_n";
+      case BRANCH_T_NO_E -> "t_no_e";
+      case BRANCH_CORNER_NW -> "corner_nw";
+      case BRANCH_CORNER_NE -> "corner_ne";
+      case BRANCH_CORNER_SE -> "corner_se";
+      case BRANCH_CORNER_SW -> "corner_sw";
+      case BRANCH_VERTICAL -> "vertical";
+      case BRANCH_HORIZONTAL -> "horizontal";
+      default -> "cross";
     };
   }
 
@@ -817,9 +780,9 @@ public final class UpgradeTreeGui implements Listener {
     String nodeKey = getShortKey(node);
     int currentLevel = data.getNodeLevel(nodeKey);
 
-    // Check if node has custom texture - use KNOWLEDGE_BOOK with CustomModelData
+    // Check if node has custom texture - use item_model to reference custom model
     String nodeTexture = node.nodeTexture();
-    if (nodeTexture != null && NODE_TEXTURE_BASE.containsKey(nodeTexture)) {
+    if (nodeTexture != null && VALID_NODE_TEXTURES.contains(nodeTexture)) {
       return createTexturedNodeItem(node, status, data, tree, nodeTexture);
     }
 
@@ -1036,7 +999,7 @@ public final class UpgradeTreeGui implements Listener {
   }
 
   /**
-   * Create a node item using KNOWLEDGE_BOOK with custom textures via CustomModelData.
+   * Create a node item using custom textures via item_model data component.
    * Supports: locked, available (with pulse overlay), active, and fragment states.
    */
   private ItemStack createTexturedNodeItem(UpgradeNode node, NodeStatus status, PlayerUpgradeData data,
@@ -1047,17 +1010,16 @@ public final class UpgradeTreeGui implements Listener {
     ItemStack item = new ItemStack(Material.KNOWLEDGE_BOOK);
     ItemMeta meta = item.getItemMeta();
 
-    // Determine state offset based on node status
-    int stateOffset = switch (status) {
-      case LOCKED -> NODE_STATE_LOCKED;
-      case AVAILABLE -> NODE_STATE_AVAILABLE;  // Uses pulse overlay
-      case UNLOCKED -> NODE_STATE_ACTIVE;
-      case EXCLUDED -> NODE_STATE_FRAGMENT;
+    // Determine state suffix based on node status
+    String stateSuffix = switch (status) {
+      case LOCKED -> "_locked";
+      case AVAILABLE -> "_available";
+      case UNLOCKED -> "_active";
+      case EXCLUDED -> "_fragment";
     };
 
-    // Calculate CustomModelData threshold: colorBase + stateOffset
-    float baseThreshold = NODE_TEXTURE_BASE.get(nodeTexture);
-    float customModelDataValue = baseThreshold + stateOffset;
+    // Set item model to reference custom model directly (no vanilla override needed)
+    meta.setItemModel(new NamespacedKey("modularjobs", "node/" + nodeTexture + stateSuffix));
 
     // Set display name with status color
     NamedTextColor nameColor = switch (status) {
@@ -1231,11 +1193,6 @@ public final class UpgradeTreeGui implements Listener {
     meta.getPersistentDataContainer().set(nodeKeyTag, PersistentDataType.STRING, getShortKey(node));
 
     item.setItemMeta(meta);
-
-    // Apply CustomModelData AFTER setItemMeta (setItemMeta overwrites data components)
-    item.setData(DataComponentTypes.CUSTOM_MODEL_DATA,
-        CustomModelData.customModelData().addFloat(customModelDataValue).build());
-
     return item;
   }
 

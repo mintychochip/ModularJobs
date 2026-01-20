@@ -9,7 +9,7 @@ import net.aincraft.upgrade.Position;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Exports EditorTree to JSON in the Wynncraft format.
+ * Exports EditorTree to JSON in the tree format.
  */
 public final class TreeEditorExporter {
 
@@ -24,7 +24,7 @@ public final class TreeEditorExporter {
   }
 
   /**
-   * Export the tree to JSON in Wynncraft format.
+   * Export the tree to JSON in tree format.
    */
   public String export(@NotNull EditorTree tree) {
     JsonObject root = new JsonObject();
@@ -84,7 +84,7 @@ public final class TreeEditorExporter {
       obj.add("paths", paths);
     }
 
-    // Layout (nodes in Wynncraft format)
+    // Layout (nodes in tree format)
     JsonArray layout = new JsonArray();
     for (EditorNode node : tree.nodes().values()) {
       layout.add(exportNode(node));

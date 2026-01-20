@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "modularjobs:item/node/red"
+  },
+  "display": {
+    "gui": {
+      "scale": [1.94, 1.94, 1.94],
+      "translation": [0, 0, -100]
+    }
+  }
+}

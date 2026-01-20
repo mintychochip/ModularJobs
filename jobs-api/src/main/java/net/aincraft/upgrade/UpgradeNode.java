@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
  * @param levelEffects     effects per level [[lvl1 effects], [lvl2 effects], ...], empty = use base effects
  * @param levelIcons       icon material per level [lvl1, lvl2, lvl3], empty = use base icon
  * @param levelItemModels  item model per level [lvl1, lvl2, lvl3], empty = use base model
+ * @param nodeTexture      texture name for custom node rendering (e.g., "blue", "warrior"), null = use material icons
  */
 public record UpgradeNode(
     @NotNull Key key,
@@ -59,7 +60,8 @@ public record UpgradeNode(
     @NotNull List<String> levelDescriptions,
     @NotNull List<List<UpgradeEffect>> levelEffects,
     @NotNull List<Material> levelIcons,
-    @NotNull List<String> levelItemModels
+    @NotNull List<String> levelItemModels,
+    @Nullable String nodeTexture
 ) implements Keyed {
 
   /**

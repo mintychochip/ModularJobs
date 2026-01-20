@@ -1,0 +1,10 @@
+# Placeholder directory for GUI textures
+#
+# Add your texture files here:
+# - upgrade_tree_bg.png (256x256, for upgrade tree background)
+# - negative_space.png (1x1 transparent PNG for negative space characters)
+#
+# Texture Requirements:
+# - PNG format with transparency support
+# - Power of 2 dimensions recommended (256x256, 512x512)
+# - For inventory backgrounds, match the 6-row chest size (176x166 visible area)

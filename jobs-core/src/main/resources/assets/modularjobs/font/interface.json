@@ -1,0 +1,166 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/upgrade_tree_bg.png",
+      "ascent": 17,
+      "height": 256,
+      "chars": ["\uE000"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/locked.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE010"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/shiny.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE011"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/white.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE100"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/white_active.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE101"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/blue.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE110"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/blue_active.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE111"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/yellow.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE120"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/yellow_active.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE121"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/purple.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE130"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/purple_active.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE131"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/red.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE140"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/node/red_active.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE141"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/arrow_up.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE200"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/arrow_down.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE201"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/arrow_left.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE202"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/arrow_right.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE203"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/reset.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE210"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/reset_select.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE211"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/tree.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE220"]
+    },
+    {
+      "type": "bitmap",
+      "file": "modularjobs:gui/ability_tree/button/orb_points.png",
+      "ascent": 8,
+      "height": 16,
+      "chars": ["\uE230"]
+    },
+    {
+      "type": "space",
+      "advances": {
+        "\uF001": -8,
+        "\uF002": -248,
+        "\uF003": -170,
+        "\uF004": -1,
+        "\uF005": -16,
+        "\uF006": -32,
+        "\uF007": -64,
+        "\uF008": -128,
+        "\uF010": -22,
+        "\uF011": -140
+      }
+    }
+  ]
+}
