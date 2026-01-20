@@ -169,7 +169,8 @@ public final class UpgradeTreeConfigParser {
         List.of(),      // levelDescriptions - not supported in legacy format
         List.of(),      // levelEffects - not supported in legacy format
         List.of(),      // levelIcons - not supported in legacy format
-        List.of()       // levelItemModels - not supported in legacy format
+        List.of(),      // levelItemModels - not supported in legacy format
+        null            // nodeTexture - not supported in legacy format
     );
   }
 

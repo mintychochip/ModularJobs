@@ -29,8 +29,8 @@ public final class UpgradeTreeLoader {
   private final Plugin plugin;
   private final Gson gson;
   private final UpgradeTreeConfigParser legacyParser;
-  private final WynncraftTreeConfigParser wynncraftParser;
-  private final WynncraftTreeConfigDeserializer wynncraftDeserializer;
+  private final TreeConfigParser treeParser;
+  private final TreeConfigDeserializer treeDeserializer;
   private final Registry<UpgradeTree> registry;
 
   public UpgradeTreeLoader(
@@ -43,8 +43,8 @@ public final class UpgradeTreeLoader {
     this.plugin = plugin;
     this.gson = gson;
     this.legacyParser = new UpgradeTreeConfigParser(conditionFactory, boostFactory);
-    this.wynncraftParser = new WynncraftTreeConfigParser(conditionFactory, boostFactory);
-    this.wynncraftDeserializer = new WynncraftTreeConfigDeserializer();
+    this.treeParser = new TreeConfigParser(conditionFactory, boostFactory);
+    this.treeDeserializer = new TreeConfigDeserializer();
     this.registry = registry;
   }
 
@@ -113,25 +113,25 @@ public final class UpgradeTreeLoader {
           treeObj.addProperty("tree_id", treeId);
         }
 
-        // Check if Wynncraft format (has layout)
+        // Check if tree format (has layout)
         UpgradeTree tree;
         if (treeObj.has("layout")) {
-          net.aincraft.upgrade.wynncraft.WynncraftTreeConfig config =
-              wynncraftDeserializer.deserialize(treeObj, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
-          tree = wynncraftParser.parse(config);
+          net.aincraft.upgrade.tree.TreeConfig config =
+              treeDeserializer.deserialize(treeObj, net.aincraft.upgrade.tree.TreeConfig.class, null);
+          tree = treeParser.parse(config);
         } else {
           // Legacy format - needs wrapping
           UpgradeTreeConfig config = gson.fromJson(treeObj, UpgradeTreeConfig.class);
           tree = legacyParser.parse(config);
 
-          // Verify all nodes have positions (Wynncraft format is required now)
+          // Verify all nodes have positions (tree format is required now)
           boolean missingPositions = tree.allNodes().stream()
               .anyMatch(node -> node.position() == null);
 
           if (missingPositions) {
             throw new IllegalArgumentException(
                 "Tree '" + treeId + "' uses legacy format but is missing positions. " +
-                "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+                "Please use tree format with layout coordinates or specify positions for all nodes."
             );
           }
         }
@@ -165,24 +165,24 @@ public final class UpgradeTreeLoader {
       return 0;
     }
 
-    // Detect format: Wynncraft format has "layout" array at root level
-    boolean isWynncraftFormat = root.has("layout");
+    // Detect format: tree format has "layout" array at root level
+    boolean isTreeFormat = root.has("layout");
 
-    if (isWynncraftFormat) {
-      return loadWynncraftFormat(root);
+    if (isTreeFormat) {
+      return loadTreeFormat(root);
     } else {
       return loadLegacyFormat(root);
     }
   }
 
   /**
-   * Load Wynncraft-style format (with "layout" array).
+   * Load tree-style format (with "layout" array).
    */
-  private int loadWynncraftFormat(JsonObject root) {
+  private int loadTreeFormat(JsonObject root) {
     try {
-      plugin.getLogger().info("Detected Wynncraft format - using WynncraftTreeConfigParser");
+      plugin.getLogger().info("Detected tree format - using TreeConfigParser");
 
-      // Wynncraft format can be either:
+      // Tree format can be either:
       // 1. Flat format: { "tree_id": "...", "job": "...", "layout": [...] }
       // 2. Nested format: { "miner_v1": { "metadata": {...}, "layout": [...] } }
 
@@ -200,54 +200,54 @@ public final class UpgradeTreeLoader {
       }
 
       if (isNestedFormat) {
-        return loadNestedWynncraftFormat(root);
+        return loadNestedTreeFormat(root);
       } else {
-        return loadFlatWynncraftFormat(root);
+        return loadFlatTreeFormat(root);
       }
     } catch (Exception e) {
-      plugin.getLogger().warning("Failed to parse Wynncraft format: " + e.getMessage());
+      plugin.getLogger().warning("Failed to parse tree format: " + e.getMessage());
       e.printStackTrace();
       return 0;
     }
   }
 
   /**
-   * Load flat Wynncraft format where tree_id, job, layout are at root level.
+   * Load flat tree format where tree_id, job, layout are at root level.
    */
-  private int loadFlatWynncraftFormat(JsonObject root) {
+  private int loadFlatTreeFormat(JsonObject root) {
     try {
-      plugin.getLogger().info("Loading flat Wynncraft format");
+      plugin.getLogger().info("Loading flat tree format");
 
       // Deserialize directly - root is the tree config
-      net.aincraft.upgrade.wynncraft.WynncraftTreeConfig config =
-          wynncraftDeserializer.deserialize(root, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+      net.aincraft.upgrade.tree.TreeConfig config =
+          treeDeserializer.deserialize(root, net.aincraft.upgrade.tree.TreeConfig.class, null);
 
       // Parse into UpgradeTree
-      UpgradeTree tree = wynncraftParser.parse(config);
+      UpgradeTree tree = treeParser.parse(config);
 
-      // Wynncraft format always includes positions from coordinates
+      // Tree format always includes positions from coordinates
       registry.register(tree);
 
-      plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + config.treeId() + " (jobKey=" + tree.jobKey() + ") with " +
+      plugin.getLogger().info("Loaded upgrade tree: " + config.treeId() + " (jobKey=" + tree.jobKey() + ") with " +
           tree.allNodes().size() + " nodes");
       return 1;
     } catch (Exception e) {
-      plugin.getLogger().warning("Failed to parse flat Wynncraft format: " + e.getMessage());
+      plugin.getLogger().warning("Failed to parse flat tree format: " + e.getMessage());
       e.printStackTrace();
       return 0;
     }
   }
 
   /**
-   * Load nested Wynncraft format where tree entries are keyed by tree ID.
+   * Load nested tree format where tree entries are keyed by tree ID.
    */
-  private int loadNestedWynncraftFormat(JsonObject root) {
+  private int loadNestedTreeFormat(JsonObject root) {
     try {
-      plugin.getLogger().info("Loading nested Wynncraft format");
+      plugin.getLogger().info("Loading nested tree format");
 
       int count = 0;
 
-      // Wynncraft format has tree entries as keys (e.g., "miner_v1": { ... })
+      // Tree format has tree entries as keys (e.g., "miner_v1": { ... })
       // We need to iterate through each entry and parse it
       for (Map.Entry<String, JsonElement> entry : root.entrySet()) {
         try {
@@ -263,28 +263,28 @@ public final class UpgradeTreeLoader {
           treeConfig.addProperty("tree_id", treeId);
 
           // Deserialize using custom deserializer
-          net.aincraft.upgrade.wynncraft.WynncraftTreeConfig config =
-              wynncraftDeserializer.deserialize(treeConfig, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+          net.aincraft.upgrade.tree.TreeConfig config =
+              treeDeserializer.deserialize(treeConfig, net.aincraft.upgrade.tree.TreeConfig.class, null);
 
           // Parse into UpgradeTree
-          UpgradeTree tree = wynncraftParser.parse(config);
+          UpgradeTree tree = treeParser.parse(config);
 
-          // Wynncraft format always includes positions from coordinates
+          // Tree format always includes positions from coordinates
           // No auto-generation needed
           registry.register(tree);
 
-          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + treeId + " (jobKey=" + tree.jobKey() + ") with " +
+          plugin.getLogger().info("Loaded upgrade tree: " + treeId + " (jobKey=" + tree.jobKey() + ") with " +
               tree.allNodes().size() + " nodes");
           count++;
         } catch (Exception e) {
-          plugin.getLogger().warning("Failed to parse Wynncraft tree '" + entry.getKey() + "': " + e.getMessage());
+          plugin.getLogger().warning("Failed to parse tree '" + entry.getKey() + "': " + e.getMessage());
           e.printStackTrace();
         }
       }
 
       return count;
     } catch (Exception e) {
-      plugin.getLogger().warning("Failed to parse nested Wynncraft format: " + e.getMessage());
+      plugin.getLogger().warning("Failed to parse nested tree format: " + e.getMessage());
       e.printStackTrace();
       return 0;
     }
@@ -292,7 +292,7 @@ public final class UpgradeTreeLoader {
 
   /**
    * Load legacy format (with "upgrade_trees" object).
-   * Also handles hybrid format where trees inside use Wynncraft-style layout.
+   * Also handles hybrid format where trees inside use tree-style layout.
    */
   private int loadLegacyFormat(JsonObject root) {
     if (!root.has("upgrade_trees")) {
@@ -309,24 +309,24 @@ public final class UpgradeTreeLoader {
       try {
         JsonObject treeConfig = entry.getValue().getAsJsonObject();
 
-        // Check if this tree uses Wynncraft format (has layout) or legacy format (has nodes)
-        boolean isWynncraftTree = treeConfig.has("layout");
+        // Check if this tree uses tree format (has layout) or legacy format (has nodes)
+        boolean isTreeFormatTree = treeConfig.has("layout");
 
         UpgradeTree tree;
-        if (isWynncraftTree) {
-          // Parse as Wynncraft format
-          plugin.getLogger().info("Tree '" + entry.getKey() + "' uses Wynncraft format");
+        if (isTreeFormatTree) {
+          // Parse as tree format
+          plugin.getLogger().info("Tree '" + entry.getKey() + "' uses tree format");
 
           // Inject tree_id if not present
           if (!treeConfig.has("tree_id")) {
             treeConfig.addProperty("tree_id", entry.getKey());
           }
 
-          net.aincraft.upgrade.wynncraft.WynncraftTreeConfig config =
-              wynncraftDeserializer.deserialize(treeConfig, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
-          tree = wynncraftParser.parse(config);
+          net.aincraft.upgrade.tree.TreeConfig config =
+              treeDeserializer.deserialize(treeConfig, net.aincraft.upgrade.tree.TreeConfig.class, null);
+          tree = treeParser.parse(config);
 
-          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ") with " +
+          plugin.getLogger().info("Loaded upgrade tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ") with " +
               tree.allNodes().size() + " nodes");
           registry.register(tree);
           count++;
@@ -338,14 +338,14 @@ public final class UpgradeTreeLoader {
         UpgradeTreeConfig config = gson.fromJson(entry.getValue(), UpgradeTreeConfig.class);
         tree = legacyParser.parse(config);
 
-        // Verify all nodes have positions (Wynncraft format is required now)
+        // Verify all nodes have positions (tree format is required now)
         boolean missingPositions = tree.allNodes().stream()
             .anyMatch(node -> node.position() == null);
 
         if (missingPositions) {
           throw new IllegalArgumentException(
               "Tree '" + entry.getKey() + "' uses legacy format but is missing positions. " +
-              "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+              "Please use tree format with layout coordinates or specify positions for all nodes."
           );
         }
 
@@ -435,12 +435,12 @@ public final class UpgradeTreeLoader {
         treeObj.addProperty("tree_id", treeId);
       }
 
-      // Check if Wynncraft format (has layout)
+      // Check if tree format (has layout)
       UpgradeTree tree;
       if (treeObj.has("layout")) {
-        net.aincraft.upgrade.wynncraft.WynncraftTreeConfig config =
-            wynncraftDeserializer.deserialize(treeObj, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
-        tree = wynncraftParser.parse(config);
+        net.aincraft.upgrade.tree.TreeConfig config =
+            treeDeserializer.deserialize(treeObj, net.aincraft.upgrade.tree.TreeConfig.class, null);
+        tree = treeParser.parse(config);
       } else {
         // Legacy format - requires manual positions
         UpgradeTreeConfig config = gson.fromJson(treeObj, UpgradeTreeConfig.class);
@@ -453,7 +453,7 @@ public final class UpgradeTreeLoader {
         if (missingPositions) {
           throw new IllegalArgumentException(
               "Tree '" + treeId + "' uses legacy format but is missing positions. " +
-              "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+              "Please use tree format with layout coordinates or specify positions for all nodes."
           );
         }
       }

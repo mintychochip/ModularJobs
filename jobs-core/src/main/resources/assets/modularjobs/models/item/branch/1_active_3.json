@@ -1,0 +1,13 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "modularjobs:item/branch/1",
+    "layer1": "modularjobs:item/branch/1_active_3"
+  },
+  "display": {
+    "gui": {
+      "scale": [2.1, 2.1, 2.1],
+      "translation": [0, 0, 100]
+    }
+  }
+}

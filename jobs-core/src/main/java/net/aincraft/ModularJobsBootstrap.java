@@ -14,6 +14,7 @@ import java.util.Set;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.commands.JobsCommand;
 import net.aincraft.repository.ConnectionSource;
+import net.aincraft.resource.ResourcePackExtractor;
 import net.aincraft.upgrade.config.UpgradeTreeLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
@@ -31,6 +32,9 @@ public final class ModularJobsBootstrap extends JavaPlugin {
 
   @Override
   public void onEnable() {
+    // Extract resource pack assets to ForcePack folder if present
+    new ResourcePackExtractor(this).extract();
+
     try {
       Injector injector = Guice.createInjector(new PluginModule(this));
       Bridge bridge = injector.getInstance(Bridge.class);
