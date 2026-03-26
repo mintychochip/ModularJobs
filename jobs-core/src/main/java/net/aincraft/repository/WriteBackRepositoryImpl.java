@@ -81,6 +81,17 @@ public final class WriteBackRepositoryImpl<K, V> {
   }
 
   private boolean flushOnce() {
+    // Process deletes first to ensure clean state before upserts
+    // This prevents desync when a key is deleted and quickly re-created
+    List<K> deletes = new ArrayList<>();
+    Iterator<K> keyIterator = this.pendingDeletes.iterator();
+    while (keyIterator.hasNext() && deletes.size() < maxBatch) {
+      K deletedKey = keyIterator.next();
+      if (pendingDeletes.remove(deletedKey)) {
+        deletes.add(deletedKey);
+      }
+    }
+
     Map<K, V> upserts = new LinkedHashMap<>();
     Iterator<Entry<K, V>> iterator = pendingUpserts.entrySet().iterator();
     while (iterator.hasNext() && upserts.size() < maxBatch) {
@@ -92,25 +103,17 @@ public final class WriteBackRepositoryImpl<K, V> {
       }
     }
 
-    List<K> deletes = new ArrayList<>();
-    Iterator<K> keyIterator = this.pendingDeletes.iterator();
-    while (keyIterator.hasNext() && deletes.size() < maxBatch) {
-      K deletedKey = keyIterator.next();
-      if (deletes.remove(deletedKey)) {
-        deletes.add(deletedKey);
-      }
-    }
-
     if (deletes.isEmpty() && upserts.isEmpty()) {
       return false;
     }
 
     try {
-      if (!upserts.isEmpty()) {
-        upserts.forEach(delegate::save);
-      }
+      // Execute deletes before upserts to ensure proper cleanup
       for (K deletedKey : deletes) {
         delegate.delete(deletedKey);
+      }
+      if (!upserts.isEmpty()) {
+        upserts.forEach(delegate::save);
       }
       return true;
     } catch (Throwable t) {
