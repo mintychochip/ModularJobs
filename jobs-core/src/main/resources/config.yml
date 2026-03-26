@@ -6,6 +6,15 @@ pay-while-riding: false
 
 trackable_entities:
 
+# Specialization System Configuration
+# Players choose a pet specialization when reaching the upgrade-level for their job
+# Once chosen, the specialization is permanent unless the player has bypass permission
+specialization:
+  # Permission to allow changing specialization after initial choice
+  # Grant 'modularjobs.specialization.bypass' to allow changing for all jobs
+  # Or grant 'modularjobs.specialization.bypass.<job_name>' for specific jobs (e.g., modularjobs.specialization.bypass.miner)
+  bypass-permission: "modularjobs.specialization.bypass"
+
 # Color scheme for all command outputs
 # Supports hex colors (e.g., #FFD700)
 colors:
