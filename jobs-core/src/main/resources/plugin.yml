@@ -14,3 +14,11 @@ permissions:
   modularjobs.admin:
     description: Admin commands for ModularJobs
     default: op
+  modularjobs.specialization.bypass:
+    description: Allows changing pet specialization after initial choice
+    default: op
+  modularjobs.specialization.bypass.*:
+    description: Allows changing pet specialization for all jobs
+    default: op
+    children:
+      modularjobs.specialization.bypass: true
