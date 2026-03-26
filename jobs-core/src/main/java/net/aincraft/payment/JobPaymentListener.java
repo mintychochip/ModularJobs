@@ -283,9 +283,6 @@ final class JobPaymentListener implements Listener {
         return;
       }
     }
-    if (silkTouch > 0 && isOre(block.getType())) {
-      return;
-    }
     paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
     breakCache.put(LocationKey.create(block.getLocation()), player);
   }
