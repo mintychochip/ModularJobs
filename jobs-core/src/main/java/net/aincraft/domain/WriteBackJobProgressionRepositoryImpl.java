@@ -65,6 +65,16 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
     if (!flushing.compareAndSet(false, true)) {
       return;
     }
+    // Process deletes first to ensure clean state before upserts
+    // This prevents desync when a player leaves and quickly rejoins a job
+    Set<Key> batchDeletes = new HashSet<>();
+    Iterator<Key> deleteIterator = pendingDeletes.iterator();
+    while (deleteIterator.hasNext() && batchDeletes.size() < deleteBatchSize) {
+      Key key = deleteIterator.next();
+      if (pendingDeletes.remove(key)) {
+        batchDeletes.add(key);
+      }
+    }
     Map<Key, JobProgressionRecord> batchUpserts = new HashMap<>();
     Iterator<Entry<Key, JobProgressionRecord>> iterator = pendingUpserts.entrySet().iterator();
     while (iterator.hasNext() && batchUpserts.size() < upsertBatchSize) {
@@ -75,22 +85,14 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
         batchUpserts.put(key, value);
       }
     }
-    Set<Key> batchDeletes = new HashSet<>();
-    Iterator<Key> deleteIterator = pendingDeletes.iterator();
-    while (deleteIterator.hasNext() && batchDeletes.size() < deleteBatchSize) {
-      Key key = deleteIterator.next();
-      if (pendingDeletes.remove(key)) {
-        batchDeletes.add(key);
-      }
-    }
     try {
-      batchUpserts.forEach((__, record) -> {
-        delegate.save(record);
-      });
+      // Execute deletes before upserts to ensure proper cleanup
       for (Key key : batchDeletes) {
         delegate.delete(key.playerId(), key.jobKey());
       }
-
+      batchUpserts.forEach((__, record) -> {
+        delegate.save(record);
+      });
     } catch (Throwable t) {
       pendingUpserts.putAll(batchUpserts);
       pendingDeletes.addAll(batchDeletes);
