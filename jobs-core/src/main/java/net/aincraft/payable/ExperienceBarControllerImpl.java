@@ -26,9 +26,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 final class ExperienceBarControllerImpl implements ExperienceBarController, Listener {
 
-  // weakValues() allows GC of BossBars when no longer referenced
+  // Strong references ensure BossBars are only removed by explicit invalidation
   private final Cache<PlayerJobCompositeKey, BossBar> bossBarCache = Caffeine.newBuilder()
-      .weakValues()
       .build();
 
   private final Map<PlayerJobCompositeKey, BukkitTask> removalTasks = new HashMap<>();
