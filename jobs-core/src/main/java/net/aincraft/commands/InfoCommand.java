@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import dev.mintychochip.mint.Mint;
 import net.aincraft.Job;
 import net.aincraft.JobTask;
+import net.aincraft.commands.info.ChatInfoPageConsumer;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Payable;
 import net.aincraft.service.JobResolver;
@@ -37,14 +38,17 @@ public class InfoCommand implements JobsCommand {
 
   private final JobService jobService;
   private final JobResolver jobResolver;
+  private final ChatInfoPageConsumer chatInfoPageConsumer;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
   private static final int ACTION_TYPES_PER_PAGE = 15;
   private static final int DIALOG_WIDTH = 1000;
 
   @Inject
-  public InfoCommand(JobService jobService, JobResolver jobResolver) {
+  public InfoCommand(JobService jobService, JobResolver jobResolver,
+      ChatInfoPageConsumer chatInfoPageConsumer) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
+    this.chatInfoPageConsumer = chatInfoPageConsumer;
   }
 
   @Override
@@ -57,19 +61,39 @@ public class InfoCommand implements JobsCommand {
             .executes(context -> {
               // Default to page 1
               return executeCommand(context.getSource(),
-                  context.getArgument("job", String.class), 1);
+                  context.getArgument("job", String.class), 1, false);
             })
             .then(Commands.argument("pageNumber", IntegerArgumentType.integer(1))
                 .executes(context -> {
                   return executeCommand(context.getSource(),
                       context.getArgument("job", String.class),
-                      IntegerArgumentType.getInteger(context, "pageNumber"));
+                      IntegerArgumentType.getInteger(context, "pageNumber"), false);
                 })
+            )
+        )
+        // Add --chat flag variant
+        .then(Commands.literal("--chat")
+            .then(Commands.argument("job", StringArgumentType.string())
+                .suggests((context, builder) -> {
+                  jobResolver.getPlainNames().forEach(builder::suggest);
+                  return builder.buildFuture();
+                })
+                .executes(context -> {
+                  return executeCommand(context.getSource(),
+                      context.getArgument("job", String.class), 1, true);
+                })
+                .then(Commands.argument("pageNumber", IntegerArgumentType.integer(1))
+                    .executes(context -> {
+                      return executeCommand(context.getSource(),
+                          context.getArgument("job", String.class),
+                          IntegerArgumentType.getInteger(context, "pageNumber"), true);
+                    })
+                )
             )
         );
   }
 
-  private int executeCommand(CommandSourceStack source, String jobName, int page) {
+  private int executeCommand(CommandSourceStack source, String jobName, int page, boolean forceChat) {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
@@ -91,8 +115,19 @@ public class InfoCommand implements JobsCommand {
       return 0;
     }
 
-    Dialog dialog = buildDialog(job, tasks, page);
-    player.showDialog(dialog);
+    // Use chat mode if forced or as fallback
+    if (forceChat) {
+      chatInfoPageConsumer.consume(job, tasks, player, page);
+    } else {
+      // Try GUI dialog first
+      try {
+        Dialog dialog = buildDialog(job, tasks, page);
+        player.showDialog(dialog);
+      } catch (Exception e) {
+        // Fallback to chat if dialog fails
+        chatInfoPageConsumer.consume(job, tasks, player, page);
+      }
+    }
 
     return Command.SINGLE_SUCCESS;
   }
