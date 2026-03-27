@@ -11,6 +11,7 @@ public final class CommandModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(JobTopPageProvider.class).to(JobTopPageProviderImpl.class).in(Singleton.class);
+    bind(StatsDialog.class).in(Singleton.class);
 
     Multibinder<Listener> listenerBinder = Multibinder.newSetBinder(binder(), Listener.class);
     listenerBinder.addBinding().to(DialogNavigationListener.class);
