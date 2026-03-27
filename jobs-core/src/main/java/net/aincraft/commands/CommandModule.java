@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import net.aincraft.commands.TopCommand.JobTopPageProviderImpl;
+import net.aincraft.commands.info.ChatInfoPageConsumer;
 import org.bukkit.event.Listener;
 
 public final class CommandModule extends AbstractModule {
@@ -12,6 +13,7 @@ public final class CommandModule extends AbstractModule {
   protected void configure() {
     bind(JobTopPageProvider.class).to(JobTopPageProviderImpl.class).in(Singleton.class);
     bind(StatsDialog.class).in(Singleton.class);
+    bind(ChatInfoPageConsumer.class).in(Singleton.class);
 
     Multibinder<Listener> listenerBinder = Multibinder.newSetBinder(binder(), Listener.class);
     listenerBinder.addBinding().to(DialogNavigationListener.class);
