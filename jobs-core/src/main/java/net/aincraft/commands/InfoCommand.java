@@ -26,9 +26,12 @@ import net.aincraft.container.ActionType;
 import net.aincraft.container.Payable;
 import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
+import net.aincraft.service.PreferencesService;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -37,19 +40,74 @@ public class InfoCommand implements JobsCommand {
 
   private final JobService jobService;
   private final JobResolver jobResolver;
+  private final PreferencesService preferencesService;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
-  private static final int ACTION_TYPES_PER_PAGE = 15;
   private static final int DIALOG_WIDTH = 1000;
 
   @Inject
-  public InfoCommand(JobService jobService, JobResolver jobResolver) {
+  public InfoCommand(JobService jobService, JobResolver jobResolver, PreferencesService preferencesService) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
+    this.preferencesService = preferencesService;
   }
 
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("info")
+        // /jobs info chat <job> [page] - Chat output with clickable pagination
+        .then(Commands.literal("chat")
+            .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
+              jobResolver.getPlainNames().forEach(builder::suggest);
+              return builder.buildFuture();
+            })
+                .executes(context -> {
+                  // Default to page 1
+                  return executeChatCommand(context.getSource(),
+                      context.getArgument("job", String.class), 1);
+                })
+                .then(Commands.argument("pageNumber", IntegerArgumentType.integer(1))
+                    .executes(context -> {
+                      return executeChatCommand(context.getSource(),
+                          context.getArgument("job", String.class),
+                          IntegerArgumentType.getInteger(context, "pageNumber"));
+                    })
+                )
+            ))
+        // /jobs info gui <job> - GUI output (Dialog)
+        .then(Commands.literal("gui")
+            .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
+              jobResolver.getPlainNames().forEach(builder::suggest);
+              return builder.buildFuture();
+            })
+                .executes(context -> {
+                  return executeGuiCommand(context.getSource(),
+                      context.getArgument("job", String.class), 1);
+                })
+                .then(Commands.argument("pageNumber", IntegerArgumentType.integer(1))
+                    .executes(context -> {
+                      return executeGuiCommand(context.getSource(),
+                          context.getArgument("job", String.class),
+                          IntegerArgumentType.getInteger(context, "pageNumber"));
+                    })
+                )
+            ))
+        // /jobs info preference <entries|gui|chat> [value] - Preference settings
+        .then(Commands.literal("preference")
+            .then(Commands.literal("entries")
+                .then(Commands.argument("count", IntegerArgumentType.integer(1, 50))
+                    .executes(context -> {
+                      return setEntriesPreference(context.getSource(),
+                          IntegerArgumentType.getInteger(context, "count"));
+                    })))
+            .then(Commands.literal("gui")
+                .executes(context -> {
+                  return setGuiModePreference(context.getSource(), true);
+                }))
+            .then(Commands.literal("chat")
+                .executes(context -> {
+                  return setGuiModePreference(context.getSource(), false);
+                })))
+        // /jobs info <job> [page] - Default output (respects preference)
         .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
           jobResolver.getPlainNames().forEach(builder::suggest);
           return builder.buildFuture();
@@ -84,27 +142,226 @@ public class InfoCommand implements JobsCommand {
     }
 
     Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
-    int totalPages = calculateTotalPages(tasks);
+
+    // Check player preference for display mode
+    if (preferencesService.prefersGuiMode(player)) {
+      return executeGuiCommandInternal(player, job, tasks, page);
+    } else {
+      return executeChatCommandInternal(player, job, tasks, page);
+    }
+  }
+
+  private int executeChatCommand(CommandSourceStack source, String jobName, int page) {
+    CommandSender sender = source.getSender();
+
+    if (!(sender instanceof Player player)) {
+      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      return 0;
+    }
+
+    Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
+    if (job == null) {
+      Mint.sendThemedMessage(sender, "<error>The job you specified does not exist.");
+      return 0;
+    }
+
+    Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
+    return executeChatCommandInternal(player, job, tasks, page);
+  }
+
+  private int executeChatCommandInternal(Player player, Job job, 
+      Map<ActionType, List<JobTask>> tasks, int page) {
+    int entriesPerPage = preferencesService.getEntriesPerPage(player);
+    int totalPages = calculateTotalPages(tasks, entriesPerPage);
 
     if (page < 1 || page > totalPages) {
       Mint.sendThemedMessage(player, "<error>Invalid page. Valid: 1-" + totalPages);
       return 0;
     }
 
-    Dialog dialog = buildDialog(job, tasks, page);
+    displayJobInfoChat(player, job, tasks, page, entriesPerPage);
+    return Command.SINGLE_SUCCESS;
+  }
+
+  private int executeGuiCommand(CommandSourceStack source, String jobName, int page) {
+    CommandSender sender = source.getSender();
+
+    if (!(sender instanceof Player player)) {
+      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      return 0;
+    }
+
+    Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
+    if (job == null) {
+      Mint.sendThemedMessage(sender, "<error>The job you specified does not exist.");
+      return 0;
+    }
+
+    Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
+    return executeGuiCommandInternal(player, job, tasks, page);
+  }
+
+  private int executeGuiCommandInternal(Player player, Job job,
+      Map<ActionType, List<JobTask>> tasks, int page) {
+    int entriesPerPage = preferencesService.getEntriesPerPage(player);
+    int totalPages = calculateTotalPages(tasks, entriesPerPage);
+
+    if (page < 1 || page > totalPages) {
+      Mint.sendThemedMessage(player, "<error>Invalid page. Valid: 1-" + totalPages);
+      return 0;
+    }
+
+    Dialog dialog = buildDialog(job, tasks, page, entriesPerPage);
     player.showDialog(dialog);
 
     return Command.SINGLE_SUCCESS;
   }
 
-  public static int calculateTotalPages(Map<ActionType, List<JobTask>> tasks) {
-    return Math.max(1, (int) Math.ceil((double) tasks.size() / ACTION_TYPES_PER_PAGE));
+  private int setEntriesPreference(CommandSourceStack source, int count) {
+    CommandSender sender = source.getSender();
+
+    if (!(sender instanceof Player player)) {
+      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      return 0;
+    }
+
+    preferencesService.setEntriesPerPage(player, count);
+    Mint.sendThemedMessage(player, "<primary>Entries per page set to <secondary>" + count + "</secondary>.");
+    return Command.SINGLE_SUCCESS;
   }
 
-  public Dialog buildDialog(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
-    DialogBase dialogBase = buildDialogBase(job, tasks, page);
+  private int setGuiModePreference(CommandSourceStack source, boolean guiMode) {
+    CommandSender sender = source.getSender();
 
-    int totalPages = calculateTotalPages(tasks);
+    if (!(sender instanceof Player player)) {
+      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      return 0;
+    }
+
+    preferencesService.setGuiMode(player, guiMode);
+    if (guiMode) {
+      Mint.sendThemedMessage(player, "<primary>Default view mode set to <secondary>GUI</secondary>.");
+    } else {
+      Mint.sendThemedMessage(player, "<primary>Default view mode set to <secondary>Chat</secondary>.");
+    }
+    return Command.SINGLE_SUCCESS;
+  }
+
+  public int calculateTotalPages(Map<ActionType, List<JobTask>> tasks, int entriesPerPage) {
+    return Math.max(1, (int) Math.ceil((double) tasks.size() / entriesPerPage));
+  }
+
+  /**
+   * Display job info in chat format with clickable pagination.
+   */
+  private void displayJobInfoChat(Player player, Job job, 
+      Map<ActionType, List<JobTask>> tasks, int page, int entriesPerPage) {
+    int totalPages = calculateTotalPages(tasks, entriesPerPage);
+    String jobName = job.key().value();
+
+    // Header
+    Mint.sendThemedMessage(player, "");
+    Mint.sendThemedMessage(player, "<neutral>━━━━━━━━━ <primary>Job Info: " + 
+        PlainTextComponentSerializer.plainText().serialize(job.displayName()) + 
+        " <neutral>━━━━━━━━━");
+    Mint.sendThemedMessage(player, "");
+
+    // Job description
+    Component desc = job.description();
+    player.sendMessage(Component.text("  ").append(desc.color(TextColor.color(0xAEB4BF))));
+    Mint.sendThemedMessage(player, "<neutral>  Max Level: <secondary>" + job.maxLevel());
+    Mint.sendThemedMessage(player, "");
+
+    // Paginate action types
+    List<Map.Entry<ActionType, List<JobTask>>> entries = new ArrayList<>(tasks.entrySet());
+    int start = (page - 1) * entriesPerPage;
+    int end = Math.min(start + entriesPerPage, entries.size());
+
+    for (int i = start; i < end; i++) {
+      var entry = entries.get(i);
+      if (!entry.getValue().isEmpty()) {
+        displayActionTypeSectionChat(player, entry.getKey(), entry.getValue());
+      }
+    }
+
+    Mint.sendThemedMessage(player, "");
+
+    // Pagination controls with clickable components
+    Component pagination = buildPaginationControls(jobName, page, totalPages);
+    player.sendMessage(pagination);
+
+    Mint.sendThemedMessage(player, "");
+    Mint.sendThemedMessage(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Mint.sendThemedMessage(player, "");
+  }
+
+  private void displayActionTypeSectionChat(Player player, ActionType type, List<JobTask> tasks) {
+    // Section header
+    Mint.sendThemedMessage(player, "<neutral>  ━━ <accent>" + 
+        formatActionTypeName(type.name()) + "<neutral> ━━");
+
+    // Show all tasks for this action type
+    for (JobTask task : tasks) {
+      Component taskLine = Component.text()
+          .append(Component.text("    ● ", TextColor.color(0xAEB4BF)))
+          .append(Component.text(formatContextKey(task.contextKey()), TextColor.color(0xA1E0E0)))
+          .append(Component.text(" → ", TextColor.color(0xAEB4BF)))
+          .append(buildPayableComponent(task.payables()))
+          .build();
+      player.sendMessage(taskLine);
+    }
+  }
+
+  private Component buildPaginationControls(String jobName, int currentPage, int totalPages) {
+    Component controls = Component.text("  ");
+    
+    // Previous button
+    if (currentPage > 1) {
+      Component prevButton = Component.text("[◀ Previous]", TextColor.color(0xAEFFC1))
+          .clickEvent(ClickEvent.runCommand("/jobs info chat " + jobName + " " + (currentPage - 1)))
+          .hoverEvent(HoverEvent.showText(Component.text("Go to page " + (currentPage - 1))));
+      controls = controls.append(prevButton);
+    } else {
+      controls = controls.append(Component.text("[◀ Previous]", TextColor.color(0x555555)));
+    }
+
+    controls = controls.append(Component.text(" "));
+
+    // Page indicator
+    Component pageIndicator = Component.text("Page " + currentPage + "/" + totalPages, 
+        TextColor.color(0xAEB4BF));
+    controls = controls.append(pageIndicator);
+
+    controls = controls.append(Component.text(" "));
+
+    // Next button
+    if (currentPage < totalPages) {
+      Component nextButton = Component.text("[Next ▶]", TextColor.color(0xAEFFC1))
+          .clickEvent(ClickEvent.runCommand("/jobs info chat " + jobName + " " + (currentPage + 1)))
+          .hoverEvent(HoverEvent.showText(Component.text("Go to page " + (currentPage + 1))));
+      controls = controls.append(nextButton);
+    } else {
+      controls = controls.append(Component.text("[Next ▶]", TextColor.color(0x555555)));
+    }
+
+    // View in GUI button
+    controls = controls.append(Component.text("  "));
+    Component guiButton = Component.text("[GUI]", TextColor.color(0x3FB3D5))
+        .clickEvent(ClickEvent.runCommand("/jobs info gui " + jobName + " " + currentPage))
+        .hoverEvent(HoverEvent.showText(Component.text("View in GUI mode")));
+    controls = controls.append(guiButton);
+
+    return controls;
+  }
+
+  // Import for plain text serialization
+  private static final net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer PlainTextComponentSerializer = 
+      net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText();
+
+  public Dialog buildDialog(Job job, Map<ActionType, List<JobTask>> tasks, int page, int entriesPerPage) {
+    DialogBase dialogBase = buildDialogBase(job, tasks, page, entriesPerPage);
+
+    int totalPages = calculateTotalPages(tasks, entriesPerPage);
     List<ActionButton> buttons = new ArrayList<>();
 
     // Previous button
@@ -171,8 +428,9 @@ public class InfoCommand implements JobsCommand {
     return BinaryTagHolder.binaryTagHolder(snbt);
   }
 
-  private DialogBase buildDialogBase(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
-    List<DialogBody> bodies = buildDialogBody(job, tasks, page);
+  private DialogBase buildDialogBase(Job job, Map<ActionType, List<JobTask>> tasks, 
+      int page, int entriesPerPage) {
+    List<DialogBody> bodies = buildDialogBody(job, tasks, page, entriesPerPage);
 
     return DialogBase.create(
         Component.text()
@@ -188,7 +446,8 @@ public class InfoCommand implements JobsCommand {
     );
   }
 
-  private List<DialogBody> buildDialogBody(Job job, Map<ActionType, List<JobTask>> tasks, int page) {
+  private List<DialogBody> buildDialogBody(Job job, Map<ActionType, List<JobTask>> tasks, 
+      int page, int entriesPerPage) {
     List<DialogBody> bodies = new ArrayList<>();
 
     // Header
@@ -197,8 +456,8 @@ public class InfoCommand implements JobsCommand {
 
     // Paginate action types
     List<Map.Entry<ActionType, List<JobTask>>> entries = new ArrayList<>(tasks.entrySet());
-    int start = (page - 1) * ACTION_TYPES_PER_PAGE;
-    int end = Math.min(start + ACTION_TYPES_PER_PAGE, entries.size());
+    int start = (page - 1) * entriesPerPage;
+    int end = Math.min(start + entriesPerPage, entries.size());
 
     for (int i = start; i < end; i++) {
       var entry = entries.get(i);

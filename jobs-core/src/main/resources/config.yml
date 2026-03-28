@@ -24,3 +24,12 @@ colors:
   tertiary: "#FF00FF"     # Tertiary colors (special info)
   neutral: "#808080"      # Neutral/gray text (labels, borders)
   error: "#FF0000"        # Error messages
+
+# Player preferences for info displays
+preferences:
+  # Default number of entries to show per page in chat output
+  # Players can override this with /jobs info preference entries <number>
+  entries-per-page: 10
+  # Default view mode: true = GUI dialog, false = chat output
+  # Players can override with /jobs info preference gui/chat
+  default-gui-mode: true
