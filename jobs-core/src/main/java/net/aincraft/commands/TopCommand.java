@@ -388,6 +388,30 @@ final class TopCommand implements JobsCommand {
           displayOverallLeaderboard(sender, 1);
           return 1;
         })
+        // /jobs top mode <chat|scoreboard> - toggle display mode
+        .then(Commands.literal("mode")
+            .then(Commands.argument("displayMode", StringArgumentType.string())
+                .suggests((context, builder) -> {
+                  builder.suggest("chat");
+                  builder.suggest("scoreboard");
+                  return builder.buildFuture();
+                })
+                .executes(context -> {
+                  CommandSourceStack source = context.getSource();
+                  CommandSender sender = source.getSender();
+                  if (!(sender instanceof Player player)) {
+                    Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+                    return 0;
+                  }
+                  String mode = context.getArgument("displayMode", String.class);
+                  if (!mode.equalsIgnoreCase("chat") && !mode.equalsIgnoreCase("scoreboard")) {
+                    Mint.sendThemedMessage(sender, "<error>Invalid display mode. Use 'chat' or 'scoreboard'.");
+                    return 0;
+                  }
+                  player.setMetadata("jobs_display_mode", new FixedMetadataValue(plugin, mode.toLowerCase()));
+                  Mint.sendThemedMessage(sender, "<success>Display mode set to <secondary>" + mode.toLowerCase());
+                  return 1;
+                })))
         .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
           jobService.getJobs().stream().map(job -> job.getPlainName().toLowerCase(Locale.ENGLISH))
               .forEach(builder::suggest);
@@ -400,6 +424,21 @@ final class TopCommand implements JobsCommand {
               String jobKey = context.getArgument("job", String.class);
               int page = context.getArgument("pageNumber", Integer.class);
               Key key = KeyUtils.parseKey(plugin, jobKey);
+              
+              // Check if player wants scoreboard display
+              if (sender instanceof Player player) {
+                String displayMode = getPlayerDisplayMode(player);
+                if ("scoreboard".equalsIgnoreCase(displayMode)) {
+                  TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
+                  ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
+                  int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
+                  consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
+                      sender, maxPages, resultProvider.getAllEntries(key));
+                  return 1;
+                }
+              }
+              
+              // Default to chat display
               ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
               int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
               consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
@@ -413,6 +452,21 @@ final class TopCommand implements JobsCommand {
               String jobKey = context.getArgument("job", String.class);
               int page = 1; // Default to page 1
               Key key = KeyUtils.parseKey(plugin, jobKey);
+              
+              // Check if player wants scoreboard display
+              if (sender instanceof Player player) {
+                String displayMode = getPlayerDisplayMode(player);
+                if ("scoreboard".equalsIgnoreCase(displayMode)) {
+                  TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
+                  ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
+                  int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
+                  consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
+                      sender, maxPages, resultProvider.getAllEntries(key));
+                  return 1;
+                }
+              }
+              
+              // Default to chat display
               ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
               int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
               consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
@@ -424,6 +478,15 @@ final class TopCommand implements JobsCommand {
   private void displayOverallLeaderboard(CommandSender sender, int page) {
     Mint.sendThemedMessage(sender,
         "<error>Overall leaderboard is not yet implemented. Please specify a job: <secondary>/jobs top <job>");
+  }
+
+  private String getPlayerDisplayMode(Player player) {
+    // Check player's preference for display mode
+    // This could be stored in a config, database, or player metadata
+    // For now, default to chat
+    return player.hasMetadata("jobs_display_mode") 
+        ? player.getMetadata("jobs_display_mode").get(0).asString() 
+        : "chat";
   }
 
   static final class JobTopPageProviderImpl implements JobTopPageProvider {
