@@ -15,6 +15,7 @@ public final class ServiceModule extends AbstractModule {
   protected void configure() {
     bind(TimedBoostDataService.class).to(TimedBoostDataServiceImpl.class).in(Singleton.class);
     bind(ItemBoostDataService.class).to(ItemBoostDataServiceImpl.class).in(Singleton.class);
+    bind(PreferencesService.class).to(PreferencesServiceImpl.class).in(Singleton.class);
     // bind(PerkSyncService.class).in(Singleton.class); // Disabled - depends on PetUpgradeService
   }
 }

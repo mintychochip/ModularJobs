@@ -17,6 +17,7 @@ import net.aincraft.JobTask;
 import net.aincraft.container.ActionType;
 import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
+import net.aincraft.service.PreferencesService;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.nbt.api.BinaryTagHolder;
 import net.kyori.adventure.text.Component;
@@ -33,6 +34,7 @@ public class DialogNavigationListener implements Listener {
   private final JobResolver jobResolver;
   private final InfoCommand infoCommand;
   private final StatsDialog statsDialog;
+  private final PreferencesService preferencesService;
 
   private static final String NAMESPACE = "modularjobs";
   // Info dialog navigation keys
@@ -43,11 +45,13 @@ public class DialogNavigationListener implements Listener {
   private static final Key STATS_PREV_KEY = Key.key(NAMESPACE, "stats/prev");
 
   @Inject
-  public DialogNavigationListener(JobService jobService, JobResolver jobResolver, InfoCommand infoCommand, StatsDialog statsDialog) {
+  public DialogNavigationListener(JobService jobService, JobResolver jobResolver, 
+      InfoCommand infoCommand, StatsDialog statsDialog, PreferencesService preferencesService) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
     this.infoCommand = infoCommand;
     this.statsDialog = statsDialog;
+    this.preferencesService = preferencesService;
   }
 
   private static final Pattern JOB_NAME_PATTERN = Pattern.compile("jobName:\"([^\"]+)\"");
@@ -95,8 +99,9 @@ public class DialogNavigationListener implements Listener {
       return;
     }
 
+    int entriesPerPage = preferencesService.getEntriesPerPage(player);
     Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
-    int totalPages = infoCommand.calculateTotalPages(tasks);
+    int totalPages = infoCommand.calculateTotalPages(tasks, entriesPerPage);
 
     int newPage = clickKey.equals(INFO_NEXT_KEY) ? currentPage + 1 : currentPage - 1;
 
@@ -104,7 +109,7 @@ public class DialogNavigationListener implements Listener {
       return;
     }
 
-    Dialog dialog = infoCommand.buildDialog(job, tasks, newPage);
+    Dialog dialog = infoCommand.buildDialog(job, tasks, newPage, entriesPerPage);
     player.showDialog(dialog);
   }
 
