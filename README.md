@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <strong>⚒️ Modular Job System for Minecraft Paper Servers</strong>
+  <strong>Modular Job System for Minecraft Paper Servers</strong>
 </p>
 
 <p align="center">
@@ -17,20 +17,20 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- **🔧 Modular Architecture** — Cleanly separated API and Core modules
-- **📈 Job Progression** — Level up through experience and unlock rewards
-- **🌳 Skill Trees** — Wynncraft-inspired upgrade trees with ability unlocking
-- **⚔️ Job Actions** — Trigger rewards through mining, crafting, combat, and more
-- **💾 Persistent Storage** — Player progress saved and loaded automatically
-- **🐾 Pet Upgrades** — Companion system with upgrade paths
-- **🛡️ Exploit Protection** — Built-in protection against grinding exploits
-- **🔌 Plugin Integration** — Compatible with PlaceholderAPI and other popular plugins
+- **Modular Architecture** — Cleanly separated API and Core modules
+- **Job Progression** — Level up through experience and unlock rewards
+- **Skill Trees** — Wynncraft-inspired upgrade trees with ability unlocking
+- **Job Actions** — Trigger rewards through mining, crafting, combat, and more
+- **Persistent Storage** — Player progress saved and loaded automatically
+- **Pet Upgrades** — Companion system with upgrade paths
+- **Exploit Protection** — Built-in protection against grinding exploits
+- **Plugin Integration** — Compatible with PlaceholderAPI and other popular plugins
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
@@ -42,7 +42,7 @@
 
 ---
 
-## 📦 Modules
+## Modules
 
 ```
 ModularJobs/
@@ -59,7 +59,7 @@ ModularJobs/
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### Requirements
 
@@ -86,7 +86,7 @@ The project uses multiple Maven repositories:
 
 ---
 
-## 🎯 Key Concepts
+## Key Concepts
 
 ### Jobs
 A `Job` represents a profession (e.g., Miner, Blacksmith, Hunter). Each job has:
@@ -116,7 +116,7 @@ Wynncraft-inspired skill tree system:
 
 ---
 
-## 🔌 API Usage
+## API Usage
 
 ```java
 // Get the job service
@@ -137,7 +137,7 @@ jobService.joinJob(player.getUniqueId().toString(), "blacksmith");
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 jobs-api/src/main/java/net/aincraft/
@@ -164,7 +164,7 @@ jobs-api/src/main/java/net/aincraft/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! This project uses:
 - Java 21 features (records, pattern matching, virtual threads where applicable)
@@ -179,12 +179,12 @@ Contributions are welcome! This project uses:
 
 ---
 
-## 📄 License
+## License
 
 This project is available under the MIT License.
 
 ---
 
 <p align="center">
-  Built for Minecraft server communities 🎮
+  Built for Minecraft server communities
 </p>
