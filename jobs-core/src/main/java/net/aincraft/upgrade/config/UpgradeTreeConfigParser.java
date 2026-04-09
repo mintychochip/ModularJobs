@@ -152,6 +152,7 @@ public final class UpgradeTreeConfigParser {
         null,           // unlockedItemModel (not supported in legacy)
         config.cost(),
         prerequisites,
+        Set.of(),       // maxedPrerequisites - empty for legacy format
         exclusive,
         children,
         effects,
