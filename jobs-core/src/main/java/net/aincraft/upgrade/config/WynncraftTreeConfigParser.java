@@ -98,6 +98,7 @@ public final class WynncraftTreeConfigParser {
               parent.unlockedItemModel(),
               parent.cost(),
               parent.prerequisites(),
+              parent.maxedPrerequisites(),
               parent.exclusive(),
               updatedChildren,
               parent.effects(),
@@ -148,6 +149,7 @@ public final class WynncraftTreeConfigParser {
     String unlockedItemModel = meta.icons().unlocked().itemModel();
 
     Set<String> prerequisites = new HashSet<>(meta.prerequisites());
+    Set<String> maxedPrerequisites = new HashSet<>(meta.maxedPrerequisites());
     Set<String> exclusive = new HashSet<>(meta.exclusiveWith());
     List<String> children = List.of(); // Children will be determined by layout
 
@@ -198,6 +200,7 @@ public final class WynncraftTreeConfigParser {
         unlockedItemModel,
         meta.cost(),
         prerequisites,
+        maxedPrerequisites,
         exclusive,
         children,
         effects,
