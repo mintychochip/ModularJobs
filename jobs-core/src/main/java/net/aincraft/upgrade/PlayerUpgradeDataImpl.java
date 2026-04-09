@@ -18,6 +18,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   private int totalSkillPoints;
   private final Set<String> unlockedNodes;
   private final Map<String, Integer> perkLevels;
+  private final Map<String, Integer> maxLevels; // perkId -> max achievable level
 
   public PlayerUpgradeDataImpl(
       @NotNull String playerId,
@@ -30,6 +31,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
     this.totalSkillPoints = totalSkillPoints;
     this.unlockedNodes = new HashSet<>(unlockedNodes);
     this.perkLevels = new HashMap<>();
+    this.maxLevels = new HashMap<>();
   }
 
   /**
@@ -136,5 +138,20 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   public int removePerkLevel(@NotNull String perkId) {
     Integer previous = perkLevels.remove(perkId);
     return previous != null ? previous : 0;
+  }
+
+  @Override
+  public int getMaxLevel(@NotNull String perkId) {
+    return maxLevels.getOrDefault(perkId, 1);
+  }
+
+  /**
+   * Set the max level for a perk (from upgrade tree config).
+   *
+   * @param perkId perk identifier
+   * @param maxLevel maximum achievable level
+   */
+  public void setMaxLevel(@NotNull String perkId, int maxLevel) {
+    maxLevels.put(perkId, maxLevel);
   }
 }
