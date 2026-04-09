@@ -57,7 +57,15 @@ public final class UpgradeTreeLoader {
   public int load() {
     // Try folder-based loading first
     File treesFolder = new File(plugin.getDataFolder(), TREES_FOLDER);
-    if (treesFolder.exists() && treesFolder.isDirectory()) {
+    if (!treesFolder.exists()) {
+      treesFolder.mkdirs();
+    }
+
+    // Check if we have trees in the folder already
+    File[] existingFiles = treesFolder.listFiles((dir, name) -> name.endsWith(".json"));
+    boolean hasFilesInFolder = existingFiles != null && existingFiles.length > 0;
+
+    if (hasFilesInFolder) {
       int count = loadFromFolder(treesFolder);
       if (count > 0) {
         plugin.getLogger().info("Loaded " + count + " tree(s) from folder: " + TREES_FOLDER);
@@ -65,13 +73,20 @@ public final class UpgradeTreeLoader {
       }
     }
 
+    // No trees in folder - try to extract defaults from JAR
+    if (!hasFilesInFolder && extractTreesFromResources(treesFolder)) {
+      plugin.getLogger().info("Extracted default upgrade trees from JAR");
+      // Now reload from the extracted folder
+      int count = loadFromFolder(treesFolder);
+      if (count > 0) {
+        plugin.getLogger().info("Loaded " + count + " tree(s) from extracted resources");
+        return count;
+      }
+    }
+
     // Fallback to single-file loading
     File configFile = new File(plugin.getDataFolder(), CONFIG_FILE);
     if (!configFile.exists()) {
-      // Create folder structure for future saves
-      if (!treesFolder.exists()) {
-        treesFolder.mkdirs();
-      }
       createDefaultConfig(configFile);
     }
 
@@ -479,23 +494,26 @@ public final class UpgradeTreeLoader {
           return;
         }
       }
+    } catch (IOException e) {
+      plugin.getLogger().warning("Failed to read default resource: " + e.getMessage());
+    }
 
-      // Create minimal example config
-      String defaultJson = """
-          {
-            "upgrade_trees": {
-              "miner": {
-                "job": "miner",
-                "skill_points_per_level": 1,
-                "root": "mining_basics",
-                "nodes": {
-                  "mining_basics": {
-                    "name": "Mining Basics",
-                    "description": "The foundation of all mining knowledge",
-                    "icon": "WOODEN_PICKAXE",
-                    "cost": 0,
-                    "children": ["efficiency_1", "fortune_1"]
-                  },
+    // Create minimal example config
+    String defaultJson = """
+        {
+          "upgrade_trees": {
+            "miner": {
+              "job": "miner",
+              "skill_points_per_level": 1,
+              "root": "mining_basics",
+              "nodes": {
+                "mining_basics": {
+                  "name": "Mining Basics",
+                  "description": "The foundation of all mining knowledge",
+                  "icon": "WOODEN_PICKAXE",
+                  "cost": 0,
+                  "children": ["efficiency_1", "fortune_1"]
+                },
                   "efficiency_1": {
                     "name": "Efficiency I",
                     "description": "Mine 10% faster",
@@ -521,10 +539,47 @@ public final class UpgradeTreeLoader {
             }
           }
           """;
-      Files.writeString(configFile.toPath(), defaultJson);
-      plugin.getLogger().info("Created minimal upgrade trees configuration");
+      try {
+        Files.writeString(configFile.toPath(), defaultJson);
+        plugin.getLogger().info("Created minimal upgrade trees configuration");
+      } catch (IOException e) {
+        plugin.getLogger().warning("Failed to create default config: " + e.getMessage());
+      }
+  }
+
+  private boolean extractTreesFromResources(File treesFolder) {
+    String resourcePath = TREES_FOLDER;
+    try (InputStream indexStream = plugin.getResource(resourcePath)) {
+      if (indexStream == null) {
+        return false;
+      }
     } catch (IOException e) {
-      plugin.getLogger().warning("Failed to create default config: " + e.getMessage());
+      return false;
     }
+
+    // List resources in the upgrade_trees folder
+    java.util.List<String> treeFiles = switch (resourcePath) {
+      case "upgrade_trees" -> java.util.List.of("lumberjack.json", "miner.json");
+      default -> java.util.List.of();
+    };
+
+    boolean anyExtracted = false;
+    for (String fileName : treeFiles) {
+      File destFile = new File(treesFolder, fileName);
+      if (destFile.exists()) {
+        continue;
+      }
+      String resourceName = resourcePath + "/" + fileName;
+      try (InputStream is = plugin.getResource(resourceName)) {
+        if (is != null) {
+          Files.copy(is, destFile.toPath());
+          plugin.getLogger().info("Extracted default tree: " + fileName);
+          anyExtracted = true;
+        }
+      } catch (IOException e) {
+        plugin.getLogger().warning("Failed to extract " + fileName + ": " + e.getMessage());
+      }
+    }
+    return anyExtracted;
   }
 }

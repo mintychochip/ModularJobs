@@ -1,0 +1,1666 @@
+{
+  "tree_id": "miner",
+  "display_name": "miner",
+  "job": "miner",
+  "description": "Mining Companion Upgrade Tree",
+  "skill_points_per_level": 1,
+  "root": "root",
+  "archetypes": [
+    {
+      "id": "allay",
+      "name": "Allay Path",
+      "color": "#7DD3FC"
+    },
+    {
+      "id": "bat",
+      "name": "Bat Path",
+      "color": "#A78BFA"
+    },
+    {
+      "id": "goat",
+      "name": "Goat Path",
+      "color": "#FCD34D"
+    },
+    {
+      "id": "copper_golem",
+      "name": "Copper Golem Path",
+      "color": "#FB923C"
+    }
+  ],
+  "paths": [
+    {
+      "x": 0,
+      "y": 8
+    },
+    {
+      "x": 4,
+      "y": 1
+    },
+    {
+      "x": 3,
+      "y": 13
+    },
+    {
+      "x": 7,
+      "y": 13
+    },
+    {
+      "x": 7,
+      "y": 12
+    },
+    {
+      "x": 7,
+      "y": 11
+    },
+    {
+      "x": 7,
+      "y": 10
+    },
+    {
+      "x": 3,
+      "y": 12
+    },
+    {
+      "x": 7,
+      "y": 8
+    },
+    {
+      "x": 3,
+      "y": 11
+    },
+    {
+      "x": 7,
+      "y": 6
+    },
+    {
+      "x": 7,
+      "y": 5
+    },
+    {
+      "x": 3,
+      "y": 9
+    },
+    {
+      "x": 7,
+      "y": 3
+    },
+    {
+      "x": 3,
+      "y": 8
+    },
+    {
+      "x": 7,
+      "y": 1
+    },
+    {
+      "x": 3,
+      "y": 6
+    },
+    {
+      "x": 3,
+      "y": 1
+    },
+    {
+      "x": 6,
+      "y": 9
+    },
+    {
+      "x": 6,
+      "y": 8
+    },
+    {
+      "x": 6,
+      "y": 6
+    },
+    {
+      "x": 2,
+      "y": 8
+    },
+    {
+      "x": 6,
+      "y": 1
+    },
+    {
+      "x": 2,
+      "y": 6
+    },
+    {
+      "x": 2,
+      "y": 1
+    },
+    {
+      "x": 1,
+      "y": 15
+    },
+    {
+      "x": 1,
+      "y": 14
+    },
+    {
+      "x": 5,
+      "y": 16
+    },
+    {
+      "x": 5,
+      "y": 15
+    },
+    {
+      "x": 5,
+      "y": 14
+    },
+    {
+      "x": 5,
+      "y": 13
+    },
+    {
+      "x": 5,
+      "y": 12
+    },
+    {
+      "x": 5,
+      "y": 11
+    },
+    {
+      "x": 1,
+      "y": 13
+    },
+    {
+      "x": 5,
+      "y": 9
+    },
+    {
+      "x": 5,
+      "y": 8
+    },
+    {
+      "x": 1,
+      "y": 12
+    },
+    {
+      "x": 5,
+      "y": 6
+    },
+    {
+      "x": 1,
+      "y": 11
+    },
+    {
+      "x": 1,
+      "y": 10
+    },
+    {
+      "x": 1,
+      "y": 8
+    },
+    {
+      "x": 5,
+      "y": 1
+    },
+    {
+      "x": 1,
+      "y": 6
+    },
+    {
+      "x": 1,
+      "y": 5
+    },
+    {
+      "x": 1,
+      "y": 3
+    },
+    {
+      "x": 1,
+      "y": 1
+    },
+    {
+      "x": 8,
+      "y": 15
+    },
+    {
+      "x": 8,
+      "y": 14
+    },
+    {
+      "x": 8,
+      "y": 13
+    },
+    {
+      "x": 8,
+      "y": 9
+    },
+    {
+      "x": 8,
+      "y": 8
+    },
+    {
+      "x": 4,
+      "y": 10
+    },
+    {
+      "x": 4,
+      "y": 8
+    },
+    {
+      "x": 4,
+      "y": 6
+    },
+    {
+      "x": 4,
+      "y": 5
+    },
+    {
+      "x": 4,
+      "y": 3
+    },
+    {
+      "x": 0,
+      "y": 9
+    },
+    {
+      "x": 2,
+      "y": 15
+    },
+    {
+      "x": 0,
+      "y": 15
+    },
+    {
+      "x": 2,
+      "y": 16
+    },
+    {
+      "x": 6,
+      "y": 14
+    }
+  ],
+  "perkPolicies": {
+    "echolocation": "MAX",
+    "tiny_wings": "MAX",
+    "silent_walk": "MAX",
+    "flowerporting": "MAX",
+    "pet_light": "MAX",
+    "ore_search": "MAX",
+    "azalea_flowering": "MAX",
+    "blowhorn": "MAX",
+    "blowhorn_jump": "MAX",
+    "blowhorn_tunnel": "MAX",
+    "blowhorn_bonk": "MAX",
+    "sturdy_legs": "MAX",
+    "gunpowder_drop": "MAX",
+    "sticky_blast": "MAX",
+    "obsidian_skin": "MAX",
+    "blast_radius": "MAX",
+    "lava_immunity": "MAX",
+    "nether_lava_immunity": "MAX",
+    "stone_skin": "MAX",
+    "far_gather": "MAX",
+    "pet_lantern": "MAX"
+  },
+  "layout": [
+    {
+      "id": "root",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 0
+      },
+      "meta": {
+        "name": "Mining Companion",
+        "description": ["Begin your journey with a loyal companion\nwho will aid you in the depths below.\n\nUse /jobpet to summon your mining partner."],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "SILVERFISH_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/root_locked"
+          },
+          "unlocked": {
+            "id": "SILVERFISH_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/root_unlocked"
+          }
+        },
+        "cost": 0,
+        "major": true,
+        "prerequisites": [],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "jobpets.pet",
+              "aincraft-perks.pet.silverfish"
+            ]
+          }
+        ],
+        "perk_id": "root",
+        "level": 1
+      }
+    },
+    {
+      "id": "lava_immunity",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 2
+      },
+      "meta": {
+        "name": "Lava Immunity",
+        "description": ["Grants fire resistance when touching lava\n\nFire resistance on lava contact\nDuration scales with upgrade level"],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "LAVA_BUCKET",
+            "item_model": "modularjobs:upgrade/miner/lava_immunity_locked"
+          },
+          "unlocked": {
+            "id": "LAVA_BUCKET",
+            "item_model": "modularjobs:upgrade/miner/lava_immunity_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "root"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.lavaimmunity"
+          }
+        ],
+        "perk_id": "lava_immunity",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          3,
+          3
+        ],
+        "level_descriptions": [
+          "Gain temporary fire resistance when touching lava\n\nDue to the extreme heat,\nthis doesn't seem to work in the nether.",
+          "Enjoy a longer lasting fire resistance when swimming\nin lava that can be used more often than before.\n\nThough it still doesn't seem to work in the nether..."
+        ]
+      }
+    },
+    {
+      "id": "nether_lava_immunity",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 4
+      },
+      "meta": {
+        "name": "Nether Lava Immunity",
+        "description": ["Extended fire resistance in the Nether\n\nEffect: Longer duration than overworld\nEssential for Nether mining"],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "MAGMA_CREAM",
+            "item_model": "modularjobs:upgrade/miner/nether_lava_locked"
+          },
+          "unlocked": {
+            "id": "MAGMA_CREAM",
+            "item_model": "modularjobs:upgrade/miner/nether_lava_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "lava_immunity"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.netherlavaimmunity"
+          }
+        ],
+        "perk_id": "nether_lava_immunity",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          2,
+          3
+        ],
+        "level_descriptions": [
+          "A change in mindset, has extended the fire\nresistance to now work in the nether as well.\n\nDue to the excess amounts of lava in the nether,\nyour pet feels the lava immunity should last a little longer.",
+          "With increased duration and reduced cooldown,\nyou may now realize your dream of swimming in the nether olympics.\n\nJust don't overdo it..."
+        ]
+      }
+    },
+    {
+      "id": "stone_skin",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 2
+      },
+      "meta": {
+        "name": "Stone Skin",
+        "description": ["Reduces arrow damage\n\nEffect: Arrow damage reduction\nAlso immune to cobweb slowdown"],
+        "node_texture": "white",
+        "icon": {
+          "locked": {
+            "id": "COBBLESTONE",
+            "item_model": "modularjobs:upgrade/miner/stone_skin_locked"
+          },
+          "unlocked": {
+            "id": "COBBLESTONE",
+            "item_model": "modularjobs:upgrade/miner/stone_skin_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "root"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.stoneskin"
+          }
+        ],
+        "perk_id": "stone_skin",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          3,
+          3
+        ],
+        "level_descriptions": [
+          "Your skin takes on a stone-like quality,\ndeflecting arrows and shrugging off webs.\n\nProtection increases with upgrades.",
+          "Your stony exterior has thickened considerably.\nArchers find you a frustrating target."
+        ]
+      }
+    },
+    {
+      "id": "storage_two_rows",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 2
+      },
+      "meta": {
+        "name": "Expanded Storage",
+        "description": ["Your pet has learned to carry more loot\nin its expandable pouch.\n\nPet inventory grows to 2 rows."],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "CHEST",
+            "item_model": "modularjobs:upgrade/miner/storage_locked"
+          },
+          "unlocked": {
+            "id": "CHEST",
+            "item_model": "modularjobs:upgrade/miner/storage_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "root"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.miner.storage.tworows"
+          }
+        ],
+        "perk_id": "storage_two_rows",
+        "level": 1
+      }
+    },
+    {
+      "id": "far_gather",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 4
+      },
+      "meta": {
+        "name": "Far Gather",
+        "description": ["Pet collects ores from a distance\n\nEffect: Remote ore collection\nRange scales with upgrade level"],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "ENDER_PEARL",
+            "item_model": "modularjobs:upgrade/miner/far_gather_locked"
+          },
+          "unlocked": {
+            "id": "ENDER_PEARL",
+            "item_model": "modularjobs:upgrade/miner/far_gather_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "storage_two_rows"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.fargather"
+          }
+        ],
+        "perk_id": "far_gather",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          5,
+          5,
+          6
+        ],
+        "level_descriptions": [
+          "Your pet gains the ability to travel wherever you please\nand gather ores you may not have picked up otherwise.\n\nYour pet's range and number of uses increases per upgrade!\nGathering method changes depending on the pet you have.",
+          "Increased cardio and vision correction has increased the\nnumber of blocks your pet can go to gather ores.\nIt also seems to have decreased the cooldown between uses.",
+          "Your pet is in tip top shape and will gather ores\nfurther and more often than ever before!\n\nHopefully its pouch can hold it all."
+        ]
+      }
+    },
+    {
+      "id": "explosion_collection",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 4
+      },
+      "meta": {
+        "name": "Explosion Collection",
+        "description": ["Your pet rushes to gather items scattered\nby explosions before they disappear.\n\nNo more chasing loot through the rubble."],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "HOPPER",
+            "item_model": "modularjobs:upgrade/miner/explosion_collection_locked"
+          },
+          "unlocked": {
+            "id": "HOPPER",
+            "item_model": "modularjobs:upgrade/miner/explosion_collection_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "stone_skin"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.explosionpetcollection"
+          }
+        ],
+        "perk_id": "explosion_collection",
+        "level": 1
+      }
+    },
+    {
+      "id": "allay_branch",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 7
+      },
+      "archetype_ref": "allay",
+      "meta": {
+        "name": "Allay Companion",
+        "description": ["A gentle spirit joins your side, eager to\nhelp with its gift for finding things.\n\nThe Allay excels at searching and teleportation.\nStorage: 3 rows (27 slots)"],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "ALLAY_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/allay_locked"
+          },
+          "unlocked": {
+            "id": "ALLAY_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/allay_unlocked"
+          }
+        },
+        "cost": 10,
+        "major": true,
+        "prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection"
+        ],
+        "exclusive_with": [
+          "bat_branch",
+          "goat_branch",
+          "copper_golem_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "aincraft-perks.pet.allay",
+              "aincraft-perks.miner.storage.threerows"
+            ]
+          }
+        ],
+        "perk_id": "allay_branch",
+        "level": 1
+      }
+    },
+    {
+      "id": "bat_branch",
+      "type": "ability",
+      "coordinates": {
+        "x": 3,
+        "y": 7
+      },
+      "archetype_ref": "bat",
+      "meta": {
+        "name": "Bat Companion",
+        "description": ["A creature of the dark becomes your guide,\nnavigating caves with uncanny precision.\n\nThe Bat excels at navigation and mobility.\nStorage: 2 rows (18 slots)"],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "BAT_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/bat_locked"
+          },
+          "unlocked": {
+            "id": "BAT_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/bat_unlocked"
+          }
+        },
+        "cost": 10,
+        "major": true,
+        "prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection"
+        ],
+        "exclusive_with": [
+          "allay_branch",
+          "goat_branch",
+          "copper_golem_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.pet.bat"
+          }
+        ],
+        "perk_id": "bat_branch",
+        "level": 1
+      }
+    },
+    {
+      "id": "goat_branch",
+      "type": "ability",
+      "coordinates": {
+        "x": 5,
+        "y": 7
+      },
+      "archetype_ref": "goat",
+      "meta": {
+        "name": "Goat Companion",
+        "description": ["A stubborn but loyal beast joins you,\nready to charge through any obstacle.\n\nThe Goat excels at mounted combat and horn abilities.\nStorage: 4 rows (36 usable slots)"],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "GOAT_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/goat_locked"
+          },
+          "unlocked": {
+            "id": "GOAT_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/miner/goat_unlocked"
+          }
+        },
+        "cost": 10,
+        "major": true,
+        "prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection"
+        ],
+        "exclusive_with": [
+          "allay_branch",
+          "bat_branch",
+          "copper_golem_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "aincraft-perks.pet.goat",
+              "aincraft-perks.miner.storage.fiverows"
+            ]
+          }
+        ],
+        "perk_id": "goat_branch",
+        "level": 1
+      }
+    },
+    {
+      "id": "copper_golem_branch",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 7
+      },
+      "archetype_ref": "copper_golem",
+      "meta": {
+        "name": "Copper Golem Companion",
+        "description": ["A mechanical marvel awakens to serve you,\nits copper heart beating for demolition.\n\nThe Copper Golem excels at explosions.\nStorage: 3 rows (27 slots)"],
+        "node_texture": "white",
+        "icon": {
+          "locked": {
+            "id": "COPPER_BLOCK",
+            "item_model": "modularjobs:upgrade/miner/copper_golem_locked"
+          },
+          "unlocked": {
+            "id": "COPPER_BLOCK",
+            "item_model": "modularjobs:upgrade/miner/copper_golem_unlocked"
+          }
+        },
+        "cost": 10,
+        "major": true,
+        "prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection"
+        ],
+        "exclusive_with": [
+          "allay_branch",
+          "bat_branch",
+          "goat_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "aincraft-perks.pet.copper_golem",
+              "aincraft-perks.miner.storage.threerows"
+            ]
+          }
+        ],
+        "perk_id": "copper_golem_branch",
+        "level": 1
+      }
+    },
+    {
+      "id": "flowerporting",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 9
+      },
+      "archetype_ref": "allay",
+      "meta": {
+        "name": "Flowerporting",
+        "description": ["Teleport to spore blossoms\n\nEffect: Use flowering azalea to teleport\nCooldown scales with level"],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "FLOWERING_AZALEA",
+            "item_model": "modularjobs:upgrade/miner/flowerporting_locked"
+          },
+          "unlocked": {
+            "id": "FLOWERING_AZALEA",
+            "item_model": "modularjobs:upgrade/miner/flowerporting_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "allay_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.flowerporting"
+          }
+        ],
+        "perk_id": "flowerporting",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          2,
+          4,
+          5
+        ],
+        "level_descriptions": [
+          "Channel the magic of flowering azalea\nto teleport to distant spore blossoms.\n\nCooldown decreases with upgrades.",
+          "Your connection to the underground flora deepens.\nThe path between flowers becomes clearer.",
+          "You've become one with the subterranean garden.\nFlowerporting feels as natural as walking."
+        ]
+      }
+    },
+    {
+      "id": "pet_light",
+      "type": "ability",
+      "coordinates": {
+        "x": 0,
+        "y": 10
+      },
+      "archetype_ref": "allay",
+      "meta": {
+        "name": "Pet Light",
+        "description": ["Your Allay emits a soft glow\n\nIlluminates area around your pet\nRadius scales with upgrade level"],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "GLOWSTONE",
+            "item_model": "modularjobs:upgrade/miner/pet_light_locked"
+          },
+          "unlocked": {
+            "id": "GLOWSTONE",
+            "item_model": "modularjobs:upgrade/miner/pet_light_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "allay_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.petlight"
+          }
+        ],
+        "perk_id": "pet_light",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          2,
+          3,
+          3
+        ],
+        "level_descriptions": [
+          "Your Allay radiates a gentle, warm light\nthat pushes back the cave darkness.\n\nLight radius increases with upgrades.",
+          "The light grows stronger and reaches further.\nYour Allay becomes a beacon in the depths.",
+          "Your Allay shines brilliantly, casting light\nacross vast stretches of underground passages."
+        ]
+      }
+    },
+    {
+      "id": "ore_search",
+      "type": "ability",
+      "coordinates": {
+        "x": 0,
+        "y": 16
+      },
+      "archetype_ref": "allay",
+      "meta": {
+        "name": "Ore Search",
+        "description": ["Allay searches for nearest ore\n\nEffect: Target ore glows through walls\nSearch radius scales with level"],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "SPYGLASS",
+            "item_model": "modularjobs:upgrade/miner/ore_search_locked"
+          },
+          "unlocked": {
+            "id": "SPYGLASS",
+            "item_model": "modularjobs:upgrade/miner/ore_search_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "pet_light"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.oresearch"
+          }
+        ],
+        "perk_id": "ore_search",
+        "level": 1,
+        "max_level": 4,
+        "level_costs": [
+          3,
+          6,
+          8,
+          10
+        ],
+        "level_descriptions": [
+          "Your Allay has developed a keen sense for\ndetecting valuable ores nearby.\n\nRange and ore quality improve with upgrades.",
+          "With sharpened senses, your Allay detects\nores from greater distances and finds rarer veins.",
+          "Your Allay has become an expert ore detector.\nValuable minerals rarely escape its notice.",
+          "A master prospector, your Allay can locate\nthe rarest ores across impressive distances."
+        ],
+        "level_effects": [
+          [],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.oresearch.tier2"
+            }
+          ],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.oresearch.tier3"
+            }
+          ],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.oresearch.tier4"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "id": "azalea_flowering",
+      "type": "ability",
+      "coordinates": {
+        "x": 2,
+        "y": 17
+      },
+      "archetype_ref": "allay",
+      "meta": {
+        "name": "Azalea Flowering",
+        "description": ["Plant flowering azalea underground\n\nEffect: Create teleport destinations\nCooldown scales with level"],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "AZALEA",
+            "item_model": "modularjobs:upgrade/miner/azalea_flowering_locked"
+          },
+          "unlocked": {
+            "id": "AZALEA",
+            "item_model": "modularjobs:upgrade/miner/azalea_flowering_unlocked"
+          }
+        },
+        "cost": 1,
+        "prerequisites": [
+          "flowerporting"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.azaleaflowering"
+          }
+        ],
+        "perk_id": "azalea_flowering",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          1,
+          1,
+          2
+        ],
+        "level_descriptions": [
+          "Nurture flowering azalea deep underground\nto create new teleportation waypoints.\n\nCooldown decreases with upgrades.",
+          "Your green thumb has improved. Azaleas\nflourish more readily under your care.",
+          "Flowers bloom at your command, creating\nan extensive network of teleport destinations."
+        ]
+      }
+    },
+    {
+      "id": "tiny_wings",
+      "type": "ability",
+      "coordinates": {
+        "x": 2,
+        "y": 9
+      },
+      "archetype_ref": "bat",
+      "meta": {
+        "name": "Tiny Wings",
+        "description": ["Multi-jump and slow fall\n\nEffect: Extra jumps in air\nGlide duration scales with level"],
+        "node_texture": "white",
+        "icon": {
+          "locked": {
+            "id": "FEATHER",
+            "item_model": "modularjobs:upgrade/miner/tiny_wings_locked"
+          },
+          "unlocked": {
+            "id": "FEATHER",
+            "item_model": "modularjobs:upgrade/miner/tiny_wings_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "bat_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.tinywings"
+          }
+        ],
+        "perk_id": "tiny_wings",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          2,
+          6,
+          10
+        ],
+        "level_descriptions": [
+          "Your bond with the bat grants you the ability\nto flutter through the air with extra jumps.\n\nJumps and glide duration improve with upgrades.",
+          "Your aerial control improves. You can now\nbounce through the air with greater freedom.",
+          "Like a bat dancing on the wind, you flutter\nthrough caverns with grace and ease."
+        ],
+        "level_effects": [
+          [],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.tinywings.jumptwo"
+            }
+          ],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.tinywings.jumpthree"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "id": "silent_walk",
+      "type": "ability",
+      "coordinates": {
+        "x": 3,
+        "y": 10
+      },
+      "archetype_ref": "bat",
+      "meta": {
+        "name": "Silent Walk",
+        "description": ["Move silently through caves\n\nEffect: Reduced detection by mobs\nAvoid alerting hostile creatures"],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "LEATHER_BOOTS",
+            "item_model": "modularjobs:upgrade/miner/silent_walk_locked"
+          },
+          "unlocked": {
+            "id": "LEATHER_BOOTS",
+            "item_model": "modularjobs:upgrade/miner/silent_walk_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "bat_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.silentwalk"
+          }
+        ],
+        "perk_id": "silent_walk",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          3,
+          6
+        ],
+        "level_descriptions": [
+          "Move like a shadow through the darkness.\nHostile creatures struggle to notice you.\n\nStealth improves with upgrades.",
+          "You've mastered the art of silent movement.\nEven the Warden's keen senses cannot find you."
+        ],
+        "level_effects": [
+          [],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.silentwalk.wardeninvisibility"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "id": "echolocation",
+      "type": "ability",
+      "coordinates": {
+        "x": 3,
+        "y": 14
+      },
+      "archetype_ref": "bat",
+      "meta": {
+        "name": "Echolocation",
+        "description": ["Locate underground structures\n\nBat guides you to dungeons\nSearch radius scales with upgrades"],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "ECHO_SHARD",
+            "item_model": "modularjobs:upgrade/miner/echolocation_locked"
+          },
+          "unlocked": {
+            "id": "ECHO_SHARD",
+            "item_model": "modularjobs:upgrade/miner/echolocation_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "silent_walk"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.echolocation"
+          }
+        ],
+        "perk_id": "echolocation",
+        "level": 1,
+        "max_level": 4,
+        "level_costs": [
+          5,
+          5,
+          6,
+          7
+        ],
+        "level_descriptions": [
+          "Your bat's keen hearing can detect the echoes\nof underground chambers and hidden dungeons.\n\nSearch radius increases with each upgrade.",
+          "With sharper hearing, your bat can now pick up\nechoes from deeper within the earth.",
+          "Your bat's echolocation has become remarkably refined.\nEven the faintest whispers of hidden chambers reach its ears.",
+          "A master of underground acoustics, your bat can\ndetect structures across vast distances."
+        ]
+      }
+    },
+    {
+      "id": "blowhorn",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 9
+      },
+      "archetype_ref": "goat",
+      "meta": {
+        "name": "Commander's Blowhorn",
+        "description": ["Mount your goat and sound the horn\n\nEffect: Ride goat, unlock horn abilities\nSpeed and cooldowns scale with level"],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "GOAT_HORN",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_locked"
+          },
+          "unlocked": {
+            "id": "GOAT_HORN",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "goat_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "aincraft-perks.perk.goatmount",
+              "aincraft-perks.perk.blowhorncall"
+            ]
+          }
+        ],
+        "perk_id": "blowhorn",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          2,
+          3
+        ],
+        "level_descriptions": [
+          "Climb atop your loyal goat and command it\nwith the ancient blowhorn of the miners.\n\nMount speed increases with upgrades.",
+          "Your goat has grown accustomed to the horn's call.\nIt responds with eager speed now."
+        ]
+      }
+    },
+    {
+      "id": "sturdy_legs",
+      "type": "ability",
+      "coordinates": {
+        "x": 5,
+        "y": 10
+      },
+      "archetype_ref": "goat",
+      "meta": {
+        "name": "Sturdy Legs",
+        "description": ["Feather falling effect\n\nEffect: Reduced fall damage\nLevel scales with upgrade"],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "IRON_BOOTS",
+            "item_model": "modularjobs:upgrade/miner/sturdy_legs_locked"
+          },
+          "unlocked": {
+            "id": "IRON_BOOTS",
+            "item_model": "modularjobs:upgrade/miner/sturdy_legs_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "goat_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.sturdylegs"
+          }
+        ],
+        "perk_id": "sturdy_legs",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          2,
+          3
+        ],
+        "level_descriptions": [
+          "Your connection with your pet grants you\nthe ability to land safely from heights.\n\nProtection increases with upgrades.",
+          "Like a mountain goat, you can leap from\ngreat heights and land without a scratch."
+        ]
+      }
+    },
+    {
+      "id": "pet_lantern",
+      "type": "ability",
+      "coordinates": {
+        "x": 6,
+        "y": 10
+      },
+      "meta": {
+        "name": "Pet Lantern",
+        "description": ["Your pet places torches as you mine\n\nEffect: Automatic torch placement\nInterval scales with upgrade level"],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "LANTERN",
+            "item_model": "modularjobs:upgrade/miner/pet_lantern_locked"
+          },
+          "unlocked": {
+            "id": "LANTERN",
+            "item_model": "modularjobs:upgrade/miner/pet_lantern_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "copper_golem_branch",
+          "goat_branch"
+        ],
+        "prerequisitesMode": "OR",
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.petlantern"
+          }
+        ],
+        "perk_id": "pet_lantern",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          2,
+          2
+        ],
+        "level_descriptions": [
+          "Your pet helpfully illuminates dark areas\nby placing torches as you work.\n\nPlacement frequency improves with upgrades.",
+          "Eager to help, your pet now places torches\nmore often. Never mine in darkness again."
+        ]
+      }
+    },
+    {
+      "id": "dripstone_immunity",
+      "type": "ability",
+      "coordinates": {
+        "x": 6,
+        "y": 15
+      },
+      "archetype_ref": "goat",
+      "meta": {
+        "name": "Dripstone Immunity",
+        "description": ["The sharp stalactites that once threatened\nyou now feel like gentle raindrops.\n\nExplore dripstone caves without fear."],
+        "node_texture": "white",
+        "icon": {
+          "locked": {
+            "id": "POINTED_DRIPSTONE",
+            "item_model": "modularjobs:upgrade/miner/dripstone_immunity_locked"
+          },
+          "unlocked": {
+            "id": "POINTED_DRIPSTONE",
+            "item_model": "modularjobs:upgrade/miner/dripstone_immunity_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "sturdy_legs"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.dripstoneimmunity"
+          }
+        ],
+        "perk_id": "dripstone_immunity",
+        "level": 1
+      }
+    },
+    {
+      "id": "blowhorn_bonk",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 16
+      },
+      "archetype_ref": "goat",
+      "meta": {
+        "name": "Battering Ram",
+        "description": ["Charge and ram while mounted\n\nEffect: Knockback enemies and break blocks\nCooldown scales with level"],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "IRON_BLOCK",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_bonk_locked"
+          },
+          "unlocked": {
+            "id": "IRON_BLOCK",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_bonk_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "blowhorn"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.blowhornbonk"
+          }
+        ],
+        "perk_id": "blowhorn_bonk",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          2,
+          3,
+          3
+        ],
+        "level_descriptions": [
+          "Sound the horn and charge! Your goat smashes\nthrough obstacles and enemies alike.\n\nCooldown decreases with upgrades.",
+          "With practice, your goat recovers faster\nfrom its devastating charges.",
+          "Your goat has become a battering machine,\nready to charge again almost immediately."
+        ]
+      }
+    },
+    {
+      "id": "blowhorn_jump",
+      "type": "ability",
+      "coordinates": {
+        "x": 5,
+        "y": 17
+      },
+      "archetype_ref": "goat",
+      "meta": {
+        "name": "Mega Jump",
+        "description": ["Launch into the air while mounted\n\nEffect: Powerful vertical leap\nHeight scales with level"],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "RABBIT_FOOT",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_jump_locked"
+          },
+          "unlocked": {
+            "id": "RABBIT_FOOT",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_jump_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "blowhorn"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.blowhornmegajump"
+          }
+        ],
+        "perk_id": "blowhorn_jump",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          2,
+          3,
+          3
+        ],
+        "level_descriptions": [
+          "Your goat's powerful legs can launch you\nskyward in a tremendous leap.\n\nJump height and cooldown improve with upgrades.",
+          "Your goat's leg muscles have grown stronger.\nEach jump sends you soaring higher than before.",
+          "Legs like coiled springs, your goat launches\nyou so high you can almost touch the cave ceiling."
+        ]
+      }
+    },
+    {
+      "id": "blowhorn_tunnel",
+      "type": "ability",
+      "coordinates": {
+        "x": 6,
+        "y": 16
+      },
+      "archetype_ref": "goat",
+      "meta": {
+        "name": "Tunnel Bore",
+        "description": ["Dig through blocks while mounted\n\nEffect: Create tunnels rapidly\nDuration scales with level"],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "DIAMOND_PICKAXE",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_tunnel_locked"
+          },
+          "unlocked": {
+            "id": "DIAMOND_PICKAXE",
+            "item_model": "modularjobs:upgrade/miner/blowhorn_tunnel_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "blowhorn"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.blowhorntunnel"
+          }
+        ],
+        "perk_id": "blowhorn_tunnel",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          5,
+          6,
+          6
+        ],
+        "level_descriptions": [
+          "While mounted, channel your goat's stubborn\ndetermination to bore through solid rock.\n\nDuration and cooldown improve with upgrades.",
+          "With increased stamina, your goat maintains its\ntunneling charge for longer stretches.",
+          "An unstoppable force of nature, your goat can\nnow bore tunnels with frightening efficiency."
+        ]
+      }
+    },
+    {
+      "id": "gunpowder_drop",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 9
+      },
+      "archetype_ref": "copper_golem",
+      "meta": {
+        "name": "Gunpowder Drop",
+        "description": ["TNT explosions drop gunpowder\n\nEffect: Converts cave materials\nRate scales with upgrade level"],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "GUNPOWDER",
+            "item_model": "modularjobs:upgrade/miner/gunpowder_drop_locked"
+          },
+          "unlocked": {
+            "id": "GUNPOWDER",
+            "item_model": "modularjobs:upgrade/miner/gunpowder_drop_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "copper_golem_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.gunpowderdrop"
+          }
+        ],
+        "perk_id": "gunpowder_drop",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          2,
+          3,
+          4
+        ],
+        "level_descriptions": [
+          "Your explosions have a strange side effect:\ncave materials occasionally become gunpowder.\n\nConversion rate increases with upgrades.",
+          "The reaction has intensified. More materials\nare converting with each blast.",
+          "Your explosions practically rain gunpowder now.\nYou'll never run short of demolition supplies."
+        ]
+      }
+    },
+    {
+      "id": "obsidian_skin",
+      "type": "ability",
+      "coordinates": {
+        "x": 8,
+        "y": 10
+      },
+      "archetype_ref": "copper_golem",
+      "meta": {
+        "name": "Obsidian Skin",
+        "description": ["Resistance to explosions\n\nEffect: Reduced blast damage\nAlso reduces projectile damage"],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "OBSIDIAN",
+            "item_model": "modularjobs:upgrade/miner/obsidian_skin_locked"
+          },
+          "unlocked": {
+            "id": "OBSIDIAN",
+            "item_model": "modularjobs:upgrade/miner/obsidian_skin_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "copper_golem_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.obsidianskin"
+          }
+        ],
+        "perk_id": "obsidian_skin",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          3,
+          4,
+          4
+        ],
+        "level_descriptions": [
+          "Your skin hardens like volcanic rock,\nabsorbing the force of explosions and projectiles.\n\nProtection increases with each upgrade.",
+          "Your hardened exterior grows thicker and stronger.\nExplosions feel more like firm pushes now.",
+          "Obsidian courses through your veins. Blasts that\nwould fell others barely make you flinch."
+        ]
+      }
+    },
+    {
+      "id": "sticky_blast",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 14
+      },
+      "archetype_ref": "copper_golem",
+      "meta": {
+        "name": "Sticky Blast",
+        "description": ["Throw sticky TNT\n\nEffect: TNT sticks to surfaces\nDetonates on command"],
+        "node_texture": "white",
+        "icon": {
+          "locked": {
+            "id": "SLIME_BALL",
+            "item_model": "modularjobs:upgrade/miner/sticky_blast_locked"
+          },
+          "unlocked": {
+            "id": "SLIME_BALL",
+            "item_model": "modularjobs:upgrade/miner/sticky_blast_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "gunpowder_drop"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.stickyblast"
+          }
+        ],
+        "perk_id": "sticky_blast",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          5,
+          4,
+          4
+        ],
+        "level_descriptions": [
+          "Throw specially crafted TNT that adheres\nto any surface. Detonate at your leisure.\n\nCharges and range increase with upgrades.",
+          "Your adhesive formula has improved, and you've\nlearned to carry more charges at once.",
+          "A demolition expert, you can now blanket an\narea with sticky explosives and watch the fireworks."
+        ],
+        "level_effects": [
+          [],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.stickyblast.chargetwo"
+            }
+          ],
+          [
+            {
+              "type": "permission",
+              "permission": "aincraft-perks.perk.stickyblast.chargethree"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "id": "blast_radius",
+      "type": "ability",
+      "coordinates": {
+        "x": 8,
+        "y": 16
+      },
+      "archetype_ref": "copper_golem",
+      "meta": {
+        "name": "Blast Radius",
+        "description": ["Increased TNT explosion radius\n\nEffect: More blocks per blast\nMultiplier scales with level"],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "TNT",
+            "item_model": "modularjobs:upgrade/miner/blast_radius_locked"
+          },
+          "unlocked": {
+            "id": "TNT",
+            "item_model": "modularjobs:upgrade/miner/blast_radius_unlocked"
+          }
+        },
+        "cost": 4,
+        "prerequisites": [
+          "obsidian_skin"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.blastradius"
+          }
+        ],
+        "perk_id": "blast_radius",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          4,
+          4,
+          5
+        ],
+        "level_descriptions": [
+          "Your understanding of explosives has grown.\nTNT blasts cover a wider area.\n\nRadius and damage increase with upgrades.",
+          "Your explosive expertise shows. Each blast\nclears significantly more stone.",
+          "Master demolitionist. Your TNT creates massive\ncaverns where solid rock once stood."
+        ]
+      }
+    }
+  ]
+}
