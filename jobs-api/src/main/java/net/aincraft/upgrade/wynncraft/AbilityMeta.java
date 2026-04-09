@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
  * @param cost          skill point cost to unlock
  * @param description   list of description lines (supports multi-line lore)
  * @param prerequisites list of node IDs that must be unlocked first
+ * @param maxedPrerequisites list of node IDs that must be at max level (NEW)
  * @param exclusiveWith list of node IDs that become locked if this is unlocked
  * @param effects       list of effects granted by this ability
  * @param required      whether this node is required (always unlocked)
@@ -28,6 +29,7 @@ public record AbilityMeta(
     int cost,
     @NotNull List<String> description,
     @NotNull List<String> prerequisites,
+    @NotNull List<String> maxedPrerequisites,
     @NotNull List<String> exclusiveWith,
     @NotNull List<EffectConfig> effects,
     boolean required,
