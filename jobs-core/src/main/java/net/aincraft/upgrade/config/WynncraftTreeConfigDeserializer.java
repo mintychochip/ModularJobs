@@ -230,7 +230,7 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       level = meta.get("level").getAsInt();
     }
 
-    return new AbilityMeta(name, icons, cost, description, prerequisites, exclusiveWith, effects, required, major, perkId, level);
+    return new AbilityMeta(name, icons, cost, description, prerequisites, List.of(), exclusiveWith, effects, required, major, perkId, level);
   }
 
   private EffectConfig deserializeEffectConfig(JsonObject effectObj) {
