@@ -142,7 +142,7 @@ public final class UpgradeTreeGui implements Listener {
    */
   private void renderNodes(Inventory gui, GuiSession session, PlayerUpgradeData data) {
     Set<String> unlocked = data.unlockedNodes();
-    Set<UpgradeNode> available = session.tree.getAvailableNodes(unlocked);
+    Set<UpgradeNode> available = session.tree.getAvailableNodes(unlocked, data);
 
     // First, render connection lines between nodes
     renderConnections(gui, session, unlocked, available);
@@ -636,13 +636,24 @@ public final class UpgradeTreeGui implements Listener {
       }
     }
 
-    // Prerequisites for locked nodes
+    // Prerequisites for locked nodes (just unlocked)
     if (status == NodeStatus.LOCKED && !node.prerequisites().isEmpty()) {
       lore.add(Component.empty());
       lore.add(Component.text("Requires:", NamedTextColor.RED)
           .decoration(TextDecoration.ITALIC, false));
       for (String prereq : node.prerequisites()) {
         lore.add(Component.text("  \u2022 " + prereq, NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false));
+      }
+    }
+
+    // Maxed prerequisites for locked nodes (must be at MAX level)
+    if (status == NodeStatus.LOCKED && !node.maxedPrerequisites().isEmpty()) {
+      lore.add(Component.empty());
+      lore.add(Component.text("Requires MAX level:", NamedTextColor.RED)
+          .decoration(TextDecoration.ITALIC, false));
+      for (String prereq : node.maxedPrerequisites()) {
+        lore.add(Component.text("  \u2022 " + prereq + " [MAX]", NamedTextColor.GOLD)
             .decoration(TextDecoration.ITALIC, false));
       }
     }
