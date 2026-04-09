@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
  * @param unlockedItemModel item model namespace:key when unlocked (null = none)
  * @param cost             skill point cost to unlock
  * @param prerequisites    node keys that must be unlocked first
+ * @param maxedPrerequisites node keys that must be at MAX level
  * @param exclusive        node keys that become locked if this is chosen
  * @param children         node keys that this node leads to
  * @param effects          list of effects granted by this upgrade
@@ -39,6 +40,7 @@ public record UpgradeNode(
     @Nullable String unlockedItemModel,
     int cost,
     @NotNull Set<String> prerequisites,
+    @NotNull Set<String> maxedPrerequisites,
     @NotNull Set<String> exclusive,
     @NotNull List<String> children,
     @NotNull List<UpgradeEffect> effects,
@@ -52,7 +54,7 @@ public record UpgradeNode(
    * Check if this node is a root node (no prerequisites).
    */
   public boolean isRoot() {
-    return prerequisites.isEmpty();
+    return prerequisites.isEmpty() && maxedPrerequisites.isEmpty();
   }
 
   /**
