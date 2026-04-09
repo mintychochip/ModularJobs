@@ -1,0 +1,973 @@
+{
+  "tree_id": "lumberjack",
+  "display_name": "lumberjack",
+  "job": "lumberjack",
+  "description": "Lumberjack Companion Upgrade Tree",
+  "skill_points_per_level": 1,
+  "root": "root",
+  "archetypes": [
+    {
+      "id": "panda",
+      "name": "Panda Path",
+      "color": "#9C27B0"
+    },
+    {
+      "id": "parrot",
+      "name": "Parrot Path",
+      "color": "#F44336"
+    },
+    {
+      "id": "creaking",
+      "name": "Creaking Path",
+      "color": "#E0E0E0"
+    }
+  ],
+  "paths": [
+    { "x": 4, "y": 0 },
+    { "x": 1, "y": 2 },
+    { "x": 4, "y": 2 },
+    { "x": 7, "y": 2 },
+    { "x": 1, "y": 4 },
+    { "x": 7, "y": 4 },
+    { "x": 4, "y": 4 },
+    { "x": 2, "y": 7 },
+    { "x": 4, "y": 7 },
+    { "x": 6, "y": 7 },
+    { "x": 0, "y": 9 },
+    { "x": 7, "y": 9 },
+    { "x": 3, "y": 9 },
+    { "x": 1, "y": 10 },
+    { "x": 4, "y": 10 },
+    { "x": 8, "y": 10 },
+    { "x": 0, "y": 11 },
+    { "x": 3, "y": 11 },
+    { "x": 7, "y": 11 },
+    { "x": 1, "y": 12 },
+    { "x": 0, "y": 13 }
+  ],
+  "perkPolicies": {
+    "bark_restore": "MAX",
+    "fertilize": "MAX",
+    "treefeller": "MAX",
+    "leaf_blanket": "MAX",
+    "treehunter": "MAX",
+    "lumberjack_storage_tier_2": "MAX",
+    "hoarder": "MAX",
+    "cautious": "MAX",
+    "moodchange": "MAX",
+    "rampage": "MAX",
+    "playtime": "MAX",
+    "hover": "MAX",
+    "perch": "MAX",
+    "pandamonium": "MAX",
+    "paleheart": "MAX",
+    "palewatcher": "MAX",
+    "palereinforcements": "MAX"
+  },
+  "layout": [
+    {
+      "id": "root",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 0
+      },
+      "meta": {
+        "name": "Lumberjack Companion",
+        "description": ["Begin your journey with a loyal companion\nwho will aid you in the forests above.\n\nUse /jobpet to summon your lumberjack partner."],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "ZOMBIE_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/root_locked"
+          },
+          "unlocked": {
+            "id": "ZOMBIE_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/root_unlocked"
+          }
+        },
+        "cost": 0,
+        "major": true,
+        "prerequisites": [],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "jobpets.pet",
+              "aincraft-perks.pet.baby_zombie"
+            ]
+          }
+        ],
+        "perk_id": "root",
+        "level": 1
+      }
+    },
+    {
+      "id": "bark_restore",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 2
+      },
+      "meta": {
+        "name": "Bark Restore",
+        "description": ["Right-click stripped logs with an axe\nto restore their bark coating.\n\nConvenient way to undo stripping mistakes."],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "OAK_LOG",
+            "item_model": "modularjobs:upgrade/lumberjack/bark_restore_locked"
+          },
+          "unlocked": {
+            "id": "OAK_LOG",
+            "item_model": "modularjobs:upgrade/lumberjack/bark_restore_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "root"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.barkrestore"
+          }
+        ],
+        "perk_id": "bark_restore",
+        "level": 1
+      }
+    },
+    {
+      "id": "fertilize",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 4
+      },
+      "meta": {
+        "name": "Fertilize",
+        "description": ["Chance to bonemeal nearby saplings\nwhen crouching with an axe.\n\nSpread the forest with each swing."],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "BONE_MEAL",
+            "item_model": "modularjobs:upgrade/lumberjack/fertilize_locked"
+          },
+          "unlocked": {
+            "id": "BONE_MEAL",
+            "item_model": "modularjobs:upgrade/lumberjack/fertilize_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "bark_restore"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.fertilize"
+          }
+        ],
+        "perk_id": "fertilize",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          3,
+          4,
+          5
+        ],
+        "level_descriptions": [
+          "Your axes are enriched with bonemeal,\ngiving nearby saplings a chance to grow.\n\nChance and radius increase with upgrades.",
+          "More saplings receive nourishment with\neach swing of your axe.",
+          "The forest practically plants itself now.\nSaplings flourish in all directions."
+        ]
+      }
+    },
+    {
+      "id": "treefeller",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 2
+      },
+      "meta": {
+        "name": "Treefeller",
+        "description": ["Chop down entire trees by breaking\njust one log.\n\nThe whole trunk comes down at once."],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "DIAMOND_AXE",
+            "item_model": "modularjobs:upgrade/lumberjack/treefeller_locked"
+          },
+          "unlocked": {
+            "id": "DIAMOND_AXE",
+            "item_model": "modularjobs:upgrade/lumberjack/treefeller_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "root"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.treefeller"
+          }
+        ],
+        "perk_id": "treefeller",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          5,
+          5,
+          6
+        ],
+        "level_descriptions": [
+          "Channel the spirit of the forest to\nbring down entire trees with a single strike.\n\nCharges and cooldown improve with upgrades.",
+          "Your tree-felling technique has improved.\nMore charges and faster recovery between uses.",
+          "Master arborist. Trees fall at your command,\ncharges replenish almost instantly."
+        ]
+      }
+    },
+    {
+      "id": "leaf_blanket",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 2
+      },
+      "meta": {
+        "name": "Leaf Blanket",
+        "description": ["Reduces fall damage when landing\non leaf blocks.\n\nThe forest cushions your descent."],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "OAK_LEAVES",
+            "item_model": "modularjobs:upgrade/lumberjack/leaf_blanket_locked"
+          },
+          "unlocked": {
+            "id": "OAK_LEAVES",
+            "item_model": "modularjobs:upgrade/lumberjack/leaf_blanket_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "root"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.leafblanket"
+          }
+        ],
+        "perk_id": "leaf_blanket",
+        "level": 1
+      }
+    },
+    {
+      "id": "treehunter",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 4
+      },
+      "meta": {
+        "name": "Tree Hunter",
+        "description": ["Your pet autonomously searches for\nand chops nearby trees.\n\nRange and speed scale with upgrade level."],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "WOODEN_AXE",
+            "item_model": "modularjobs:upgrade/lumberjack/treehunter_locked"
+          },
+          "unlocked": {
+            "id": "WOODEN_AXE",
+            "item_model": "modularjobs:upgrade/lumberjack/treehunter_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "leaf_blanket"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.treehunter"
+          }
+        ],
+        "perk_id": "treehunter",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          3,
+          4,
+          5
+        ],
+        "level_descriptions": [
+          "Your pet learns to seek out trees on its own,\nchopping them down while you focus elsewhere.\n\nSearch radius and speed improve with upgrades.",
+          "The pet's hunting instincts sharpen.\nIt finds trees faster and works more efficiently.",
+          "A relentless woodsman. The pet covers\ngreater distances and fells trees with expert speed."
+        ]
+      }
+    },
+    {
+      "id": "lumberjack_storage_tier_2",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 4
+      },
+      "meta": {
+        "name": "Expanded Storage",
+        "description": ["Your pet's storage expands to hold\nmore materials from the forest.\n\nUnlocks the companion branching paths."],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "CHEST",
+            "item_model": "modularjobs:upgrade/lumberjack/storage_tier_2_locked"
+          },
+          "unlocked": {
+            "id": "CHEST",
+            "item_model": "modularjobs:upgrade/lumberjack/storage_tier_2_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "treefeller"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.lumberjack.storage.tworows"
+          }
+        ],
+        "perk_id": "lumberjack_storage_tier_2",
+        "level": 1
+      }
+    },
+    {
+      "id": "panda_branch",
+      "type": "ability",
+      "coordinates": {
+        "x": 2,
+        "y": 7
+      },
+      "archetype_ref": "panda",
+      "meta": {
+        "name": "Panda Companion",
+        "description": ["A gentle giant emerges from the bamboo,\nready to assist in the grove.\n\nThe Panda excels at mood-based abilities."],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "PANDA_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/panda_locked"
+          },
+          "unlocked": {
+            "id": "PANDA_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/panda_unlocked"
+          }
+        },
+        "cost": 10,
+        "major": true,
+        "prerequisites": [
+          "fertilize",
+          "lumberjack_storage_tier_2",
+          "treehunter"
+        ],
+        "exclusive_with": [
+          "parrot_branch",
+          "creaking_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "aincraft-perks.pet.panda"
+            ]
+          }
+        ],
+        "perk_id": "panda_branch",
+        "level": 1
+      }
+    },
+    {
+      "id": "parrot_branch",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 7
+      },
+      "archetype_ref": "parrot",
+      "meta": {
+        "name": "Parrot Companion",
+        "description": ["A colorful companion takes to the skies,\nperching upon your shoulder.\n\nThe Parrot excels at aerial abilities."],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "PARROT_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/parrot_locked"
+          },
+          "unlocked": {
+            "id": "PARROT_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/parrot_unlocked"
+          }
+        },
+        "cost": 10,
+        "major": true,
+        "prerequisites": [
+          "fertilize",
+          "lumberjack_storage_tier_2",
+          "treehunter"
+        ],
+        "exclusive_with": [
+          "panda_branch",
+          "creaking_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "aincraft-perks.pet.parrot"
+            ]
+          }
+        ],
+        "perk_id": "parrot_branch",
+        "level": 1
+      }
+    },
+    {
+      "id": "creaking_branch",
+      "type": "ability",
+      "coordinates": {
+        "x": 6,
+        "y": 7
+      },
+      "archetype_ref": "creaking",
+      "meta": {
+        "name": "Creaking Companion",
+        "description": ["A wooden guardian stirs to life,\nits pale form guarding the forest.\n\nThe Creaking excels at night and forest abilities."],
+        "node_texture": "white",
+        "icon": {
+          "locked": {
+            "id": "CREAKING_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/creaking_locked"
+          },
+          "unlocked": {
+            "id": "CREAKING_SPAWN_EGG",
+            "item_model": "modularjobs:upgrade/lumberjack/creaking_unlocked"
+          }
+        },
+        "cost": 10,
+        "major": true,
+        "prerequisites": [
+          "fertilize",
+          "lumberjack_storage_tier_2",
+          "treehunter"
+        ],
+        "exclusive_with": [
+          "panda_branch",
+          "parrot_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permissions": [
+              "aincraft-perks.pet.creaking"
+            ]
+          }
+        ],
+        "perk_id": "creaking_branch",
+        "level": 1
+      }
+    },
+    {
+      "id": "hoarder",
+      "type": "ability",
+      "coordinates": {
+        "x": 0,
+        "y": 9
+      },
+      "archetype_ref": "panda",
+      "meta": {
+        "name": "Hoarder",
+        "description": ["When your Panda is in a Lazy mood,\nit hoards extra supplies.\n\nGrants an additional row of storage."],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "CHEST",
+            "item_model": "modularjobs:upgrade/lumberjack/hoarder_locked"
+          },
+          "unlocked": {
+            "id": "CHEST",
+            "item_model": "modularjobs:upgrade/lumberjack/hoarder_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "panda_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.hoarder"
+          }
+        ],
+        "perk_id": "hoarder",
+        "level": 1
+      }
+    },
+    {
+      "id": "cautious",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 10
+      },
+      "archetype_ref": "panda",
+      "meta": {
+        "name": "Cautious",
+        "description": ["When your Panda is in a Worried mood,\nhostile mobs ignore you at night.\n\nAttacking breaks the effect briefly."],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "SHIELD",
+            "item_model": "modularjobs:upgrade/lumberjack/cautious_locked"
+          },
+          "unlocked": {
+            "id": "SHIELD",
+            "item_model": "modularjobs:upgrade/lumberjack/cautious_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "panda_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.cautious"
+          }
+        ],
+        "perk_id": "cautious",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          3,
+          4
+        ],
+        "level_descriptions": [
+          "Your Panda's worried nature rubs off on you.\nHostile creatures overlook your presence at night.\n\nCooldown decreases with upgrades.",
+          "Your caution has sharpened. The protection\nlasts longer before needing to reset."
+        ]
+      }
+    },
+    {
+      "id": "moodchange",
+      "type": "ability",
+      "coordinates": {
+        "x": 0,
+        "y": 11
+      },
+      "archetype_ref": "panda",
+      "meta": {
+        "name": "Mood Change",
+        "description": ["Cycle through your Panda's moods\nto unlock different abilities.\n\nLazy, Worried, Aggressive, Playful."],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "MUSIC_DISC_13",
+            "item_model": "modularjobs:upgrade/lumberjack/moodchange_locked"
+          },
+          "unlocked": {
+            "id": "MUSIC_DISC_13",
+            "item_model": "modularjobs:upgrade/lumberjack/moodchange_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "panda_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.moodchange"
+          }
+        ],
+        "perk_id": "moodchange",
+        "level": 1
+      }
+    },
+    {
+      "id": "rampage",
+      "type": "ability",
+      "coordinates": {
+        "x": 1,
+        "y": 12
+      },
+      "archetype_ref": "panda",
+      "meta": {
+        "name": "Rampage",
+        "description": ["When your Panda is in an Aggressive mood,\nit grows to full size and hunts trees autonomously.\n\nSpeed and tree count improve with upgrades."],
+        "node_texture": "red",
+        "icon": {
+          "locked": {
+            "id": "GOLDEN_AXE",
+            "item_model": "modularjobs:upgrade/lumberjack/rampage_locked"
+          },
+          "unlocked": {
+            "id": "GOLDEN_AXE",
+            "item_model": "modularjobs:upgrade/lumberjack/rampage_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "panda_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.rampage"
+          }
+        ],
+        "perk_id": "rampage",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          5,
+          6,
+          6
+        ],
+        "level_descriptions": [
+          "The primal rage within your Panda awakens.\nIn Aggressive mood, it grows massive and\ntears through trees without mercy.\n\nTree count and cooldown improve with upgrades.",
+          "The Panda's fury intensifies. More trees\nfall before its wrath with each use.",
+          "A force of nature. The Panda demolishes\nentire groves almost effortlessly."
+        ]
+      }
+    },
+    {
+      "id": "playtime",
+      "type": "ability",
+      "coordinates": {
+        "x": 0,
+        "y": 13
+      },
+      "archetype_ref": "panda",
+      "meta": {
+        "name": "Playtime",
+        "description": ["When your Panda is in a Playful mood,\nit periodically grants random potion buffs.\n\nBuff pool and duration improve with upgrades."],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "HONEY_BOTTLE",
+            "item_model": "modularjobs:upgrade/lumberjack/playtime_locked"
+          },
+          "unlocked": {
+            "id": "HONEY_BOTTLE",
+            "item_model": "modularjobs:upgrade/lumberjack/playtime_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "panda_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.playtime"
+          }
+        ],
+        "perk_id": "playtime",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          3,
+          4,
+          5
+        ],
+        "level_descriptions": [
+          "Your Panda's playful antics bestow\nblessings of good fortune upon you.\n\nIn Playful mood, random potion effects\nappear more often with each upgrade.",
+          "The buff pool expands. More varied and\npowerful effects come your way.",
+          "The Panda has become a master of play,\ngranting potent buffs that last longer."
+        ]
+      }
+    },
+    {
+      "id": "hover",
+      "type": "ability",
+      "coordinates": {
+        "x": 3,
+        "y": 9
+      },
+      "archetype_ref": "parrot",
+      "meta": {
+        "name": "Hover",
+        "description": ["Hold jump to hover in the air\nwith WASD movement.\n\nDuration and speed scale with level."],
+        "node_texture": "blue",
+        "icon": {
+          "locked": {
+            "id": "FEATHER",
+            "item_model": "modularjobs:upgrade/lumberjack/hover_locked"
+          },
+          "unlocked": {
+            "id": "FEATHER",
+            "item_model": "modularjobs:upgrade/lumberjack/hover_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "parrot_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.hover"
+          }
+        ],
+        "perk_id": "hover",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          2,
+          4,
+          5
+        ],
+        "level_descriptions": [
+          "Your Parrot teaches you the secrets of flight.\nHold jump to hover mid-air, moving freely\nwith WASD while the forest passes below.\n\nDuration and speed improve with upgrades.",
+          "Extended flight time and swifter movement\nthrough the canopy.",
+          "Like a leaf on the wind. You hover for\nwhat feels like forever, moving with expert grace."
+        ]
+      }
+    },
+    {
+      "id": "perch",
+      "type": "ability",
+      "coordinates": {
+        "x": 4,
+        "y": 10
+      },
+      "archetype_ref": "parrot",
+      "meta": {
+        "name": "Perch",
+        "description": ["While hovering, hang from the underside\nof blocks to rest and observe.\n\nDuration scales with upgrade level."],
+        "node_texture": "yellow",
+        "icon": {
+          "locked": {
+            "id": "COCOA_BEANS",
+            "item_model": "modularjobs:upgrade/lumberjack/perch_locked"
+          },
+          "unlocked": {
+            "id": "COCOA_BEANS",
+            "item_model": "modularjobs:upgrade/lumberjack/perch_unlocked"
+          }
+        },
+        "cost": 2,
+        "prerequisites": [
+          "parrot_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.perch"
+          }
+        ],
+        "perk_id": "perch",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          2,
+          3
+        ],
+        "level_descriptions": [
+          "Your Parrot can cling to the underside of\nblocks while hovering, allowing you to rest\nmid-air and survey your surroundings.\n\nPerch duration increases with upgrades.",
+          "You can now rest beneath the canopy for\nlonger stretches, observing the forest below."
+        ]
+      }
+    },
+    {
+      "id": "pandamonium",
+      "type": "ability",
+      "coordinates": {
+        "x": 3,
+        "y": 11
+      },
+      "archetype_ref": "parrot",
+      "meta": {
+        "name": "Pandamonium",
+        "description": ["Shift+right-click your Parrot to summon\na flock of cosmetic parrots that seek\nand chop nearby trees.\n\nParrot count and range scale with level."],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "WRITABLE_BOOK",
+            "item_model": "modularjobs:upgrade/lumberjack/pandamonium_locked"
+          },
+          "unlocked": {
+            "id": "WRITABLE_BOOK",
+            "item_model": "modularjobs:upgrade/lumberjack/pandamonium_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "parrot_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.pandamonium"
+          }
+        ],
+        "perk_id": "pandamonium",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          5,
+          6,
+          6
+        ],
+        "level_descriptions": [
+          "Your Parrot calls upon its wild cousins.\nA flock of ethereal parrots descends upon\nnearby trees, chopping them down for you.\n\nParrot count and search range improve with upgrades.",
+          "The flock grows larger, covering more ground\nand finding trees from greater distances.",
+          "An army of birds. The parrots blanket the\ngrove, leaving nary a trunk standing."
+        ]
+      }
+    },
+    {
+      "id": "paleheart",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 9
+      },
+      "archetype_ref": "creaking",
+      "meta": {
+        "name": "Pale Heart",
+        "description": ["Creaking mobs in the wild ignore you.\nChopping logs or collecting resin near them\ncan break the effect at tier 1.\nTier 2 grants unbreakable protection."],
+        "node_texture": "white",
+        "icon": {
+          "locked": {
+            "id": "HEART_OF_THE_SEA",
+            "item_model": "modularjobs:upgrade/lumberjack/paleheart_locked"
+          },
+          "unlocked": {
+            "id": "HEART_OF_THE_SEA",
+            "item_model": "modularjobs:upgrade/lumberjack/paleheart_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "creaking_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.paleheart"
+          }
+        ],
+        "perk_id": "paleheart",
+        "level": 1,
+        "max_level": 2,
+        "level_costs": [
+          3,
+          5
+        ],
+        "level_descriptions": [
+          "Your bond with the Creaking is deep.\nWild Creaking mobs sense this kinship and\nwill not harm you... unless provoked.\n\nChopping logs or collecting resin near them\nmay break the effect.",
+          "The bond is unbreakable. Even working\nnearby won't disturb the Creaking's trust."
+        ]
+      }
+    },
+    {
+      "id": "palewatcher",
+      "type": "ability",
+      "coordinates": {
+        "x": 8,
+        "y": 10
+      },
+      "archetype_ref": "creaking",
+      "meta": {
+        "name": "Pale Watcher",
+        "description": ["While in a forest biome and undetected\nby hostile mobs, gain speed and haste buffs.\n\nLeaving the forest or being targeted\nends the effect."],
+        "node_texture": "warrior",
+        "icon": {
+          "locked": {
+            "id": "EMERALD",
+            "item_model": "modularjobs:upgrade/lumberjack/palewatcher_locked"
+          },
+          "unlocked": {
+            "id": "EMERALD",
+            "item_model": "modularjobs:upgrade/lumberjack/palewatcher_unlocked"
+          }
+        },
+        "cost": 3,
+        "prerequisites": [
+          "creaking_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.palewatcher"
+          }
+        ],
+        "perk_id": "palewatcher",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          3,
+          4,
+          5
+        ],
+        "level_descriptions": [
+          "The Creaking watches over you in the forest.\nWhile undetected and within a forest biome,\nyou feel the forest's blessing: increased\nspeed and mining haste.\n\nBuff strength improves with upgrades.",
+          "The forest's magic courses stronger through you.\nFaster movement and quicker chopping.",
+          "One with the grove. The buffs are nearly\nindistinguishable from the forest itself."
+        ]
+      }
+    },
+    {
+      "id": "palereinforcements",
+      "type": "ability",
+      "coordinates": {
+        "x": 7,
+        "y": 11
+      },
+      "archetype_ref": "creaking",
+      "meta": {
+        "name": "Pale Reinforcements",
+        "description": ["Shift+right-click a log with RESIN_BRICK\nat night to transform the tree and spawn\nan allied Creaking that attacks hostile mobs.\n\nOn death or heart break, pale logs\ncollect to pet storage."],
+        "node_texture": "purple",
+        "icon": {
+          "locked": {
+            "id": "RESIN_BRICK",
+            "item_model": "modularjobs:upgrade/lumberjack/palereinforcements_locked"
+          },
+          "unlocked": {
+            "id": "RESIN_BRICK",
+            "item_model": "modularjobs:upgrade/lumberjack/palereinforcements_unlocked"
+          }
+        },
+        "cost": 5,
+        "prerequisites": [
+          "creaking_branch"
+        ],
+        "effects": [
+          {
+            "type": "permission",
+            "permission": "aincraft-perks.perk.palereinforcements"
+          }
+        ],
+        "perk_id": "palereinforcements",
+        "level": 1,
+        "max_level": 3,
+        "level_costs": [
+          5,
+          6,
+          6
+        ],
+        "level_descriptions": [
+          "The Pale Oak heart pulses with power.\nAt night, use a RESIN_BRICK on a suitable\nlog to awaken an allied Creaking guardian.\n\nThe Creaking fights for you until its\nheart breaks. Max Creakings and charges\nincrease with upgrades.",
+          "More hearts can be active at once, and\nthe Reinforcements recharge faster.",
+          "An army of wooden guardians. Multiple\nCreakings can be active, creating a\nformidable pale defense."
+        ]
+      }
+    }
+  ]
+}
