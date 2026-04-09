@@ -171,8 +171,25 @@ public final class UpgradeTree implements Keyed {
    *
    * @param unlockedNodeKeys set of already unlocked node keys
    * @return nodes that can be unlocked next
+   * @deprecated Use {@link #getAvailableNodes(Set, PlayerUpgradeData)} for proper maxed prerequisite checking
    */
+  @Deprecated
   public @NotNull Set<UpgradeNode> getAvailableNodes(@NotNull Set<String> unlockedNodeKeys) {
+    return getAvailableNodes(unlockedNodeKeys, null);
+  }
+
+  /**
+   * Get nodes that are available for unlock given a set of already-unlocked nodes
+   * and player upgrade data for maxed prerequisite checking.
+   *
+   * @param unlockedNodeKeys set of already unlocked node keys
+   * @param playerData player's upgrade data (null = skip maxed prerequisite checks)
+   * @return nodes that can be unlocked next
+   */
+  public @NotNull Set<UpgradeNode> getAvailableNodes(
+      @NotNull Set<String> unlockedNodeKeys,
+      @Nullable PlayerUpgradeData playerData
+  ) {
     Set<UpgradeNode> available = new HashSet<>();
 
     for (UpgradeNode node : nodes.values()) {
@@ -188,12 +205,22 @@ public final class UpgradeTree implements Keyed {
         continue;
       }
 
-      // Check if all prerequisites are met
-      boolean prerequisitesMet = node.prerequisites().isEmpty()
+      // Check if unlocked prerequisites are met
+      boolean unlockedMet = node.prerequisites().isEmpty()
           || unlockedNodeKeys.containsAll(node.prerequisites());
-      if (prerequisitesMet) {
-        available.add(node);
+      if (!unlockedMet) {
+        continue;
       }
+
+      // Check if maxed prerequisites are met
+      boolean maxedMet = node.maxedPrerequisites().isEmpty()
+          || (playerData != null && node.maxedPrerequisites().stream()
+              .allMatch(prereqKey -> playerData.isMaxLevel(prereqKey)));
+      if (!maxedMet) {
+        continue;
+      }
+
+      available.add(node);
     }
 
     return available;
@@ -206,11 +233,31 @@ public final class UpgradeTree implements Keyed {
    * @param unlockedNodeKeys currently unlocked nodes
    * @param availablePoints  skill points available
    * @return true if the node can be unlocked
+   * @deprecated Use {@link #canUnlock(String, Set, int, PlayerUpgradeData)} for proper maxed prerequisite checking
    */
+  @Deprecated
   public boolean canUnlock(
       @NotNull String nodeKey,
       @NotNull Set<String> unlockedNodeKeys,
       int availablePoints
+  ) {
+    return canUnlock(nodeKey, unlockedNodeKeys, availablePoints, null);
+  }
+
+  /**
+   * Check if a node can be unlocked.
+   *
+   * @param nodeKey          the node to check
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @param availablePoints  skill points available
+   * @param playerData       player's upgrade data (null = skip maxed prerequisite checks)
+   * @return true if the node can be unlocked
+   */
+  public boolean canUnlock(
+      @NotNull String nodeKey,
+      @NotNull Set<String> unlockedNodeKeys,
+      int availablePoints,
+      @Nullable PlayerUpgradeData playerData
   ) {
     UpgradeNode node = nodes.get(nodeKey);
     if (node == null) {
@@ -234,9 +281,19 @@ public final class UpgradeTree implements Keyed {
       return false;
     }
 
-    // Check prerequisites
-    return node.prerequisites().isEmpty()
+    // Check unlocked prerequisites
+    boolean unlockedMet = node.prerequisites().isEmpty()
         || unlockedNodeKeys.containsAll(node.prerequisites());
+    if (!unlockedMet) {
+      return false;
+    }
+
+    // Check maxed prerequisites
+    boolean maxedMet = node.maxedPrerequisites().isEmpty()
+        || (playerData != null && node.maxedPrerequisites().stream()
+            .allMatch(prereqKey -> playerData.isMaxLevel(prereqKey)));
+
+    return maxedMet;
   }
 
   private String getShortKey(UpgradeNode node) {
