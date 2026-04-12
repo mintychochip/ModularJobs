@@ -127,8 +127,6 @@ public final class PetSelectionGui {
     gui.setDefaultClickAction(event -> event.setCancelled(true));
 
     String selectedPet = petUpgradeService.getSelectedPet(player.getUniqueId(), job.key().toString());
-    boolean canChangeSpecialization = player.hasPermission("modularjobs.specialization.bypass") ||
-                                       player.hasPermission("modularjobs.specialization.bypass." + job.key().value());
 
     // Fill borders with gray stained glass panes
     GuiItem borderPane = ItemBuilder.from(Material.GRAY_STAINED_GLASS_PANE)
