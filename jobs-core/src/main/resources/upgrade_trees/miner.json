@@ -306,7 +306,9 @@
       },
       "meta": {
         "name": "Mining Companion",
-        "description": ["Begin your journey with a loyal companion\nwho will aid you in the depths below.\n\nUse /jobpet to summon your mining partner."],
+        "description": [
+          "Begin your journey with a loyal companion\nwho will aid you in the depths below.\n\nUse /jobpet to summon your mining partner."
+        ],
         "node_texture": "blue",
         "icon": {
           "locked": {
@@ -325,7 +327,6 @@
           {
             "type": "permission",
             "permissions": [
-              "jobpets.pet",
               "aincraft-perks.pet.silverfish"
             ]
           }
@@ -343,7 +344,9 @@
       },
       "meta": {
         "name": "Lava Immunity",
-        "description": ["Grants fire resistance when touching lava\n\nFire resistance on lava contact\nDuration scales with upgrade level"],
+        "description": [
+          "Grants fire resistance when touching lava\n\nFire resistance on lava contact\nDuration scales with upgrade level"
+        ],
         "node_texture": "red",
         "icon": {
           "locked": {
@@ -387,7 +390,9 @@
       },
       "meta": {
         "name": "Nether Lava Immunity",
-        "description": ["Extended fire resistance in the Nether\n\nEffect: Longer duration than overworld\nEssential for Nether mining"],
+        "description": [
+          "Extended fire resistance in the Nether\n\nEffect: Longer duration than overworld\nEssential for Nether mining"
+        ],
         "node_texture": "purple",
         "icon": {
           "locked": {
@@ -431,7 +436,9 @@
       },
       "meta": {
         "name": "Stone Skin",
-        "description": ["Reduces arrow damage\n\nEffect: Arrow damage reduction\nAlso immune to cobweb slowdown"],
+        "description": [
+          "Reduces arrow damage\n\nEffect: Arrow damage reduction\nAlso immune to cobweb slowdown"
+        ],
         "node_texture": "white",
         "icon": {
           "locked": {
@@ -475,7 +482,9 @@
       },
       "meta": {
         "name": "Expanded Storage",
-        "description": ["Your pet has learned to carry more loot\nin its expandable pouch.\n\nPet inventory grows to 2 rows."],
+        "description": [
+          "Your pet has learned to carry more loot\nin its expandable pouch.\n\nPet inventory grows to 2 rows."
+        ],
         "node_texture": "yellow",
         "icon": {
           "locked": {
@@ -510,7 +519,9 @@
       },
       "meta": {
         "name": "Far Gather",
-        "description": ["Pet collects ores from a distance\n\nEffect: Remote ore collection\nRange scales with upgrade level"],
+        "description": [
+          "Pet collects ores from a distance\n\nEffect: Remote ore collection\nRange scales with upgrade level"
+        ],
         "node_texture": "warrior",
         "icon": {
           "locked": {
@@ -556,7 +567,9 @@
       },
       "meta": {
         "name": "Explosion Collection",
-        "description": ["Your pet rushes to gather items scattered\nby explosions before they disappear.\n\nNo more chasing loot through the rubble."],
+        "description": [
+          "Your pet rushes to gather items scattered\nby explosions before they disappear.\n\nNo more chasing loot through the rubble."
+        ],
         "node_texture": "blue",
         "icon": {
           "locked": {
@@ -592,7 +605,9 @@
       "archetype_ref": "allay",
       "meta": {
         "name": "Allay Companion",
-        "description": ["A gentle spirit joins your side, eager to\nhelp with its gift for finding things.\n\nThe Allay excels at searching and teleportation.\nStorage: 3 rows (27 slots)"],
+        "description": [
+          "A gentle spirit joins your side, eager to\nhelp with its gift for finding things.\n\nThe Allay excels at searching and teleportation.\nStorage: 3 rows (27 slots)"
+        ],
         "node_texture": "red",
         "icon": {
           "locked": {
@@ -606,11 +621,6 @@
         },
         "cost": 10,
         "major": true,
-        "prerequisites": [
-          "nether_lava_immunity",
-          "far_gather",
-          "explosion_collection"
-        ],
         "exclusive_with": [
           "bat_branch",
           "goat_branch",
@@ -626,7 +636,14 @@
           }
         ],
         "perk_id": "allay_branch",
-        "level": 1
+        "level": 1,
+        "maxed_prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection",
+          "stone_skin",
+          "lava_immunity"
+        ]
       }
     },
     {
@@ -639,7 +656,9 @@
       "archetype_ref": "bat",
       "meta": {
         "name": "Bat Companion",
-        "description": ["A creature of the dark becomes your guide,\nnavigating caves with uncanny precision.\n\nThe Bat excels at navigation and mobility.\nStorage: 2 rows (18 slots)"],
+        "description": [
+          "A creature of the dark becomes your guide,\nnavigating caves with uncanny precision.\n\nThe Bat excels at navigation and mobility.\nStorage: 2 rows (18 slots)"
+        ],
         "node_texture": "purple",
         "icon": {
           "locked": {
@@ -653,11 +672,6 @@
         },
         "cost": 10,
         "major": true,
-        "prerequisites": [
-          "nether_lava_immunity",
-          "far_gather",
-          "explosion_collection"
-        ],
         "exclusive_with": [
           "allay_branch",
           "goat_branch",
@@ -670,7 +684,14 @@
           }
         ],
         "perk_id": "bat_branch",
-        "level": 1
+        "level": 1,
+        "maxed_prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection",
+          "stone_skin",
+          "lava_immunity"
+        ]
       }
     },
     {
@@ -683,7 +704,9 @@
       "archetype_ref": "goat",
       "meta": {
         "name": "Goat Companion",
-        "description": ["A stubborn but loyal beast joins you,\nready to charge through any obstacle.\n\nThe Goat excels at mounted combat and horn abilities.\nStorage: 4 rows (36 usable slots)"],
+        "description": [
+          "A stubborn but loyal beast joins you,\nready to charge through any obstacle.\n\nThe Goat excels at mounted combat and horn abilities.\nStorage: 4 rows (36 usable slots)"
+        ],
         "node_texture": "yellow",
         "icon": {
           "locked": {
@@ -697,11 +720,6 @@
         },
         "cost": 10,
         "major": true,
-        "prerequisites": [
-          "nether_lava_immunity",
-          "far_gather",
-          "explosion_collection"
-        ],
         "exclusive_with": [
           "allay_branch",
           "bat_branch",
@@ -717,7 +735,14 @@
           }
         ],
         "perk_id": "goat_branch",
-        "level": 1
+        "level": 1,
+        "maxed_prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection",
+          "stone_skin",
+          "lava_immunity"
+        ]
       }
     },
     {
@@ -730,7 +755,9 @@
       "archetype_ref": "copper_golem",
       "meta": {
         "name": "Copper Golem Companion",
-        "description": ["A mechanical marvel awakens to serve you,\nits copper heart beating for demolition.\n\nThe Copper Golem excels at explosions.\nStorage: 3 rows (27 slots)"],
+        "description": [
+          "A mechanical marvel awakens to serve you,\nits copper heart beating for demolition.\n\nThe Copper Golem excels at explosions.\nStorage: 3 rows (27 slots)"
+        ],
         "node_texture": "white",
         "icon": {
           "locked": {
@@ -744,11 +771,6 @@
         },
         "cost": 10,
         "major": true,
-        "prerequisites": [
-          "nether_lava_immunity",
-          "far_gather",
-          "explosion_collection"
-        ],
         "exclusive_with": [
           "allay_branch",
           "bat_branch",
@@ -764,7 +786,14 @@
           }
         ],
         "perk_id": "copper_golem_branch",
-        "level": 1
+        "level": 1,
+        "maxed_prerequisites": [
+          "nether_lava_immunity",
+          "far_gather",
+          "explosion_collection",
+          "stone_skin",
+          "lava_immunity"
+        ]
       }
     },
     {
@@ -777,7 +806,9 @@
       "archetype_ref": "allay",
       "meta": {
         "name": "Flowerporting",
-        "description": ["Teleport to spore blossoms\n\nEffect: Use flowering azalea to teleport\nCooldown scales with level"],
+        "description": [
+          "Teleport to spore blossoms\n\nEffect: Use flowering azalea to teleport\nCooldown scales with level"
+        ],
         "node_texture": "warrior",
         "icon": {
           "locked": {
@@ -824,7 +855,9 @@
       "archetype_ref": "allay",
       "meta": {
         "name": "Pet Light",
-        "description": ["Your Allay emits a soft glow\n\nIlluminates area around your pet\nRadius scales with upgrade level"],
+        "description": [
+          "Your Allay emits a soft glow\n\nIlluminates area around your pet\nRadius scales with upgrade level"
+        ],
         "node_texture": "blue",
         "icon": {
           "locked": {
@@ -871,7 +904,9 @@
       "archetype_ref": "allay",
       "meta": {
         "name": "Ore Search",
-        "description": ["Allay searches for nearest ore\n\nEffect: Target ore glows through walls\nSearch radius scales with level"],
+        "description": [
+          "Allay searches for nearest ore\n\nEffect: Target ore glows through walls\nSearch radius scales with level"
+        ],
         "node_texture": "red",
         "icon": {
           "locked": {
@@ -941,7 +976,9 @@
       "archetype_ref": "allay",
       "meta": {
         "name": "Azalea Flowering",
-        "description": ["Plant flowering azalea underground\n\nEffect: Create teleport destinations\nCooldown scales with level"],
+        "description": [
+          "Plant flowering azalea underground\n\nEffect: Create teleport destinations\nCooldown scales with level"
+        ],
         "node_texture": "purple",
         "icon": {
           "locked": {
@@ -988,7 +1025,9 @@
       "archetype_ref": "bat",
       "meta": {
         "name": "Tiny Wings",
-        "description": ["Multi-jump and slow fall\n\nEffect: Extra jumps in air\nGlide duration scales with level"],
+        "description": [
+          "Multi-jump and slow fall\n\nEffect: Extra jumps in air\nGlide duration scales with level"
+        ],
         "node_texture": "white",
         "icon": {
           "locked": {
@@ -1050,7 +1089,9 @@
       "archetype_ref": "bat",
       "meta": {
         "name": "Silent Walk",
-        "description": ["Move silently through caves\n\nEffect: Reduced detection by mobs\nAvoid alerting hostile creatures"],
+        "description": [
+          "Move silently through caves\n\nEffect: Reduced detection by mobs\nAvoid alerting hostile creatures"
+        ],
         "node_texture": "yellow",
         "icon": {
           "locked": {
@@ -1104,7 +1145,9 @@
       "archetype_ref": "bat",
       "meta": {
         "name": "Echolocation",
-        "description": ["Locate underground structures\n\nBat guides you to dungeons\nSearch radius scales with upgrades"],
+        "description": [
+          "Locate underground structures\n\nBat guides you to dungeons\nSearch radius scales with upgrades"
+        ],
         "node_texture": "warrior",
         "icon": {
           "locked": {
@@ -1153,7 +1196,9 @@
       "archetype_ref": "goat",
       "meta": {
         "name": "Commander's Blowhorn",
-        "description": ["Mount your goat and sound the horn\n\nEffect: Ride goat, unlock horn abilities\nSpeed and cooldowns scale with level"],
+        "description": [
+          "Mount your goat and sound the horn\n\nEffect: Ride goat, unlock horn abilities\nSpeed and cooldowns scale with level"
+        ],
         "node_texture": "blue",
         "icon": {
           "locked": {
@@ -1201,7 +1246,9 @@
       "archetype_ref": "goat",
       "meta": {
         "name": "Sturdy Legs",
-        "description": ["Feather falling effect\n\nEffect: Reduced fall damage\nLevel scales with upgrade"],
+        "description": [
+          "Feather falling effect\n\nEffect: Reduced fall damage\nLevel scales with upgrade"
+        ],
         "node_texture": "red",
         "icon": {
           "locked": {
@@ -1245,7 +1292,9 @@
       },
       "meta": {
         "name": "Pet Lantern",
-        "description": ["Your pet places torches as you mine\n\nEffect: Automatic torch placement\nInterval scales with upgrade level"],
+        "description": [
+          "Your pet places torches as you mine\n\nEffect: Automatic torch placement\nInterval scales with upgrade level"
+        ],
         "node_texture": "purple",
         "icon": {
           "locked": {
@@ -1292,7 +1341,9 @@
       "archetype_ref": "goat",
       "meta": {
         "name": "Dripstone Immunity",
-        "description": ["The sharp stalactites that once threatened\nyou now feel like gentle raindrops.\n\nExplore dripstone caves without fear."],
+        "description": [
+          "The sharp stalactites that once threatened\nyou now feel like gentle raindrops.\n\nExplore dripstone caves without fear."
+        ],
         "node_texture": "white",
         "icon": {
           "locked": {
@@ -1328,7 +1379,9 @@
       "archetype_ref": "goat",
       "meta": {
         "name": "Battering Ram",
-        "description": ["Charge and ram while mounted\n\nEffect: Knockback enemies and break blocks\nCooldown scales with level"],
+        "description": [
+          "Charge and ram while mounted\n\nEffect: Knockback enemies and break blocks\nCooldown scales with level"
+        ],
         "node_texture": "yellow",
         "icon": {
           "locked": {
@@ -1375,7 +1428,9 @@
       "archetype_ref": "goat",
       "meta": {
         "name": "Mega Jump",
-        "description": ["Launch into the air while mounted\n\nEffect: Powerful vertical leap\nHeight scales with level"],
+        "description": [
+          "Launch into the air while mounted\n\nEffect: Powerful vertical leap\nHeight scales with level"
+        ],
         "node_texture": "warrior",
         "icon": {
           "locked": {
@@ -1422,7 +1477,9 @@
       "archetype_ref": "goat",
       "meta": {
         "name": "Tunnel Bore",
-        "description": ["Dig through blocks while mounted\n\nEffect: Create tunnels rapidly\nDuration scales with level"],
+        "description": [
+          "Dig through blocks while mounted\n\nEffect: Create tunnels rapidly\nDuration scales with level"
+        ],
         "node_texture": "blue",
         "icon": {
           "locked": {
@@ -1469,7 +1526,9 @@
       "archetype_ref": "copper_golem",
       "meta": {
         "name": "Gunpowder Drop",
-        "description": ["TNT explosions drop gunpowder\n\nEffect: Converts cave materials\nRate scales with upgrade level"],
+        "description": [
+          "TNT explosions drop gunpowder\n\nEffect: Converts cave materials\nRate scales with upgrade level"
+        ],
         "node_texture": "red",
         "icon": {
           "locked": {
@@ -1516,7 +1575,9 @@
       "archetype_ref": "copper_golem",
       "meta": {
         "name": "Obsidian Skin",
-        "description": ["Resistance to explosions\n\nEffect: Reduced blast damage\nAlso reduces projectile damage"],
+        "description": [
+          "Resistance to explosions\n\nEffect: Reduced blast damage\nAlso reduces projectile damage"
+        ],
         "node_texture": "purple",
         "icon": {
           "locked": {
@@ -1563,7 +1624,9 @@
       "archetype_ref": "copper_golem",
       "meta": {
         "name": "Sticky Blast",
-        "description": ["Throw sticky TNT\n\nEffect: TNT sticks to surfaces\nDetonates on command"],
+        "description": [
+          "Throw sticky TNT\n\nEffect: TNT sticks to surfaces\nDetonates on command"
+        ],
         "node_texture": "white",
         "icon": {
           "locked": {
@@ -1625,7 +1688,9 @@
       "archetype_ref": "copper_golem",
       "meta": {
         "name": "Blast Radius",
-        "description": ["Increased TNT explosion radius\n\nEffect: More blocks per blast\nMultiplier scales with level"],
+        "description": [
+          "Increased TNT explosion radius\n\nEffect: More blocks per blast\nMultiplier scales with level"
+        ],
         "node_texture": "yellow",
         "icon": {
           "locked": {

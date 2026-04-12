@@ -2,6 +2,10 @@ package net.aincraft.gui;
 
 import com.google.inject.Inject;
 import dev.mintychochip.mint.Mint;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import org.bukkit.configuration.file.YamlConfiguration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -36,7 +40,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -56,6 +62,7 @@ public final class UpgradeTreeGui implements Listener {
   private final Plugin plugin;
   private final UpgradeService upgradeService;
   private final NamespacedKey nodeKeyTag;
+  private final File pendingRestoreDir;
 
   // Track open GUIs: player UUID -> session data
   private final Map<UUID, GuiSession> openGuis = new HashMap<>();
@@ -85,6 +92,32 @@ public final class UpgradeTreeGui implements Listener {
     this.plugin = plugin;
     this.upgradeService = upgradeService;
     this.nodeKeyTag = new NamespacedKey(plugin, "upgrade_node");
+    this.pendingRestoreDir = new File(plugin.getDataFolder(), "pending-restores");
+  }
+
+  private File pendingRestoreFile(UUID playerId) {
+    return new File(pendingRestoreDir, playerId.toString() + ".yml");
+  }
+
+  private void savePendingRestore(UUID playerId, ItemStack[] contents) {
+    try {
+      if (!pendingRestoreDir.exists() && !pendingRestoreDir.mkdirs()) {
+        plugin.getLogger().warning("Could not create pending-restores directory");
+        return;
+      }
+      YamlConfiguration yaml = new YamlConfiguration();
+      yaml.set("contents", contents);
+      yaml.save(pendingRestoreFile(playerId));
+    } catch (IOException e) {
+      plugin.getLogger().log(Level.WARNING, "Failed to save pending restore for " + playerId, e);
+    }
+  }
+
+  private void deletePendingRestore(UUID playerId) {
+    File f = pendingRestoreFile(playerId);
+    if (f.exists() && !f.delete()) {
+      plugin.getLogger().warning("Failed to delete pending restore file " + f);
+    }
   }
 
   // Toggle for textured titles (enable when resource pack is ready)
@@ -123,8 +156,12 @@ public final class UpgradeTreeGui implements Listener {
     GuiSession session = new GuiSession(job, tree);
     openGuis.put(playerId, session);
 
-    // Save and clear player's entire inventory (will be restored on close)
+    // Save and clear player's entire inventory (will be restored on close).
+    // Also persist to disk so a server crash while the GUI is open doesn't
+    // leave the player with the cleared inventory — the file is replayed on
+    // their next join.
     session.savedInventory = player.getInventory().getContents().clone();
+    savePendingRestore(playerId, session.savedInventory);
     player.getInventory().clear();
 
     // Fill background with glass panes
@@ -173,7 +210,7 @@ public final class UpgradeTreeGui implements Listener {
    */
   private void renderNodes(Inventory gui, GuiSession session, PlayerUpgradeData data) {
     Set<String> unlocked = data.unlockedNodes();
-    Set<UpgradeNode> available = session.tree.getAvailableNodes(unlocked);
+    Set<UpgradeNode> available = session.tree.getAvailableNodes(unlocked, data::getNodeLevel);
 
     // First, render connection lines between nodes
     renderConnections(gui, session, unlocked, available);
@@ -1388,6 +1425,7 @@ public final class UpgradeTreeGui implements Listener {
       // Restore player's entire inventory
       if (session != null && session.savedInventory != null) {
         player.getInventory().setContents(session.savedInventory);
+        deletePendingRestore(playerId);
       }
     }
   }
@@ -1400,6 +1438,63 @@ public final class UpgradeTreeGui implements Listener {
     // Restore inventory on quit (in case GUI was open)
     if (session != null && session.savedInventory != null) {
       event.getPlayer().getInventory().setContents(session.savedInventory);
+      deletePendingRestore(playerId);
+    }
+  }
+
+  @EventHandler
+  public void onPluginDisable(PluginDisableEvent event) {
+    // On server stop / /reload, InventoryCloseEvent isn't guaranteed to fire before
+    // Paper saves player data. Restore real inventories here while our listener is
+    // still registered; Paper kicks players after plugin disable, and the in-memory
+    // Inventory we just reset is what gets saved.
+    if (!event.getPlugin().getName().equals(plugin.getName())) {
+      return;
+    }
+    for (Map.Entry<UUID, GuiSession> entry : openGuis.entrySet()) {
+      UUID playerId = entry.getKey();
+      Player player = Bukkit.getPlayer(playerId);
+      if (player != null && entry.getValue().savedInventory != null) {
+        player.getInventory().setContents(entry.getValue().savedInventory);
+      }
+      deletePendingRestore(playerId);
+    }
+    openGuis.clear();
+  }
+
+  @EventHandler
+  public void onPlayerJoin(PlayerJoinEvent event) {
+    // Crash recovery: if a pending-restore file exists for this player, their previous
+    // session ended without a graceful close (server crash, OOM, SIGKILL, watchdog).
+    // Their persisted inventory is the cleared state from when the GUI was opened.
+    // Replay the saved contents and delete the marker.
+    UUID playerId = event.getPlayer().getUniqueId();
+    File file = pendingRestoreFile(playerId);
+    if (!file.exists()) {
+      return;
+    }
+    try {
+      YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+      List<?> list = yaml.getList("contents");
+      if (list == null) {
+        file.delete();
+        return;
+      }
+      ItemStack[] contents = new ItemStack[list.size()];
+      for (int i = 0; i < list.size(); i++) {
+        Object entry = list.get(i);
+        contents[i] = entry instanceof ItemStack item ? item : null;
+      }
+      event.getPlayer().getInventory().setContents(contents);
+      if (!file.delete()) {
+        plugin.getLogger().warning("Restored pending inventory for " + event.getPlayer().getName()
+            + " but could not delete marker file " + file);
+      }
+      plugin.getLogger().info("Restored upgrade-gui inventory for " + event.getPlayer().getName()
+          + " from pending-restores (prior crash or unclean shutdown)");
+    } catch (Exception e) {
+      plugin.getLogger().log(Level.WARNING,
+          "Failed to apply pending upgrade-gui restore for " + playerId, e);
     }
   }
 

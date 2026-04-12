@@ -80,14 +80,20 @@ public final class TreeConfigParser {
       }
     }
 
-    // Populate children field by reversing prerequisites
+    // Populate children field by reversing prerequisites (AND, OR, and maxed)
     for (UpgradeNode node : nodes.values()) {
-      for (String prereq : node.prerequisites()) {
+      Set<String> allPrereqParents = new HashSet<>();
+      allPrereqParents.addAll(node.prerequisites());
+      allPrereqParents.addAll(node.maxedPrerequisites());
+      for (String prereq : allPrereqParents) {
         UpgradeNode parent = nodes.get(prereq);
         if (parent != null) {
           // Add this node as a child of its prerequisite
           List<String> updatedChildren = new ArrayList<>(parent.children());
-          updatedChildren.add(getShortKey(node));
+          String childKey = getShortKey(node);
+          if (!updatedChildren.contains(childKey)) {
+            updatedChildren.add(childKey);
+          }
           nodes.put(prereq, new UpgradeNode(
               parent.key(),
               parent.name(),
@@ -99,6 +105,7 @@ public final class TreeConfigParser {
               parent.cost(),
               parent.prerequisites(),
               parent.prerequisitesOr(),
+              parent.maxedPrerequisites(),
               parent.exclusive(),
               updatedChildren,
               parent.effects(),
@@ -157,6 +164,7 @@ public final class TreeConfigParser {
 
     Set<String> prerequisites = new HashSet<>(meta.prerequisites());
     Set<String> prerequisitesOr = new HashSet<>(meta.prerequisitesOr());
+    Set<String> maxedPrerequisites = new HashSet<>(meta.maxedPrerequisites());
     Set<String> exclusive = new HashSet<>(meta.exclusiveWith());
     List<String> children = List.of(); // Children will be determined by layout
 
@@ -246,6 +254,7 @@ public final class TreeConfigParser {
         meta.cost(),
         prerequisites,
         prerequisitesOr,
+        maxedPrerequisites,
         exclusive,
         children,
         effects,

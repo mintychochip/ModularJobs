@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -183,11 +184,28 @@ public final class UpgradeTree implements Keyed {
 
   /**
    * Get nodes that are available for unlock given a set of already-unlocked nodes.
+   * Uses a minimum gate for maxedPrerequisites: each listed node must be unlocked
+   * (full max-level check happens at actual unlock time via the service).
    *
    * @param unlockedNodeKeys set of already unlocked node keys
    * @return nodes that can be unlocked next
    */
   public @NotNull Set<UpgradeNode> getAvailableNodes(@NotNull Set<String> unlockedNodeKeys) {
+    return getAvailableNodes(unlockedNodeKeys, k -> 0);
+  }
+
+  /**
+   * Get nodes that are available for unlock given a set of already-unlocked nodes
+   * and a function providing each node's current level (for maxedPrerequisites check).
+   *
+   * @param unlockedNodeKeys set of already unlocked node keys
+   * @param nodeLevelFn      function returning current level for a given node key
+   * @return nodes that can be unlocked next
+   */
+  public @NotNull Set<UpgradeNode> getAvailableNodes(
+      @NotNull Set<String> unlockedNodeKeys,
+      @NotNull Function<String, Integer> nodeLevelFn
+  ) {
     Set<UpgradeNode> available = new HashSet<>();
 
     for (UpgradeNode node : nodes.values()) {
@@ -211,7 +229,10 @@ public final class UpgradeTree implements Keyed {
       boolean orPrereqsMet = node.prerequisitesOr().isEmpty()
           || node.prerequisitesOr().stream().anyMatch(unlockedNodeKeys::contains);
 
-      if (andPrereqsMet && orPrereqsMet) {
+      // Check maxed prerequisites (all must be at max level)
+      boolean maxedPrereqsMet = areMaxedPrereqsMet(node, unlockedNodeKeys, nodeLevelFn);
+
+      if (andPrereqsMet && orPrereqsMet && maxedPrereqsMet) {
         available.add(node);
       }
     }
@@ -221,6 +242,8 @@ public final class UpgradeTree implements Keyed {
 
   /**
    * Check if a node can be unlocked.
+   * Does not perform a max-level check on maxedPrerequisites — use the overload
+   * accepting a nodeLevelFn for full validation.
    *
    * @param nodeKey          the node to check
    * @param unlockedNodeKeys currently unlocked nodes
@@ -231,6 +254,24 @@ public final class UpgradeTree implements Keyed {
       @NotNull String nodeKey,
       @NotNull Set<String> unlockedNodeKeys,
       int availablePoints
+  ) {
+    return canUnlock(nodeKey, unlockedNodeKeys, availablePoints, k -> 1);
+  }
+
+  /**
+   * Check if a node can be unlocked, including a max-level check on maxedPrerequisites.
+   *
+   * @param nodeKey          the node to check
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @param availablePoints  skill points available
+   * @param nodeLevelFn      function returning current level for a given node key
+   * @return true if the node can be unlocked
+   */
+  public boolean canUnlock(
+      @NotNull String nodeKey,
+      @NotNull Set<String> unlockedNodeKeys,
+      int availablePoints,
+      @NotNull Function<String, Integer> nodeLevelFn
   ) {
     UpgradeNode node = nodes.get(nodeKey);
     if (node == null) {
@@ -260,7 +301,39 @@ public final class UpgradeTree implements Keyed {
     boolean orPrereqsMet = node.prerequisitesOr().isEmpty()
         || node.prerequisitesOr().stream().anyMatch(unlockedNodeKeys::contains);
 
-    return andPrereqsMet && orPrereqsMet;
+    // Check maxed prerequisites (all must be at max level)
+    boolean maxedPrereqsMet = areMaxedPrereqsMet(node, unlockedNodeKeys, nodeLevelFn);
+
+    return andPrereqsMet && orPrereqsMet && maxedPrereqsMet;
+  }
+
+  /**
+   * Check whether all maxedPrerequisites of the given node are unlocked and at max level.
+   *
+   * @param node             the node whose maxedPrerequisites are checked
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @param nodeLevelFn      function returning current level for a given node key
+   * @return true if all maxed prerequisites are satisfied (or the list is empty)
+   */
+  public boolean areMaxedPrereqsMet(
+      @NotNull UpgradeNode node,
+      @NotNull Set<String> unlockedNodeKeys,
+      @NotNull Function<String, Integer> nodeLevelFn
+  ) {
+    if (node.maxedPrerequisites().isEmpty()) {
+      return true;
+    }
+    return node.maxedPrerequisites().stream().allMatch(k -> {
+      if (!unlockedNodeKeys.contains(k)) {
+        return false;
+      }
+      UpgradeNode prereqNode = nodes.get(k);
+      if (prereqNode == null) {
+        return false;
+      }
+      int currentLevel = nodeLevelFn.apply(k);
+      return currentLevel >= prereqNode.maxLevel();
+    });
   }
 
   /**

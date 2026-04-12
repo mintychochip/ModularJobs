@@ -20,9 +20,10 @@ import org.jetbrains.annotations.Nullable;
  * @param itemModel        item model namespace:key when locked (null = none)
  * @param unlockedItemModel item model namespace:key when unlocked (null = none)
  * @param cost             skill point cost to unlock
- * @param prerequisites    node keys that must ALL be unlocked first (AND logic)
- * @param prerequisitesOr  node keys where at least ONE must be unlocked (OR logic)
- * @param exclusive        node keys that become locked if this is chosen
+ * @param prerequisites        node keys that must ALL be unlocked first (AND logic)
+ * @param prerequisitesOr      node keys where at least ONE must be unlocked (OR logic)
+ * @param maxedPrerequisites   node keys that must ALL be at max level before this can be unlocked
+ * @param exclusive            node keys that become locked if this is chosen
  * @param children         node keys that this node leads to
  * @param effects          list of effects granted by this upgrade
  * @param position         optional position for UI rendering (x, y)
@@ -48,6 +49,7 @@ public record UpgradeNode(
     int cost,
     @NotNull Set<String> prerequisites,
     @NotNull Set<String> prerequisitesOr,
+    @NotNull Set<String> maxedPrerequisites,
     @NotNull Set<String> exclusive,
     @NotNull List<String> children,
     @NotNull List<UpgradeEffect> effects,
@@ -166,10 +168,10 @@ public record UpgradeNode(
   }
 
   /**
-   * Check if this node is a root node (no prerequisites).
+   * Check if this node is a root node (no prerequisites of any kind).
    */
   public boolean isRoot() {
-    return prerequisites.isEmpty() && prerequisitesOr.isEmpty();
+    return prerequisites.isEmpty() && prerequisitesOr.isEmpty() && maxedPrerequisites.isEmpty();
   }
 
   /**

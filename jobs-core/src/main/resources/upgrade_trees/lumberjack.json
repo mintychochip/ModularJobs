@@ -93,7 +93,6 @@
           {
             "type": "permission",
             "permissions": [
-              "jobpets.pet",
               "aincraft-perks.pet.baby_zombie"
             ]
           }

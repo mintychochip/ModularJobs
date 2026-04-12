@@ -157,6 +157,7 @@ public final class UpgradeTreeConfigParser {
         config.cost(),
         prerequisites,
         prerequisitesOr,
+        Set.of(),       // maxedPrerequisites - not supported in legacy format
         exclusive,
         children,
         effects,
