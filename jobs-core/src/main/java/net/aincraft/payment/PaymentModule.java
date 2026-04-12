@@ -86,6 +86,21 @@ public final class PaymentModule extends AbstractModule {
             Map.of(EntityType.COW, Duration.ofSeconds(5), EntityType.GOAT, Duration.ofSeconds(5)),
             Entity::getType,
             CacheLoader.from(Entity::getUniqueId)));
+    providers.put(ExploitProtectionType.STRIP.key(),
+        new MemoryExploitProtectionStoreImpl<>(
+            Map.of(Material.OAK_LOG, Duration.ofSeconds(5),
+                Material.SPRUCE_LOG, Duration.ofSeconds(5),
+                Material.BIRCH_LOG, Duration.ofSeconds(5),
+                Material.JUNGLE_LOG, Duration.ofSeconds(5),
+                Material.ACACIA_LOG, Duration.ofSeconds(5),
+                Material.DARK_OAK_LOG, Duration.ofSeconds(5),
+                Material.MANGROVE_LOG, Duration.ofSeconds(5),
+                Material.CHERRY_LOG, Duration.ofSeconds(5),
+                Material.PALE_OAK_LOG, Duration.ofSeconds(5)),
+            Block::getType,
+            CacheLoader.from(
+                block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
+                    block.getZ()))));
     return new ExploitServiceImpl(providers);
   }
 }
