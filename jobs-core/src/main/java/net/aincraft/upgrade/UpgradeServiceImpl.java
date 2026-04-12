@@ -58,18 +58,6 @@ public final class UpgradeServiceImpl implements UpgradeService {
     }
 
     final String finalPlainJobKey = plainJobKey;
-
-    // Debug: log available trees
-    if (treeRegistry.stream().findAny().isEmpty()) {
-      Bukkit.getLogger().warning("[UpgradeService] No trees registered in registry!");
-    } else {
-      treeRegistry.stream().forEach(tree ->
-          Bukkit.getLogger().info("[UpgradeService] Available tree: jobKey=" + tree.jobKey())
-      );
-    }
-
-    Bukkit.getLogger().info("[UpgradeService] Looking for tree with jobKey=" + finalPlainJobKey + " (from input=" + jobKey + ")");
-
     return treeRegistry.stream()
         .filter(tree -> tree.jobKey().equals(finalPlainJobKey))
         .findFirst();
@@ -94,7 +82,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     UpgradeTree tree = treeOpt.get();
     PlayerUpgradeData data = getPlayerData(playerId, jobKey);
-    return tree.getAvailableNodes(data.unlockedNodes());
+    return tree.getAvailableNodes(data.unlockedNodes(), data::getNodeLevel);
   }
 
   @Override
@@ -145,6 +133,19 @@ public final class UpgradeServiceImpl implements UpgradeService {
           .anyMatch(data::hasUnlocked);
       if (!anyOrMet) {
         return new UnlockResult.OrPrerequisitesNotMet(node.prerequisitesOr());
+      }
+    }
+
+    // Check maxed prerequisites (all must be at max level)
+    if (!node.maxedPrerequisites().isEmpty()) {
+      for (String prereqKey : node.maxedPrerequisites()) {
+        int currentLevel = data.getNodeLevel(prereqKey);
+        int maxLvl = tree.getNode(prereqKey)
+            .map(UpgradeNode::maxLevel)
+            .orElse(1);
+        if (currentLevel < maxLvl) {
+          return new UnlockResult.PrerequisitesNotMet(Set.of(prereqKey));
+        }
       }
     }
 
@@ -236,6 +237,24 @@ public final class UpgradeServiceImpl implements UpgradeService {
     data.resetSpentSkillPoints();
 
     repository.savePlayerData(data);
+
+    // Re-apply effects from every OTHER unlocked tree. This is required because
+    // the Bukkit PermissionAttachment API used by UpgradePermissionManager is not
+    // reference-counted — calling unsetPermission() above removes the entry entirely,
+    // even when another tree's unlocked nodes grant the same permission (e.g., both
+    // miner.json root and lumberjack.json root grant "jobpets.pet"). Without this
+    // re-apply pass, resetting one tree silently strips shared permissions that
+    // another tree's unlocked nodes are still supposed to be granting, which in
+    // turn breaks cross-family pet activation logic.
+    if (player != null && player.isOnline()) {
+      for (UpgradeTree otherTree : treeRegistry) {
+        if (otherTree.jobKey().equals(jobKey)) continue;
+        PlayerUpgradeData otherData = getOrLoadData(playerId, otherTree.jobKey());
+        if (!otherData.unlockedNodes().isEmpty()) {
+          effectApplier.restoreEffects(player, otherTree, otherData);
+        }
+      }
+    }
 
     // Fire reset event
     if (player != null && player.isOnline()) {

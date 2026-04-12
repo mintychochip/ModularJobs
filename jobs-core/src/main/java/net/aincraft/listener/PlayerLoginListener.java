@@ -42,10 +42,8 @@ public final class PlayerLoginListener implements Listener {
       int level = progression.level();
       String jobKey = job.key().toString();
 
-      // Grant jobpets.pet permission for miner job
-      if ("modularjobs:miner".equals(jobKey)) {
-        jobPetsHook.grantPermission(player, "jobpets.pet");
-      }
+      // jobpets.pet is granted globally via plugin.yml default=true — no
+      // per-job grant required on login.
 
       // Check if player has a saved pet selection (need this first for revokes)
       String selectedPet = petUpgradeService.getSelectedPet(player.getUniqueId(), jobKey);

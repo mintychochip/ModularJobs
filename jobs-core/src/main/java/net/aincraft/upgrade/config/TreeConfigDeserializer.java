@@ -210,6 +210,14 @@ public final class TreeConfigDeserializer implements JsonDeserializer<TreeConfig
       }
     }
 
+    // Parse maxed_prerequisites (all must be at max level)
+    List<String> maxedPrerequisites = new ArrayList<>();
+    if (meta.has("maxed_prerequisites")) {
+      for (JsonElement elem : meta.getAsJsonArray("maxed_prerequisites")) {
+        maxedPrerequisites.add(elem.getAsString());
+      }
+    }
+
     // Parse exclusive_with
     List<String> exclusiveWith = new ArrayList<>();
     if (meta.has("exclusive_with")) {
@@ -287,7 +295,7 @@ public final class TreeConfigDeserializer implements JsonDeserializer<TreeConfig
     // Parse optional node_texture for custom node rendering
     String nodeTexture = meta.has("node_texture") ? getString(meta, "node_texture") : null;
 
-    return new AbilityMeta(name, icons, cost, description, prerequisites, prerequisitesOr, exclusiveWith, effects, required, major, perkId, level, maxLevel, levelCosts, levelDescriptions, levelEffects, levelIcons, nodeTexture);
+    return new AbilityMeta(name, icons, cost, description, prerequisites, prerequisitesOr, maxedPrerequisites, exclusiveWith, effects, required, major, perkId, level, maxLevel, levelCosts, levelDescriptions, levelEffects, levelIcons, nodeTexture);
   }
 
   private EffectConfig deserializeEffectConfig(JsonObject effectObj) {
