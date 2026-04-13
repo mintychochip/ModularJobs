@@ -97,11 +97,9 @@ final class UpgradeCommand implements JobsCommand {
 
                     // Check if player already has a pet for this job
                     String existingPet = petUpgradeService.getSelectedPet(player.getUniqueId(), jobKey.toString());
-                    boolean canChangeSpecialization = player.hasPermission("modularjobs.specialization.bypass") ||
-                                                       player.hasPermission("modularjobs.specialization.bypass." + jobName);
-                    
-                    if (existingPet != null && !canChangeSpecialization) {
-                        Mint.sendThemedMessage(player, "<error>Your pet specialization is permanent! You chose <secondary>" + formatPetName(existingPet) + "<error>.");
+                    if (existingPet != null) {
+                        Mint.sendThemedMessage(player, "<info>You already upgraded to: <success>" + formatPetName(existingPet));
+                        Mint.sendThemedMessage(player, "<neutral>Job upgrades are permanent.");
                         return Command.SINGLE_SUCCESS;
                     }
 

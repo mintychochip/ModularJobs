@@ -118,10 +118,9 @@ public final class JobLevelUpListener implements Listener {
     int level = event.getLevel();
     String jobKey = job.key().toString();
 
-    // Grant jobpets.pet permission for miner job
-    if ("modularjobs:miner".equals(jobKey)) {
-      jobPetsHook.grantPermission(player, "jobpets.pet");
-    }
+    // jobpets.pet is now granted to all players by default via plugin.yml,
+    // so no per-job grant is needed. (Previously only miner was handled here,
+    // which left lumberjack-only players without pet access after joining.)
 
     // Check if player has a saved pet selection (need this first for revokes)
     String selectedPet = petUpgradeService.getSelectedPet(player.getUniqueId(), jobKey);
@@ -263,10 +262,12 @@ public final class JobLevelUpListener implements Listener {
     Job job = event.getJob();
     String jobKey = job.key().toString();
 
-    // Revoke jobpets.pet permission for miner job
-    if ("modularjobs:miner".equals(jobKey)) {
-      jobPetsHook.revokePermission(player, "jobpets.pet");
-    }
+    // Do NOT revoke jobpets.pet on job leave. It's granted globally by plugin.yml
+    // default=true. A Bukkit attachment-based revoke here would add a new
+    // attachment explicitly setting false, overriding the default for the rest
+    // of the session — which previously broke cross-family pet spawn/despawn
+    // (e.g., bat stuck above ground because the activation listener's entry
+    // gate on jobpets.pet returned false after a lumberjack tree reset).
 
     // Revoke all universal perks for this job (includes storage.* perks)
     Map<Integer, List<String>> unlocks = job.perkUnlocks();

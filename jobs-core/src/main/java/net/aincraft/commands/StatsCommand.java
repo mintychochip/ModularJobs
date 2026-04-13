@@ -13,6 +13,7 @@ import net.aincraft.JobProgression;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -23,51 +24,16 @@ import dev.mintychochip.mint.Mint;
 public class StatsCommand implements JobsCommand {
 
   private final JobService jobService;
-  private final StatsDialog statsDialog;
 
   @Inject
-  public StatsCommand(JobService jobService, StatsDialog statsDialog) {
+  public StatsCommand(JobService jobService) {
     this.jobService = jobService;
-    this.statsDialog = statsDialog;
   }
 
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("stats")
-        // /jobs stats chat <playerName> - admin variant (chat output)
-        .then(Commands.literal("chat")
-            .then(Commands.argument("player", StringArgumentType.word())
-                .requires(source -> source.getSender().hasPermission("jobs.command.admin.stats"))
-                .executes(context -> {
-                  CommandSourceStack source = context.getSource();
-                  CommandSender sender = source.getSender();
-
-                  String playerName = context.getArgument("player", String.class);
-                  OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
-
-                  if (target == null) {
-                    Mint.sendThemedMessage(sender, "<error>Player not found: " + playerName);
-                    return 0;
-                  }
-
-                  displayStatsChat(sender, target);
-                  return Command.SINGLE_SUCCESS;
-                }))
-            // /jobs stats chat - player variant (chat output)
-            .requires(source -> source.getSender().hasPermission("jobs.command.stats"))
-            .executes(context -> {
-              CommandSourceStack source = context.getSource();
-              CommandSender sender = source.getSender();
-
-              if (!(sender instanceof Player player)) {
-                Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
-                return 0;
-              }
-
-              displayStatsChat(player, player);
-              return Command.SINGLE_SUCCESS;
-            }))
-        // /jobs stats <playerName> - admin variant (GUI output)
+        // /jobs stats <playerName> - admin variant
         .then(Commands.argument("player", StringArgumentType.word())
             .requires(source -> source.getSender().hasPermission("jobs.command.admin.stats"))
             .executes(context -> {
@@ -85,7 +51,7 @@ public class StatsCommand implements JobsCommand {
               displayStats(sender, target);
               return Command.SINGLE_SUCCESS;
             }))
-        // /jobs stats - player variant (GUI output)
+        // /jobs stats - player variant
         .requires(source -> source.getSender().hasPermission("jobs.command.stats"))
         .executes(context -> {
           CommandSourceStack source = context.getSource();
@@ -101,30 +67,7 @@ public class StatsCommand implements JobsCommand {
         });
   }
 
-  /**
-   * Displays stats in a GUI dialog. Falls back to chat if sender is not a player.
-   */
   private void displayStats(CommandSender viewer, OfflinePlayer target) {
-    if (viewer instanceof Player player) {
-      displayStatsDialog(player, target);
-    } else {
-      displayStatsChat(viewer, target);
-    }
-  }
-
-  /**
-   * Displays stats in a GUI dialog.
-   */
-  private void displayStatsDialog(Player viewer, OfflinePlayer target) {
-    List<JobProgression> progressions = jobService.getProgressions(target);
-    io.papermc.paper.dialog.Dialog dialog = statsDialog.buildDialog(target, progressions, 1);
-    viewer.showDialog(dialog);
-  }
-
-  /**
-   * Displays stats in chat format (original implementation).
-   */
-  private void displayStatsChat(CommandSender viewer, OfflinePlayer target) {
     List<JobProgression> progressions = jobService.getProgressions(target);
 
     String targetName = target.getName() != null ? target.getName() : "Unknown";
@@ -186,7 +129,7 @@ public class StatsCommand implements JobsCommand {
 
     // Build main display: bar + Lvl. [level] + [name]
     String bar = createProgressBar(percentage);
-    Component barComponent = Mint.createThemedComponent(viewer, bar);
+    Component barComponent = Mint.createThemedComponent(viewer,bar);
     Component jobName = progression.job().displayName();
     Component mainDisplay = Component.text("  ")
         .append(barComponent)
@@ -214,6 +157,7 @@ public class StatsCommand implements JobsCommand {
         "\n<neutral>XP in level: <secondary>" + xpCurrentStr + " / " + xpTotalStr +
         "\n<neutral>Total XP: <accent>" + totalXpStr);
   }
+
 
   private String createProgressBar(double percentage) {
     int barLength = 32;

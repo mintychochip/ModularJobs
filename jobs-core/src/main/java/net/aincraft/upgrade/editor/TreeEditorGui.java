@@ -22,8 +22,11 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -34,7 +37,7 @@ import org.jetbrains.annotations.NotNull;
  * Main GUI for editing upgrade trees using Triumph GUI.
  * Provides a visual canvas with drag-and-drop node placement.
  */
-public final class TreeEditorGui {
+public final class TreeEditorGui implements Listener {
 
   private static final int GUI_SIZE = 54; // 6 rows
   private static final int GUI_ROWS = 6;
@@ -73,6 +76,8 @@ public final class TreeEditorGui {
     this.plugin = plugin;
     this.exporter = exporter;
     this.treeLoader = treeLoader;
+    // Register as listener for cleanup on player quit
+    plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
 
   /**
@@ -750,5 +755,25 @@ public final class TreeEditorGui {
     Gui gui = createGui(player, session);
     gui.open(player);
     openGuis.put(playerId, gui);
+  }
+
+  /**
+   * Clean up all session data when player quits to prevent memory leaks.
+   */
+  @EventHandler
+  public void onPlayerQuit(PlayerQuitEvent event) {
+    UUID playerId = event.getPlayer().getUniqueId();
+    Player player = event.getPlayer();
+
+    // Clean up all maps
+    sessions.remove(playerId);
+    openGuis.remove(playerId);
+    transitioningToSubGui.remove(playerId);
+
+    // Restore inventory if it was saved
+    ItemStack[] saved = savedInventories.remove(playerId);
+    if (saved != null) {
+      player.getInventory().setContents(saved);
+    }
   }
 }

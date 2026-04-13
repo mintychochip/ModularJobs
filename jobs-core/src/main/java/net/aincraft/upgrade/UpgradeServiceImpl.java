@@ -5,12 +5,16 @@ import com.google.inject.Singleton;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.aincraft.JobProgression;
+import net.aincraft.event.NodeResetEvent;
+import net.aincraft.event.NodeUnlockEvent;
+import net.aincraft.event.NodeUpgradeEvent;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
 import org.bukkit.Bukkit;
@@ -47,6 +51,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
   @Override
   public @NotNull Optional<UpgradeTree> getTree(@NotNull String jobKey) {
+    // Extract the plain job key (without namespace) for matching
     String plainJobKey = jobKey;
     if (jobKey.contains(":")) {
       plainJobKey = jobKey.substring(jobKey.indexOf(':') + 1);
@@ -77,7 +82,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     UpgradeTree tree = treeOpt.get();
     PlayerUpgradeData data = getPlayerData(playerId, jobKey);
-    return tree.getAvailableNodes(data.unlockedNodes());
+    return tree.getAvailableNodes(data.unlockedNodes(), data::getNodeLevel);
   }
 
   @Override
@@ -104,13 +109,14 @@ public final class UpgradeServiceImpl implements UpgradeService {
       return new UnlockResult.AlreadyUnlocked(nodeKey);
     }
 
-    // Check cost
+    // Check cost - use per-level cost for level 1 if available
+    int unlockCost = node.isUpgradeable() ? node.getCostForLevel(1) : node.cost();
     int available = data.availableSkillPoints();
-    if (node.cost() > available) {
-      return new UnlockResult.InsufficientPoints(node.cost(), available);
+    if (unlockCost > available) {
+      return new UnlockResult.InsufficientPoints(unlockCost, available);
     }
 
-    // Check prerequisites
+    // Check AND prerequisites (all must be met)
     Set<String> missingPrereqs = new HashSet<>();
     for (String prereq : node.prerequisites()) {
       if (!data.hasUnlocked(prereq)) {
@@ -121,19 +127,42 @@ public final class UpgradeServiceImpl implements UpgradeService {
       return new UnlockResult.PrerequisitesNotMet(missingPrereqs);
     }
 
-    // Check exclusives
-    Set<String> conflicting = new HashSet<>();
-    for (String exclusive : node.exclusive()) {
-      if (data.hasUnlocked(exclusive)) {
-        conflicting.add(exclusive);
+    // Check OR prerequisites (at least one must be met)
+    if (!node.prerequisitesOr().isEmpty()) {
+      boolean anyOrMet = node.prerequisitesOr().stream()
+          .anyMatch(data::hasUnlocked);
+      if (!anyOrMet) {
+        return new UnlockResult.OrPrerequisitesNotMet(node.prerequisitesOr());
       }
     }
-    if (!conflicting.isEmpty()) {
-      return new UnlockResult.ExcludedByChoice(conflicting);
+
+    // Check maxed prerequisites (all must be at max level)
+    if (!node.maxedPrerequisites().isEmpty()) {
+      for (String prereqKey : node.maxedPrerequisites()) {
+        int currentLevel = data.getNodeLevel(prereqKey);
+        int maxLvl = tree.getNode(prereqKey)
+            .map(UpgradeNode::maxLevel)
+            .orElse(1);
+        if (currentLevel < maxLvl) {
+          return new UnlockResult.PrerequisitesNotMet(Set.of(prereqKey));
+        }
+      }
+    }
+
+    // Check if excluded by any already-unlocked node
+    Set<String> excludingNodes = tree.getExcludingNodes(nodeKey, data.unlockedNodes());
+    if (!excludingNodes.isEmpty()) {
+      return new UnlockResult.ExcludedByChoice(excludingNodes);
     }
 
     // Unlock the node
     data.unlock(nodeKey);
+    data.spendSkillPoints(unlockCost);
+
+    // Set initial node level for upgradeable nodes
+    if (node.isUpgradeable()) {
+      data.setNodeLevel(nodeKey, 1);
+    }
 
     // Track perk level
     data.setPerkLevel(node.perkId(), node.level());
@@ -147,6 +176,11 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     // Persist
     repository.savePlayerData(data);
+
+    // Fire unlock event
+    if (player != null && player.isOnline()) {
+      Bukkit.getPluginManager().callEvent(new NodeUnlockEvent(player, jobKey, node));
+    }
 
     int remaining = data.availableSkillPoints();
     return new UnlockResult.Success(node, remaining);
@@ -175,16 +209,132 @@ public final class UpgradeServiceImpl implements UpgradeService {
     for (String nodeKey : unlocked) {
       // Unapply effects before locking
       if (player != null && player.isOnline() && treeOpt.isPresent()) {
-        treeOpt.get().getNode(nodeKey).ifPresent(node ->
-            effectApplier.unapplyNodeEffects(player, node)
-        );
+        treeOpt.get().getNode(nodeKey).ifPresent(node -> {
+          // Revoke base effects
+          effectApplier.unapplyNodeEffects(player, node);
+
+          // Revoke level-specific effects for upgraded nodes
+          int nodeLevel = data.getNodeLevel(nodeKey);
+          if (node.isUpgradeable() && nodeLevel > 1) {
+            for (int lvl = 2; lvl <= nodeLevel; lvl++) {
+              List<UpgradeEffect> levelEffects = node.getEffectsForLevel(lvl);
+              effectApplier.revokeEffects(player, levelEffects);
+            }
+          }
+        });
       }
 
       data.lock(nodeKey);
+      data.removeNodeLevel(nodeKey); // Clear node level for upgradeable nodes
     }
 
+    // Clear all perk levels
+    for (String perkId : new HashSet<>(data.perkLevels().keySet())) {
+      data.removePerkLevel(perkId);
+    }
+
+    // Reset spent skill points
+    data.resetSpentSkillPoints();
+
     repository.savePlayerData(data);
+
+    // Re-apply effects from every OTHER unlocked tree. This is required because
+    // the Bukkit PermissionAttachment API used by UpgradePermissionManager is not
+    // reference-counted — calling unsetPermission() above removes the entry entirely,
+    // even when another tree's unlocked nodes grant the same permission (e.g., both
+    // miner.json root and lumberjack.json root grant "jobpets.pet"). Without this
+    // re-apply pass, resetting one tree silently strips shared permissions that
+    // another tree's unlocked nodes are still supposed to be granting, which in
+    // turn breaks cross-family pet activation logic.
+    if (player != null && player.isOnline()) {
+      for (UpgradeTree otherTree : treeRegistry) {
+        if (otherTree.jobKey().equals(jobKey)) continue;
+        PlayerUpgradeData otherData = getOrLoadData(playerId, otherTree.jobKey());
+        if (!otherData.unlockedNodes().isEmpty()) {
+          effectApplier.restoreEffects(player, otherTree, otherData);
+        }
+      }
+    }
+
+    // Fire reset event
+    if (player != null && player.isOnline()) {
+      Bukkit.getPluginManager().callEvent(new NodeResetEvent(player, jobKey, unlocked));
+    }
+
     return true;
+  }
+
+  @Override
+  public @NotNull UnlockResult upgradeNode(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey) {
+    // Get tree
+    Optional<UpgradeTree> treeOpt = getTree(jobKey);
+    if (treeOpt.isEmpty()) {
+      return new UnlockResult.TreeNotFound(jobKey);
+    }
+    UpgradeTree tree = treeOpt.get();
+
+    // Get node
+    Optional<UpgradeNode> nodeOpt = tree.getNode(nodeKey);
+    if (nodeOpt.isEmpty()) {
+      return new UnlockResult.NodeNotFound(nodeKey);
+    }
+    UpgradeNode node = nodeOpt.get();
+
+    // Check node is upgradeable
+    if (!node.isUpgradeable()) {
+      return new UnlockResult.AlreadyMaxLevel(nodeKey, 1);
+    }
+
+    // Get player data
+    PlayerUpgradeDataImpl data = getOrLoadData(playerId, jobKey);
+
+    // Check node is unlocked
+    if (!data.hasUnlocked(nodeKey)) {
+      return new UnlockResult.NodeNotUnlocked(nodeKey);
+    }
+
+    // Check current level
+    int currentLevel = data.getNodeLevel(nodeKey);
+    if (currentLevel >= node.maxLevel()) {
+      return new UnlockResult.AlreadyMaxLevel(nodeKey, node.maxLevel());
+    }
+
+    // Get cost for next level
+    int nextLevel = currentLevel + 1;
+    int upgradeCost = node.getCostForLevel(nextLevel);
+
+    // Check cost
+    int available = data.availableSkillPoints();
+    if (upgradeCost > available) {
+      return new UnlockResult.InsufficientPoints(upgradeCost, available);
+    }
+
+    // Upgrade
+    data.setNodeLevel(nodeKey, nextLevel);
+    data.spendSkillPoints(upgradeCost);
+    data.setPerkLevel(node.perkId(), nextLevel); // Update perk level for scaling
+
+    // Persist
+    repository.savePlayerData(data);
+
+    // Apply level-specific effects and fire event if player is online
+    UUID uuid = UUID.fromString(playerId);
+    Player player = Bukkit.getPlayer(uuid);
+    if (player != null && player.isOnline()) {
+      List<UpgradeEffect> levelEffects = node.getEffectsForLevel(nextLevel);
+      effectApplier.applyEffects(player, levelEffects);
+
+      Bukkit.getPluginManager().callEvent(
+          new NodeUpgradeEvent(player, jobKey, node, currentLevel, nextLevel));
+    }
+
+    int remaining = data.availableSkillPoints();
+    return new UnlockResult.NodeUpgraded(nodeKey, nextLevel, node.maxLevel(), remaining);
+  }
+
+  @Override
+  public void evictPlayer(@NotNull String playerId) {
+    cache.remove(playerId);
   }
 
   private PlayerUpgradeDataImpl getOrLoadData(String playerId, String jobKey) {

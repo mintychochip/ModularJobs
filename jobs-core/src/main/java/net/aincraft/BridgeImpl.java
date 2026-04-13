@@ -9,11 +9,13 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.service.JobService;
+import net.aincraft.upgrade.UpgradeService;
 import org.bukkit.plugin.Plugin;
 
 record BridgeImpl(Plugin plugin,
                   RegistryContainer registryContainer,
                   JobService jobService,
+                  UpgradeService upgradeService,
                   @Nullable EconomyProvider economyProvider) implements Bridge {
 
   @Inject

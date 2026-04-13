@@ -22,6 +22,7 @@ import net.aincraft.upgrade.UpgradeModule;
 import net.aincraft.util.UtilModule;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PluginModule extends AbstractModule {
 
@@ -34,6 +35,9 @@ public final class PluginModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(Plugin.class).toInstance(plugin);
+    if (plugin instanceof JavaPlugin javaPlugin) {
+      bind(JavaPlugin.class).toInstance(javaPlugin);
+    }
     bind(Bridge.class).to(BridgeImpl.class);
     install(new ConfigurationModule(plugin));
     install(new PayableModule(plugin));

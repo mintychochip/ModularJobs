@@ -92,6 +92,10 @@ public final class UpgradeTreeConfigParser {
         ? new HashSet<>(config.prerequisites())
         : Set.of();
 
+    Set<String> prerequisitesOr = config.prerequisitesOr() != null
+        ? new HashSet<>(config.prerequisitesOr())
+        : Set.of();
+
     Set<String> exclusive = config.exclusive() != null
         ? new HashSet<>(config.exclusive())
         : Set.of();
@@ -152,14 +156,22 @@ public final class UpgradeTreeConfigParser {
         null,           // unlockedItemModel (not supported in legacy)
         config.cost(),
         prerequisites,
-        Set.of(),       // maxedPrerequisites - empty for legacy format
+        prerequisitesOr,
+        Set.of(),       // maxedPrerequisites - not supported in legacy format
         exclusive,
         children,
         effects,
         position,
         List.of(), // pathPoints - empty for legacy format
         perkId,
-        level
+        level,
+        1,              // maxLevel - not supported in legacy format
+        List.of(),      // levelCosts - not supported in legacy format
+        List.of(),      // levelDescriptions - not supported in legacy format
+        List.of(),      // levelEffects - not supported in legacy format
+        List.of(),      // levelIcons - not supported in legacy format
+        List.of(),      // levelItemModels - not supported in legacy format
+        null            // nodeTexture - not supported in legacy format
     );
   }
 

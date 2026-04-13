@@ -81,17 +81,6 @@ public final class WriteBackRepositoryImpl<K, V> {
   }
 
   private boolean flushOnce() {
-    // Process deletes first to ensure clean state before upserts
-    // This prevents desync when a key is deleted and quickly re-created
-    List<K> deletes = new ArrayList<>();
-    Iterator<K> keyIterator = this.pendingDeletes.iterator();
-    while (keyIterator.hasNext() && deletes.size() < maxBatch) {
-      K deletedKey = keyIterator.next();
-      if (pendingDeletes.remove(deletedKey)) {
-        deletes.add(deletedKey);
-      }
-    }
-
     Map<K, V> upserts = new LinkedHashMap<>();
     Iterator<Entry<K, V>> iterator = pendingUpserts.entrySet().iterator();
     while (iterator.hasNext() && upserts.size() < maxBatch) {
@@ -101,6 +90,14 @@ public final class WriteBackRepositoryImpl<K, V> {
       if (pendingUpserts.remove(key, value)) {
         upserts.put(key, value);
       }
+    }
+
+    List<K> deletes = new ArrayList<>();
+    Iterator<K> keyIterator = this.pendingDeletes.iterator();
+    while (keyIterator.hasNext() && deletes.size() < maxBatch) {
+      K deletedKey = keyIterator.next();
+      keyIterator.remove();
+      deletes.add(deletedKey);
     }
 
     if (deletes.isEmpty() && upserts.isEmpty()) {
