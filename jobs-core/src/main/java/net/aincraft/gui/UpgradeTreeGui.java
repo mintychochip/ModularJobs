@@ -956,6 +956,19 @@ public final class UpgradeTreeGui implements Listener {
               .decoration(TextDecoration.ITALIC, false));
         }
       }
+
+      // Maxed prerequisites (must be at MAX level) — [MAX] badge
+      if (!node.maxedPrerequisites().isEmpty()) {
+        if (!hasAndPrereqs && !hasOrPrereqs) {
+          lore.add(Component.empty());
+        }
+        lore.add(Component.text("Requires MAX level:", NamedTextColor.RED)
+            .decoration(TextDecoration.ITALIC, false));
+        for (String prereq : node.maxedPrerequisites()) {
+          lore.add(Component.text("  \u2022 " + prereq + " [MAX]", NamedTextColor.GOLD)
+              .decoration(TextDecoration.ITALIC, false));
+        }
+      }
     }
 
     lore.add(Component.empty());
@@ -1166,6 +1179,19 @@ public final class UpgradeTreeGui implements Listener {
             .decoration(TextDecoration.ITALIC, false));
         for (String prereq : node.prerequisitesOr()) {
           lore.add(Component.text("  \u2022 " + prereq, NamedTextColor.GRAY)
+              .decoration(TextDecoration.ITALIC, false));
+        }
+      }
+
+      // Maxed prerequisites (must be at MAX level) — [MAX] badge
+      if (!node.maxedPrerequisites().isEmpty()) {
+        if (!hasAndPrereqs && !hasOrPrereqs) {
+          lore.add(Component.empty());
+        }
+        lore.add(Component.text("Requires MAX level:", NamedTextColor.RED)
+            .decoration(TextDecoration.ITALIC, false));
+        for (String prereq : node.maxedPrerequisites()) {
+          lore.add(Component.text("  \u2022 " + prereq + " [MAX]", NamedTextColor.GOLD)
               .decoration(TextDecoration.ITALIC, false));
         }
       }
