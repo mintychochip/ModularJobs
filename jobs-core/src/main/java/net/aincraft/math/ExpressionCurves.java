@@ -1,8 +1,9 @@
 package net.aincraft.math;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.Duration;
 import net.aincraft.LevelingCurve;
 import net.aincraft.PayableCurve;
 import net.objecthunter.exp4j.Expression;
@@ -14,44 +15,84 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class ExpressionCurves {
 
-  private static final Map<String, LevelingCurve> LEVELING_CACHE = new ConcurrentHashMap<>();
-  private static final Map<String, PayableCurve> PAYABLE_CACHE = new ConcurrentHashMap<>();
+  private static final int MAX_EXPRESSIONS = 100;
+  private static final int MAX_MEMO_ENTRIES = 1000;
+
+  private static final Cache<String, LevelingCurve> LEVELING_CACHE = Caffeine.newBuilder()
+      .maximumSize(MAX_EXPRESSIONS)
+      .expireAfterAccess(Duration.ofHours(1))
+      .build();
+
+  private static final Cache<String, PayableCurve> PAYABLE_CACHE = Caffeine.newBuilder()
+      .maximumSize(MAX_EXPRESSIONS)
+      .expireAfterAccess(Duration.ofHours(1))
+      .build();
 
   private ExpressionCurves() {}
 
   public static @NotNull LevelingCurve levelingCurve(@NotNull String expression) {
-    return LEVELING_CACHE.computeIfAbsent(expression, expr -> {
-      Expression exp = new ExpressionBuilder(expr).variable("level").build();
-      Map<LevelingCurve.Parameters, BigDecimal> memo = new ConcurrentHashMap<>();
-      return new LevelingCurve() {
-        @Override
-        public BigDecimal evaluate(Parameters params) {
-          return memo.computeIfAbsent(params, p ->
-              BigDecimal.valueOf(exp.setVariable("level", p.level()).evaluate()));
+    LevelingCurve cached = LEVELING_CACHE.getIfPresent(expression);
+    if (cached != null) {
+      return cached;
+    }
+    LevelingCurve curve = createLevelingCurve(expression);
+    LEVELING_CACHE.put(expression, curve);
+    return curve;
+  }
+
+  private static LevelingCurve createLevelingCurve(String expr) {
+    Expression exp = new ExpressionBuilder(expr).variable("level").build();
+    Cache<LevelingCurve.Parameters, BigDecimal> memo = Caffeine.newBuilder()
+        .maximumSize(MAX_MEMO_ENTRIES)
+        .build();
+    return new LevelingCurve() {
+      @Override
+      public BigDecimal evaluate(Parameters params) {
+        BigDecimal cached = memo.getIfPresent(params);
+        if (cached != null) {
+          return cached;
         }
-        @Override
-        public String toString() { return expr; }
-      };
-    });
+        BigDecimal result = BigDecimal.valueOf(exp.setVariable("level", params.level()).evaluate());
+        memo.put(params, result);
+        return result;
+      }
+      @Override
+      public String toString() { return expr; }
+    };
   }
 
   public static @NotNull PayableCurve payableCurve(@NotNull String expression) {
-    return PAYABLE_CACHE.computeIfAbsent(expression, expr -> {
-      Expression exp = new ExpressionBuilder(expr).variables("base", "level", "jobs").build();
-      Map<PayableCurve.Parameters, BigDecimal> memo = new ConcurrentHashMap<>();
-      return new PayableCurve() {
-        @Override
-        public BigDecimal evaluate(Parameters params) {
-          return memo.computeIfAbsent(params, p ->
-              BigDecimal.valueOf(
-                  exp.setVariable("base", p.base().doubleValue())
-                     .setVariable("level", p.level())
-                     .setVariable("jobs", p.jobs())
-                     .evaluate()));
+    PayableCurve cached = PAYABLE_CACHE.getIfPresent(expression);
+    if (cached != null) {
+      return cached;
+    }
+    PayableCurve curve = createPayableCurve(expression);
+    PAYABLE_CACHE.put(expression, curve);
+    return curve;
+  }
+
+  private static PayableCurve createPayableCurve(String expr) {
+    Expression exp = new ExpressionBuilder(expr).variables("base", "level", "jobs").build();
+    Cache<PayableCurve.Parameters, BigDecimal> memo = Caffeine.newBuilder()
+        .maximumSize(MAX_MEMO_ENTRIES)
+        .build();
+    return new PayableCurve() {
+      @Override
+      public BigDecimal evaluate(Parameters params) {
+        BigDecimal cached = memo.getIfPresent(params);
+        if (cached != null) {
+          return cached;
         }
-        @Override
-        public String toString() { return expr; }
-      };
-    });
+        BigDecimal result = BigDecimal.valueOf(
+            exp.setVariable("base", params.base().doubleValue())
+               .setVariable("level", params.level())
+               .setVariable("jobs", params.jobs())
+               .evaluate());
+        memo.put(params, result);
+        return result;
+      }
+      @Override
+      public String toString() { return expr; }
+    };
   }
 }

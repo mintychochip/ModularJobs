@@ -40,6 +40,7 @@ public final class ConnectionSourceFactory {
     // Always run schema - CREATE TABLE IF NOT EXISTS is idempotent
     String[] tables = type.getSQLTables();
     try (Connection connection = source.getConnection()) {
+      boolean originalAutoCommit = connection.getAutoCommit();
       connection.setAutoCommit(false);
       Savepoint savepoint = connection.setSavepoint();
 
@@ -52,6 +53,8 @@ public final class ConnectionSourceFactory {
       } catch (SQLException e) {
         connection.rollback(savepoint);
         throw new SQLException("Error executing bulk SQL", e);
+      } finally {
+        connection.setAutoCommit(originalAutoCommit);
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);

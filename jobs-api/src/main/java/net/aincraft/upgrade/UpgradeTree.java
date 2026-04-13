@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
@@ -127,6 +128,21 @@ public final class UpgradeTree implements Keyed {
   }
 
   /**
+   * Get the maximum level available for a perk in this tree.
+   * Scans all nodes to find the highest level for nodes with the given perkId.
+   *
+   * @param perkId the perk identifier (e.g., "far_gather", "crit_chance")
+   * @return the highest level node for this perk, or 0 if not found
+   */
+  public int getMaxPerkLevel(@NotNull String perkId) {
+    return nodes.values().stream()
+        .filter(n -> perkId.equals(n.perkId()))
+        .mapToInt(UpgradeNode::level)
+        .max()
+        .orElse(0);
+  }
+
+  /**
    * Get all path coordinates for this tree.
    * These are the walkable connection points between nodes.
    */
@@ -168,59 +184,57 @@ public final class UpgradeTree implements Keyed {
 
   /**
    * Get nodes that are available for unlock given a set of already-unlocked nodes.
+   * Uses a minimum gate for maxedPrerequisites: each listed node must be unlocked
+   * (full max-level check happens at actual unlock time via the service).
    *
    * @param unlockedNodeKeys set of already unlocked node keys
    * @return nodes that can be unlocked next
-   * @deprecated Use {@link #getAvailableNodes(Set, PlayerUpgradeData)} for proper maxed prerequisite checking
    */
-  @Deprecated
   public @NotNull Set<UpgradeNode> getAvailableNodes(@NotNull Set<String> unlockedNodeKeys) {
-    return getAvailableNodes(unlockedNodeKeys, null);
+    return getAvailableNodes(unlockedNodeKeys, k -> 0);
   }
 
   /**
    * Get nodes that are available for unlock given a set of already-unlocked nodes
-   * and player upgrade data for maxed prerequisite checking.
+   * and a function providing each node's current level (for maxedPrerequisites check).
    *
    * @param unlockedNodeKeys set of already unlocked node keys
-   * @param playerData player's upgrade data (null = skip maxed prerequisite checks)
+   * @param nodeLevelFn      function returning current level for a given node key
    * @return nodes that can be unlocked next
    */
   public @NotNull Set<UpgradeNode> getAvailableNodes(
       @NotNull Set<String> unlockedNodeKeys,
-      @Nullable PlayerUpgradeData playerData
+      @NotNull Function<String, Integer> nodeLevelFn
   ) {
     Set<UpgradeNode> available = new HashSet<>();
 
     for (UpgradeNode node : nodes.values()) {
+      String nodeKey = getShortKey(node);
+
       // Skip already unlocked
-      if (unlockedNodeKeys.contains(getShortKey(node))) {
+      if (unlockedNodeKeys.contains(nodeKey)) {
         continue;
       }
 
-      // Check if any exclusive node is already unlocked
-      boolean excludedByExclusive = node.exclusive().stream()
-          .anyMatch(unlockedNodeKeys::contains);
-      if (excludedByExclusive) {
+      // Check if excluded by any already-unlocked node
+      if (isExcludedByUnlockedNode(nodeKey, unlockedNodeKeys)) {
         continue;
       }
 
-      // Check if unlocked prerequisites are met
-      boolean unlockedMet = node.prerequisites().isEmpty()
+      // Check if all AND prerequisites are met
+      boolean andPrereqsMet = node.prerequisites().isEmpty()
           || unlockedNodeKeys.containsAll(node.prerequisites());
-      if (!unlockedMet) {
-        continue;
-      }
 
-      // Check if maxed prerequisites are met
-      boolean maxedMet = node.maxedPrerequisites().isEmpty()
-          || (playerData != null && node.maxedPrerequisites().stream()
-              .allMatch(prereqKey -> playerData.isMaxLevel(prereqKey)));
-      if (!maxedMet) {
-        continue;
-      }
+      // Check if at least one OR prerequisite is met (or if there are none)
+      boolean orPrereqsMet = node.prerequisitesOr().isEmpty()
+          || node.prerequisitesOr().stream().anyMatch(unlockedNodeKeys::contains);
 
-      available.add(node);
+      // Check maxed prerequisites (all must be at max level)
+      boolean maxedPrereqsMet = areMaxedPrereqsMet(node, unlockedNodeKeys, nodeLevelFn);
+
+      if (andPrereqsMet && orPrereqsMet && maxedPrereqsMet) {
+        available.add(node);
+      }
     }
 
     return available;
@@ -228,36 +242,36 @@ public final class UpgradeTree implements Keyed {
 
   /**
    * Check if a node can be unlocked.
+   * Does not perform a max-level check on maxedPrerequisites — use the overload
+   * accepting a nodeLevelFn for full validation.
    *
    * @param nodeKey          the node to check
    * @param unlockedNodeKeys currently unlocked nodes
    * @param availablePoints  skill points available
    * @return true if the node can be unlocked
-   * @deprecated Use {@link #canUnlock(String, Set, int, PlayerUpgradeData)} for proper maxed prerequisite checking
    */
-  @Deprecated
   public boolean canUnlock(
       @NotNull String nodeKey,
       @NotNull Set<String> unlockedNodeKeys,
       int availablePoints
   ) {
-    return canUnlock(nodeKey, unlockedNodeKeys, availablePoints, null);
+    return canUnlock(nodeKey, unlockedNodeKeys, availablePoints, k -> 1);
   }
 
   /**
-   * Check if a node can be unlocked.
+   * Check if a node can be unlocked, including a max-level check on maxedPrerequisites.
    *
    * @param nodeKey          the node to check
    * @param unlockedNodeKeys currently unlocked nodes
    * @param availablePoints  skill points available
-   * @param playerData       player's upgrade data (null = skip maxed prerequisite checks)
+   * @param nodeLevelFn      function returning current level for a given node key
    * @return true if the node can be unlocked
    */
   public boolean canUnlock(
       @NotNull String nodeKey,
       @NotNull Set<String> unlockedNodeKeys,
       int availablePoints,
-      @Nullable PlayerUpgradeData playerData
+      @NotNull Function<String, Integer> nodeLevelFn
   ) {
     UpgradeNode node = nodes.get(nodeKey);
     if (node == null) {
@@ -274,26 +288,88 @@ public final class UpgradeTree implements Keyed {
       return false;
     }
 
-    // Check exclusives
-    boolean excludedByExclusive = node.exclusive().stream()
-        .anyMatch(unlockedNodeKeys::contains);
-    if (excludedByExclusive) {
+    // Check if excluded by any already-unlocked node
+    if (isExcludedByUnlockedNode(nodeKey, unlockedNodeKeys)) {
       return false;
     }
 
-    // Check unlocked prerequisites
-    boolean unlockedMet = node.prerequisites().isEmpty()
+    // Check AND prerequisites (all must be met)
+    boolean andPrereqsMet = node.prerequisites().isEmpty()
         || unlockedNodeKeys.containsAll(node.prerequisites());
-    if (!unlockedMet) {
-      return false;
+
+    // Check OR prerequisites (at least one must be met)
+    boolean orPrereqsMet = node.prerequisitesOr().isEmpty()
+        || node.prerequisitesOr().stream().anyMatch(unlockedNodeKeys::contains);
+
+    // Check maxed prerequisites (all must be at max level)
+    boolean maxedPrereqsMet = areMaxedPrereqsMet(node, unlockedNodeKeys, nodeLevelFn);
+
+    return andPrereqsMet && orPrereqsMet && maxedPrereqsMet;
+  }
+
+  /**
+   * Check whether all maxedPrerequisites of the given node are unlocked and at max level.
+   *
+   * @param node             the node whose maxedPrerequisites are checked
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @param nodeLevelFn      function returning current level for a given node key
+   * @return true if all maxed prerequisites are satisfied (or the list is empty)
+   */
+  public boolean areMaxedPrereqsMet(
+      @NotNull UpgradeNode node,
+      @NotNull Set<String> unlockedNodeKeys,
+      @NotNull Function<String, Integer> nodeLevelFn
+  ) {
+    if (node.maxedPrerequisites().isEmpty()) {
+      return true;
     }
+    return node.maxedPrerequisites().stream().allMatch(k -> {
+      if (!unlockedNodeKeys.contains(k)) {
+        return false;
+      }
+      UpgradeNode prereqNode = nodes.get(k);
+      if (prereqNode == null) {
+        return false;
+      }
+      int currentLevel = nodeLevelFn.apply(k);
+      return currentLevel >= prereqNode.maxLevel();
+    });
+  }
 
-    // Check maxed prerequisites
-    boolean maxedMet = node.maxedPrerequisites().isEmpty()
-        || (playerData != null && node.maxedPrerequisites().stream()
-            .allMatch(prereqKey -> playerData.isMaxLevel(prereqKey)));
+  /**
+   * Check if a node is excluded by any already-unlocked node.
+   * A node is excluded if any unlocked node lists it in its exclusive set.
+   *
+   * @param nodeKey          the node to check
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @return true if this node is excluded by an unlocked node's exclusive set
+   */
+  public boolean isExcludedByUnlockedNode(@NotNull String nodeKey, @NotNull Set<String> unlockedNodeKeys) {
+    for (String unlockedKey : unlockedNodeKeys) {
+      UpgradeNode unlockedNode = nodes.get(unlockedKey);
+      if (unlockedNode != null && unlockedNode.exclusive().contains(nodeKey)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-    return maxedMet;
+  /**
+   * Get the set of unlocked nodes that exclude a given node.
+   *
+   * @param nodeKey          the node to check
+   * @param unlockedNodeKeys currently unlocked nodes
+   * @return set of unlocked node keys that have this node in their exclusive set
+   */
+  public @NotNull Set<String> getExcludingNodes(@NotNull String nodeKey, @NotNull Set<String> unlockedNodeKeys) {
+    Set<String> excluding = new HashSet<>();
+    for (String unlockedKey : unlockedNodeKeys) {
+      UpgradeNode unlockedNode = nodes.get(unlockedKey);
+      if (unlockedNode != null && unlockedNode.exclusive().contains(nodeKey)) {
+        excluding.add(unlockedKey);
+      }
+    }
+    return excluding;
   }
 
   private String getShortKey(UpgradeNode node) {

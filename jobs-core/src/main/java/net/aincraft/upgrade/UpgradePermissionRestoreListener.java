@@ -31,6 +31,7 @@ public final class UpgradePermissionRestoreListener implements Listener {
 
   /**
    * Restore all upgrade permissions from all job trees when player joins.
+   * Includes both base effects and level-specific effects for upgraded nodes.
    */
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoin(PlayerJoinEvent event) {
@@ -41,16 +42,18 @@ public final class UpgradePermissionRestoreListener implements Listener {
     upgradeService.getAllTrees().forEach(tree -> {
       PlayerUpgradeData data = upgradeService.getPlayerData(playerId, tree.jobKey());
       if (!data.unlockedNodes().isEmpty()) {
-        effectApplier.restoreEffects(player, tree, data.unlockedNodes());
+        effectApplier.restoreEffects(player, tree, data);
       }
     });
   }
 
   /**
-   * Cleanup all permission attachments when player quits.
+   * Cleanup all permission attachments and cached data when player quits.
    */
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerQuit(PlayerQuitEvent event) {
+    String playerId = event.getPlayer().getUniqueId().toString();
     permissionManager.cleanupPlayer(event.getPlayer().getUniqueId());
+    upgradeService.evictPlayer(playerId);
   }
 }
