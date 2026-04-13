@@ -8,7 +8,7 @@ import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents a connector node in a Wynncraft-style skill tree.
+ * Represents a connector node in a skill tree.
  * Connector nodes are visual path segments that connect ability nodes.
  * They have different visual states for locked and unlocked paths.
  *

@@ -98,24 +98,6 @@ public final class PetSelectionGui {
       return;
     }
 
-    // Check if player already has a pet selection
-    String currentPet = petUpgradeService.getSelectedPet(player.getUniqueId(), job.key().toString());
-    boolean canChangeSpecialization = player.hasPermission("modularjobs.specialization.bypass") ||
-                                       player.hasPermission("modularjobs.specialization.bypass." + job.key().value());
-
-    // If player has a pet and cannot change, deny access
-    if (currentPet != null && !canChangeSpecialization) {
-      player.sendMessage(Component.text()
-          .append(Component.text("[", NamedTextColor.GRAY))
-          .append(Component.text("Jobs", NamedTextColor.GOLD))
-          .append(Component.text("] ", NamedTextColor.GRAY))
-          .append(Component.text("Your pet specialization is permanent! You chose ", NamedTextColor.RED))
-          .append(Component.text(formatPetName(currentPet), NamedTextColor.YELLOW))
-          .append(Component.text(".", NamedTextColor.RED))
-          .build());
-      return;
-    }
-
     // Create dynamic title with job name
     Gui gui = Gui.gui()
         .title(Component.text("Choose Your Pet - ", NamedTextColor.DARK_GREEN)
@@ -127,8 +109,6 @@ public final class PetSelectionGui {
     gui.setDefaultClickAction(event -> event.setCancelled(true));
 
     String selectedPet = petUpgradeService.getSelectedPet(player.getUniqueId(), job.key().toString());
-    boolean canChangeSpecialization = player.hasPermission("modularjobs.specialization.bypass") ||
-                                       player.hasPermission("modularjobs.specialization.bypass." + job.key().value());
 
     // Fill borders with gray stained glass panes
     GuiItem borderPane = ItemBuilder.from(Material.GRAY_STAINED_GLASS_PANE)
@@ -154,7 +134,7 @@ public final class PetSelectionGui {
     // Place pets in calculated slots
     for (int i = 0; i < availablePets.size(); i++) {
       String petName = availablePets.get(i);
-      GuiItem item = createPetItem(player, job, petName, petName.equals(selectedPet), selectedPet != null && canChangeSpecialization);
+      GuiItem item = createPetItem(player, job, petName, petName.equals(selectedPet));
       gui.setItem(slots[i], item);
     }
 
@@ -179,7 +159,7 @@ public final class PetSelectionGui {
     };
   }
 
-  private GuiItem createPetItem(Player player, Job job, String petConfigName, boolean isSelected, boolean isChanging) {
+  private GuiItem createPetItem(Player player, Job job, String petConfigName, boolean isSelected) {
     // Get display configuration, fall back to default if not found
     PetDisplay display = PET_DISPLAYS.getOrDefault(petConfigName.toLowerCase(), DEFAULT_DISPLAY);
 
@@ -227,22 +207,9 @@ public final class PetSelectionGui {
           Component.text("Currently selected!", NamedTextColor.GREEN)
               .decoration(TextDecoration.ITALIC, false)
       ));
-    } else if (isChanging) {
-      lore.add(LEGACY.serialize(
-          Component.text("⚠ WARNING: This will replace your current pet!", NamedTextColor.RED)
-              .decoration(TextDecoration.ITALIC, false)
-      ));
-      lore.add(LEGACY.serialize(
-          Component.text("Click to select this pet", NamedTextColor.AQUA)
-              .decoration(TextDecoration.ITALIC, false)
-      ));
     } else {
       lore.add(LEGACY.serialize(
           Component.text("Click to select this pet", NamedTextColor.AQUA)
-              .decoration(TextDecoration.ITALIC, false)
-      ));
-      lore.add(LEGACY.serialize(
-          Component.text("This choice is permanent!", NamedTextColor.YELLOW)
               .decoration(TextDecoration.ITALIC, false)
       ));
     }
@@ -294,27 +261,14 @@ public final class PetSelectionGui {
       }
 
       // Notify and close
-      if (oldPet != null) {
-        player.sendMessage(Component.text()
-            .append(Component.text("[", NamedTextColor.GRAY))
-            .append(Component.text("Jobs", NamedTextColor.GOLD))
-            .append(Component.text("] ", NamedTextColor.GRAY))
-            .append(Component.text("You changed your pet from ", NamedTextColor.GREEN))
-            .append(Component.text(formatPetName(oldPet), NamedTextColor.YELLOW))
-            .append(Component.text(" to ", NamedTextColor.GREEN))
-            .append(Component.text(formatPetName(petConfigName), NamedTextColor.YELLOW))
-            .append(Component.text("!", NamedTextColor.GREEN))
-            .build());
-      } else {
-        player.sendMessage(Component.text()
-            .append(Component.text("[", NamedTextColor.GRAY))
-            .append(Component.text("Jobs", NamedTextColor.GOLD))
-            .append(Component.text("] ", NamedTextColor.GRAY))
-            .append(Component.text("You selected ", NamedTextColor.GREEN))
-            .append(Component.text(formatPetName(petConfigName), NamedTextColor.YELLOW))
-            .append(Component.text(" as your job pet! This choice is permanent.", NamedTextColor.GREEN))
-            .build());
-      }
+      player.sendMessage(Component.text()
+          .append(Component.text("[", NamedTextColor.GRAY))
+          .append(Component.text("Jobs", NamedTextColor.GOLD))
+          .append(Component.text("] ", NamedTextColor.GRAY))
+          .append(Component.text("You selected ", NamedTextColor.GREEN))
+          .append(Component.text(formatPetName(petConfigName), NamedTextColor.YELLOW))
+          .append(Component.text(" as your job pet!", NamedTextColor.GREEN))
+          .build());
 
       player.closeInventory();
     });

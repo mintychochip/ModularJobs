@@ -60,21 +60,11 @@ public interface PlayerUpgradeData {
   }
 
   /**
-   * Get the maximum level for a perk in this job's upgrade tree.
-   * This is determined by the upgrade tree configuration (max_level on nodes).
-   * @param perkId the perk ID to check
-   * @return max level achievable for this perk, or 1 if unknown
+   * Get current upgrade level for a node (1 = unlocked at base, 2+ = upgraded).
+   * Returns 0 if node not unlocked.
+   *
+   * @param nodeKey the node key
+   * @return current level (0 if not unlocked, 1+ if unlocked)
    */
-  int getMaxLevel(@NotNull String perkId);
-
-  /**
-   * Check if a perk is at its maximum level.
-   * @param perkId the perk ID to check
-   * @return true if perk level equals max level, false otherwise
-   */
-  default boolean isMaxLevel(@NotNull String perkId) {
-    int current = getPerkLevel(perkId);
-    int max = getMaxLevel(perkId);
-    return current > 0 && current >= max;
-  }
+  int getNodeLevel(@NotNull String nodeKey);
 }

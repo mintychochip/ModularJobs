@@ -21,6 +21,8 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -424,20 +426,18 @@ final class TopCommand implements JobsCommand {
               String jobKey = context.getArgument("job", String.class);
               int page = context.getArgument("pageNumber", Integer.class);
               Key key = KeyUtils.parseKey(plugin, jobKey);
-              
+
               // Check if player wants scoreboard display
-              if (sender instanceof Player player) {
-                String displayMode = getPlayerDisplayMode(player);
-                if ("scoreboard".equalsIgnoreCase(displayMode)) {
-                  TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
-                  ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
-                  int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
-                  consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
-                      sender, maxPages, resultProvider.getAllEntries(key));
-                  return 1;
-                }
+              if (sender instanceof Player player
+                  && "scoreboard".equalsIgnoreCase(getPlayerDisplayMode(player))) {
+                TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
+                ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
+                int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
+                consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
+                    sender, maxPages, resultProvider.getAllEntries(key));
+                return 1;
               }
-              
+
               // Default to chat display
               ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
               int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
@@ -452,20 +452,18 @@ final class TopCommand implements JobsCommand {
               String jobKey = context.getArgument("job", String.class);
               int page = 1; // Default to page 1
               Key key = KeyUtils.parseKey(plugin, jobKey);
-              
+
               // Check if player wants scoreboard display
-              if (sender instanceof Player player) {
-                String displayMode = getPlayerDisplayMode(player);
-                if ("scoreboard".equalsIgnoreCase(displayMode)) {
-                  TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
-                  ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
-                  int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
-                  consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
-                      sender, maxPages, resultProvider.getAllEntries(key));
-                  return 1;
-                }
+              if (sender instanceof Player player
+                  && "scoreboard".equalsIgnoreCase(getPlayerDisplayMode(player))) {
+                TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
+                ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
+                int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
+                consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
+                    sender, maxPages, resultProvider.getAllEntries(key));
+                return 1;
               }
-              
+
               // Default to chat display
               ChatJobsTopPageConsumerImpl consumer = new ChatJobsTopPageConsumerImpl();
               int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
@@ -481,11 +479,8 @@ final class TopCommand implements JobsCommand {
   }
 
   private String getPlayerDisplayMode(Player player) {
-    // Check player's preference for display mode
-    // This could be stored in a config, database, or player metadata
-    // For now, default to chat
-    return player.hasMetadata("jobs_display_mode") 
-        ? player.getMetadata("jobs_display_mode").get(0).asString() 
+    return player.hasMetadata("jobs_display_mode")
+        ? player.getMetadata("jobs_display_mode").get(0).asString()
         : "chat";
   }
 

@@ -38,6 +38,9 @@ tasks {
     }
 
     named<xyz.jpenilla.runpaper.task.RunServer>("runServer") {
+        // Sync resource pack and rebuild ZIP before running server
+        dependsOn(":mergeResourcePack")
+
         val toolchains = project.extensions.getByType<JavaToolchainService>()
         javaLauncher.set(
             toolchains.launcherFor {
@@ -49,6 +52,5 @@ tasks {
             hangar("Bolt","1.1.78")
             hangar("Mint","1.4.0")
         }
-
     }
 }

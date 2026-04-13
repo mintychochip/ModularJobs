@@ -262,7 +262,7 @@ public class InfoCommand implements JobsCommand {
     // Header
     Mint.sendThemedMessage(player, "");
     Mint.sendThemedMessage(player, "<neutral>━━━━━━━━━ <primary>Job Info: " + 
-        PlainTextComponentSerializer.plainText().serialize(job.displayName()) + 
+        PlainTextComponentSerializer.serialize(job.displayName()) +
         " <neutral>━━━━━━━━━");
     Mint.sendThemedMessage(player, "");
 

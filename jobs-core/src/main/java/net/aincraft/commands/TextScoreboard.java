@@ -7,6 +7,10 @@ import org.bukkit.entity.Player;
 
 public interface TextScoreboard {
 
+  static TextScoreboard create(Component displayName) {
+    return TextScoreboardImpl.create(displayName);
+  }
+
   void setLine(int index, ComponentLike prefix, ComponentLike suffix);
 
   void show(Player player, Duration duration);

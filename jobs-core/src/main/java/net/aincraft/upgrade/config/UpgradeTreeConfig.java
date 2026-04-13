@@ -24,6 +24,7 @@ public record UpgradeTreeConfig(
       @NotNull String icon,
       int cost,
       @Nullable List<String> prerequisites,
+      @Nullable List<String> prerequisitesOr,
       @Nullable List<String> exclusive,
       @Nullable List<String> children,
       @Nullable List<EffectConfig> effects,

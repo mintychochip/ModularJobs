@@ -89,10 +89,10 @@ final class SQLiteSourceImpl implements ConnectionSource {
 
   @Override
   public boolean isSetup() {
-    try (Connection connection = getConnection()) {
-      PreparedStatement ps = connection.prepareStatement(
-          "SELECT 1 FROM sqlite_master WHERE type='table' LIMIT 1");
-      ResultSet rs = ps.executeQuery();
+    try (Connection connection = getConnection();
+         PreparedStatement ps = connection.prepareStatement(
+             "SELECT 1 FROM sqlite_master WHERE type='table' LIMIT 1");
+         ResultSet rs = ps.executeQuery()) {
       return rs.next();
     } catch (SQLException e) {
       throw new RuntimeException(e);
