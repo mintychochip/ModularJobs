@@ -1,6 +1,5 @@
 package net.aincraft.gui;
 
-import com.google.inject.Inject;
 import dev.mintychochip.mint.Mint;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +69,6 @@ public final class UpgradeTreeGui implements Listener {
     }
   }
 
-  @Inject
   public UpgradeTreeGui(Plugin plugin, UpgradeService upgradeService) {
     this.plugin = plugin;
     this.upgradeService = upgradeService;
@@ -252,7 +250,6 @@ public final class UpgradeTreeGui implements Listener {
       }
     }
   }
-
 
   /**
    * Creates path segments between two points (horizontal first, then vertical).

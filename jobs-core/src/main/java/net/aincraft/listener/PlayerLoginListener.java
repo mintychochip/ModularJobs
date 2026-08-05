@@ -1,6 +1,5 @@
 package net.aincraft.listener;
 
-import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,6 @@ public final class PlayerLoginListener implements Listener {
   private final PetUpgradeService petUpgradeService;
   private final JobPetsHook jobPetsHook;
 
-  @Inject
   public PlayerLoginListener(
       JobService jobService,
       PetUpgradeService petUpgradeService,

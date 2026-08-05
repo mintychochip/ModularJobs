@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -22,7 +21,6 @@ public class LeaveCommand implements JobsCommand {
   private final JobResolver jobResolver;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
-  @Inject
   public LeaveCommand(JobService jobService, JobResolver jobResolver) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;

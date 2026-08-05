@@ -1,6 +1,5 @@
 package net.aincraft.protection;
 
-import com.google.inject.Provider;
 import java.util.Optional;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -8,10 +7,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.popcraft.bolt.BoltAPI;
 
-final class BlockProtectionAdapterProvider implements Provider<BlockProtectionAdapter> {
+public final class BlockProtectionAdapterProvider {
 
-  @Override
-  public BlockProtectionAdapter get() {
+  public static BlockProtectionAdapter create() {
+    return new BlockProtectionAdapterProvider().get();
+  }
+
+  BlockProtectionAdapter get() {
     Plugin boltPlugin = Bukkit.getPluginManager().getPlugin("Bolt");
     if (boltPlugin != null && boltPlugin.isEnabled()) {
       RegisteredServiceProvider<BoltAPI> registration = Bukkit.getServicesManager()
@@ -24,7 +26,7 @@ final class BlockProtectionAdapterProvider implements Provider<BlockProtectionAd
     return null;
   }
 
-  static BlockProtectionAdapter boltAdapter(BoltAPI bolt) {
+  public static BlockProtectionAdapter boltAdapter(BoltAPI bolt) {
     return block -> {
       org.popcraft.bolt.protection.Protection protection = bolt.findProtection(block);
       return Optional.ofNullable(protection.getOwner());

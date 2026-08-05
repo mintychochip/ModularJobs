@@ -1,6 +1,5 @@
 package net.aincraft.payable;
 
-import com.google.inject.Inject;
 import java.math.BigDecimal;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
@@ -22,14 +21,12 @@ final class BufferedExperienceHandlerImpl implements
   private final ExperienceBarFormatter formatter;
   private final JobService jobService;
 
-  @Inject
   BufferedExperienceHandlerImpl(ExperienceBarController controller,
       ExperienceBarFormatter formatter, JobService jobService) {
     this.controller = controller;
     this.formatter = formatter;
     this.jobService = jobService;
   }
-
 
   @Override
   public void pay(PayableContext context) throws IllegalArgumentException {
@@ -64,7 +61,6 @@ final class BufferedExperienceHandlerImpl implements
 
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
     int newLevel = calculatedProgression.level();
-
 
     if (jobService.update(calculatedProgression) && player.isOnline()) {
       Player onlinePlayer = player.getPlayer();

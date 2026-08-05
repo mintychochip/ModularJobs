@@ -1,6 +1,5 @@
 package net.aincraft.gui;
 
-import com.google.inject.Inject;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -76,7 +75,6 @@ public final class PetSelectionGui {
       List.of()
   );
 
-  @Inject
   public PetSelectionGui(PetUpgradeService petUpgradeService,
                          JobPetsHook jobPetsHook, JobService jobService) {
     this.petUpgradeService = petUpgradeService;
@@ -126,9 +124,7 @@ public final class PetSelectionGui {
     // Cancel all clicks by default
     gui.setDefaultClickAction(event -> event.setCancelled(true));
 
-    String selectedPet = petUpgradeService.getSelectedPet(player.getUniqueId(), job.key().toString());
-    boolean canChangeSpecialization = player.hasPermission("modularjobs.specialization.bypass") ||
-                                       player.hasPermission("modularjobs.specialization.bypass." + job.key().value());
+    String selectedPet = currentPet;
 
     // Fill borders with gray stained glass panes
     GuiItem borderPane = ItemBuilder.from(Material.GRAY_STAINED_GLASS_PANE)

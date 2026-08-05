@@ -1,6 +1,5 @@
 package net.aincraft.upgrade.editor;
 
-import com.google.inject.Inject;
 import dev.mintychochip.mint.Mint;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
@@ -48,13 +47,8 @@ public final class TreeEditorGui {
   private final Plugin plugin;
   private final TreeEditorExporter exporter;
   private final UpgradeTreeLoader treeLoader;
-
-  // Injected lazily to avoid circular dependency
-  @Inject
-  private TreeEditorNodeGui nodeEditorGui;
-
-  @Inject
-  private TreeEditorSettingsGui settingsGui;
+  private final TreeEditorNodeGui nodeEditorGui;
+  private final TreeEditorSettingsGui settingsGui;
 
   // Active sessions: player UUID -> session
   private final Map<UUID, EditorSession> sessions = new HashMap<>();
@@ -68,11 +62,19 @@ public final class TreeEditorGui {
   // Track players transitioning to sub-GUIs (prevents session cleanup)
   private final java.util.Set<UUID> transitioningToSubGui = new java.util.HashSet<>();
 
-  @Inject
-  public TreeEditorGui(Plugin plugin, TreeEditorExporter exporter, UpgradeTreeLoader treeLoader) {
+  public TreeEditorGui(
+      Plugin plugin,
+      TreeEditorExporter exporter,
+      UpgradeTreeLoader treeLoader,
+      TreeEditorNodeGui nodeEditorGui,
+      TreeEditorSettingsGui settingsGui) {
     this.plugin = plugin;
     this.exporter = exporter;
     this.treeLoader = treeLoader;
+    this.nodeEditorGui = nodeEditorGui;
+    this.settingsGui = settingsGui;
+    nodeEditorGui.setMainEditor(this);
+    settingsGui.setMainEditor(this);
   }
 
   /**

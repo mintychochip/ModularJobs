@@ -1,21 +1,28 @@
 package net.aincraft.boost;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.RuledBoostSource;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
-public record RuledBoostSourceImpl(List<Rule> rules, Key key, String description) implements RuledBoostSource {
+/**
+ * Ruled boost source: among rules whose conditions match, only the
+ * single highest-{@link Rule#priority() priority} rule's boost is returned.
+ * Lower-priority matching rules do not stack.
+ */
+public record RuledBoostSourceImpl(List<Rule> rules, Key key, String description)
+    implements RuledBoostSource {
 
   @Override
   public @NotNull List<Boost> evaluate(BoostContext context) {
-    // Return all applicable boosts (all rules whose conditions match)
-    return rules.stream()
+    Optional<Rule> winner = rules.stream()
         .filter(rule -> rule.condition().applies(context))
-        .map(Rule::boost)
-        .toList();
+        .max(Comparator.comparingInt(Rule::priority));
+    return winner.map(rule -> List.of(rule.boost())).orElseGet(List::of);
   }
 
   @Override

@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -34,7 +33,6 @@ public class TreeEditorCommand implements JobsCommand {
   private final TreeEditorGui treeEditorGui;
   private final UpgradeTreeLoader treeLoader;
 
-  @Inject
   public TreeEditorCommand(
       UpgradeService upgradeService,
       JobResolver jobResolver,

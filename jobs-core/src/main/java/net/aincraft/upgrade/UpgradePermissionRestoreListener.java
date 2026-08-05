@@ -1,7 +1,5 @@
 package net.aincraft.upgrade;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,13 +10,11 @@ import org.bukkit.event.player.PlayerQuitEvent;
 /**
  * Restores upgrade permissions on login and cleans up on logout.
  */
-@Singleton
 public final class UpgradePermissionRestoreListener implements Listener {
   private final UpgradeService upgradeService;
   private final UpgradeEffectApplier effectApplier;
   private final UpgradePermissionManager permissionManager;
 
-  @Inject
   public UpgradePermissionRestoreListener(
       UpgradeService upgradeService,
       UpgradeEffectApplier effectApplier,

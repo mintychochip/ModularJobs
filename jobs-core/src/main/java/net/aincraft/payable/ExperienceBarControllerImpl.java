@@ -2,7 +2,6 @@ package net.aincraft.payable;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +35,6 @@ final class ExperienceBarControllerImpl implements ExperienceBarController, List
 
   private final Plugin plugin;
 
-  @Inject
   ExperienceBarControllerImpl(Plugin plugin) {
     this.plugin = plugin;
     plugin.getServer().getPluginManager().registerEvents(this, plugin);

@@ -1,7 +1,5 @@
 package net.aincraft.domain;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import net.aincraft.Job;
 import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
@@ -13,12 +11,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-@Singleton
 final class JobResolverImpl implements JobResolver {
 
   private final JobService jobService;
 
-  @Inject
   public JobResolverImpl(JobService jobService) {
     this.jobService = jobService;
   }

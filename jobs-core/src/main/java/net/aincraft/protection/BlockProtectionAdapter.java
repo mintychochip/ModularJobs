@@ -7,7 +7,7 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 
 @FunctionalInterface
 @Internal
-interface BlockProtectionAdapter {
+public interface BlockProtectionAdapter {
 
   Optional<UUID> getOwner(Block block);
 }

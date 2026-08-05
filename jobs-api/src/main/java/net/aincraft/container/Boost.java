@@ -6,16 +6,12 @@ import net.aincraft.container.boost.factories.BoostFactory;
 
 public interface Boost {
 
-  BoostFactory FACTORY = Bridge.bridge().boostFactory();
-
   BigDecimal boost(BigDecimal amount);
 
-//  static Boost multiplicative(BoostType type, BigDecimal amount) {
-//    return FACTORY.multiplicative(amount);
-//  }
-//
-//  static Boost additive(BoostType type, BigDecimal amount) {
-//    return FACTORY.additive(amount);
-//  }
-
+  /**
+   * Lazy factory access — avoids class-init dependency on Bridge/Bukkit.
+   */
+  static BoostFactory factory() {
+    return Bridge.bridge().boostFactory();
+  }
 }

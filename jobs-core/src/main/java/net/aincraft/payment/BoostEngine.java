@@ -13,7 +13,6 @@ import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-
 interface BoostEngine {
 
   Map<Key, Boost> evaluate(OfflinePlayer player, ActionType type, Context context,

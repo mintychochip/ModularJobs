@@ -1,6 +1,5 @@
 package net.aincraft.payable;
 
-import com.google.inject.Inject;
 import java.math.BigDecimal;
 import net.aincraft.JobProgressionView;
 import net.aincraft.container.ExperiencePayableHandler;
@@ -22,7 +21,6 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
   private final NameFormatter formatter = new NameFormatter();
 
-  @Inject
   ExperienceBarFormatterImpl(ExperienceBarColorProvider colorProvider) {
     this.colorProvider = colorProvider;
   }
@@ -61,7 +59,6 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
     }
     return Math.min((float) ratio, 1.0f);
   }
-
 
   private static final class NameFormatter {
 

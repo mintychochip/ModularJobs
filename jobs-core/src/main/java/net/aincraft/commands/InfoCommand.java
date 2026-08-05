@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -33,6 +32,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -44,7 +44,6 @@ public class InfoCommand implements JobsCommand {
   private static final String DEFAULT_NAMESPACE = "modularjobs";
   private static final int DIALOG_WIDTH = 1000;
 
-  @Inject
   public InfoCommand(JobService jobService, JobResolver jobResolver, PreferencesService preferencesService) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
@@ -260,10 +259,10 @@ public class InfoCommand implements JobsCommand {
     String jobName = job.key().value();
 
     // Header
+    String jobDisplayName = serializePlain(job.displayName());
     Mint.sendThemedMessage(player, "");
-    Mint.sendThemedMessage(player, "<neutral>━━━━━━━━━ <primary>Job Info: " + 
-        PlainTextComponentSerializer.plainText().serialize(job.displayName()) + 
-        " <neutral>━━━━━━━━━");
+    Mint.sendThemedMessage(player,
+        "<neutral>━━━━━━━━━ <primary>Job Info: " + jobDisplayName + " <neutral>━━━━━━━━━");
     Mint.sendThemedMessage(player, "");
 
     // Job description
@@ -354,9 +353,8 @@ public class InfoCommand implements JobsCommand {
     return controls;
   }
 
-  // Import for plain text serialization
-  private static final net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer PlainTextComponentSerializer = 
-      net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN_TEXT =
+      PlainTextComponentSerializer.plainText();
 
   public Dialog buildDialog(Job job, Map<ActionType, List<JobTask>> tasks, int page, int entriesPerPage) {
     DialogBase dialogBase = buildDialogBase(job, tasks, page, entriesPerPage);
@@ -539,5 +537,9 @@ public class InfoCommand implements JobsCommand {
     return Arrays.stream(value.split("[_/]"))
         .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
         .collect(Collectors.joining(" "));
+  }
+
+  private static String serializePlain(Component component) {
+    return PLAIN_TEXT.serialize(component);
   }
 }

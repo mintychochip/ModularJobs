@@ -1,68 +1,81 @@
 package net.aincraft.payment;
 
 import com.google.common.cache.CacheLoader;
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import jdk.jfr.Name;
-import net.aincraft.config.YamlConfiguration;
+import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.payment.ExploitService.ExploitProtectionType;
+import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.service.ExploitProtectionStore;
+import net.aincraft.service.JobService;
+import net.aincraft.upgrade.UpgradeBoostDataService;
 import net.aincraft.util.LocationKey;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 
-public final class PaymentModule extends AbstractModule {
+/**
+ * Manual composition for payment / exploit / damage tracking (replaces Guice PaymentModule).
+ */
+public final class PaymentWiring {
 
-  private static final String TRACKABLE_ENTITIES = "trackable-entities";
+  public final BoostEngine boostEngine;
+  public final JobsPaymentHandler paymentHandler;
+  public final ExploitService exploitService;
+  public final List<Listener> listeners;
 
-  @Override
-  protected void configure() {
-    bind(BoostEngine.class).to(BoostEngineImpl.class).in(Singleton.class);
-    bind(PlayerChunkExplorationService.class).to(PlayerChunkExplorationServiceImpl.class).in(Singleton.class);
-    bind(MobDamageTrackerStore.class).to(MobDamageTrackerStoreImpl.class).in(Singleton.class);
-    bind(EntityValidationService.class).to(EntityValidationServiceImpl.class).in(Singleton.class);
-    bind(MobDamageTracker.class).to(MobDamageTrackerImpl.class).in(Singleton.class);
-    bind(JobsPaymentHandler.class).to(JobsPaymentHandlerImpl.class).in(Singleton.class);
-    Multibinder<Listener> binder = Multibinder.newSetBinder(binder(), Listener.class);
-    binder.addBinding().to(MobDamageTrackerController.class);
-    binder.addBinding().to(JobPaymentListener.class);
-    binder.addBinding().to(MobTagController.class);
-    binder.addBinding().to(ExploitStoreController.class);
-    binder.addBinding().to(JobLevelUpListener.class);
+  private PaymentWiring(
+      BoostEngine boostEngine,
+      JobsPaymentHandler paymentHandler,
+      ExploitService exploitService,
+      List<Listener> listeners) {
+    this.boostEngine = boostEngine;
+    this.paymentHandler = paymentHandler;
+    this.exploitService = exploitService;
+    this.listeners = listeners;
   }
 
-//  @Provides
-//  @Singleton
-//  @Named(TRACKABLE_ENTITIES)
-//  Set<Key> trackableEntities(@Named(TRACKABLE_ENTITIES) final ConfigurationSection configuration) {
-//    if (!configuration.contains(TRACKABLE_ENTITIES)) {
-//      //TODO: add logging message, with plugin logger
-//      return Set.of();
-//    }
-//    return configuration.getStringList(TRACKABLE_ENTITIES).stream().map(NamespacedKey::fromString)
-//        .collect(
-//            Collectors.toSet());
-//  }
+  public static PaymentWiring create(
+      Plugin plugin,
+      JobService jobService,
+      ItemBoostDataService itemBoostDataService,
+      TimedBoostDataService timedBoostDataService,
+      UpgradeBoostDataService upgradeBoostDataService,
+      BlockOwnershipService blockOwnershipService) {
+    BoostEngine boostEngine = new BoostEngineImpl(
+        itemBoostDataService, timedBoostDataService, upgradeBoostDataService);
+    PlayerChunkExplorationService chunkExploration = new PlayerChunkExplorationServiceImpl();
+    MobDamageTrackerStore damageStore = new MobDamageTrackerStoreImpl();
+    EntityValidationService entityValidation = new EntityValidationServiceImpl(plugin);
+    MobDamageTracker mobDamageTracker = new MobDamageTrackerImpl(damageStore);
+    JobsPaymentHandler paymentHandler = new JobsPaymentHandlerImpl(plugin, boostEngine, jobService);
+    ExploitService exploitService = createExploitService();
 
-  @Provides
-  @Singleton
-  ExploitService exploitService() {
+    List<Listener> listeners = List.of(
+        new MobDamageTrackerController(damageStore),
+        new JobPaymentListener(
+            blockOwnershipService,
+            mobDamageTracker,
+            paymentHandler,
+            entityValidation,
+            exploitService,
+            chunkExploration),
+        new MobTagController(entityValidation),
+        new ExploitStoreController(exploitService),
+        new JobLevelUpListener()
+    );
+
+    return new PaymentWiring(boostEngine, paymentHandler, exploitService, listeners);
+  }
+
+  private static ExploitService createExploitService() {
     Map<Key, ExploitProtectionStore<?>> providers = new HashMap<>();
     providers.put(ExploitProtectionType.WAX.key(),
         new MemoryExploitProtectionStoreImpl<>(

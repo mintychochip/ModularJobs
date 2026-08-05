@@ -9,31 +9,42 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Ephemeral-connection SQLite source: each {@link #getConnection()} opens a new JDBC
+ * connection (callers close it). Lifecycle is a simple closed flag — not a long-lived
+ * connection field — so {@link #isClosed()} / {@link #shutdown()} never NPE.
+ */
 final class SQLiteSourceImpl implements ConnectionSource {
 
-  private final Plugin plugin;
   private final Path databaseFilePath;
-  private NonClosableConnection connection;
+  private final AtomicBoolean closed = new AtomicBoolean(false);
 
-  private SQLiteSourceImpl(Plugin plugin, Path databaseFilePath) {
-    this.plugin = plugin;
+  private SQLiteSourceImpl(Path databaseFilePath) {
     this.databaseFilePath = databaseFilePath;
   }
 
   static SQLiteSourceImpl create(@NotNull Plugin plugin, String relativePath) {
     File dataFolder = plugin.getDataFolder();
     Path databaseFilePath = dataFolder.toPath().resolve(relativePath);
+    return createAtPath(databaseFilePath);
+  }
+
+  /**
+   * Test / tool entry that uses a concrete file path (no Bukkit plugin required).
+   */
+  static SQLiteSourceImpl createAtPath(@NotNull Path databaseFilePath) {
     try {
       Class.forName(DatabaseType.SQLITE.getClassName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    File databaseFile = new File(databaseFilePath.toString());
+    File databaseFile = databaseFilePath.toFile();
     File parentFile = databaseFile.getParentFile();
-    if (!parentFile.exists()) {
+    if (parentFile != null && !parentFile.exists()) {
       parentFile.mkdirs();
     }
     if (!databaseFile.exists()) {
@@ -45,7 +56,7 @@ final class SQLiteSourceImpl implements ConnectionSource {
         throw new RuntimeException(ex);
       }
     }
-    return new SQLiteSourceImpl(plugin, databaseFilePath);
+    return new SQLiteSourceImpl(databaseFilePath);
   }
 
   @NotNull
@@ -55,8 +66,8 @@ final class SQLiteSourceImpl implements ConnectionSource {
   }
 
   @Override
-  public void shutdown() throws SQLException {
-    connection.shutdown();
+  public void shutdown() {
+    closed.set(true);
   }
 
   @Override
@@ -66,15 +77,14 @@ final class SQLiteSourceImpl implements ConnectionSource {
 
   @Override
   public boolean isClosed() {
-    try {
-      return connection.isClosed();
-    } catch (SQLException ex) {
-      throw new RuntimeException();
-    }
+    return closed.get();
   }
 
   @Override
   public Connection getConnection() {
+    if (closed.get()) {
+      throw new IllegalStateException("SQLite ConnectionSource is closed: " + databaseFilePath);
+    }
     try {
       Connection connection = DriverManager.getConnection(getUrl(databaseFilePath));
       try (Statement st = connection.createStatement()) {

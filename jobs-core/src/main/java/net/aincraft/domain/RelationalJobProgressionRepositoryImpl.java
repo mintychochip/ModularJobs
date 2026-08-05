@@ -29,7 +29,6 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE)
       .build();
 
-
   private static final String SAVE_QUERY = """
       INSERT INTO %s (player_id, job_key, experience)
       VALUES (?,?,?)

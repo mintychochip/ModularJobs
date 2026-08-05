@@ -1,6 +1,5 @@
 package net.aincraft.boost;
 
-import com.google.inject.Inject;
 import java.util.Optional;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
@@ -18,7 +17,6 @@ public class ConsumableBoostController implements Listener {
   private final ItemBoostDataService boostDataService;
   private final TimedBoostDataService timedBoostDataService;
 
-  @Inject
   public ConsumableBoostController(ItemBoostDataService boostDataService,
       TimedBoostDataService timedBoostDataService) {
     this.boostDataService = boostDataService;

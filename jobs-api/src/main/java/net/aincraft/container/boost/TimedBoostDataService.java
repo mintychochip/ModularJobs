@@ -20,16 +20,26 @@ public interface TimedBoostDataService {
     record PlayerTarget(Player player) implements Target {}
   }
 
-  //TODO: handle cleaning of the db
+  /**
+   * Active timed boost row. Expiry is computed from {@link #started} + {@link #duration};
+   * expired rows are deleted by {@link TimedBoostDataService#findApplicableBoosts(Target)}.
+   */
   record ActiveBoostData(String targetIdentifier, String sourceIdentifier, Timestamp started,
                          @Nullable Duration duration, BoostSource boostSource) {
 
     public boolean isExpired() {
+      return isExpired(System.currentTimeMillis());
+    }
+
+    /**
+     * Expiry check against an explicit clock (for tests / deterministic cleanup).
+     */
+    public boolean isExpired(long nowMillis) {
       if (duration == null) {
         return false; // Permanent boost
       }
       long expiresAt = started.getTime() + duration.toMillis();
-      return System.currentTimeMillis() > expiresAt;
+      return nowMillis > expiresAt;
     }
   }
 

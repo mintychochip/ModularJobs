@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -30,13 +29,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-final class BoostEngineImpl implements BoostEngine {
+/**
+ * Aggregates passive item, timed, and upgrade-tree boost sources, evaluates them
+ * against a {@link BoostContext}, and returns one {@link Boost} per source key.
+ */
+public final class BoostEngineImpl implements BoostEngine {
 
   private final ItemBoostDataService boostDataService;
   private final TimedBoostDataService timedBoostDataService;
   private final UpgradeBoostDataService upgradeBoostDataService;
 
-  @Inject
   public BoostEngineImpl(ItemBoostDataService boostDataService,
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService) {
@@ -48,8 +50,6 @@ final class BoostEngineImpl implements BoostEngine {
   @Override
   public Map<Key, Boost> evaluate(OfflinePlayer player, ActionType type, Context context,
       JobProgression progression, Payable payable) {
-    Map<Key, List<Boost>> boostsBySource = new HashMap<>();
-
     if (!player.isOnline()) {
       return Map.of();
     }
@@ -59,47 +59,66 @@ final class BoostEngineImpl implements BoostEngine {
     }
 
     BoostContext boostContext = new BoostContext(type, progression, onlinePlayer, payable);
-
-    // Aggregate passive item sources
     List<BoostSource> itemSources = aggregateItemSources(onlinePlayer);
-    for (BoostSource source : itemSources) {
-      List<Boost> evaluated = source.evaluate(boostContext);
-      if (!evaluated.isEmpty()) {
-        boostsBySource.put(source.key(), evaluated);
-      }
-    }
-
-    // Aggregate timed boost sources
     List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
         new PlayerTarget(onlinePlayer));
-    for (ActiveBoostData activeBoost : timedBoosts) {
-      BoostSource source = activeBoost.boostSource();
-      List<Boost> evaluated = source.evaluate(boostContext);
-      if (!evaluated.isEmpty()) {
-        boostsBySource.put(source.key(), evaluated);
-      }
-    }
-
-    // Aggregate upgrade tree boost sources (now uses the same BoostSource API)
     List<BoostSource> upgradeSources = upgradeBoostDataService.getBoostSources(
         onlinePlayer.getUniqueId(),
         progression.job().key()
     );
+    return evaluateSources(boostContext, itemSources, timedBoosts, upgradeSources);
+  }
+
+  /**
+   * Pure evaluation path used by payment and unit tests: given already-resolved sources,
+   * evaluate each against {@code context} and flatten to one boost per source key.
+   */
+  public Map<Key, Boost> evaluateSources(
+      BoostContext context,
+      List<BoostSource> itemSources,
+      List<ActiveBoostData> timedBoosts,
+      List<BoostSource> upgradeSources) {
+    Map<Key, List<Boost>> boostsBySource = new HashMap<>();
+
+    for (BoostSource source : itemSources) {
+      collect(boostsBySource, source, context);
+    }
+    for (ActiveBoostData activeBoost : timedBoosts) {
+      collect(boostsBySource, activeBoost.boostSource(), context);
+    }
     for (BoostSource source : upgradeSources) {
-      List<Boost> evaluated = source.evaluate(boostContext);
-      if (!evaluated.isEmpty()) {
-        boostsBySource.put(source.key(), evaluated);
-      }
+      collect(boostsBySource, source, context);
     }
 
-    // Flatten: for each source, combine boosts into a single composite boost
+    return flatten(boostsBySource);
+  }
+
+  /**
+   * Apply evaluated boosts to a base amount (same loop as payment handling).
+   */
+  public static BigDecimal applyBoosts(BigDecimal baseAmount, Map<Key, Boost> boosts) {
+    BigDecimal boostedAmount = baseAmount;
+    for (Boost boost : boosts.values()) {
+      boostedAmount = boost.boost(boostedAmount);
+    }
+    return boostedAmount;
+  }
+
+  private static void collect(
+      Map<Key, List<Boost>> boostsBySource, BoostSource source, BoostContext context) {
+    List<Boost> evaluated = source.evaluate(context);
+    if (!evaluated.isEmpty()) {
+      boostsBySource.put(source.key(), evaluated);
+    }
+  }
+
+  private static Map<Key, Boost> flatten(Map<Key, List<Boost>> boostsBySource) {
     Map<Key, Boost> result = new HashMap<>();
     for (Map.Entry<Key, List<Boost>> entry : boostsBySource.entrySet()) {
       List<Boost> sourceBoosts = entry.getValue();
       if (sourceBoosts.size() == 1) {
         result.put(entry.getKey(), sourceBoosts.get(0));
       } else {
-        // Combine multiple boosts from same source into composite
         result.put(entry.getKey(), amount -> {
           BigDecimal current = amount;
           for (Boost b : sourceBoosts) {
@@ -109,7 +128,6 @@ final class BoostEngineImpl implements BoostEngine {
         });
       }
     }
-
     return result;
   }
 
@@ -138,5 +156,4 @@ final class BoostEngineImpl implements BoostEngine {
     }
     return sources;
   }
-
 }

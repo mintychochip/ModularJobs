@@ -20,7 +20,7 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 
 ## Technology Stack
 - **Framework**: PaperMC API, Adventure/Kyori text components
-- **DI**: Google Guice
+- **Wiring**: Manual composition root (`PluginContext`) — no DI framework
 - **Serialization**: Kryo 5.6.2
 - **Database**: HikariCP (connection pooling)
 - **Caching**: Caffeine
@@ -50,7 +50,7 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - **Placeholders**: PlaceholderAPI expansion
 
 ## Design Patterns
-- **Dependency Injection**: Guice modules for component wiring
+- **Composition root**: `PluginContext` + package `*Wiring` classes construct the object graph
 - **Repository Pattern**: Abstraction over relational databases
 - **Domain Mapping**: DomainMapper<Domain, Record> for model conversion
 - **Sealed Types**: Type-safe variants (e.g., `Target` for boost targets)
@@ -91,3 +91,14 @@ tools to resolve library id and get library docs without me having to explicitly
 ### Guice Binding Fixes (2026-01-04)
 - `BoostModule.java`: Added `BoostFactory`, `ConditionFactory`, `PolicyFactory` bindings → `BoostFactoryImpl.INSTANCE`
 - `DomainModule.java`: `JobResolver` → `JobResolverImpl` (requires import due to package-private)
+
+### Guice Removal (2026-08-05)
+- Removed Google Guice entirely; deleted all `*Module` Guice binders
+- Manual composition: `PluginContext`, `DomainWiring`, `PayableWiring`, `PaymentWiring`, `KeyResolvers`
+- Replaced Guice transitive Guava with explicit `libs.guava`
+- Bootstrap: `PluginContext.create(this)` instead of `Guice.createInjector`
+
+### MockBukkit 26.2 unit tests (2026-08-05)
+- `testImplementation` MockBukkit `mockbukkit-v26.2:26.2.0-mj` (vendored from branch `upgrade/v26.2` in `libs/mockbukkit-maven` until Central publishes)
+- Paper API catalog: `26.2.build.65-beta`; Java toolchain 25; Gradle wrapper 9.6.1
+- Bukkit-touching tests use `MockBukkitSupport` (`MockBukkit.mock`/`unmock`); removed OfflinePlayer Proxy stubs

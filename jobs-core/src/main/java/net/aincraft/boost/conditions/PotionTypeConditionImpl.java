@@ -2,16 +2,34 @@ package net.aincraft.boost.conditions;
 
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.Condition;
+import net.kyori.adventure.key.Key;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 /**
- * Record condition that checks if the player has a specific potion effect.
- * Delegates to {@link Conditions#potionType(PotionEffectType)} for implementation.
+ * Checks whether the player has a potion effect identified by key/name
+ * (resolved at evaluation time — no registry required at parse).
  */
-public record PotionTypeConditionImpl(PotionEffectType type) implements Condition {
+public record PotionTypeConditionImpl(Key effectKey) implements Condition {
+
+  public PotionTypeConditionImpl(PotionEffectType type) {
+    this(type.getKey());
+  }
 
   @Override
   public boolean applies(BoostContext context) {
-    return context.player().hasPotionEffect(type);
+    for (PotionEffect effect : context.player().getActivePotionEffects()) {
+      if (matches(effect.getType())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean matches(PotionEffectType type) {
+    Key key = type.getKey();
+    return effectKey.equals(key)
+        || effectKey.value().equalsIgnoreCase(key.value())
+        || effectKey.asString().equalsIgnoreCase(key.asString());
   }
 }

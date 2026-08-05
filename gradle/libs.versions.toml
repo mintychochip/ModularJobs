@@ -5,7 +5,7 @@ shadow = "8.1.8"
 
 # Core infrastructure
 kryo = "5.6.2"
-guice = "7.0.0"
+guava = "33.4.0-jre"
 hikari = "5.0.1"
 caffeine = "3.2.2"
 exp4j = "0.4.8"
@@ -13,7 +13,8 @@ gson = "2.11.0"
 configurate = "4.1.1"
 
 # Minecraft ecosystem
-paper = "1.21.8-R0.1-SNAPSHOT"
+# Paper 26.2 line (aligned with MockBukkit mockbukkit-v26.2)
+paper = "26.2.build.65-beta"
 mcmmo = "2.2.004"
 lwc = "2.4.0"
 bolt = "1.1.52"
@@ -21,13 +22,16 @@ placeholderapi = "2.11.6"
 mint-api = "1.4"
 triumph-gui = "3.1.12"
 
+# Test / MockBukkit (Paper 26.2 line; vendored until Central publishes mockbukkit-v26.2)
+mockbukkit = "26.2.0-mj"
+
 # Development tools
 jetbrains-annotations = "24.1.0"
 
 [libraries]
 # Infrastructure
 kryo = { module = "com.esotericsoftware:kryo", version.ref = "kryo" }
-guice = { module = "com.google.inject:guice", version.ref = "guice" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }
@@ -42,6 +46,9 @@ bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }
 placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
 mint-api = { module = "dev.mintychochip:mint-api", version.ref = "mint-api" }
 triumph-gui = { module = "dev.triumphteam:triumph-gui", version.ref = "triumph-gui" }
+
+# Test
+mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v26.2", version.ref = "mockbukkit" }
 
 # Development
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }

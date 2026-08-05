@@ -1,8 +1,6 @@
 package net.aincraft.editor;
 
 import com.google.gson.Gson;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -34,7 +32,6 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
-@Singleton
 public final class EditorServiceImpl implements EditorService {
 
     private final JobService jobService;
@@ -44,7 +41,6 @@ public final class EditorServiceImpl implements EditorService {
     private final EditorConfig config;
     private final Gson gson;
 
-    @Inject
     public EditorServiceImpl(
         JobService jobService,
         JobTaskRepository jobTaskRepository,

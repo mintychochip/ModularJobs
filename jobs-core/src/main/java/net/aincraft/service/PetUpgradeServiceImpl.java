@@ -1,6 +1,5 @@
 package net.aincraft.service;
 
-import com.google.inject.Inject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +33,6 @@ public class PetUpgradeServiceImpl implements PetUpgradeService {
   private final ConnectionSource connectionSource;
   private final ConcurrentMap<String, List<String>> jobPetsMap;
 
-  @Inject
   public PetUpgradeServiceImpl(ConnectionSource connectionSource) {
     this.connectionSource = connectionSource;
     this.jobPetsMap = new ConcurrentHashMap<>();

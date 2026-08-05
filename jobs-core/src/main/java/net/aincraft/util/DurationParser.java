@@ -1,14 +1,25 @@
 package net.aincraft.util;
 
 import java.time.Duration;
-import org.spongepowered.configurate.BasicConfigurationNode;
-import org.spongepowered.configurate.ConfigurationNode;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Parses duration strings like "1h30m", "30s", "2d", "1h 30m 15s" using Configurate's serializer.
- * Handles spaces, case-insensitive input, and various common formats.
+ * Parses duration strings like "1h30m", "30s", "2d", "1h 30m 15s".
+ * Handles spaces, case-insensitive input, and common unit suffixes.
  */
 public final class DurationParser {
+
+  /**
+   * Matches optional space-separated unit segments: number + unit letter/word.
+   * Longest unit tokens first so "1 hour" / "30 minutes" are not truncated by single letters.
+   * Units: days?/day, hours?/hour, minutes?/minute, min, seconds?/second, sec, d, h, m, s.
+   */
+  private static final Pattern SEGMENT = Pattern.compile(
+      "(\\d+)\\s*(days?|hours?|minutes?|seconds?|min|sec|d|h|m|s)",
+      Pattern.CASE_INSENSITIVE
+  );
 
   private DurationParser() {
   }
@@ -26,17 +37,36 @@ public final class DurationParser {
       throw new IllegalArgumentException("Duration string cannot be empty");
     }
 
-    try {
-      ConfigurationNode node = BasicConfigurationNode.root();
-      node.set(input);
-      Duration duration = node.get(Duration.class);
-      if (duration == null) {
+    String normalized = input.trim().toLowerCase(Locale.ROOT);
+    Matcher matcher = SEGMENT.matcher(normalized);
+    long totalSeconds = 0;
+    int matchedEnd = 0;
+    boolean found = false;
+
+    while (matcher.find()) {
+      // Reject garbage between segments (allow only whitespace)
+      String between = normalized.substring(matchedEnd, matcher.start()).trim();
+      if (!between.isEmpty()) {
         throw new IllegalArgumentException("Invalid duration format: " + input);
       }
-      return duration;
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Invalid duration format: " + input, e);
+      found = true;
+      long value = Long.parseLong(matcher.group(1));
+      String unit = matcher.group(2).toLowerCase(Locale.ROOT);
+      totalSeconds += switch (unit) {
+        case "d", "day", "days" -> value * 86_400L;
+        case "h", "hour", "hours" -> value * 3_600L;
+        case "m", "min", "minute", "minutes" -> value * 60L;
+        case "s", "sec", "second", "seconds" -> value;
+        default -> throw new IllegalArgumentException("Invalid duration format: " + input);
+      };
+      matchedEnd = matcher.end();
     }
+
+    if (!found || !normalized.substring(matchedEnd).trim().isEmpty()) {
+      throw new IllegalArgumentException("Invalid duration format: " + input);
+    }
+
+    return Duration.ofSeconds(totalSeconds);
   }
 
   /**

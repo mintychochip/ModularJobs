@@ -11,6 +11,7 @@ import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.WeatherState;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
+import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -38,8 +39,13 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   }
 
   @Override
+  public Condition world(Key worldKey) {
+    return Conditions.world(worldKey);
+  }
+
+  @Override
   public Condition world(World world) {
-    return Conditions.world(world.key());
+    return world(world.key());
   }
 
   @Override

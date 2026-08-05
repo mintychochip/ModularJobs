@@ -2,7 +2,6 @@ package net.aincraft.commands;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.inject.Inject;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -21,6 +20,8 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -360,7 +361,7 @@ import org.bukkit.plugin.Plugin;
 /**
  * Jobs Top/Info Chat/Scoreboard/Gui options
  */
-final class TopCommand implements JobsCommand {
+public final class TopCommand implements JobsCommand {
 
   private static final int ENTRIES_PER_QUERY = 100;
 
@@ -370,7 +371,6 @@ final class TopCommand implements JobsCommand {
 
   private static final int PAGE_SIZE = 10;
 
-  @Inject
   public TopCommand(JobService jobService, JobTopPageProvider resultProvider,
       Plugin plugin) {
     this.jobService = jobService;
@@ -489,14 +489,13 @@ final class TopCommand implements JobsCommand {
         : "chat";
   }
 
-  static final class JobTopPageProviderImpl implements JobTopPageProvider {
+  public static final class JobTopPageProviderImpl implements JobTopPageProvider {
 
     private final JobService jobService;
     private final Cache<Key, List<JobProgression>> readCache = Caffeine.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(10)).build();
 
-    @Inject
-    JobTopPageProviderImpl(JobService jobService) {
+    public JobTopPageProviderImpl(JobService jobService) {
       this.jobService = jobService;
     }
 

@@ -65,6 +65,34 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
     if (!flushing.compareAndSet(false, true)) {
       return;
     }
+    try {
+      flushOnce(false);
+    } finally {
+      flushing.set(false);
+    }
+  }
+
+  /**
+   * Drain all pending progression writes before ConnectionSource shutdown.
+   */
+  public void flushPending() {
+    while (!flushing.compareAndSet(false, true)) {
+      Thread.onSpinWait();
+    }
+    try {
+      while (flushOnce(true)) {
+        // drain batches
+      }
+    } finally {
+      flushing.set(false);
+    }
+  }
+
+  /**
+   * @param rethrow if true, propagate delegate failures (disable path); scheduled flush swallows
+   * @return true if any work was flushed
+   */
+  private boolean flushOnce(boolean rethrow) {
     // Process deletes first to ensure clean state before upserts
     // This prevents desync when a player leaves and quickly rejoins a job
     Set<Key> batchDeletes = new HashSet<>();
@@ -85,6 +113,9 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
         batchUpserts.put(key, value);
       }
     }
+    if (batchDeletes.isEmpty() && batchUpserts.isEmpty()) {
+      return false;
+    }
     try {
       // Execute deletes before upserts to ensure proper cleanup
       for (Key key : batchDeletes) {
@@ -93,11 +124,14 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       batchUpserts.forEach((__, record) -> {
         delegate.save(record);
       });
+      return true;
     } catch (Throwable t) {
       pendingUpserts.putAll(batchUpserts);
       pendingDeletes.addAll(batchDeletes);
-    } finally {
-      flushing.set(false);
+      if (rethrow) {
+        throw t;
+      }
+      return true;
     }
   }
 

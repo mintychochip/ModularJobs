@@ -1,20 +1,12 @@
 package net.aincraft;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.commands.JobsCommand;
-import net.aincraft.repository.ConnectionSource;
-import net.aincraft.upgrade.config.UpgradeTreeLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
@@ -26,42 +18,38 @@ import org.jspecify.annotations.NullMarked;
 public final class ModularJobsBootstrap extends JavaPlugin {
 
   @Nullable
-  private ConnectionSource connectionSource = null;
+  private PluginContext context = null;
 
   @Override
   public void onEnable() {
     try {
-      Injector injector = Guice.createInjector(new PluginModule(this));
-      Bridge bridge = injector.getInstance(Bridge.class);
+      PluginContext created = PluginContext.create(this);
+      this.context = created;
+
       Bukkit.getServicesManager()
-          .register(Bridge.class, bridge, this,
-              ServicePriority.High);
+          .register(Bridge.class, created.bridge, this, ServicePriority.High);
 
-      // Trigger upgrade tree loading (provider won't run otherwise)
-      injector.getInstance(UpgradeTreeLoader.class);
-
-      Set<Listener> listeners = injector.getInstance(
-          Key.get(new TypeLiteral<>() {
-          })
-      );
-      listeners.forEach(listener -> Bukkit.getPluginManager().registerEvents(listener, this));
-      if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-        injector.getInstance(PlaceholderExpansion.class).register();
+      for (Listener listener : created.listeners) {
+        Bukkit.getPluginManager().registerEvents(listener, this);
       }
-      Set<JobsCommand> commands = injector.getInstance(Key.get(new TypeLiteral<>() {
-      }));
 
-      // Register as "jobs" and "j" aliases
+      if (created.placeholderExpansion != null) {
+        created.placeholderExpansion.register();
+      }
+
       getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, c -> {
         for (String alias : List.of("jobs", "j")) {
           LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(alias);
-          for (JobsCommand command : commands) {
+          for (JobsCommand command : created.commands) {
             root.then(command.build());
           }
           c.registrar().register(root.build());
         }
       });
-      Bukkit.getPluginCommand("test").setExecutor(injector.getInstance(Command.class));
+
+      if (Bukkit.getPluginCommand("test") != null) {
+        Bukkit.getPluginCommand("test").setExecutor(created.testCommand);
+      }
     } catch (Exception e) {
       getSLF4JLogger().error("Failed to enable ModularJobs", e);
       throw e;
@@ -70,13 +58,15 @@ public final class ModularJobsBootstrap extends JavaPlugin {
 
   @Override
   public void onDisable() {
-    if (!(connectionSource == null || connectionSource.isClosed())) {
-      try {
-        connectionSource.shutdown();
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
+    PluginContext ctx = this.context;
+    this.context = null;
+    if (ctx == null) {
+      return;
+    }
+    try {
+      ctx.shutdown();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
-
 }

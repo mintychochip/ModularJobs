@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import com.google.inject.Inject;
 import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Entity;
 
@@ -8,7 +7,6 @@ final class MobDamageTrackerImpl implements MobDamageTracker {
 
   private final MobDamageTrackerStore store;
 
-  @Inject
   public MobDamageTrackerImpl(MobDamageTrackerStore store) {
     this.store = store;
   }

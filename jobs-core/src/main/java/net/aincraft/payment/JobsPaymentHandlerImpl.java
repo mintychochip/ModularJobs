@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +22,12 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-
 final class JobsPaymentHandlerImpl implements JobsPaymentHandler {
 
   private final Plugin plugin;
   private final BoostEngine boostEngine;
   private final JobService jobService;
 
-  @Inject
   public JobsPaymentHandlerImpl(Plugin plugin, BoostEngine boostEngine,
       JobService jobService) {
     this.plugin = plugin;
@@ -56,10 +53,7 @@ final class JobsPaymentHandlerImpl implements JobsPaymentHandler {
         Payable basePayable = new Payable(payableType,
             PayableAmount.create(baseAmount, amount.currency().orElse(null)));
         Map<Key, Boost> boosts = boostEngine.evaluate(player, type, context, progression, basePayable);
-        BigDecimal boostedAmount = baseAmount;
-        for (Boost boost : boosts.values()) {
-          boostedAmount = boost.boost(boostedAmount);
-        }
+        BigDecimal boostedAmount = BoostEngineImpl.applyBoosts(baseAmount, boosts);
 
         Payable finalPayable = new Payable(payableType,
             PayableAmount.create(boostedAmount, amount.currency().orElse(null)));

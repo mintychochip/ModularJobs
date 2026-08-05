@@ -1,7 +1,5 @@
 package net.aincraft.upgrade;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Implementation of UpgradeService.
  */
-@Singleton
 public final class UpgradeServiceImpl implements UpgradeService {
 
   private final Registry<UpgradeTree> treeRegistry;
@@ -32,7 +29,6 @@ public final class UpgradeServiceImpl implements UpgradeService {
   // In-memory cache: playerId -> jobKey -> data
   private final Map<String, Map<String, PlayerUpgradeDataImpl>> cache = new ConcurrentHashMap<>();
 
-  @Inject
   public UpgradeServiceImpl(
       Registry<UpgradeTree> treeRegistry,
       PlayerUpgradeRepository repository,

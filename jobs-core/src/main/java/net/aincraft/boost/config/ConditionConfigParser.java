@@ -10,13 +10,8 @@ import net.aincraft.container.boost.PotionConditionType;
 import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.WeatherState;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
-import org.bukkit.potion.PotionEffectType;
 
 /**
  * Parses ConditionConfig from JSON into Condition instances.
@@ -49,21 +44,28 @@ public final class ConditionConfigParser {
   }
 
   private Condition parseBiome(ConditionConfig config) {
-    String biomeStr = (String) config.value();
-    Biome biome = Registry.BIOME.get(NamespacedKey.minecraft(biomeStr.toLowerCase()));
-    if (biome == null) {
-      throw new IllegalArgumentException("Unknown biome: " + biomeStr);
+    if (!(config.value() instanceof String biomeStr) || biomeStr.isBlank()) {
+      throw new IllegalArgumentException("biome condition requires a non-empty string 'value'");
     }
-    return conditionFactory.biome(biome);
+    // Key-based: no live biome registry required at parse time
+    Key biomeKey = biomeStr.contains(":")
+        ? Key.key(biomeStr)
+        : Key.key("minecraft", biomeStr.toLowerCase());
+    return net.aincraft.boost.conditions.Conditions.biome(biomeKey);
   }
 
+  /**
+   * Parse world by name or key string. Does not require the world to exist at parse time;
+   * matching is deferred to evaluation ({@link net.aincraft.boost.conditions.WorldConditionImpl}).
+   */
   private Condition parseWorld(ConditionConfig config) {
-    String worldName = (String) config.value();
-    World world = Bukkit.getWorld(worldName);
-    if (world == null) {
-      throw new IllegalArgumentException("World not found: " + worldName);
+    if (!(config.value() instanceof String worldName) || worldName.isBlank()) {
+      throw new IllegalArgumentException("world condition requires a non-empty string 'value'");
     }
-    return conditionFactory.world(world);
+    Key worldKey = worldName.contains(":")
+        ? Key.key(worldName)
+        : Key.key("minecraft", worldName);
+    return conditionFactory.world(worldKey);
   }
 
   private Condition parseSneaking(ConditionConfig config) {
@@ -81,7 +83,7 @@ public final class ConditionConfigParser {
     if (resourceTypeStr == null) {
       throw new IllegalArgumentException("player_resource condition requires 'resourceType'");
     }
-    PlayerResourceType resourceType = PlayerResourceType.valueOf(resourceTypeStr.toUpperCase());
+    PlayerResourceType resourceType = parsePlayerResourceType(resourceTypeStr);
 
     String operatorStr = config.operator();
     if (operatorStr == null) {
@@ -101,25 +103,26 @@ public final class ConditionConfigParser {
 
   private Condition parsePotionEffect(ConditionConfig config) {
     String effectStr = config.effect();
-    if (effectStr == null) {
+    if (effectStr == null || effectStr.isBlank()) {
       throw new IllegalArgumentException("potion_effect condition requires 'effect'");
     }
 
-    PotionEffectType effectType = PotionEffectType.getByName(effectStr.toUpperCase());
-    if (effectType == null) {
-      throw new IllegalArgumentException("Unknown potion effect: " + effectStr);
-    }
+    // Key-based identity: no live potion registry required at parse time
+    Key effectKey = effectStr.contains(":")
+        ? Key.key(effectStr)
+        : Key.key("minecraft", effectStr.toLowerCase());
 
     // If amplifier and operator specified, use full potion condition
     if (config.amplifier() != null && config.operator() != null) {
       int amplifier = config.amplifier();
       RelationalOperator operator = parseRelationalOperator(config.operator());
       PotionConditionType conditionType = PotionConditionType.AMPLIFIER;
-      return conditionFactory.potion(effectType, amplifier, conditionType, operator);
+      return net.aincraft.boost.conditions.Conditions.potion(
+          effectKey, amplifier, conditionType, operator);
     }
 
     // Otherwise just check if effect is present
-    return conditionFactory.potionType(effectType);
+    return net.aincraft.boost.conditions.Conditions.potionType(effectKey);
   }
 
   private Condition parseLiquid(ConditionConfig config) {
@@ -207,6 +210,17 @@ public final class ConditionConfigParser {
       case "equal", "==" -> RelationalOperator.EQUAL;
       case "not_equal", "!=" -> RelationalOperator.NOT_EQUAL;
       default -> throw new IllegalArgumentException("Unknown operator: " + operator);
+    };
+  }
+
+  private PlayerResourceType parsePlayerResourceType(String resourceTypeStr) {
+    return switch (resourceTypeStr.toUpperCase()) {
+      case "HEALTH", "HP" -> PlayerResourceType.HEALTH;
+      case "HUNGER", "FOOD", "FOOD_LEVEL" -> PlayerResourceType.HUNGER;
+      case "EXPERIENCE", "XP", "EXP" -> PlayerResourceType.EXPERIENCE;
+      default -> throw new IllegalArgumentException(
+          "Unknown player resource type: " + resourceTypeStr
+              + " (expected health, hunger/food_level, experience)");
     };
   }
 

@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.mintychochip.mint.Mint;
@@ -18,7 +17,6 @@ public final class BrowseCommand implements JobsCommand {
 
   private final JobBrowseGui jobBrowseGui;
 
-  @Inject
   public BrowseCommand(JobBrowseGui jobBrowseGui) {
     this.jobBrowseGui = jobBrowseGui;
   }

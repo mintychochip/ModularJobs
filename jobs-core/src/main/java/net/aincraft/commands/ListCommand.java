@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.mintychochip.mint.Mint;
@@ -18,7 +17,6 @@ public class ListCommand implements JobsCommand {
 
   private final JobService jobService;
 
-  @Inject
   public ListCommand(JobService jobService) {
     this.jobService = jobService;
   }

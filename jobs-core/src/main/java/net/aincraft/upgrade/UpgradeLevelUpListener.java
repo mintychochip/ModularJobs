@@ -1,6 +1,5 @@
 package net.aincraft.upgrade;
 
-import com.google.inject.Inject;
 import dev.mintychochip.mint.Mint;
 import java.util.Optional;
 import net.aincraft.Job;
@@ -17,7 +16,6 @@ public final class UpgradeLevelUpListener implements Listener {
 
   private final UpgradeService upgradeService;
 
-  @Inject
   public UpgradeLevelUpListener(UpgradeService upgradeService) {
     this.upgradeService = upgradeService;
   }

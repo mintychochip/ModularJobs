@@ -39,7 +39,6 @@ public final class WriteBackRepositoryImpl<K, V> {
     return writeBehindRepository;
   }
 
-
   public @Nullable V load(K key) {
     if (pendingDeletes.contains(key)) {
       return null;
@@ -75,8 +74,24 @@ public final class WriteBackRepositoryImpl<K, V> {
     }
   }
 
-  private void flushAll() {
-    while (flushOnce()) {
+  /**
+   * Drain all pending upserts/deletes to the relational delegate. Called on plugin disable
+   * before ConnectionSource shutdown.
+   */
+  public void flushPending() {
+    if (!flushing.compareAndSet(false, true)) {
+      // Another flush is in flight; wait briefly then take over remaining work.
+      // For disable path, best-effort: spin until we acquire the lock.
+      while (!flushing.compareAndSet(false, true)) {
+        Thread.onSpinWait();
+      }
+    }
+    try {
+      while (flushOnce()) {
+        // drain batches
+      }
+    } finally {
+      flushing.set(false);
     }
   }
 

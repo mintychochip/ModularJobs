@@ -2,7 +2,6 @@ package net.aincraft.payment;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.inject.Inject;
 import io.papermc.paper.event.entity.EntityDyeEvent;
 import java.time.Duration;
 import java.util.Arrays;
@@ -116,7 +115,6 @@ final class JobPaymentListener implements Listener {
   private static final Predicate<Player> ADVENTURE_MODE = player -> player.getGameMode()
       == GameMode.ADVENTURE;
 
-  @Inject
   JobPaymentListener(BlockOwnershipService blockOwnershipService, MobDamageTracker mobDamageTracker, JobsPaymentHandler paymentHandler,
       EntityValidationService entityValidationService, ExploitService exploitService, PlayerChunkExplorationService chunkExplorationStore) {
     this.blockOwnershipService = blockOwnershipService;

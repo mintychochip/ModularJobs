@@ -40,7 +40,6 @@ final class TextScoreboardImpl implements TextScoreboard {
     return new TextScoreboardImpl(scoreboard, objective);
   }
 
-
   @Override
   public void setLine(int index, ComponentLike prefix, ComponentLike suffix) {
     String entry = entries[index];

@@ -114,7 +114,6 @@ public final class YamlJobTaskLoader {
     return tasks.size();
   }
 
-
   private int importFromCsv(File csvFile) {
     Map<String, TaskEntry> taskMap = new LinkedHashMap<>();
 
