@@ -1,7 +1,5 @@
 package net.aincraft.gui;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import dev.mintychochip.mint.Mint;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
@@ -29,7 +27,6 @@ import org.bukkit.entity.Player;
 /**
  * GUI for browsing and joining available jobs using TriumphGUI.
  */
-@Singleton
 public final class JobBrowseGui {
 
   private static final int GUI_ROWS = 6;
@@ -38,7 +35,6 @@ public final class JobBrowseGui {
   private final JobService jobService;
   private final UpgradeService upgradeService;
 
-  @Inject
   public JobBrowseGui(JobService jobService, UpgradeService upgradeService) {
     this.jobService = jobService;
     this.upgradeService = upgradeService;

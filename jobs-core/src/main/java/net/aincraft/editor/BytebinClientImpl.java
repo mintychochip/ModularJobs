@@ -2,8 +2,6 @@ package net.aincraft.editor;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -12,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
-@Singleton
 public final class BytebinClientImpl implements BytebinClient {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -21,7 +18,6 @@ public final class BytebinClientImpl implements BytebinClient {
     private final String baseUrl;
     private final Gson gson;
 
-    @Inject
     public BytebinClientImpl(EditorConfig config, Gson gson) {
         this.httpClient = HttpClient.newBuilder()
             .connectTimeout(TIMEOUT)

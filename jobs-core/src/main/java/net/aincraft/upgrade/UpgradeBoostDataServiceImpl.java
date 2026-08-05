@@ -1,7 +1,5 @@
 package net.aincraft.upgrade;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,13 +23,11 @@ import org.jetbrains.annotations.Nullable;
  * Implementation of UpgradeBoostDataService.
  * Aggregates boost sources from unlocked upgrade nodes using the composition API.
  */
-@Singleton
 public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataService {
 
   private final PlayerUpgradeRepository upgradeRepository;
   private final Registry<UpgradeTree> treeRegistry;
 
-  @Inject
   public UpgradeBoostDataServiceImpl(
       @NotNull PlayerUpgradeRepository upgradeRepository,
       @NotNull Registry<UpgradeTree> treeRegistry

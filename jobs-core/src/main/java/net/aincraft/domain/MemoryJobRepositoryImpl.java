@@ -1,6 +1,5 @@
 package net.aincraft.domain;
 
-import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +15,6 @@ final class MemoryJobRepositoryImpl implements JobRepository {
 
   private final Map<String, JobRecord> records;
 
-  @Inject
   MemoryJobRepositoryImpl(Map<String, JobRecord> records) {
     this.records = records;
   }

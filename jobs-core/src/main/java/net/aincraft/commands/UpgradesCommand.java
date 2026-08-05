@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -36,7 +35,6 @@ public class UpgradesCommand implements JobsCommand {
   private final JobResolver jobResolver;
   private final UpgradeTreeGui upgradeTreeGui;
 
-  @Inject
   public UpgradesCommand(
       UpgradeService upgradeService,
       JobResolver jobResolver,

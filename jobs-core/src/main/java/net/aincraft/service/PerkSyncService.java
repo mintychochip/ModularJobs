@@ -1,6 +1,5 @@
 package net.aincraft.service;
 
-import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ public final class PerkSyncService {
   private final JobPetsHook jobPetsHook;
   private final PetUpgradeService petUpgradeService;
 
-  @Inject
   public PerkSyncService(JobPetsHook jobPetsHook, PetUpgradeService petUpgradeService) {
     this.jobPetsHook = jobPetsHook;
     this.petUpgradeService = petUpgradeService;

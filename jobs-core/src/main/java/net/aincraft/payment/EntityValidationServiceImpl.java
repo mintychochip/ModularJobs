@@ -1,7 +1,6 @@
 package net.aincraft.payment;
 
 import com.google.errorprone.annotations.concurrent.LazyInit;
-import com.google.inject.Inject;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -9,7 +8,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-final class EntityValidationServiceImpl implements EntityValidationService {
+public final class EntityValidationServiceImpl implements EntityValidationService {
 
   @NotNull
   private final Plugin plugin;
@@ -24,8 +23,7 @@ final class EntityValidationServiceImpl implements EntityValidationService {
     return invalidationKey;
   }
 
-  @Inject
-  private EntityValidationServiceImpl(@NotNull Plugin plugin) {
+  public EntityValidationServiceImpl(@NotNull Plugin plugin) {
     this.plugin = plugin;
   }
 

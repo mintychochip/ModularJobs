@@ -1,7 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import dev.mintychochip.mint.Mint;
 import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.dialog.Dialog;
@@ -27,7 +25,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-@Singleton
 public class DialogNavigationListener implements Listener {
 
   private final JobService jobService;
@@ -44,7 +41,6 @@ public class DialogNavigationListener implements Listener {
   private static final Key STATS_NEXT_KEY = Key.key(NAMESPACE, "stats/next");
   private static final Key STATS_PREV_KEY = Key.key(NAMESPACE, "stats/prev");
 
-  @Inject
   public DialogNavigationListener(JobService jobService, JobResolver jobResolver, 
       InfoCommand infoCommand, StatsDialog statsDialog, PreferencesService preferencesService) {
     this.jobService = jobService;

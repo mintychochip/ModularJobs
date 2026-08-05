@@ -50,12 +50,21 @@ public final class Conditions {
   }
 
   public static Condition potionType(PotionEffectType type) {
-    return new PotionTypeConditionImpl(type);
+    return new PotionTypeConditionImpl(type.getKey());
+  }
+
+  public static Condition potionType(Key effectKey) {
+    return new PotionTypeConditionImpl(effectKey);
   }
 
   public static Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
       RelationalOperator relationalOperator) {
-    return new PotionConditionImpl(type, expected, conditionType, relationalOperator);
+    return new PotionConditionImpl(type.getKey(), expected, conditionType, relationalOperator);
+  }
+
+  public static Condition potion(Key effectKey, int expected, PotionConditionType conditionType,
+      RelationalOperator relationalOperator) {
+    return new PotionConditionImpl(effectKey, expected, conditionType, relationalOperator);
   }
 
   public static Condition playerResource(PlayerResourceType type, double expected,

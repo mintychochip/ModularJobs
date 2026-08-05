@@ -1,8 +1,5 @@
 package net.aincraft.util;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import java.util.Locale;
 import net.aincraft.container.Context.BlockContext;
 import net.aincraft.container.Context.ChunkContext;
@@ -16,16 +13,14 @@ import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 
-public final class UtilModule extends AbstractModule {
+/**
+ * Factory for the shared {@link KeyResolver} (replaces Guice UtilModule).
+ */
+public final class KeyResolvers {
 
-  @Override
-  protected void configure() {
-    // Utility module for providing key resolution strategies
-  }
+  private KeyResolvers() {}
 
-  @Provides
-  @Singleton
-  public KeyResolver keyResolver() {
+  public static KeyResolver create() {
     KeyResolverImpl resolver = new KeyResolverImpl();
     resolver.addStrategy(BlockContext.class, context -> context.block().getType().getKey());
     resolver.addStrategy(MaterialContext.class, context -> context.material().getKey());
@@ -33,8 +28,7 @@ public final class UtilModule extends AbstractModule {
         context -> NamespacedKey.minecraft(context.color().name().toLowerCase(Locale.ENGLISH)));
     resolver.addStrategy(EntityContext.class, new EntityResolvingStrategyImpl());
     resolver.addStrategy(ItemContext.class, context -> context.itemStack().getType().getKey());
-    resolver.addStrategy(PotionContext.class,
-        context -> context.type().key());
+    resolver.addStrategy(PotionContext.class, context -> context.type().key());
     resolver.addStrategy(EnchantmentContext.class, context -> {
       Enchantment enchantment = context.enchantment();
       Key enchantmentKey = enchantment.key();

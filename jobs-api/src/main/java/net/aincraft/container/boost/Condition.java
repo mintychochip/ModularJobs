@@ -10,46 +10,52 @@ import org.bukkit.potion.PotionEffectType;
 
 public interface Condition {
 
-  ConditionFactory FACTORY = Bridge.bridge().conditionFactory();
-
   boolean applies(BoostContext context);
 
+  /**
+   * Lazy factory access — must not run at class-init time (unit tests load
+   * {@link Condition} without a live Bukkit server / Bridge).
+   */
+  private static ConditionFactory factory() {
+    return Bridge.bridge().conditionFactory();
+  }
+
   static Condition biome(Biome biome) {
-    return FACTORY.biome(biome);
+    return factory().biome(biome);
   }
 
   static Condition world(World world) {
-    return FACTORY.world(world);
+    return factory().world(world);
   }
 
   static Condition playerResource(PlayerResourceType type, double expected,
       RelationalOperator operator) {
-    return FACTORY.playerResource(type, expected, operator);
+    return factory().playerResource(type, expected, operator);
   }
 
   static Condition sneaking(boolean state) {
-    return FACTORY.sneaking(state);
+    return factory().sneaking(state);
   }
 
   static Condition sprinting(boolean state) {
-    return FACTORY.sprinting(state);
+    return factory().sprinting(state);
   }
 
   static Condition liquid(Material liquid) throws IllegalArgumentException {
-    return FACTORY.liquid(liquid);
+    return factory().liquid(liquid);
   }
 
   static Condition potionType(PotionEffectType type) {
-    return FACTORY.potionType(type);
+    return factory().potionType(type);
   }
 
   static Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
       RelationalOperator operator) {
-    return FACTORY.potion(type, expected, conditionType, operator);
+    return factory().potion(type, expected, conditionType, operator);
   }
 
   static Condition weather(WeatherState state) {
-    return FACTORY.weather(state);
+    return factory().weather(state);
   }
 
   default Condition and(Condition other) {
@@ -61,10 +67,10 @@ public interface Condition {
   }
 
   default Condition negate() {
-    return FACTORY.negate(this);
+    return factory().negate(this);
   }
 
   default Condition compose(Condition other, LogicalOperator operator) {
-    return FACTORY.compose(this, other, operator);
+    return factory().compose(this, other, operator);
   }
 }

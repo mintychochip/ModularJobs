@@ -54,7 +54,6 @@ final class PlayerChunkExplorationServiceImpl implements PlayerChunkExplorationS
     }
   }
 
-
   private static final class PersistentChunkData {
 
     private final Set<UUID> players = new HashSet<>();
@@ -68,7 +67,6 @@ final class PlayerChunkExplorationServiceImpl implements PlayerChunkExplorationS
       return "PersistentChunkData[players=" + players + "]";
     }
   }
-
 
   private static final class PersistentChunkDataType implements
       PersistentDataType<String, PersistentChunkData> {

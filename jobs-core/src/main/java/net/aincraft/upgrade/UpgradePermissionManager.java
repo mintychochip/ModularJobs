@@ -1,7 +1,5 @@
 package net.aincraft.upgrade;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -14,12 +12,10 @@ import org.bukkit.plugin.Plugin;
  * Manages temporary permission grants for upgrade nodes via Bukkit PermissionAttachment.
  * Uses a single PermissionAttachment per player for efficiency.
  */
-@Singleton
 public final class UpgradePermissionManager {
   private final Plugin plugin;
   private final Map<UUID, PermissionAttachment> attachments = new ConcurrentHashMap<>();
 
-  @Inject
   public UpgradePermissionManager(Plugin plugin) {
     this.plugin = plugin;
   }

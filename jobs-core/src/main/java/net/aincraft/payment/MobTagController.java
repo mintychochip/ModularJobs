@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import com.google.inject.Inject;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -23,7 +22,6 @@ final class MobTagController implements Listener {
 
   private final EntityValidationService entityValidationService;
 
-  @Inject
   MobTagController(EntityValidationService entityValidationService) {
     this.entityValidationService = entityValidationService;
   }

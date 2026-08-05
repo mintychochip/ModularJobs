@@ -1,6 +1,5 @@
 package net.aincraft.service;
 
-import com.google.inject.Inject;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import java.util.Optional;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
@@ -10,15 +9,14 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
-final class ItemBoostDataServiceImpl implements ItemBoostDataService {
+public final class ItemBoostDataServiceImpl implements ItemBoostDataService {
 
   private static final NamespacedKey ITEM_BOOST_DATA_KEY = NamespacedKey.fromString(
       "modular_jobs:item_boost_data");
 
   private final CodecRegistry codecRegistry;
 
-  @Inject
-  ItemBoostDataServiceImpl(CodecRegistry codecRegistry) {
+  public ItemBoostDataServiceImpl(CodecRegistry codecRegistry) {
     this.codecRegistry = codecRegistry;
   }
 

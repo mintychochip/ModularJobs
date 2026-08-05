@@ -1,6 +1,5 @@
 package net.aincraft;
 
-import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Arrays;
@@ -28,7 +27,6 @@ public class Command implements CommandExecutor {
   private final CodecRegistry codecRegistry;
   private final ItemBoostDataService boostDataService;
 
-  @Inject
   public Command(JobService jobService, CodecRegistry codecRegistry,
       ItemBoostDataService boostDataService) {
     this.jobService = jobService;

@@ -7,6 +7,7 @@ import net.aincraft.container.boost.PlayerResourceType;
 import net.aincraft.container.boost.PotionConditionType;
 import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.WeatherState;
+import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -21,6 +22,11 @@ public interface ConditionFactory {
   }
 
   Condition biome(Biome biome);
+
+  /**
+   * World condition by namespaced key / name token (no live {@link World} required).
+   */
+  Condition world(Key worldKey);
 
   Condition world(World world);
 

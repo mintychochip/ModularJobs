@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import com.google.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -12,7 +11,6 @@ final class MobDamageTrackerStoreImpl implements MobDamageTrackerStore {
 
   private final Map<UUID, DamageContribution> damageContributions = new HashMap<>();
 
-  @Inject
   public MobDamageTrackerStoreImpl() {
   }
 

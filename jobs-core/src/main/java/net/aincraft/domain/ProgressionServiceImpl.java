@@ -1,7 +1,5 @@
 package net.aincraft.domain;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import java.util.List;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.repository.JobProgressionRepository;
@@ -14,10 +12,9 @@ final class ProgressionServiceImpl implements ProgressionService {
 
   private final JobProgressionRepository archive;
 
-  @Inject
   public ProgressionServiceImpl(
-      @Named(ProgressionServiceModule.LIVE_REPOSITORY) JobProgressionRepository live,
-      @Named(ProgressionServiceModule.ARCHIVE_REPOSITORY) JobProgressionRepository archive) {
+      JobProgressionRepository live,
+      JobProgressionRepository archive) {
     this.live = live;
     this.archive = archive;
   }

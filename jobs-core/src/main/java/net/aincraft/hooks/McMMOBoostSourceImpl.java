@@ -51,7 +51,7 @@ public class McMMOBoostSourceImpl implements BoostSource {
     if (amount == null) {
       return List.of();
     }
-    return List.of(Boost.FACTORY.multiplicative(amount));
+    return List.of(Boost.factory().multiplicative(amount));
   }
 
   private record McMMOController(Store<UUID, SuperAbilityType> store) implements Listener {

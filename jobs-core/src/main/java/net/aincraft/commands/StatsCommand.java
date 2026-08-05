@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -25,7 +24,6 @@ public class StatsCommand implements JobsCommand {
   private final JobService jobService;
   private final StatsDialog statsDialog;
 
-  @Inject
   public StatsCommand(JobService jobService, StatsDialog statsDialog) {
     this.jobService = jobService;
     this.statsDialog = statsDialog;

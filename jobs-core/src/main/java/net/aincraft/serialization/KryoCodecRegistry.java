@@ -286,7 +286,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
     }
   }
 
-
   private static final class ConsumableBoostDataSerializer extends Serializer<ConsumableBoostData> {
     @Override
     public void write(Kryo kryo, Output output, ConsumableBoostData value) {
@@ -316,7 +315,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
       return new PassiveBoostData(boostSource, slotSet);
     }
   }
-
 
   private static final class ComposableConditionSerializer extends Serializer<ComposableConditionImpl> {
     @Override
@@ -348,7 +346,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
     }
   }
 
-
   private static final class PlayerResourceConditionSerializer extends Serializer<PlayerResourceConditionImpl> {
     @Override
     public void write(Kryo kryo, Output output, PlayerResourceConditionImpl value) {
@@ -369,21 +366,21 @@ public final class KryoCodecRegistry implements CodecRegistry {
   private static final class PotionTypeConditionSerializer extends Serializer<PotionTypeConditionImpl> {
     @Override
     public void write(Kryo kryo, Output output, PotionTypeConditionImpl value) {
-      output.writeString(value.type().key().value());
+      output.writeString(value.effectKey().asString());
     }
 
     @Override
     public PotionTypeConditionImpl read(Kryo kryo, Input input, Class<? extends PotionTypeConditionImpl> type) {
       String value = input.readString();
-      PotionEffectType pet = Registry.POTION_EFFECT_TYPE.get(NamespacedKey.minecraft(value));
-      return new PotionTypeConditionImpl(pet);
+      Key effectKey = value.contains(":") ? Key.key(value) : Key.key("minecraft", value);
+      return new PotionTypeConditionImpl(effectKey);
     }
   }
 
   private static final class PotionConditionSerializer extends Serializer<PotionConditionImpl> {
     @Override
     public void write(Kryo kryo, Output output, PotionConditionImpl value) {
-      output.writeString(value.type().key().value());
+      output.writeString(value.effectKey().asString());
       output.writeVarInt(value.expected(), true);
       kryo.writeObject(output, value.conditionType());
       kryo.writeObject(output, value.relationalOperator());
@@ -392,14 +389,13 @@ public final class KryoCodecRegistry implements CodecRegistry {
     @Override
     public PotionConditionImpl read(Kryo kryo, Input input, Class<? extends PotionConditionImpl> type) {
       String value = input.readString();
-      PotionEffectType pet = Registry.POTION_EFFECT_TYPE.get(NamespacedKey.minecraft(value));
+      Key effectKey = value.contains(":") ? Key.key(value) : Key.key("minecraft", value);
       int expected = input.readVarInt(true);
       PotionConditionType conditionType = kryo.readObject(input, PotionConditionType.class);
       RelationalOperator operator = kryo.readObject(input, RelationalOperator.class);
-      return new PotionConditionImpl(pet, expected, conditionType, operator);
+      return new PotionConditionImpl(effectKey, expected, conditionType, operator);
     }
   }
-
 
   private static final class RuleSerializer extends Serializer<Rule> {
     @Override

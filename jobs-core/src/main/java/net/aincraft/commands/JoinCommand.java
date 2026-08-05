@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -15,13 +14,12 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-final class JoinCommand implements JobsCommand {
+public final class JoinCommand implements JobsCommand {
 
   private final JobService jobService;
   private final JobResolver jobResolver;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
-  @Inject
   public JoinCommand(JobService jobService, JobResolver jobResolver) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;

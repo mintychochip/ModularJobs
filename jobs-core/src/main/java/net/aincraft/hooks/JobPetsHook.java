@@ -1,6 +1,5 @@
 package net.aincraft.hooks;
 
-import com.google.inject.Inject;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -13,7 +12,6 @@ public final class JobPetsHook {
   private final Plugin plugin;
   private final Logger logger;
 
-  @Inject
   public JobPetsHook(Plugin plugin) {
     this.plugin = plugin;
     this.logger = plugin.getLogger();

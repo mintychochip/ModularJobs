@@ -27,8 +27,6 @@ interface MobDamageTracker {
    */
   boolean isTracking(Entity entity);
 
-
-
   /**
    * Represents damage contribution data for an entity.
    */

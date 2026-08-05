@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -22,7 +21,6 @@ public class ArchiveCommand implements JobsCommand {
 
   private final JobService jobService;
 
-  @Inject
   public ArchiveCommand(JobService jobService) {
     this.jobService = jobService;
   }

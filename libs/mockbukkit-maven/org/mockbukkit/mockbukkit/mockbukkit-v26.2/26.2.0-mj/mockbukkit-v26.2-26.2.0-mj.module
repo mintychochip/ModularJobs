@@ -1,0 +1,147 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.mockbukkit.mockbukkit",
+    "module": "mockbukkit-v26.2",
+    "version": "26.2.0-mj",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.5.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 25,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains",
+          "module": "annotations",
+          "version": {
+            "requires": "26.1.0"
+          }
+        },
+        {
+          "group": "org.hamcrest",
+          "module": "hamcrest",
+          "version": {
+            "requires": "3.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "mockbukkit-v26.2-26.2.0-mj.jar",
+          "url": "mockbukkit-v26.2-26.2.0-mj.jar",
+          "size": 2024189,
+          "sha512": "99f51738cb838e4703cc279c469f470d88de9169179d363e38af07d6a8fe06e901a5ea806200208fe57b8c08fe49e2713e6d8ca2a06ca4623b88ecff86cdbfd5",
+          "sha256": "03ccffa4f4f0909418a26c0de4733e4e16f17efffd37f89eb8e0a8cc47962ff3",
+          "sha1": "a02b05f60b60bb183e9ec07e6b55b0863b95feab",
+          "md5": "8b9ec07d50c808b6822db92e4881cfc2"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 25,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.junit.jupiter",
+          "module": "junit-jupiter-api",
+          "version": {
+            "requires": "6.1.0"
+          }
+        },
+        {
+          "group": "net.bytebuddy",
+          "module": "byte-buddy",
+          "version": {
+            "requires": "1.18.10"
+          }
+        },
+        {
+          "group": "org.apache.maven",
+          "module": "maven-resolver-provider",
+          "version": {
+            "requires": "3.8.5"
+          }
+        },
+        {
+          "group": "org.apache.maven.resolver",
+          "module": "maven-resolver-connector-basic",
+          "version": {
+            "requires": "1.9.18"
+          }
+        },
+        {
+          "group": "org.apache.maven.resolver",
+          "module": "maven-resolver-transport-http",
+          "version": {
+            "requires": "1.9.18"
+          }
+        },
+        {
+          "group": "org.jetbrains",
+          "module": "annotations",
+          "version": {
+            "requires": "26.1.0"
+          }
+        },
+        {
+          "group": "org.hamcrest",
+          "module": "hamcrest",
+          "version": {
+            "requires": "3.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "mockbukkit-v26.2-26.2.0-mj.jar",
+          "url": "mockbukkit-v26.2-26.2.0-mj.jar",
+          "size": 2024189,
+          "sha512": "99f51738cb838e4703cc279c469f470d88de9169179d363e38af07d6a8fe06e901a5ea806200208fe57b8c08fe49e2713e6d8ca2a06ca4623b88ecff86cdbfd5",
+          "sha256": "03ccffa4f4f0909418a26c0de4733e4e16f17efffd37f89eb8e0a8cc47962ff3",
+          "sha1": "a02b05f60b60bb183e9ec07e6b55b0863b95feab",
+          "md5": "8b9ec07d50c808b6822db92e4881cfc2"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "mockbukkit-v26.2-26.2.0-mj-sources.jar",
+          "url": "mockbukkit-v26.2-26.2.0-mj-sources.jar",
+          "size": 1297357,
+          "sha512": "14076a3adf499e55280721eb9b1b6ccb6fae14a0abc6bc051443c23f3f4d419f9cf469c64df07ee1e6e1fd40c016a46e561dc8876e6dd43f666e4104756ca8d4",
+          "sha256": "864876fd441d387a00d2582b90f17214c7d6ebbf622aa90dd00d5d42cdbfd25e",
+          "sha1": "2f7059befa7e4256715efc06938f8e001ed37cd6",
+          "md5": "e7aa61b0a4632871eb2971143141bb16"
+        }
+      ]
+    }
+  ]
+}

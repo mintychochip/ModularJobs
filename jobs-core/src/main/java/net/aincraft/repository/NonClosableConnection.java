@@ -6,8 +6,13 @@ import java.sql.SQLException;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * JDBC {@link Connection} wrapper that ignores {@code close()} so try-with-resources
+ * in repositories can share an in-memory SQLite connection across operations.
+ * Call {@link #shutdown()} to actually close the delegate.
+ */
 @Internal
-interface NonClosableConnection extends Connection {
+public interface NonClosableConnection extends Connection {
 
   static NonClosableConnection create(@NotNull Connection delegate) {
     return (NonClosableConnection) Proxy.newProxyInstance(

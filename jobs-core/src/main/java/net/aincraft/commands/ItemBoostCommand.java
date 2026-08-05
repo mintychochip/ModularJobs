@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -30,7 +29,6 @@ public final class ItemBoostCommand implements JobsCommand {
   private final Registry<BoostSource> boostSourceRegistry;
   private final ItemBoostDataService itemBoostDataService;
 
-  @Inject
   public ItemBoostCommand(
       Registry<BoostSource> boostSourceRegistry,
       ItemBoostDataService itemBoostDataService
@@ -84,7 +82,6 @@ public final class ItemBoostCommand implements JobsCommand {
             )
         );
   }
-
 
   private int giveItemBoost(
       CommandSourceStack source,

@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -27,14 +26,13 @@ import org.bukkit.entity.Player;
  *   <li>/jobs editor [job] - exports a specific job to the web editor</li>
  * </ul>
  */
-final class EditorCommand implements JobsCommand {
+public final class EditorCommand implements JobsCommand {
 
   private final EditorService editorService;
   private final JobService jobService;
   private final JobResolver jobResolver;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
-  @Inject
   public EditorCommand(EditorService editorService, JobService jobService, JobResolver jobResolver) {
     this.editorService = editorService;
     this.jobService = jobService;

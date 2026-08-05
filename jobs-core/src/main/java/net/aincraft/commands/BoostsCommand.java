@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -39,7 +38,6 @@ public class BoostsCommand implements JobsCommand {
   private final UpgradeBoostDataService upgradeBoostDataService;
   private final JobService jobService;
 
-  @Inject
   public BoostsCommand(ItemBoostDataService itemBoostDataService,
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService,

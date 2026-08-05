@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.mintychochip.mint.Mint;
@@ -43,7 +42,6 @@ public final class SourceCommand implements JobsCommand {
   private final Registry<BoostSource> boostSourceRegistry;
   private final BoostSourceLoader boostSourceLoader;
 
-  @Inject
   public SourceCommand(
       Registry<BoostSource> boostSourceRegistry,
       BoostSourceLoader boostSourceLoader
@@ -194,8 +192,8 @@ public final class SourceCommand implements JobsCommand {
       case SneakConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sneaking: " + s.state());
       case SprintConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sprinting: " + s.state());
       case PlayerResourceConditionImpl r -> lines.add(baseIndent + prefix + connector + r.type() + " " + formatOperator(r.operator()) + " " + r.expected());
-      case PotionConditionImpl p -> lines.add(baseIndent + prefix + connector + "Potion: " + p.type().key().value() + " " + p.conditionType() + " " + formatOperator(p.relationalOperator()) + " " + p.expected());
-      case PotionTypeConditionImpl p -> lines.add(baseIndent + prefix + connector + "Has Potion: " + p.type().key().value());
+      case PotionConditionImpl p -> lines.add(baseIndent + prefix + connector + "Potion: " + p.effectKey().value() + " " + p.conditionType() + " " + formatOperator(p.relationalOperator()) + " " + p.expected());
+      case PotionTypeConditionImpl p -> lines.add(baseIndent + prefix + connector + "Has Potion: " + p.effectKey().value());
       case WeatherConditionImpl w -> lines.add(baseIndent + prefix + connector + "Weather: " + w.state());
       case LiquidConditionImpl l -> lines.add(baseIndent + prefix + connector + "In Liquid: " + l.liquid().name().toLowerCase());
       default -> lines.add(baseIndent + prefix + connector + condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", ""));

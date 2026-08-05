@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -25,7 +24,6 @@ public final class ExperienceCommand implements JobsCommand {
   private final JobService jobService;
   private final ProgressionService progressionService;
 
-  @Inject
   public ExperienceCommand(JobService jobService, ProgressionService progressionService) {
     this.jobService = jobService;
     this.progressionService = progressionService;

@@ -1,6 +1,5 @@
 package net.aincraft.protection;
 
-import com.google.inject.Inject;
 import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -9,13 +8,12 @@ import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-final class BlockOwnershipServiceImpl implements BlockOwnershipService {
+public final class BlockOwnershipServiceImpl implements BlockOwnershipService {
 
   @Nullable
   private final BlockProtectionAdapter protectionAdapter;
 
-  @Inject
-  BlockOwnershipServiceImpl(@javax.annotation.Nullable BlockProtectionAdapter protectionAdapter) {
+  public BlockOwnershipServiceImpl(@org.jetbrains.annotations.Nullable BlockProtectionAdapter protectionAdapter) {
     this.protectionAdapter = protectionAdapter;
   }
 

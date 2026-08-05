@@ -1,6 +1,5 @@
 package net.aincraft.upgrade.editor;
 
-import com.google.inject.Inject;
 import dev.mintychochip.mint.Mint;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
@@ -57,7 +56,6 @@ public final class TreeEditorNodeGui {
     void handle(String input);
   }
 
-  @Inject
   public TreeEditorNodeGui(Plugin plugin) {
     this.plugin = plugin;
   }
@@ -66,7 +64,6 @@ public final class TreeEditorNodeGui {
    * Setter injection for TreeEditorGui to break circular dependency.
    * Guice calls this after both objects are constructed.
    */
-  @Inject
   public void setMainEditor(TreeEditorGui mainEditor) {
     this.mainEditor = mainEditor;
   }

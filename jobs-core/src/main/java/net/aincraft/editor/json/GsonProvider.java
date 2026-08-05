@@ -5,14 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import com.google.inject.Provider;
-import com.google.inject.Singleton;
 import net.kyori.adventure.key.Key;
 import java.io.IOException;
 import java.time.Instant;
 
 /**
- * Guice provider that creates a configured Gson instance for the ModularJobs web editor.
+ * Factory that creates a configured Gson instance for the ModularJobs web editor.
  * <p>
  * Configuration:
  * <ul>
@@ -27,11 +25,11 @@ import java.time.Instant;
  *   <li>{@link Instant} - serialized as ISO-8601 strings</li>
  * </ul>
  */
-@Singleton
-public final class GsonProvider implements Provider<Gson> {
+public final class GsonProvider {
 
-    @Override
-    public Gson get() {
+    private GsonProvider() {}
+
+    public static Gson create() {
         return new GsonBuilder()
             .setPrettyPrinting()
             .registerTypeAdapter(Key.class, new KeyAdapter())

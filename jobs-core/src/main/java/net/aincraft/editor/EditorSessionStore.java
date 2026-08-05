@@ -2,8 +2,6 @@ package net.aincraft.editor;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -13,12 +11,10 @@ import java.util.UUID;
  * Manages editor sessions with automatic expiration.
  * Sessions are stored in a Caffeine cache and expire after the configured TTL.
  */
-@Singleton
 public final class EditorSessionStore {
 
     private final Cache<String, EditorSession> sessionCache;
 
-    @Inject
     public EditorSessionStore(EditorConfig config) {
         this.sessionCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(config.sessionTtlMinutes()))

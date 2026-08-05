@@ -1,7 +1,5 @@
 package net.aincraft.service;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -14,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
  * Implementation of PreferencesService that stores player preferences.
  * Uses in-memory cache with config-based defaults.
  */
-@Singleton
 public class PreferencesServiceImpl implements PreferencesService {
   
   private final JavaPlugin plugin;
@@ -22,7 +19,6 @@ public class PreferencesServiceImpl implements PreferencesService {
   private static final int DEFAULT_ENTRIES_PER_PAGE = 10;
   private static final boolean DEFAULT_GUI_MODE = true;
   
-  @Inject
   public PreferencesServiceImpl(JavaPlugin plugin) {
     this.plugin = plugin;
   }

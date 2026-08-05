@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -12,12 +11,11 @@ import net.aincraft.editor.ImportResult;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-final class ApplyEditsCommand implements JobsCommand {
+public final class ApplyEditsCommand implements JobsCommand {
 
   private final EditorService editorService;
 
-  @Inject
-  ApplyEditsCommand(EditorService editorService) {
+  public ApplyEditsCommand(EditorService editorService) {
     this.editorService = editorService;
   }
 

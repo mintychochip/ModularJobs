@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import com.google.inject.Inject;
 import net.aincraft.event.JobLevelEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,7 +14,6 @@ import java.time.Duration;
 
 final class JobLevelUpListener implements Listener {
 
-  @Inject
   JobLevelUpListener() {
   }
 

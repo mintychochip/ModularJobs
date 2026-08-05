@@ -1,6 +1,5 @@
 package net.aincraft.listener;
 
-import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ public final class JobLevelUpListener implements Listener {
   private final Plugin plugin;
   private final net.aincraft.gui.PetSelectionGui petSelectionGui;
 
-  @Inject
   public JobLevelUpListener(
       PetUpgradeService petUpgradeService,
       JobPetsHook jobPetsHook,

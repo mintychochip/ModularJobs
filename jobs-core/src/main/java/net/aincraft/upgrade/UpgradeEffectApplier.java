@@ -1,18 +1,14 @@
 package net.aincraft.upgrade;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.util.Set;
 import org.bukkit.entity.Player;
 
 /**
  * Applies and unapplies upgrade effects when nodes are unlocked or reset.
  */
-@Singleton
 public final class UpgradeEffectApplier {
   private final UpgradePermissionManager permissionManager;
 
-  @Inject
   public UpgradeEffectApplier(UpgradePermissionManager permissionManager) {
     this.permissionManager = permissionManager;
   }

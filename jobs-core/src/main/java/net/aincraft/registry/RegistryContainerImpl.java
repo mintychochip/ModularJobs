@@ -8,7 +8,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
-final class RegistryContainerImpl implements RegistryContainer {
+public final class RegistryContainerImpl implements RegistryContainer {
 
   private final Map<Key, Registry<?>> registrar = new HashMap<>();
 
@@ -34,7 +34,7 @@ final class RegistryContainerImpl implements RegistryContainer {
     registryConsumer.accept(registry);
   }
 
-  <T extends Keyed> void addRegistry(Key key, Registry<T> registry) {
-    registrar.put(key.key(), registry);
+  public <T extends Keyed> void addRegistry(Key key, Registry<T> registry) {
+    registrar.put(key, registry);
   }
 }

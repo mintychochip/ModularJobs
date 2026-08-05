@@ -1,24 +1,24 @@
 package net.aincraft.registry;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import net.aincraft.action.ActionTypeImpl;
 import net.aincraft.container.ActionType;
 import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 
-final class ActionTypeRegistryProvider implements Provider<Registry<ActionType>> {
+public final class ActionTypeRegistryProvider {
 
   private final Plugin plugin;
 
-  @Inject
-  ActionTypeRegistryProvider(Plugin plugin) {
+  public ActionTypeRegistryProvider(Plugin plugin) {
     this.plugin = plugin;
   }
 
-  @Override
-  public Registry<ActionType> get() {
+  public static Registry<ActionType> create(Plugin plugin) {
+    return new ActionTypeRegistryProvider(plugin).get();
+  }
+
+  Registry<ActionType> get() {
     SimpleRegistryImpl<ActionType> r = new SimpleRegistryImpl<>();
     r.register(actionType("block_place"));
     r.register(actionType("block_break"));

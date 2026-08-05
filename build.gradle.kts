@@ -6,6 +6,7 @@ subprojects {
     apply(plugin = "java-library")
 
     configure<JavaPluginExtension> {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        // Paper 26.2 / MockBukkit 26.2 require Java 25
+        toolchain.languageVersion.set(JavaLanguageVersion.of(25))
     }
 }

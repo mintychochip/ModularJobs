@@ -1,6 +1,5 @@
 package net.aincraft.payable;
 
-import com.google.inject.Inject;
 import dev.mintychochip.mint.Mint;
 import dev.mintychochip.mint.preferences.Preference;
 import dev.mintychochip.mint.preferences.PreferenceService;
@@ -18,10 +17,9 @@ public final class PreferenceExperienceBarColorProvider implements ExperienceBar
     private final Preference<Color> preference;
     private final ExperienceBarColorProvider fallback;
 
-    @Inject
     public PreferenceExperienceBarColorProvider(
             ExperienceBarColorPreference preference,
-            @Fallback ExperienceBarColorProvider fallback) {
+            ExperienceBarColorProvider fallback) {
         this.preference = preference;
         this.fallback = fallback;
     }

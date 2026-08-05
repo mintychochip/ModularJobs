@@ -1,6 +1,5 @@
 package net.aincraft.commands;
 
-import com.google.inject.Inject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -23,7 +22,6 @@ final class UpgradeCommand implements JobsCommand {
     private final PetUpgradeService petUpgradeService;
     private final PetSelectionGui petSelectionGui;
 
-    @Inject
     public UpgradeCommand(JobService jobService, PetUpgradeService petUpgradeService, PetSelectionGui petSelectionGui) {
         this.jobService = jobService;
         this.petUpgradeService = petUpgradeService;

@@ -1,6 +1,5 @@
 package net.aincraft.domain;
 
-import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,7 +42,6 @@ final class JobServiceImpl implements JobService {
   private final ProgressionService progressionService;
   private final Plugin plugin;
 
-  @Inject
   public JobServiceImpl(
       Registry<ActionType> actionTypeRegistry,
       Registry<PayableType> payableTypeRegistry,

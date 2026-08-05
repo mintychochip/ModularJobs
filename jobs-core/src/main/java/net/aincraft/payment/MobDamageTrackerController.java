@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import com.google.inject.Inject;
 import net.aincraft.payment.MobDamageTracker.DamageContribution;
 import org.bukkit.Bukkit;
 import org.bukkit.damage.DamageSource;
@@ -16,7 +15,6 @@ final class MobDamageTrackerController implements Listener {
 
   private final MobDamageTrackerStore store;
 
-  @Inject
   MobDamageTrackerController(MobDamageTrackerStore store) {
     this.store = store;
   }
