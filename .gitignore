@@ -48,3 +48,5 @@ jobs-core/run/
 *.backup
 WORKLOG.md
 working_log.md
+### Git worktrees ###
+.worktrees/
