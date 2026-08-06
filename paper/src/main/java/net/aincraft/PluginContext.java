@@ -295,7 +295,6 @@ public final class PluginContext {
         upgradeService, effectApplier, permissionManager));
 
     Bridge bridge = new BridgeImpl(
-        plugin,
         registryContainer,
         domain.jobService,
         professions.professionService,

@@ -12,16 +12,25 @@ import net.aincraft.service.NodeHarvestService;
 import net.aincraft.service.ProfessionService;
 import net.aincraft.service.RecipeService;
 import net.aincraft.service.StationService;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
 public interface Bridge {
 
   static Bridge bridge() {
-    return Bukkit.getServicesManager().load(Bridge.class);
+    Bridge b = Holder.INSTANCE;
+    if (b == null) {
+      throw new IllegalStateException("Bridge not registered (plugin not enabled)");
+    }
+    return b;
   }
 
-  Plugin plugin();
+  /** Paper-only registration — called from ModularJobsBootstrap. */
+  static void register(Bridge bridge) {
+    Holder.INSTANCE = bridge;
+  }
+
+  static void unregister() {
+    Holder.INSTANCE = null;
+  }
 
   RegistryContainer registryContainer();
 
@@ -49,4 +58,11 @@ public interface Bridge {
 
   /** Gather hook (stub until world P11). */
   NodeHarvestService nodeHarvestService();
+
+  /** Volatile holder; nested types on interfaces are public. */
+  final class Holder {
+    private static volatile Bridge INSTANCE;
+
+    private Holder() {}
+  }
 }

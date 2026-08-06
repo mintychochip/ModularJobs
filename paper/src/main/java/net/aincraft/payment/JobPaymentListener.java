@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import net.aincraft.Bridge;
+import net.aincraft.PluginProvider;
 import net.aincraft.container.ActionTypes;
 import net.aincraft.container.Context.BlockContext;
 import net.aincraft.container.Context.ChunkContext;
@@ -806,7 +806,7 @@ final class JobPaymentListener implements Listener {
             .filter(Objects::nonNull)
             .map(ItemStack::clone)
             .toList();
-        Bukkit.getScheduler().runTask(Bridge.bridge().plugin(), () -> {
+        Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
           int before = countSimilarItems(snapShot, reference);
           int after = countSimilarItems(Arrays.asList(inventory.getContents()), reference);
           for (int i = 0; i < Math.max(1, after - before); ++i) {

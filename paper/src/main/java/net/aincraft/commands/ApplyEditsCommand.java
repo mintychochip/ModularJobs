@@ -6,8 +6,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import net.aincraft.PluginProvider;
 import net.aincraft.editor.EditorService;
 import net.aincraft.editor.ImportResult;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -43,7 +45,7 @@ public final class ApplyEditsCommand implements JobsCommand {
               editorService.importTasks(code, player.getUniqueId())
                   .thenAccept(result -> {
                     // Run on main thread to safely send messages
-                    org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
+                    Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
                       if (result.errors().isEmpty()) {
                         Messages.send(player, "<success>Successfully applied edits!");
                         Messages.send(player, "<accent>Tasks imported: " + result.tasksImported());
@@ -62,7 +64,7 @@ public final class ApplyEditsCommand implements JobsCommand {
                   })
                   .exceptionally(throwable -> {
                     // Run on main thread to safely send messages
-                    org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
+                    Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
                       Messages.send(player, "<error>Failed to apply edits: " + throwable.getMessage());
                     });
                     return null;
