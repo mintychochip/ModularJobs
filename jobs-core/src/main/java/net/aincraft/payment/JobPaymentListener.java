@@ -96,6 +96,7 @@ final class JobPaymentListener implements Listener {
   private final EntityValidationService entityValidationService;
   private final ExploitService exploitService;
   private final PlayerChunkExplorationService chunkExplorationStore;
+  private final HopperPayDisableStore hopperPayDisableStore;
   private final Cache<LocationKey, Player> breakCache = CacheBuilder.newBuilder().expireAfterWrite(
       Duration.ofSeconds(10)).build();
 
@@ -108,6 +109,13 @@ final class JobPaymentListener implements Listener {
   JobPaymentListener(BlockOwnershipService blockOwnershipService, MobDamageTracker mobDamageTracker, JobsPaymentHandler paymentHandler,
       EntityValidationService entityValidationService, ExploitService exploitService, PlayerChunkExplorationService chunkExplorationStore,
       PaymentEligibility eligibility) {
+    this(blockOwnershipService, mobDamageTracker, paymentHandler, entityValidationService,
+        exploitService, chunkExplorationStore, eligibility, new HopperPayDisableStore());
+  }
+
+  JobPaymentListener(BlockOwnershipService blockOwnershipService, MobDamageTracker mobDamageTracker, JobsPaymentHandler paymentHandler,
+      EntityValidationService entityValidationService, ExploitService exploitService, PlayerChunkExplorationService chunkExplorationStore,
+      PaymentEligibility eligibility, HopperPayDisableStore hopperPayDisableStore) {
     this.blockOwnershipService = blockOwnershipService;
     this.mobDamageTracker = mobDamageTracker;
     this.paymentHandler = paymentHandler;
@@ -115,6 +123,7 @@ final class JobPaymentListener implements Listener {
     this.exploitService = exploitService;
     this.chunkExplorationStore = chunkExplorationStore;
     this.eligibility = eligibility;
+    this.hopperPayDisableStore = hopperPayDisableStore;
   }
 
   /** @return true when the player must not receive job pay */
@@ -173,7 +182,14 @@ final class JobPaymentListener implements Listener {
     }
     Material material = block.getType();
     String materialName = material.toString();
-    if (!materialName.endsWith("_LOG") || materialName.startsWith("STRIPPED_")) {
+    // Jobs Reborn STRIPLOGS: logs, stems, wood, hyphae (not already stripped)
+    if (materialName.startsWith("STRIPPED_")) {
+      return;
+    }
+    if (!(materialName.endsWith("_LOG")
+        || materialName.endsWith("_STEM")
+        || materialName.endsWith("_WOOD")
+        || materialName.endsWith("_HYPHAE"))) {
       return;
     }
     Player player = event.getPlayer();
@@ -261,15 +277,28 @@ final class JobPaymentListener implements Listener {
     PlayerInventory inventory = player.getInventory();
     ItemStack mainHand = inventory.getItemInMainHand();
     int silkTouch = mainHand.getEnchantmentLevel(Enchantment.SILK_TOUCH);
+
+    // Jobs Reborn place→break: deny ALL pay while location is still protected (not silk-only).
     if (exploitService.canProtect(ExploitProtectionType.PLACED, block)
         && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
-      exploitService.removeProtection(ExploitProtectionType.PLACED, block);
-      if (silkTouch > 0) {
-        return;
-      }
+      return;
     }
+
+    // Jobs Reborn SilkTouchProtection (optional): no pay for protectable materials with silk-touch.
+    if (exploitService.settings().silkTouchDeny()
+        && silkTouch > 0
+        && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
+      return;
+    }
+
     paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
     breakCache.put(LocationKey.create(block.getLocation()), player);
+
+    // Jobs Reborn global break timer: re-arm protection after a paid break so re-place/break farms fail.
+    if (exploitService.settings().rearmAfterBreak()
+        && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
+      exploitService.addProtection(ExploitProtectionType.PLACED, block);
+    }
   }
 
   @EventHandler
@@ -307,7 +336,16 @@ final class JobPaymentListener implements Listener {
     }
     breakCache.invalidate(sourceKey);
     breakCache.put(LocationKey.create(block.getLocation()), player);
+    // Jobs Reborn: physics cascade still respects place→break protection on the cascading block
+    if (exploitService.canProtect(ExploitProtectionType.PLACED, block)
+        && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
+      return;
+    }
     paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
+    if (exploitService.settings().rearmAfterBreak()
+        && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
+      exploitService.addProtection(ExploitProtectionType.PLACED, block);
+    }
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -330,6 +368,7 @@ final class JobPaymentListener implements Listener {
         (type == Material.BOWL && !(entity instanceof MushroomCow))) {
       return;
     }
+    // Jobs Reborn CowMilkingTimer: entity on milk protect list must wait out timer
     if (exploitService.canProtect(ExploitProtectionType.MILK, entity)) {
       if (exploitService.isProtected(ExploitProtectionType.MILK, entity)) {
         return;
@@ -395,17 +434,56 @@ final class JobPaymentListener implements Listener {
     if (victimIsRealPlayer && player.getUniqueId().equals(victim.getUniqueId())) {
       return;
     }
+
+    // Jobs Reborn MonsterDamage + multi-contributor: use tracked player damage when present
     if (mobDamageTracker.isTracking(victim)) {
-      DamageContribution damageContribution = mobDamageTracker.endTracking(victim);
+      DamageContribution contribution = mobDamageTracker.endTracking(victim);
+      if (exploitService.settings().monsterDamageRequired() && !isMonsterDamageBossExempt(victim)) {
+        double playerDamage = totalPlayerDamage(contribution);
+        double maxHealth = maxHealthOf(victim);
+        if (maxHealth <= 0
+            || playerDamage / maxHealth < exploitService.settings().monsterDamageFraction()) {
+          return;
+        }
+      }
       KillContributionPayout.payContributors(
-          damageContribution,
+          contribution,
           eligibility.settings().killContributionCutoff(),
           eligibility,
           paymentHandler,
           victim);
       return;
     }
+    // No tracked player damage: only allow if monster-damage gate is off
+    if (exploitService.settings().monsterDamageRequired() && !isMonsterDamageBossExempt(victim)) {
+      return;
+    }
     paymentHandler.pay(player, ActionTypes.KILL, new EntityContext(victim));
+  }
+
+  private static double maxHealthOf(LivingEntity victim) {
+    var attr = victim.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+    if (attr != null) {
+      return attr.getValue();
+    }
+    return victim.getHealth();
+  }
+
+  private static boolean isMonsterDamageBossExempt(LivingEntity victim) {
+    return switch (victim.getType()) {
+      case ENDER_DRAGON, WITHER, WARDEN -> true;
+      default -> false;
+    };
+  }
+
+  private static double totalPlayerDamage(DamageContribution contribution) {
+    double total = 0;
+    for (Entity contributor : contribution.getContributors()) {
+      if (contributor instanceof Player) {
+        total += contribution.getContribution(contributor, false);
+      }
+    }
+    return total;
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -518,9 +596,12 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
-    //TODO make this not explicit
+    // Jobs Reborn PreventHopperFillUps
+    if (hopperPayDisableStore.isDisabled(block)) {
+      return;
+    }
     double v = block.getLocation().distanceSquared(player.getLocation());
-    if (v > 25 * 25) {
+    if (v > eligibility.settings().furnaceMaxDistanceSquared()) {
       return;
     }
     ItemStack result = event.getResult();
@@ -543,8 +624,12 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
+    // Jobs Reborn PreventBrewingStandFillUps
+    if (hopperPayDisableStore.isDisabled(block)) {
+      return;
+    }
     double v = block.getLocation().distanceSquared(player.getLocation());
-    if (v > 25 * 25) {
+    if (v > eligibility.settings().furnaceMaxDistanceSquared()) {
       return;
     }
     paymentHandler.pay(player, ActionTypes.BREW, new ItemContext(event.getContents().getIngredient()));
@@ -622,7 +707,16 @@ final class JobPaymentListener implements Listener {
       return;
     }
     for (Block block : event.blockList()) {
+      // Jobs Reborn: place→break protection applies to TNTBREAK as well
+      if (exploitService.canProtect(ExploitProtectionType.PLACED, block)
+          && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
+        continue;
+      }
       paymentHandler.pay(player, ActionTypes.TNT_BREAK, new BlockContext(block));
+      if (exploitService.settings().rearmAfterBreak()
+          && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
+        exploitService.addProtection(ExploitProtectionType.PLACED, block);
+      }
     }
   }
 
