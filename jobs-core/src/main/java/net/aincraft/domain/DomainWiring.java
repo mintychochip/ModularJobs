@@ -13,7 +13,7 @@ import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.registry.Registry;
 import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.PluginResources;
-import net.aincraft.service.JobResolver;
+import net.aincraft.domain.JobResolver;
 import net.aincraft.service.JobService;
 import net.aincraft.service.YamlJobTaskLoader;
 import net.aincraft.util.KeyResolver;
@@ -91,7 +91,7 @@ public final class DomainWiring {
         jobRepository,
         progressionService,
         plugin);
-    JobResolver jobResolver = new JobResolverImpl(jobService);
+    JobResolver jobResolver = new JobResolver(jobService);
     return new DomainWiring(
         jobRepository, jobTaskRepository, progressionService, jobService, jobResolver);
   }

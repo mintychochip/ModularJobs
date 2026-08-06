@@ -18,7 +18,7 @@ import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
-import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.RuledBoostSource;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.TimedBoostDataService;

@@ -18,7 +18,7 @@ import net.aincraft.container.Context;
 import net.aincraft.container.Payable;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
-import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;

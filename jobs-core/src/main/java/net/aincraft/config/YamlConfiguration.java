@@ -5,12 +5,19 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Union interface for {@link FileBackedConfiguration} and {@link ConfigurationSection}
+ * File-backed YAML configuration: plugin resource ops plus {@link ConfigurationSection} accessors.
  */
-public interface YamlConfiguration extends FileBackedConfiguration, ConfigurationSection {
+public interface YamlConfiguration extends ConfigurationSection {
+
+  @NotNull
+  Plugin getPlugin();
+
+  void reload();
+
+  void save();
 
   @NotNull
   static YamlConfiguration create(Plugin plugin, String path) throws IllegalArgumentException {
-    return YamlFileBackedConfigurationImpl.create(plugin,path);
+    return YamlFileBackedConfigurationImpl.create(plugin, path);
   }
 }

@@ -7,7 +7,7 @@ import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Job;
-import net.aincraft.service.JobResolver;
+import net.aincraft.domain.JobResolver;
 import net.aincraft.service.JobService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

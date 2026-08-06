@@ -26,14 +26,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link JobResolverImpl} plain-name / namespaced resolve and fuzzy suggest.
+ * Drives shipped {@link JobResolver} plain-name / namespaced resolve and fuzzy suggest.
  */
 class JobResolverImplTest {
 
   private Job miner;
   private Job fisherman;
   private Job lumberjack;
-  private JobResolverImpl resolver;
+  private JobResolver resolver;
 
   @BeforeEach
   void setUp() {
@@ -44,7 +44,7 @@ class JobResolverImplTest {
     byKey.put(miner.key().asString(), miner);
     byKey.put(fisherman.key().asString(), fisherman);
     byKey.put(lumberjack.key().asString(), lumberjack);
-    resolver = new JobResolverImpl(new FakeJobService(List.of(miner, fisherman, lumberjack), byKey));
+    resolver = new JobResolver(new FakeJobService(List.of(miner, fisherman, lumberjack), byKey));
   }
 
   @Test
@@ -127,7 +127,7 @@ class JobResolverImplTest {
   }
 
   /**
-   * Collaborator fake — SUT is JobResolverImpl.
+   * Collaborator fake — SUT is JobResolver.
    */
   private static final class FakeJobService implements JobService {
 

@@ -39,7 +39,7 @@ public final class PayableWiring {
 
   public static PayableWiring create(
       Plugin plugin, JobService jobService, Registry<PayableType> payableTypeRegistry) {
-    ExperienceBarColorProvider colorProvider = new DefaultExperienceBarColorProvider();
+    ExperienceBarColorProvider colorProvider = new ExperienceBarColorProvider();
     ExperienceBarController controller = new ExperienceBarControllerImpl(plugin);
     ExperienceBarFormatter formatter = new ExperienceBarFormatterImpl(colorProvider);
     PayableHandler experienceHandler =

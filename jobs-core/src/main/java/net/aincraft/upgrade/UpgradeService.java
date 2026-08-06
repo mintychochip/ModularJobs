@@ -17,9 +17,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Implementation of UpgradeService.
+ * Manages player upgrades within job upgrade trees.
  */
-public final class UpgradeServiceImpl implements UpgradeService {
+public final class UpgradeService {
 
   private final Registry<UpgradeTree> treeRegistry;
   private final PlayerUpgradeRepository repository;
@@ -27,9 +27,9 @@ public final class UpgradeServiceImpl implements UpgradeService {
   private final UpgradeEffectApplier effectApplier;
 
   // In-memory cache: playerId -> jobKey -> data
-  private final Map<String, Map<String, PlayerUpgradeDataImpl>> cache = new ConcurrentHashMap<>();
+  private final Map<String, Map<String, PlayerUpgradeData>> cache = new ConcurrentHashMap<>();
 
-  public UpgradeServiceImpl(
+  public UpgradeService(
       Registry<UpgradeTree> treeRegistry,
       PlayerUpgradeRepository repository,
       JobService jobService,
@@ -41,7 +41,6 @@ public final class UpgradeServiceImpl implements UpgradeService {
     this.effectApplier = effectApplier;
   }
 
-  @Override
   public @NotNull Optional<UpgradeTree> getTree(@NotNull String jobKey) {
     String plainJobKey = jobKey;
     if (jobKey.contains(":")) {
@@ -54,17 +53,14 @@ public final class UpgradeServiceImpl implements UpgradeService {
         .findFirst();
   }
 
-  @Override
   public @NotNull Collection<UpgradeTree> getAllTrees() {
     return treeRegistry.stream().toList();
   }
 
-  @Override
   public @NotNull PlayerUpgradeData getPlayerData(@NotNull String playerId, @NotNull String jobKey) {
     return getOrLoadData(playerId, jobKey);
   }
 
-  @Override
   public @NotNull Set<UpgradeNode> getAvailableNodes(@NotNull String playerId, @NotNull String jobKey) {
     Optional<UpgradeTree> treeOpt = getTree(jobKey);
     if (treeOpt.isEmpty()) {
@@ -76,7 +72,6 @@ public final class UpgradeServiceImpl implements UpgradeService {
     return tree.getAvailableNodes(data.unlockedNodes());
   }
 
-  @Override
   public @NotNull UnlockResult unlock(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey) {
     // Get tree
     Optional<UpgradeTree> treeOpt = getTree(jobKey);
@@ -93,7 +88,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
     UpgradeNode node = nodeOpt.get();
 
     // Get player data
-    PlayerUpgradeDataImpl data = getOrLoadData(playerId, jobKey);
+    PlayerUpgradeData data = getOrLoadData(playerId, jobKey);
 
     // Check if already unlocked
     if (data.hasUnlocked(nodeKey)) {
@@ -148,16 +143,14 @@ public final class UpgradeServiceImpl implements UpgradeService {
     return new UnlockResult.Success(node, remaining);
   }
 
-  @Override
   public void awardSkillPoints(@NotNull String playerId, @NotNull String jobKey, int points) {
-    PlayerUpgradeDataImpl data = getOrLoadData(playerId, jobKey);
+    PlayerUpgradeData data = getOrLoadData(playerId, jobKey);
     data.addSkillPoints(points);
     repository.savePlayerData(data);
   }
 
-  @Override
   public boolean resetUpgrades(@NotNull String playerId, @NotNull String jobKey) {
-    PlayerUpgradeDataImpl data = getOrLoadData(playerId, jobKey);
+    PlayerUpgradeData data = getOrLoadData(playerId, jobKey);
 
     // Get player if online for effect unapplication
     UUID uuid = UUID.fromString(playerId);
@@ -183,14 +176,14 @@ public final class UpgradeServiceImpl implements UpgradeService {
     return true;
   }
 
-  private PlayerUpgradeDataImpl getOrLoadData(String playerId, String jobKey) {
+  private PlayerUpgradeData getOrLoadData(String playerId, String jobKey) {
     return cache
         .computeIfAbsent(playerId, k -> new HashMap<>())
         .computeIfAbsent(jobKey, k -> loadOrCreate(playerId, jobKey));
   }
 
-  private PlayerUpgradeDataImpl loadOrCreate(String playerId, String jobKey) {
-    PlayerUpgradeDataImpl loaded = repository.loadPlayerData(playerId, jobKey);
+  private PlayerUpgradeData loadOrCreate(String playerId, String jobKey) {
+    PlayerUpgradeData loaded = repository.loadPlayerData(playerId, jobKey);
     if (loaded != null) {
       return loaded;
     }
@@ -200,13 +193,13 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     if (retroactiveSkillPoints > 0) {
       // Create new data with calculated skill points
-      PlayerUpgradeDataImpl newData = new PlayerUpgradeDataImpl(playerId, jobKey, retroactiveSkillPoints, Set.of());
+      PlayerUpgradeData newData = new PlayerUpgradeData(playerId, jobKey, retroactiveSkillPoints, Set.of());
       // Save to database immediately
       repository.savePlayerData(newData);
       return newData;
     }
 
-    return PlayerUpgradeDataImpl.empty(playerId, jobKey);
+    return PlayerUpgradeData.empty(playerId, jobKey);
   }
 
   /**
@@ -242,6 +235,40 @@ public final class UpgradeServiceImpl implements UpgradeService {
     } catch (IllegalArgumentException e) {
       // Invalid UUID or job key
       return 0;
+    }
+  }
+
+  /**
+   * Result of an unlock attempt.
+   */
+  public sealed interface UnlockResult permits
+      UnlockResult.Success,
+      UnlockResult.InsufficientPoints,
+      UnlockResult.PrerequisitesNotMet,
+      UnlockResult.ExcludedByChoice,
+      UnlockResult.AlreadyUnlocked,
+      UnlockResult.NodeNotFound,
+      UnlockResult.TreeNotFound {
+
+    record Success(@NotNull UpgradeNode node, int remainingPoints) implements UnlockResult {
+    }
+
+    record InsufficientPoints(int required, int available) implements UnlockResult {
+    }
+
+    record PrerequisitesNotMet(@NotNull Set<String> missing) implements UnlockResult {
+    }
+
+    record ExcludedByChoice(@NotNull Set<String> conflicting) implements UnlockResult {
+    }
+
+    record AlreadyUnlocked(@NotNull String nodeKey) implements UnlockResult {
+    }
+
+    record NodeNotFound(@NotNull String nodeKey) implements UnlockResult {
+    }
+
+    record TreeNotFound(@NotNull String jobKey) implements UnlockResult {
     }
   }
 }

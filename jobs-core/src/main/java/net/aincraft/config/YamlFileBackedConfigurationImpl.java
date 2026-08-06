@@ -8,7 +8,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-final class YamlFileBackedConfigurationImpl implements FileBackedConfiguration {
+final class YamlFileBackedConfigurationImpl {
 
   private final Plugin plugin;
   private final String path;
@@ -55,13 +55,12 @@ final class YamlFileBackedConfigurationImpl implements FileBackedConfiguration {
         });
   }
 
-  @Override
-  public @NotNull Plugin getPlugin() {
+  @NotNull
+  Plugin getPlugin() {
     return plugin;
   }
 
-  @Override
-  public void reload() {
+  void reload() {
     try {
       configFile = new File(plugin.getDataFolder(), path);
       config = YamlConfiguration.loadConfiguration(configFile);
@@ -70,8 +69,7 @@ final class YamlFileBackedConfigurationImpl implements FileBackedConfiguration {
     }
   }
 
-  @Override
-  public void save() {
+  void save() {
     try {
       config.save(configFile);
     } catch (IOException e) {

@@ -1,7 +1,6 @@
 package net.aincraft.domain;
 
 import net.aincraft.Job;
-import net.aincraft.service.JobResolver;
 import net.aincraft.service.JobService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,15 +10,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-final class JobResolverImpl implements JobResolver {
+public final class JobResolver {
 
   private final JobService jobService;
 
-  public JobResolverImpl(JobService jobService) {
+  public JobResolver(JobService jobService) {
     this.jobService = jobService;
   }
 
-  @Override
   public @Nullable Job resolve(@NotNull String identifier) {
     // Check if full namespacedkey format (contains ':')
     if (identifier.contains(":")) {
@@ -38,7 +36,6 @@ final class JobResolverImpl implements JobResolver {
         .orElse(null);
   }
 
-  @Override
   public @Nullable Job resolveInNamespace(@NotNull String plainName, @NotNull String namespace) {
     // Try exact namespacedkey first
     String fullKey = namespace + ":" + plainName.toLowerCase(Locale.ROOT);
@@ -60,7 +57,6 @@ final class JobResolverImpl implements JobResolver {
         .orElse(null);
   }
 
-  @Override
   public @NotNull List<String> suggestSimilar(@NotNull String input, int maxSuggestions) {
     String normalizedInput = input.toLowerCase(Locale.ROOT);
 
@@ -73,7 +69,6 @@ final class JobResolverImpl implements JobResolver {
         .collect(Collectors.toList());
   }
 
-  @Override
   public @NotNull List<String> getPlainNames() {
     return jobService.getJobs().stream()
         .map(Job::getPlainName)

@@ -40,7 +40,7 @@ import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBo
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.Condition;
-import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.RuledBoostSource;
 import net.aincraft.container.boost.RuledBoostSource.Rule;

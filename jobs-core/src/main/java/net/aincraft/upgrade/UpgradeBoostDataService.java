@@ -20,15 +20,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Implementation of UpgradeBoostDataService.
  * Aggregates boost sources from unlocked upgrade nodes using the composition API.
  */
-public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataService {
+public final class UpgradeBoostDataService {
 
   private final PlayerUpgradeRepository upgradeRepository;
   private final Registry<UpgradeTree> treeRegistry;
 
-  public UpgradeBoostDataServiceImpl(
+  public UpgradeBoostDataService(
       @NotNull PlayerUpgradeRepository upgradeRepository,
       @NotNull Registry<UpgradeTree> treeRegistry
   ) {
@@ -36,12 +35,11 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
     this.treeRegistry = treeRegistry;
   }
 
-  @Override
   public List<BoostSource> getBoostSources(@NotNull UUID playerId, @NotNull Key jobKey) {
     String playerIdStr = playerId.toString();
     String jobKeyStr = jobKey.value();
 
-    PlayerUpgradeDataImpl playerData = upgradeRepository.loadPlayerData(playerIdStr, jobKeyStr);
+    PlayerUpgradeData playerData = upgradeRepository.loadPlayerData(playerIdStr, jobKeyStr);
     if (playerData == null) {
       return List.of();
     }
@@ -128,21 +126,18 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
       String nodeName
   ) implements BoostSource {
 
-    @Override
-    public @NotNull Key key() {
+      public @NotNull Key key() {
       return key;
     }
 
-    @Override
-    public @NotNull List<Boost> evaluate(BoostContext context) {
+      public @NotNull List<Boost> evaluate(BoostContext context) {
       if (!appliesToPayable(context.payable())) {
         return List.of();
       }
       return List.of(amount -> amount.multiply(multiplier));
     }
 
-    @Override
-    public @Nullable String description() {
+      public @Nullable String description() {
       return nodeName + " upgrade";
     }
 

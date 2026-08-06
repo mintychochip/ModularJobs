@@ -36,7 +36,7 @@ public final class PlayerUpgradeRepository {
     this.connectionSource = connectionSource;
   }
 
-  public @Nullable PlayerUpgradeDataImpl loadPlayerData(@NotNull String playerId, @NotNull String jobKey) {
+  public @Nullable PlayerUpgradeData loadPlayerData(@NotNull String playerId, @NotNull String jobKey) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(SELECT_QUERY)) {
 
@@ -48,7 +48,7 @@ public final class PlayerUpgradeRepository {
           int totalSkillPoints = rs.getInt("total_skill_points");
           String unlockedNodesStr = rs.getString("unlocked_nodes");
           Set<String> unlockedNodes = parseNodeSet(unlockedNodesStr);
-          return new PlayerUpgradeDataImpl(playerId, jobKey, totalSkillPoints, unlockedNodes);
+          return new PlayerUpgradeData(playerId, jobKey, totalSkillPoints, unlockedNodes);
         }
       }
     } catch (SQLException e) {
@@ -57,7 +57,7 @@ public final class PlayerUpgradeRepository {
     return null;
   }
 
-  public void savePlayerData(@NotNull PlayerUpgradeDataImpl data) {
+  public void savePlayerData(@NotNull PlayerUpgradeData data) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(UPSERT_QUERY)) {
 

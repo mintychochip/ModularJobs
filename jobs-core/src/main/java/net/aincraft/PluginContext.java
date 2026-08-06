@@ -33,15 +33,13 @@ import net.aincraft.config.YamlConfiguration;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.PayableType;
-import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.domain.DomainWiring;
 import net.aincraft.editor.BytebinClient;
-import net.aincraft.editor.BytebinClient;
 import net.aincraft.editor.EditorConfig;
-import net.aincraft.editor.EditorService;
 import net.aincraft.editor.EditorService;
 import net.aincraft.editor.EditorSessionStore;
 import net.aincraft.editor.json.GsonProvider;
@@ -51,7 +49,6 @@ import net.aincraft.payable.PayableWiring;
 import net.aincraft.payment.PaymentWiring;
 import net.aincraft.placeholders.ModularJobsPlaceholderExpansion;
 import net.aincraft.profession.ProfessionWiring;
-import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.protection.BlockProtectionAdapter;
 import net.aincraft.protection.BlockProtectionAdapterProvider;
@@ -66,21 +63,16 @@ import net.aincraft.repository.PluginResources;
 import net.aincraft.repository.SharedConnectionSources;
 import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
 import net.aincraft.serialization.KryoCodecRegistry;
-import net.aincraft.serialization.KryoCodecRegistry;
-import net.aincraft.service.ItemBoostDataServiceImpl;
 import net.aincraft.service.PreferencesIntegration;
 import net.aincraft.service.PreferencesService;
 import net.aincraft.service.TimedBoostDataServiceImpl;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
-import net.aincraft.upgrade.PlayerUpgradeRepository;
 import net.aincraft.upgrade.UpgradeBoostDataService;
-import net.aincraft.upgrade.UpgradeBoostDataServiceImpl;
 import net.aincraft.upgrade.UpgradeEffectApplier;
 import net.aincraft.upgrade.UpgradeLevelUpListener;
 import net.aincraft.upgrade.UpgradePermissionManager;
 import net.aincraft.upgrade.UpgradePermissionRestoreListener;
 import net.aincraft.upgrade.UpgradeService;
-import net.aincraft.upgrade.UpgradeServiceImpl;
 import net.aincraft.upgrade.UpgradeTree;
 import net.aincraft.upgrade.config.UpgradeTreeLoader;
 import net.aincraft.upgrade.editor.TreeEditorExporter;
@@ -194,7 +186,7 @@ public final class PluginContext {
     resources.onFlush(timedBoostRepository::flushPending);
     TimedBoostDataService timedBoostDataService =
         new TimedBoostDataServiceImpl(timedBoostRepository);
-    ItemBoostDataService itemBoostDataService = new ItemBoostDataServiceImpl(codecRegistry);
+    ItemBoostDataService itemBoostDataService = new ItemBoostDataService(codecRegistry);
 
     // Soft-depend Preferences: register entries-per-page + gui-mode when the service is live;
     // otherwise keep local config defaults (PreferencesServiceImpl).
@@ -218,8 +210,8 @@ public final class PluginContext {
     UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
     UpgradeEffectApplier effectApplier = new UpgradeEffectApplier(permissionManager);
     UpgradeBoostDataService upgradeBoostDataService =
-        new UpgradeBoostDataServiceImpl(playerUpgradeRepository, upgradeTreeRegistry);
-    UpgradeService upgradeService = new UpgradeServiceImpl(
+        new UpgradeBoostDataService(playerUpgradeRepository, upgradeTreeRegistry);
+    UpgradeService upgradeService = new UpgradeService(
         upgradeTreeRegistry, playerUpgradeRepository, domain.jobService, effectApplier);
 
     UpgradeTreeGui upgradeTreeGui = new UpgradeTreeGui(plugin, upgradeService);
