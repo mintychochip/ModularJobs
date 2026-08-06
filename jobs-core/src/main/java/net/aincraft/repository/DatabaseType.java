@@ -12,9 +12,9 @@ import org.jetbrains.annotations.NotNull;
 
 public enum DatabaseType {
   SQLITE("sqlite", "org.sqlite.JDBC"),
-  MYSQL("mysql", "com.mysql.jdbc.Driver"),
-  POSTGRES("postgres", ""),
-  MARIADB("mariadb", ""),
+  MYSQL("mysql", "com.mysql.cj.jdbc.Driver"),
+  POSTGRES("postgres", "org.postgresql.Driver"),
+  MARIADB("mariadb", "org.mariadb.jdbc.Driver"),
   MONGO("mongo", "");
 
   @NotNull

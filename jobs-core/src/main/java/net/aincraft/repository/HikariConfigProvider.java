@@ -10,8 +10,12 @@ final class HikariConfigProvider {
   @NotNull
   private final ConfigurationSection configuration;
 
-  HikariConfigProvider(@NotNull ConfigurationSection configuration) {
+  @NotNull
+  private final DatabaseType databaseType;
+
+  HikariConfigProvider(@NotNull ConfigurationSection configuration, @NotNull DatabaseType databaseType) {
     this.configuration = configuration;
+    this.databaseType = databaseType;
   }
 
   @NotNull
@@ -30,6 +34,11 @@ final class HikariConfigProvider {
     hikariConfig.setJdbcUrl(jdbcUrl);
     hikariConfig.setUsername(username);
     hikariConfig.setPassword(password);
+
+    String driverClass = databaseType.getClassName();
+    if (driverClass != null && !driverClass.isBlank()) {
+      hikariConfig.setDriverClassName(driverClass);
+    }
 
     int maxPoolSize = configuration.getInt("maximum-pool-size", -1);
     if (maxPoolSize > 0) {
