@@ -108,7 +108,6 @@ public final class PluginContext {
   public final UpgradeTreeLoader upgradeTreeLoader;
   public final Set<Listener> listeners;
   public final Set<JobsCommand> commands;
-  public final Command testCommand;
   @Nullable
   public final PlaceholderExpansion placeholderExpansion;
 
@@ -119,7 +118,6 @@ public final class PluginContext {
       UpgradeTreeLoader upgradeTreeLoader,
       Set<Listener> listeners,
       Set<JobsCommand> commands,
-      Command testCommand,
       @Nullable PlaceholderExpansion placeholderExpansion) {
     this.bridge = bridge;
     this.connectionSource = connectionSource;
@@ -127,7 +125,6 @@ public final class PluginContext {
     this.upgradeTreeLoader = upgradeTreeLoader;
     this.listeners = listeners;
     this.commands = commands;
-    this.testCommand = testCommand;
     this.placeholderExpansion = placeholderExpansion;
   }
 
@@ -315,9 +312,6 @@ public final class PluginContext {
         boostFactory,
         timedBoostDataService);
 
-    Command testCommand = new Command(
-        domain.jobService, codecRegistry, itemBoostDataService);
-
     PlaceholderExpansion placeholderExpansion = null;
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
       placeholderExpansion = new ModularJobsPlaceholderExpansion(domain.jobService);
@@ -330,7 +324,6 @@ public final class PluginContext {
         upgradeTreeLoader,
         new LinkedHashSet<>(listenerList),
         commands,
-        testCommand,
         placeholderExpansion);
   }
 }

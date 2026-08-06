@@ -33,16 +33,19 @@ public final class PaymentWiring {
   public final BoostEngine boostEngine;
   public final JobsPaymentHandler paymentHandler;
   public final ExploitService exploitService;
+  public final PaymentSettings paymentSettings;
   public final List<Listener> listeners;
 
   private PaymentWiring(
       BoostEngine boostEngine,
       JobsPaymentHandler paymentHandler,
       ExploitService exploitService,
+      PaymentSettings paymentSettings,
       List<Listener> listeners) {
     this.boostEngine = boostEngine;
     this.paymentHandler = paymentHandler;
     this.exploitService = exploitService;
+    this.paymentSettings = paymentSettings;
     this.listeners = listeners;
   }
 
@@ -73,6 +76,9 @@ public final class PaymentWiring {
       BlockOwnershipService blockOwnershipService,
       @Nullable RecipeService recipeService,
       @Nullable ProfessionService professionService) {
+    PaymentSettings paymentSettings = PaymentSettings.fromPlugin(plugin);
+    PaymentEligibility eligibility = new PaymentEligibility(paymentSettings);
+
     BoostEngine boostEngine = new BoostEngine(
         itemBoostDataService, timedBoostDataService, upgradeBoostDataService);
     PlayerChunkExplorationService chunkExploration = new PlayerChunkExplorationService();
@@ -80,7 +86,7 @@ public final class PaymentWiring {
     EntityValidationService entityValidation = new EntityValidationService(plugin);
     MobDamageTracker mobDamageTracker = new MobDamageTracker(damageStore);
     JobsPaymentHandler paymentHandler = new JobsPaymentHandler(plugin, boostEngine, jobService);
-    ExploitService exploitService = createExploitService();
+    ExploitService exploitService = createExploitService(plugin);
 
     List<Listener> listeners = new ArrayList<>();
     listeners.add(new MobDamageTrackerController(damageStore));
@@ -90,7 +96,8 @@ public final class PaymentWiring {
         paymentHandler,
         entityValidation,
         exploitService,
-        chunkExploration));
+        chunkExploration,
+        eligibility));
     listeners.add(new MobTagController(entityValidation));
     listeners.add(new ExploitStoreController(exploitService));
     listeners.add(new JobLevelUpListener());
@@ -98,10 +105,19 @@ public final class PaymentWiring {
       listeners.add(new CraftRecipeGateListener(recipeService, professionService));
     }
 
-    return new PaymentWiring(boostEngine, paymentHandler, exploitService, List.copyOf(listeners));
+    return new PaymentWiring(
+        boostEngine, paymentHandler, exploitService, paymentSettings, List.copyOf(listeners));
   }
 
-  private static ExploitService createExploitService() {
+  static ExploitService createExploitService(Plugin plugin) {
+    Map<Material, Duration> placedMaterials = PlacedProtectionMaterials.load(plugin);
+    return createExploitService(placedMaterials);
+  }
+
+  /**
+   * Package-visible for tests: build exploit service with an explicit placed material map.
+   */
+  static ExploitService createExploitService(Map<Material, Duration> placedMaterials) {
     Map<Key, ExploitProtectionStore<?>> providers = new HashMap<>();
     providers.put(ExploitProtectionType.WAX.key(),
         new MemoryExploitProtectionStoreImpl<>(
@@ -109,12 +125,14 @@ public final class PaymentWiring {
             CacheLoader.from(
                 block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
                     block.getZ()))));
+    Map<Material, java.time.temporal.TemporalAmount> placedTemporal = new HashMap<>(placedMaterials);
     providers.put(ExploitProtectionType.PLACED.key(),
-        new MemoryExploitProtectionStoreImpl<>(Map.of(Material.STONE, Duration.ofSeconds(60)),
+        new MemoryExploitProtectionStoreImpl<Block, Material>(
+            placedTemporal,
             Block::getType,
             CacheLoader.from(
-                block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
-                    block.getZ()))));
+                (Block block) -> new LocationKey(block.getWorld().getName(), block.getX(),
+                    block.getY(), block.getZ()))));
     providers.put(ExploitProtectionType.DYE_ENTITY.key(),
         new MemoryExploitProtectionStoreImpl<>(
             Map.of(EntityType.WOLF, Duration.ofMinutes(5), EntityType.SHEEP, Duration.ofSeconds(5)),

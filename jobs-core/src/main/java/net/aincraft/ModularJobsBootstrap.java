@@ -62,10 +62,6 @@ public final class ModularJobsBootstrap extends JavaPlugin {
           c.registrar().register(root.build());
         }
       });
-
-      if (Bukkit.getPluginCommand("test") != null) {
-        Bukkit.getPluginCommand("test").setExecutor(created.testCommand);
-      }
     } catch (Exception e) {
       getSLF4JLogger().error("Failed to enable ModularJobs", e);
       throw e;

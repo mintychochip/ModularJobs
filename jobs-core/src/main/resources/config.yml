@@ -1,8 +1,19 @@
 database:
   type: sqlite
 
+# Payment eligibility (honored by JobPaymentListener via PaymentSettings)
 pay-in-creative: true
 pay-while-riding: false
+# World names (case-insensitive) where job actions never pay
+disabled-worlds: []
+# Fraction of total damage a contributor must deal to receive kill pay (0..1)
+kill-contribution-cutoff: 0.5
+# Max distance (blocks) from furnace for smelt/bake pay attribution
+furnace-max-distance: 25.0
+
+# Economy deposits (Vault). When required=true, plugin enable fails without a Vault economy.
+economy:
+  required: true
 
 trackable_entities:
 
