@@ -87,6 +87,7 @@ public final class PaymentWiring {
     MobDamageTracker mobDamageTracker = new MobDamageTracker(damageStore);
     JobsPaymentHandler paymentHandler = new JobsPaymentHandler(plugin, boostEngine, jobService);
     ExploitService exploitService = createExploitService(plugin);
+    HopperPayDisableStore hopperStore = new HopperPayDisableStore();
 
     List<Listener> listeners = new ArrayList<>();
     listeners.add(new MobDamageTrackerController(damageStore));
@@ -97,9 +98,13 @@ public final class PaymentWiring {
         entityValidation,
         exploitService,
         chunkExploration,
-        eligibility));
+        eligibility,
+        hopperStore));
     listeners.add(new MobTagController(entityValidation));
     listeners.add(new ExploitStoreController(exploitService));
+    listeners.add(new PistonProtectionListener(exploitService));
+    listeners.add(new OreGeneratorProtectionListener(exploitService));
+    listeners.add(new HopperPayListener(hopperStore, exploitService));
     listeners.add(new JobLevelUpListener());
     if (recipeService != null && professionService != null) {
       listeners.add(new CraftRecipeGateListener(recipeService, professionService));
@@ -111,17 +116,24 @@ public final class PaymentWiring {
 
   static ExploitService createExploitService(Plugin plugin) {
     Map<Material, Duration> placedMaterials = PlacedProtectionMaterials.load(plugin);
-    return createExploitService(placedMaterials);
+    ExploitProtectionSettings settings = ExploitProtectionSettings.load(plugin);
+    return createExploitService(placedMaterials, settings);
   }
 
   /**
    * Package-visible for tests: build exploit service with an explicit placed material map.
    */
   static ExploitService createExploitService(Map<Material, Duration> placedMaterials) {
+    return createExploitService(placedMaterials, ExploitProtectionSettings.defaults());
+  }
+
+  static ExploitService createExploitService(
+      Map<Material, Duration> placedMaterials, ExploitProtectionSettings settings) {
     Map<Key, ExploitProtectionStore<?>> providers = new HashMap<>();
     providers.put(ExploitProtectionType.WAX.key(),
         new MemoryExploitProtectionStoreImpl<>(
-            Map.of(Material.COPPER_BLOCK, Duration.ofSeconds(5)), Block::getType,
+            toTemporal(settings.waxMaterials()),
+            Block::getType,
             CacheLoader.from(
                 block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
                     block.getZ()))));
@@ -135,29 +147,25 @@ public final class PaymentWiring {
                     block.getY(), block.getZ()))));
     providers.put(ExploitProtectionType.DYE_ENTITY.key(),
         new MemoryExploitProtectionStoreImpl<>(
-            Map.of(EntityType.WOLF, Duration.ofMinutes(5), EntityType.SHEEP, Duration.ofSeconds(5)),
+            toTemporal(settings.dyeEntities()),
             Entity::getType,
             CacheLoader.from(Entity::getUniqueId)));
     providers.put(ExploitProtectionType.MILK.key(),
         new MemoryExploitProtectionStoreImpl<>(
-            Map.of(EntityType.COW, Duration.ofSeconds(5), EntityType.GOAT, Duration.ofSeconds(5)),
+            toTemporal(settings.milkEntities()),
             Entity::getType,
             CacheLoader.from(Entity::getUniqueId)));
     providers.put(ExploitProtectionType.STRIP.key(),
         new MemoryExploitProtectionStoreImpl<>(
-            Map.of(Material.OAK_LOG, Duration.ofSeconds(5),
-                Material.SPRUCE_LOG, Duration.ofSeconds(5),
-                Material.BIRCH_LOG, Duration.ofSeconds(5),
-                Material.JUNGLE_LOG, Duration.ofSeconds(5),
-                Material.ACACIA_LOG, Duration.ofSeconds(5),
-                Material.DARK_OAK_LOG, Duration.ofSeconds(5),
-                Material.MANGROVE_LOG, Duration.ofSeconds(5),
-                Material.CHERRY_LOG, Duration.ofSeconds(5),
-                Material.PALE_OAK_LOG, Duration.ofSeconds(5)),
+            toTemporal(settings.stripMaterials()),
             Block::getType,
             CacheLoader.from(
                 block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
                     block.getZ()))));
-    return new ExploitService(providers);
+    return new ExploitService(providers, settings);
+  }
+
+  private static <K> Map<K, java.time.temporal.TemporalAmount> toTemporal(Map<K, Duration> source) {
+    return new HashMap<>(source);
   }
 }

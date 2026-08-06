@@ -1,0 +1,73 @@
+package net.aincraft.payment;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Structural proof that shipped place→break matches Jobs Reborn (deny while protected for all
+ * tools, not silk-touch-only) and that TNT/physics/hopper gates are wired.
+ */
+class JobsRebornPlaceBreakSourceTest {
+
+  @Test
+  void onBlockBreakDeniesWhileProtectedWithoutSilkOnlyGate() throws Exception {
+    String src = Files.readString(Path.of(
+        "src/main/java/net/aincraft/payment/JobPaymentListener.java"));
+    int breakStart = src.indexOf("private void onBlockBreak");
+    int breakEnd = src.indexOf("private void onBlockPhysics", breakStart);
+    assertTrue(breakStart >= 0 && breakEnd > breakStart);
+    String onBreak = src.substring(breakStart, breakEnd);
+
+    assertTrue(onBreak.contains("isProtected(ExploitProtectionType.PLACED"),
+        "must check PLACED protection");
+    assertTrue(onBreak.contains("return;"), "must deny pay while protected");
+    // Old silk-only pattern: removeProtection then if (silkTouch > 0) return — must be gone
+    assertFalse(
+        onBreak.contains("removeProtection(ExploitProtectionType.PLACED")
+            && onBreak.contains("if (silkTouch > 0)"),
+        "must not be silk-touch-only deny");
+    assertTrue(onBreak.contains("rearmAfterBreak") || onBreak.contains("rearmAfterBreak()"),
+        "must re-arm break timer after paid break (JR break timer)");
+  }
+
+  @Test
+  void tntAndPhysicsRespectPlacedProtection() throws Exception {
+    String src = Files.readString(Path.of(
+        "src/main/java/net/aincraft/payment/JobPaymentListener.java"));
+    int tnt = src.indexOf("private void onTntBreak");
+    assertTrue(tnt >= 0);
+    String tntBody = src.substring(tnt, Math.min(src.length(), tnt + 900));
+    assertTrue(tntBody.contains("isProtected(ExploitProtectionType.PLACED"),
+        "TNT_BREAK must skip protected blocks");
+
+    int physics = src.indexOf("private void onBlockPhysics");
+    String physicsBody = src.substring(physics, src.indexOf("private void onMilkEntity", physics));
+    assertTrue(physicsBody.contains("isProtected(ExploitProtectionType.PLACED"),
+        "physics cascade must respect PLACED");
+  }
+
+  @Test
+  void hopperAndFurnaceDistanceUseSettings() throws Exception {
+    String src = Files.readString(Path.of(
+        "src/main/java/net/aincraft/payment/JobPaymentListener.java"));
+    assertTrue(src.contains("hopperPayDisableStore.isDisabled"),
+        "smelt/brew must consult hopper disable store");
+    assertTrue(src.contains("furnaceMaxDistanceSquared()"),
+        "must use PaymentSettings furnace distance, not hard-coded 25*25");
+    assertFalse(src.contains("25 * 25"), "hard-coded 25*25 distance must be gone");
+  }
+
+  @Test
+  void wiringRegistersJobsRebornListeners() throws Exception {
+    String src = Files.readString(Path.of(
+        "src/main/java/net/aincraft/payment/PaymentWiring.java"));
+    assertTrue(src.contains("PistonProtectionListener"));
+    assertTrue(src.contains("OreGeneratorProtectionListener"));
+    assertTrue(src.contains("HopperPayListener"));
+    assertTrue(src.contains("ExploitProtectionSettings.load"));
+  }
+}
