@@ -246,8 +246,6 @@ public final class PluginContext {
         timedBoostDataService,
         upgradeBoostDataService,
         blockOwnershipService,
-        professions.antiFarmEngine,
-        keyResolver,
         professions.recipeService,
         professions.professionService);
 

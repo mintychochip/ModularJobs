@@ -2,20 +2,19 @@ package net.aincraft.payment;
 
 import com.google.common.cache.CacheLoader;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.payment.ExploitService.ExploitProtectionType;
-import net.aincraft.profession.TierAntiFarmEngine;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.service.ExploitProtectionStore;
 import net.aincraft.service.JobService;
 import net.aincraft.service.ProfessionService;
 import net.aincraft.service.RecipeService;
 import net.aincraft.upgrade.UpgradeBoostDataService;
-import net.aincraft.util.KeyResolver;
 import net.aincraft.util.LocationKey;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
@@ -62,8 +61,6 @@ public final class PaymentWiring {
         upgradeBoostDataService,
         blockOwnershipService,
         null,
-        null,
-        null,
         null);
   }
 
@@ -74,8 +71,6 @@ public final class PaymentWiring {
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService,
       BlockOwnershipService blockOwnershipService,
-      @Nullable TierAntiFarmEngine antiFarmEngine,
-      @Nullable KeyResolver keyResolver,
       @Nullable RecipeService recipeService,
       @Nullable ProfessionService professionService) {
     BoostEngine boostEngine = new BoostEngine(
@@ -84,11 +79,10 @@ public final class PaymentWiring {
     MobDamageTrackerStore damageStore = new MobDamageTrackerStore();
     EntityValidationService entityValidation = new EntityValidationService(plugin);
     MobDamageTracker mobDamageTracker = new MobDamageTracker(damageStore);
-    JobsPaymentHandler paymentHandler = new JobsPaymentHandler(
-        plugin, boostEngine, jobService, antiFarmEngine, keyResolver);
+    JobsPaymentHandler paymentHandler = new JobsPaymentHandler(plugin, boostEngine, jobService);
     ExploitService exploitService = createExploitService();
 
-    java.util.ArrayList<Listener> listeners = new java.util.ArrayList<>();
+    List<Listener> listeners = new ArrayList<>();
     listeners.add(new MobDamageTrackerController(damageStore));
     listeners.add(new JobPaymentListener(
         blockOwnershipService,
