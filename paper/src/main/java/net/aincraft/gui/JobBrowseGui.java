@@ -57,7 +57,7 @@ public final class JobBrowseGui {
 
     // Get all jobs and player's current jobs
     List<Job> allJobs = jobService.getJobs();
-    List<JobProgression> playerJobs = jobService.getProgressions(player);
+    List<JobProgression> playerJobs = jobService.getProgressions(player.getUniqueId());
 
     // Build player job map for quick lookup
     java.util.Map<String, JobProgression> playerJobMap = new java.util.HashMap<>();
@@ -257,7 +257,7 @@ public final class JobBrowseGui {
     int count = 0;
     String jobKey = job.key().asString();
     for (Player onlinePlayer : org.bukkit.Bukkit.getOnlinePlayers()) {
-      List<JobProgression> progressions = jobService.getProgressions(onlinePlayer);
+      List<JobProgression> progressions = jobService.getProgressions(onlinePlayer.getUniqueId());
       for (JobProgression prog : progressions) {
         if (prog.job().key().asString().equals(jobKey)) {
           count++;

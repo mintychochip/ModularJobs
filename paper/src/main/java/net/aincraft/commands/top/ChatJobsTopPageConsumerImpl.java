@@ -14,6 +14,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -53,12 +54,13 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     int pageSize = page.size();
     for (int i = 0; i < data.size(); i++) {
       JobProgression progression = data.get(i);
+      OfflinePlayer progressionPlayer = Bukkit.getOfflinePlayer(progression.playerId());
       boolean isViewer = sender instanceof Player player
-          && progression.player().getUniqueId().equals(player.getUniqueId());
+          && progression.playerId().equals(player.getUniqueId());
 
       Component row = MiniMessage.miniMessage().deserialize(ENTRY_FORMAT, TagResolver.builder()
           .tag("rank", Tag.inserting(Component.text((i + 1) + (pageNumber - 1) * pageSize)))
-          .tag("player", Tag.inserting(PlayerComponent.of(progression.player())))
+          .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))
           .tag("level", Tag.inserting(LevelComponent.of(progression)))
           .build());
 
@@ -116,7 +118,7 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
   private int findPlayerRank(Player player, List<JobProgression> allEntries) {
     for (int i = 0; i < allEntries.size(); i++) {
       JobProgression progression = allEntries.get(i);
-      if (progression.player().getUniqueId().equals(player.getUniqueId())) {
+      if (progression.playerId().equals(player.getUniqueId())) {
         return i + 1; // Rank is 1-indexed
       }
     }

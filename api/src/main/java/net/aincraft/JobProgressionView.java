@@ -1,8 +1,7 @@
 package net.aincraft;
 
 import java.math.BigDecimal;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Block;
+import java.util.UUID;
 
 public interface JobProgressionView {
 
@@ -10,7 +9,7 @@ public interface JobProgressionView {
 
   Job job();
 
-  OfflinePlayer player();
+  UUID playerId();
 
   BigDecimal experience();
 

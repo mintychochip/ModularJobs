@@ -42,11 +42,11 @@ public class McMMOBoostSourceImpl implements BoostSource {
 
   @Override
   public @NotNull List<Boost> evaluate(BoostContext context) {
-    Player player = context.player();
-    if (!store.contains(player.getUniqueId())) {
+    UUID playerId = context.playerId();
+    if (!store.contains(playerId)) {
       return List.of();
     }
-    SuperAbilityType type = store.get(player.getUniqueId());
+    SuperAbilityType type = store.get(playerId);
     BigDecimal amount = boostAmounts.get(type);
     if (amount == null) {
       return List.of();

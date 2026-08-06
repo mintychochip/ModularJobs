@@ -34,7 +34,7 @@ public final class JobsPaymentHandler {
   }
 
   public void pay(OfflinePlayer player, ActionType type, Context context) {
-    List<JobProgression> progressions = jobService.getProgressions(player);
+    List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
     for (JobProgression initialProgression : progressions) {
       Job job = initialProgression.job();
       JobTask task = jobService.getTask(job, type, context);
@@ -66,7 +66,7 @@ public final class JobsPaymentHandler {
         Payable finalPayable = new Payable(
             payableType, PayableAmount.create(boostedAmount, amount.currency().orElse(null)));
         PayableHandler handler = payableType.handler();
-        handler.pay(new PayableContext(player, finalPayable, progression));
+        handler.pay(new PayableContext(player.getUniqueId(), finalPayable, progression));
       }
     }
   }

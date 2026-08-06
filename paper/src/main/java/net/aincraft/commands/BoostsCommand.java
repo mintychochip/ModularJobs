@@ -65,7 +65,7 @@ public class BoostsCommand implements JobsCommand {
 
           // Timed Boosts
           List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
-              new PlayerTarget(player));
+              new PlayerTarget(player.getUniqueId()));
 
           if (!timedBoosts.isEmpty()) {
             Messages.send(player, "<secondary>⏰ Timed Boosts:");
@@ -92,7 +92,7 @@ public class BoostsCommand implements JobsCommand {
           }
 
           // Upgrade Tree Boosts (now uses the same BoostSource API)
-          List<JobProgression> progressions = jobService.getProgressions(player);
+          List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
           boolean hasUpgradeBoosts = false;
 
           for (JobProgression progression : progressions) {

@@ -114,7 +114,7 @@ public class StatsCommand implements JobsCommand {
    * Displays stats in a GUI dialog.
    */
   private void displayStatsDialog(Player viewer, OfflinePlayer target) {
-    List<JobProgression> progressions = jobService.getProgressions(target);
+    List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
     io.papermc.paper.dialog.Dialog dialog = statsDialog.buildDialog(target, progressions, 1);
     viewer.showDialog(dialog);
   }
@@ -123,7 +123,7 @@ public class StatsCommand implements JobsCommand {
    * Displays stats in chat format (original implementation).
    */
   private void displayStatsChat(CommandSender viewer, OfflinePlayer target) {
-    List<JobProgression> progressions = jobService.getProgressions(target);
+    List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
 
     String targetName = target.getName() != null ? target.getName() : "Unknown";
     String header = viewer.equals(target)

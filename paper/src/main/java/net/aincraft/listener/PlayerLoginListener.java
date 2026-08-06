@@ -32,7 +32,7 @@ public final class PlayerLoginListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
-    List<JobProgression> progressions = jobService.getProgressions(player);
+    List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
 
     // Restore permissions for each job the player is in
     for (JobProgression progression : progressions) {

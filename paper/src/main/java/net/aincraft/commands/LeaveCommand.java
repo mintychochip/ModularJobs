@@ -39,7 +39,7 @@ public class LeaveCommand implements JobsCommand {
                 return 0;
               }
 
-              List<JobProgression> progressions = jobService.getProgressions(player);
+              List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
 
               if (progressions.isEmpty()) {
                 Messages.send(player, "<neutral>You are not in any jobs.");

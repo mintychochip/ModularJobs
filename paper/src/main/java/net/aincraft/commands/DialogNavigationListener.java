@@ -95,7 +95,7 @@ public class DialogNavigationListener implements Listener {
       return;
     }
 
-    int entriesPerPage = preferencesService.getEntriesPerPage(player);
+    int entriesPerPage = preferencesService.getEntriesPerPage(player.getUniqueId());
     Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
     int totalPages = infoCommand.calculateTotalPages(tasks, entriesPerPage);
 
@@ -136,7 +136,7 @@ public class DialogNavigationListener implements Listener {
     }
 
     OfflinePlayer target = Bukkit.getOfflinePlayer(uuid);
-    List<JobProgression> progressions = jobService.getProgressions(target);
+    List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
     int totalPages = StatsDialog.calculateTotalPages(progressions);
 
     int newPage = clickKey.equals(STATS_NEXT_KEY) ? currentPage + 1 : currentPage - 1;

@@ -143,7 +143,7 @@ public class InfoCommand implements JobsCommand {
     Map<ActionType, List<JobTask>> tasks = jobService.getAllTasks(job);
 
     // Check player preference for display mode
-    if (preferencesService.prefersGuiMode(player)) {
+    if (preferencesService.prefersGuiMode(player.getUniqueId())) {
       return executeGuiCommandInternal(player, job, tasks, page);
     } else {
       return executeChatCommandInternal(player, job, tasks, page);
@@ -170,7 +170,7 @@ public class InfoCommand implements JobsCommand {
 
   private int executeChatCommandInternal(Player player, Job job, 
       Map<ActionType, List<JobTask>> tasks, int page) {
-    int entriesPerPage = preferencesService.getEntriesPerPage(player);
+    int entriesPerPage = preferencesService.getEntriesPerPage(player.getUniqueId());
     int totalPages = calculateTotalPages(tasks, entriesPerPage);
 
     if (page < 1 || page > totalPages) {
@@ -202,7 +202,7 @@ public class InfoCommand implements JobsCommand {
 
   private int executeGuiCommandInternal(Player player, Job job,
       Map<ActionType, List<JobTask>> tasks, int page) {
-    int entriesPerPage = preferencesService.getEntriesPerPage(player);
+    int entriesPerPage = preferencesService.getEntriesPerPage(player.getUniqueId());
     int totalPages = calculateTotalPages(tasks, entriesPerPage);
 
     if (page < 1 || page > totalPages) {
@@ -224,7 +224,7 @@ public class InfoCommand implements JobsCommand {
       return 0;
     }
 
-    preferencesService.setEntriesPerPage(player, count);
+    preferencesService.setEntriesPerPage(player.getUniqueId(), count);
     Messages.send(player, "<primary>Entries per page set to <secondary>" + count + "</secondary>.");
     return Command.SINGLE_SUCCESS;
   }
@@ -237,7 +237,7 @@ public class InfoCommand implements JobsCommand {
       return 0;
     }
 
-    preferencesService.setGuiMode(player, guiMode);
+    preferencesService.setGuiMode(player.getUniqueId(), guiMode);
     if (guiMode) {
       Messages.send(player, "<primary>Default view mode set to <secondary>GUI</secondary>.");
     } else {

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,8 +23,8 @@ public class PreferencesServiceImpl implements PreferencesService {
   }
   
   @Override
-  public int getEntriesPerPage(@NotNull Player player) {
-    PlayerPreferences prefs = preferencesCache.get(player.getUniqueId());
+  public int getEntriesPerPage(@NotNull UUID playerId) {
+    PlayerPreferences prefs = preferencesCache.get(playerId);
     if (prefs != null && prefs.entriesPerPage > 0) {
       return prefs.entriesPerPage;
     }
@@ -33,12 +32,12 @@ public class PreferencesServiceImpl implements PreferencesService {
   }
   
   @Override
-  public void setEntriesPerPage(@NotNull Player player, int entries) {
+  public void setEntriesPerPage(@NotNull UUID playerId, int entries) {
     if (entries < 1) entries = 1;
     if (entries > 50) entries = 50;
     
     PlayerPreferences prefs = preferencesCache.computeIfAbsent(
-        player.getUniqueId(), k -> new PlayerPreferences());
+        playerId, k -> new PlayerPreferences());
     prefs.entriesPerPage = entries;
   }
   
@@ -49,8 +48,8 @@ public class PreferencesServiceImpl implements PreferencesService {
   }
   
   @Override
-  public boolean prefersGuiMode(@NotNull Player player) {
-    PlayerPreferences prefs = preferencesCache.get(player.getUniqueId());
+  public boolean prefersGuiMode(@NotNull UUID playerId) {
+    PlayerPreferences prefs = preferencesCache.get(playerId);
     if (prefs != null && prefs.guiModeSet) {
       return prefs.guiMode;
     }
@@ -58,9 +57,9 @@ public class PreferencesServiceImpl implements PreferencesService {
   }
   
   @Override
-  public void setGuiMode(@NotNull Player player, boolean guiMode) {
+  public void setGuiMode(@NotNull UUID playerId, boolean guiMode) {
     PlayerPreferences prefs = preferencesCache.computeIfAbsent(
-        player.getUniqueId(), k -> new PlayerPreferences());
+        playerId, k -> new PlayerPreferences());
     prefs.guiMode = guiMode;
     prefs.guiModeSet = true;
   }

@@ -63,7 +63,7 @@ class BoostEngineAggregationTest {
         unusedUpgradeService()
     );
 
-    BoostContext context = new BoostContext(null, null, null, null);
+    BoostContext context = new BoostContext(null, null, null, null, null);
     ActiveBoostData timed = new ActiveBoostData(
         UUID.randomUUID().toString(),
         timedSource.key().toString(),

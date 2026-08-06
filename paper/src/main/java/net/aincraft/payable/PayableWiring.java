@@ -66,7 +66,7 @@ public final class PayableWiring {
                 + "Install Vault + an economy plugin or set economy.required: false only for "
                 + "experience-only configs that never pay modularjobs:economy");
       }
-      economyProvider.deposit(context.player(), context.payable().amount());
+      economyProvider.deposit(context.playerId(), context.payable().amount());
     };
   }
 

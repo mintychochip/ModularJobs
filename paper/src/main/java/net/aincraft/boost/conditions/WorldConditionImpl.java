@@ -3,6 +3,7 @@ package net.aincraft.boost.conditions;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.Condition;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 
 /**
@@ -14,9 +15,15 @@ public record WorldConditionImpl(Key worldKey) implements Condition {
 
   @Override
   public boolean applies(BoostContext context) {
-    World world = context.world();
-    if (world == null) {
+    String worldName = context.worldName();
+    if (worldName == null) {
       return false;
+    }
+    World world = Bukkit.getWorld(worldName);
+    if (world == null) {
+      // Fall back to name-only match when world is unloaded
+      return worldName.equalsIgnoreCase(worldKey.value())
+          || worldName.equalsIgnoreCase(worldKey.asString());
     }
     if (worldKey.equals(world.getKey())) {
       return true;

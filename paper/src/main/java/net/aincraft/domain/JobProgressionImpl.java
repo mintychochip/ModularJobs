@@ -1,6 +1,7 @@
 package net.aincraft.domain;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 import net.aincraft.Job;
 import net.aincraft.LevelingCurve.Parameters;
 import net.aincraft.JobProgression;
@@ -8,19 +9,17 @@ import net.aincraft.container.PayableType;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.registry.Registry;
-import net.kyori.adventure.key.Key;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 
 final class JobProgressionImpl implements JobProgression {
 
   private final Job job;
-  private final OfflinePlayer player;
+  private final UUID playerId;
   private final BigDecimal experience;
   private final int level;
 
-  JobProgressionImpl(OfflinePlayer player, Job job, BigDecimal experience) {
-    this.player = player;
+  JobProgressionImpl(UUID playerId, Job job, BigDecimal experience) {
+    this.playerId = playerId;
     this.job = job;
     this.experience = experience;
     this.level = calculateCurrentLevel();
@@ -31,7 +30,7 @@ final class JobProgressionImpl implements JobProgression {
     if (this.experience.equals(experience)) {
       return this;
     }
-    return new JobProgressionImpl(player, job, experience);
+    return new JobProgressionImpl(playerId, job, experience);
   }
 
   @Override
@@ -45,8 +44,8 @@ final class JobProgressionImpl implements JobProgression {
   }
 
   @Override
-  public OfflinePlayer player() {
-    return player;
+  public UUID playerId() {
+    return playerId;
   }
 
   @Override
@@ -83,7 +82,7 @@ final class JobProgressionImpl implements JobProgression {
   @Override
   public String toString() {
     return "JobProgressionImpl[" +
-        "player=" + player.getUniqueId() +
+        "player=" + playerId +
         ", job=" + job.key().value() +
         ", experience=" + experience +
         ", level=" + level() +
@@ -93,7 +92,7 @@ final class JobProgressionImpl implements JobProgression {
   public JobProgressionRecord toRecord() {
     JobRecord jobRecord = ((JobImpl) job).toRecord();
     return new JobProgressionRecord(
-        player.getUniqueId().toString(),
+        playerId.toString(),
         jobRecord,
         experience
     );
@@ -106,7 +105,7 @@ final class JobProgressionImpl implements JobProgression {
   ) {
     Job job = JobImpl.fromRecord(record.jobRecord(), plugin, payableTypeRegistry);
     return new JobProgressionImpl(
-        plugin.getServer().getOfflinePlayer(java.util.UUID.fromString(record.playerId())),
+        UUID.fromString(record.playerId()),
         job,
         record.experience()
     );

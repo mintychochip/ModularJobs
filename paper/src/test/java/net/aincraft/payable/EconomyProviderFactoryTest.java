@@ -88,7 +88,7 @@ class EconomyProviderFactoryTest {
     };
     Payable payable = new Payable(
         type, PayableAmount.create(BigDecimal.ONE, Currency.USD));
-    PayableContext ctx = new PayableContext(player, payable, null);
+    PayableContext ctx = new PayableContext(player.getUniqueId(), payable, null);
     assertThrows(IllegalStateException.class, () -> handler.pay(ctx));
   }
 
@@ -102,7 +102,7 @@ class EconomyProviderFactoryTest {
       }
 
       @Override
-      public boolean deposit(OfflinePlayer player, PayableAmount payableAmount) {
+      public boolean deposit(UUID playerId, PayableAmount payableAmount) {
         deposited[0] = true;
         return true;
       }
@@ -127,7 +127,7 @@ class EconomyProviderFactoryTest {
     };
     Payable payable = new Payable(
         type, PayableAmount.create(BigDecimal.TEN, Currency.USD));
-    assertDoesNotThrow(() -> handler.pay(new PayableContext(player, payable, null)));
+    assertDoesNotThrow(() -> handler.pay(new PayableContext(player.getUniqueId(), payable, null)));
     assertTrue(deposited[0], "shipped handler must call EconomyProvider.deposit");
   }
 

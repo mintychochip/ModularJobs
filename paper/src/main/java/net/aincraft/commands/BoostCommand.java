@@ -180,7 +180,7 @@ public final class BoostCommand implements JobsCommand {
     } else if (ALL_TARGET.equalsIgnoreCase(targetStr)) {
       int count = 0;
       for (Player player : Bukkit.getOnlinePlayers()) {
-        timedBoostDataService.addData(boostData, new PlayerTarget(player));
+        timedBoostDataService.addData(boostData, new PlayerTarget(player.getUniqueId()));
         count++;
       }
       Messages.send(sender,
@@ -193,7 +193,7 @@ public final class BoostCommand implements JobsCommand {
         Messages.send(sender, "<error>Player not found: <secondary>" + targetStr);
         return 0;
       }
-      timedBoostDataService.addData(boostData, new PlayerTarget(target));
+      timedBoostDataService.addData(boostData, new PlayerTarget(target.getUniqueId()));
       Messages.send(sender,
           "<accent>Applied <primary>" + sourceKey.asString() + "<accent> to <secondary>"
               + target.getName() + "<accent> for <secondary>" + DurationParser.format(duration));
@@ -243,7 +243,7 @@ public final class BoostCommand implements JobsCommand {
         Messages.send(sender, "<error>Player not found: <secondary>" + targetStr);
         return 0;
       }
-      target = new PlayerTarget(player);
+      target = new PlayerTarget(player.getUniqueId());
       targetDisplay = player.getName();
     }
 
@@ -311,7 +311,7 @@ public final class BoostCommand implements JobsCommand {
 
     // Timed boosts
     List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
-        new PlayerTarget(player));
+        new PlayerTarget(player.getUniqueId()));
 
     if (!timedBoosts.isEmpty()) {
       Messages.send(sender, "<secondary>Timed Boosts:");
@@ -342,7 +342,7 @@ public final class BoostCommand implements JobsCommand {
     }
 
     // Upgrade tree boosts (now uses the same BoostSource API)
-    List<JobProgression> progressions = jobService.getProgressions(player);
+    List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
     boolean hasUpgradeBoosts = false;
 
     for (JobProgression progression : progressions) {

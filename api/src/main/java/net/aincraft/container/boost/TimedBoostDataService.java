@@ -3,12 +3,12 @@ package net.aincraft.container.boost;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.TimedBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.Target.GlobalTarget;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 public interface TimedBoostDataService {
@@ -17,7 +17,7 @@ public interface TimedBoostDataService {
 
     record GlobalTarget() implements Target {}
 
-    record PlayerTarget(Player player) implements Target {}
+    record PlayerTarget(UUID playerId) implements Target {}
   }
 
   /**

@@ -2,6 +2,7 @@ package net.aincraft.payable;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.aincraft.container.EconomyProvider;
@@ -74,11 +75,12 @@ public final class VaultEconomyProvider implements EconomyProvider {
   }
 
   @Override
-  public boolean deposit(OfflinePlayer player, PayableAmount payableAmount) {
+  public boolean deposit(UUID playerId, PayableAmount payableAmount) {
     BigDecimal amount = payableAmount.value();
     if (amount == null || amount.signum() <= 0) {
       return false;
     }
+    OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
     try {
       Boolean has = (Boolean) hasAccount.invoke(vaultEconomy, player);
       if (has == null || !has) {
@@ -93,7 +95,7 @@ public final class VaultEconomyProvider implements EconomyProvider {
       }
       return true;
     } catch (ReflectiveOperationException e) {
-      LOGGER.log(Level.SEVERE, "Vault deposit failed for " + player.getUniqueId(), e);
+      LOGGER.log(Level.SEVERE, "Vault deposit failed for " + playerId, e);
       return false;
     }
   }

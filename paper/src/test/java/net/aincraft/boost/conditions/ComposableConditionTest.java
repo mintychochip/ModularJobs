@@ -15,7 +15,7 @@ class ComposableConditionTest {
 
   private static final Condition ALWAYS = ctx -> true;
   private static final Condition NEVER = ctx -> false;
-  private static final BoostContext EMPTY_CONTEXT = new BoostContext(null, null, null, null);
+  private static final BoostContext EMPTY_CONTEXT = new BoostContext(null, null, null, null, null);
 
   @Test
   void andRequiresBothTrue() {

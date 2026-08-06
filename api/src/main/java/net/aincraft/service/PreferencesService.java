@@ -1,6 +1,6 @@
 package net.aincraft.service;
 
-import org.bukkit.entity.Player;
+import java.util.UUID;
 
 /**
  * Service for managing player preferences.
@@ -10,17 +10,17 @@ public interface PreferencesService {
   
   /**
    * Gets the number of entries to display per page for the given player.
-   * @param player The player to get the preference for
+   * @param playerId The player id to get the preference for
    * @return The number of entries per page (default: 10)
    */
-  int getEntriesPerPage(Player player);
+  int getEntriesPerPage(UUID playerId);
   
   /**
    * Sets the number of entries to display per page for the given player.
-   * @param player The player to set the preference for
+   * @param playerId The player id to set the preference for
    * @param entries The number of entries per page
    */
-  void setEntriesPerPage(Player player, int entries);
+  void setEntriesPerPage(UUID playerId, int entries);
   
   /**
    * Gets the default entries per page for all players.
@@ -30,15 +30,15 @@ public interface PreferencesService {
   
   /**
    * Gets whether the player prefers GUI mode over chat mode for info displays.
-   * @param player The player to check
+   * @param playerId The player id to check
    * @return true if GUI mode is preferred, false for chat mode
    */
-  boolean prefersGuiMode(Player player);
+  boolean prefersGuiMode(UUID playerId);
   
   /**
    * Sets whether the player prefers GUI mode over chat mode.
-   * @param player The player to set the preference for
+   * @param playerId The player id to set the preference for
    * @param guiMode true for GUI mode, false for chat mode
    */
-  void setGuiMode(Player player, boolean guiMode);
+  void setGuiMode(UUID playerId, boolean guiMode);
 }

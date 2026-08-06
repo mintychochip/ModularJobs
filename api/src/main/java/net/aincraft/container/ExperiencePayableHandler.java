@@ -1,9 +1,9 @@
 package net.aincraft.container;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 import net.aincraft.JobProgressionView;
 import net.kyori.adventure.bossbar.BossBar;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public interface ExperiencePayableHandler extends PayableHandler {
@@ -21,5 +21,5 @@ public interface ExperiencePayableHandler extends PayableHandler {
     void display(ExperienceBarContext context, ExperienceBarFormatter formatter);
   }
 
-  record ExperienceBarContext(JobProgressionView progression, Player player, BigDecimal amount) {}
+  record ExperienceBarContext(JobProgressionView progression, UUID playerId, BigDecimal amount) {}
 }

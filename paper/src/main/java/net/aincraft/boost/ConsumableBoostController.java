@@ -31,7 +31,7 @@ public class ConsumableBoostController implements Listener {
       return;
     }
     if (data.get() instanceof ConsumableBoostData consumableBoostData) {
-      timedBoostDataService.addData(consumableBoostData, new PlayerTarget(event.getPlayer()));
+      timedBoostDataService.addData(consumableBoostData, new PlayerTarget(event.getPlayer().getUniqueId()));
     }
   }
 }

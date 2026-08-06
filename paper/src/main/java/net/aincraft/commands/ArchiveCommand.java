@@ -63,7 +63,7 @@ public class ArchiveCommand implements JobsCommand {
   }
 
   private void displayArchive(CommandSender viewer, OfflinePlayer target) {
-    List<JobProgression> archivedProgressions = jobService.getArchivedProgressions(target);
+    List<JobProgression> archivedProgressions = jobService.getArchivedProgressions(target.getUniqueId());
 
     // Header
     String targetName = target.getName() != null ? target.getName() : "Unknown";

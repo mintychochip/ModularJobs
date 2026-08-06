@@ -69,16 +69,16 @@ class ExternalBackedPreferencesServiceTest {
         external.registered.get(1).key().name());
 
     // Defaults from config via Preference.defaultValue
-    assertEquals(10, facade.getEntriesPerPage(player));
-    assertTrue(facade.prefersGuiMode(player));
+    assertEquals(10, facade.getEntriesPerPage(player.getUniqueId()));
+    assertTrue(facade.prefersGuiMode(player.getUniqueId()));
     assertEquals(10, facade.getDefaultEntriesPerPage());
 
     // Real facade set → Preference handle storage → get
-    facade.setEntriesPerPage(player, 25);
-    facade.setGuiMode(player, false);
+    facade.setEntriesPerPage(player.getUniqueId(), 25);
+    facade.setGuiMode(player.getUniqueId(), false);
 
-    assertEquals(25, facade.getEntriesPerPage(player));
-    assertFalse(facade.prefersGuiMode(player));
+    assertEquals(25, facade.getEntriesPerPage(player.getUniqueId()));
+    assertFalse(facade.prefersGuiMode(player.getUniqueId()));
 
     // Values live on the registered handles (Preferences-backed store), not a local map
     assertEquals(25, facade.entriesPerPagePreference().get(player));
@@ -91,11 +91,11 @@ class ExternalBackedPreferencesServiceTest {
     ExternalBackedPreferencesService facade =
         ExternalBackedPreferencesService.register(plugin, external);
 
-    facade.setEntriesPerPage(player, 0);
-    assertEquals(1, facade.getEntriesPerPage(player));
+    facade.setEntriesPerPage(player.getUniqueId(), 0);
+    assertEquals(1, facade.getEntriesPerPage(player.getUniqueId()));
 
-    facade.setEntriesPerPage(player, 999);
-    assertEquals(50, facade.getEntriesPerPage(player));
+    facade.setEntriesPerPage(player.getUniqueId(), 999);
+    assertEquals(50, facade.getEntriesPerPage(player.getUniqueId()));
   }
 
   @Test
@@ -108,8 +108,8 @@ class ExternalBackedPreferencesServiceTest {
         ExternalBackedPreferencesService.register(plugin, external);
 
     assertEquals(7, facade.getDefaultEntriesPerPage());
-    assertEquals(7, facade.getEntriesPerPage(player));
-    assertFalse(facade.prefersGuiMode(player));
+    assertEquals(7, facade.getEntriesPerPage(player.getUniqueId()));
+    assertFalse(facade.prefersGuiMode(player.getUniqueId()));
     assertEquals(7, facade.entriesPerPagePreference().defaultValue());
     assertEquals(Boolean.FALSE, facade.guiModePreference().defaultValue());
   }
@@ -136,11 +136,11 @@ class ExternalBackedPreferencesServiceTest {
     ExternalBackedPreferencesService facade =
         new ExternalBackedPreferencesService(plugin, null, entries, gui, 10);
 
-    facade.setEntriesPerPage(player, 15);
-    facade.setGuiMode(player, false);
+    facade.setEntriesPerPage(player.getUniqueId(), 15);
+    facade.setGuiMode(player.getUniqueId(), false);
 
-    assertEquals(15, facade.getEntriesPerPage(player));
-    assertFalse(facade.prefersGuiMode(player));
+    assertEquals(15, facade.getEntriesPerPage(player.getUniqueId()));
+    assertFalse(facade.prefersGuiMode(player.getUniqueId()));
     assertEquals(15, entries.get(player));
     assertEquals(Boolean.FALSE, gui.get(player));
   }

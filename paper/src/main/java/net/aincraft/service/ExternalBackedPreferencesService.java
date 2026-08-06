@@ -3,7 +3,9 @@ package net.aincraft.service;
 import dev.jlo.preferences.api.Preference;
 import dev.jlo.preferences.api.codec.PreferenceCodec;
 import java.util.Objects;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -106,7 +108,11 @@ public final class ExternalBackedPreferencesService implements PreferencesServic
   }
 
   @Override
-  public int getEntriesPerPage(@NotNull Player player) {
+  public int getEntriesPerPage(@NotNull UUID playerId) {
+    Player player = Bukkit.getPlayer(playerId);
+    if (player == null) {
+      return getDefaultEntriesPerPage();
+    }
     int value = entriesPerPage.get(player);
     if (value < MIN_ENTRIES) {
       return MIN_ENTRIES;
@@ -118,7 +124,11 @@ public final class ExternalBackedPreferencesService implements PreferencesServic
   }
 
   @Override
-  public void setEntriesPerPage(@NotNull Player player, int entries) {
+  public void setEntriesPerPage(@NotNull UUID playerId, int entries) {
+    Player player = Bukkit.getPlayer(playerId);
+    if (player == null) {
+      return;
+    }
     int clamped = entries;
     if (clamped < MIN_ENTRIES) {
       clamped = MIN_ENTRIES;
@@ -135,12 +145,24 @@ public final class ExternalBackedPreferencesService implements PreferencesServic
   }
 
   @Override
-  public boolean prefersGuiMode(@NotNull Player player) {
+  public boolean prefersGuiMode(@NotNull UUID playerId) {
+    Player player = Bukkit.getPlayer(playerId);
+    if (player == null) {
+      return getDefaultGuiModeFallback();
+    }
     return Boolean.TRUE.equals(guiMode.get(player));
   }
 
   @Override
-  public void setGuiMode(@NotNull Player player, boolean guiModeValue) {
+  public void setGuiMode(@NotNull UUID playerId, boolean guiModeValue) {
+    Player player = Bukkit.getPlayer(playerId);
+    if (player == null) {
+      return;
+    }
     guiMode.set(player, guiModeValue);
+  }
+
+  private boolean getDefaultGuiModeFallback() {
+    return Boolean.TRUE.equals(guiMode.defaultValue());
   }
 }

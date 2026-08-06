@@ -12,7 +12,6 @@ import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService.Target.GlobalTarget;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
 import net.aincraft.repository.TimedBoostRepository;
-import org.bukkit.entity.Player;
 
 public class TimedBoostDataServiceImpl implements TimedBoostDataService {
 
@@ -53,7 +52,7 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
   @Override
   public <T extends TimedBoostData & SerializableBoostData> void addData(T data, Target target) {
     String targetIdentifier =
-        target instanceof PlayerTarget playerTarget ? playerTarget.player().getUniqueId().toString()
+        target instanceof PlayerTarget playerTarget ? playerTarget.playerId().toString()
             : GLOBAL_IDENTIFIER;
     String sourceIdentifier = data.boostSource().key().toString();
     Timestamp timestamp = Timestamp.from(Instant.now());
@@ -66,7 +65,7 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
   @Override
   public boolean removeBoost(Target target, String sourceIdentifier) {
     String targetIdentifier = target instanceof PlayerTarget playerTarget
-        ? playerTarget.player().getUniqueId().toString()
+        ? playerTarget.playerId().toString()
         : GLOBAL_IDENTIFIER;
 
     ActiveBoostData existing = timedBoostRepository.findBoost(targetIdentifier, sourceIdentifier);
@@ -87,8 +86,7 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
   }
 
   private static String getPlayerIdentifier(PlayerTarget playerTarget) {
-    Player player = playerTarget.player();
-    UUID uniqueId = player.getUniqueId();
+    UUID uniqueId = playerTarget.playerId();
     return uniqueId.toString();
   }
 }

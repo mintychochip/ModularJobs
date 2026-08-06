@@ -7,6 +7,7 @@ import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.PotionConditionType;
 import net.aincraft.container.boost.RelationalOperator;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -31,7 +32,10 @@ public record PotionConditionImpl(
 
   @Override
   public boolean applies(BoostContext context) {
-    Player player = context.player();
+    Player player = Bukkit.getPlayer(context.playerId());
+    if (player == null) {
+      return false;
+    }
     Collection<PotionEffect> effects = player.getActivePotionEffects();
     for (PotionEffect effect : effects) {
       if (matches(effect.getType())) {
