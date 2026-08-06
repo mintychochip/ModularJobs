@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# ModularJobs pre-commit — run before a commit is created.
+#
+# Enable once (from repo root):
+#   ./scripts/install-git-hooks.sh
+#
+# Skip for an emergency commit:
+#   SKIP_PRECOMMIT=1 git commit ...
+set -euo pipefail
+
+if [[ "${SKIP_PRECOMMIT:-0}" == "1" || "${SKIP_PRECOMMIT:-}" == "true" ]]; then
+  echo "pre-commit: skipped (SKIP_PRECOMMIT)"
+  exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "${ROOT}"
+
+need_java=0
+need_rust=0
+need_editor=0
+any_staged=0
+
+while IFS= read -r f; do
+  [[ -z "${f}" ]] && continue
+  any_staged=1
+  case "${f}" in
+    api/*|common/*|paper/*|\
+    build.gradle.kts|settings.gradle.kts|gradle.properties|\
+    gradle/*|config/checkstyle/*|config/pmd/*|config/spotbugs/*|\
+    .githooks/*)
+      need_java=1
+      ;;
+    web/rest-api/*)
+      need_rust=1
+      ;;
+    web/session-editor/*)
+      need_editor=1
+      ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR)
+
+if [[ "${any_staged}" -eq 0 ]]; then
+  exit 0
+fi
+
+if [[ "${need_java}" -eq 0 && "${need_rust}" -eq 0 && "${need_editor}" -eq 0 ]]; then
+  echo "pre-commit: no Java/Rust/editor changes — ok"
+  exit 0
+fi
+
+run() {
+  echo ""
+  echo "==> $*"
+  "$@"
+}
+
+if [[ "${need_java}" -eq 1 ]]; then
+  if [[ ! -x ./gradlew ]]; then
+    echo "pre-commit: error: ./gradlew missing or not executable" >&2
+    exit 1
+  fi
+  # Error Prone runs on compile. Unit tests for all Java modules.
+  # Full quality (Checkstyle/PMD/SpotBugs) stays report-only in CI check.
+  run ./gradlew --console=plain \
+    compileJava compileTestJava \
+    :api:test :common:test :paper:test
+fi
+
+if [[ "${need_rust}" -eq 1 ]]; then
+  if ! command -v cargo >/dev/null 2>&1; then
+    echo "pre-commit: error: cargo not found (needed for web/rest-api changes)" >&2
+    exit 1
+  fi
+  # Full cargo test needs Postgres; check catches compile/type errors locally.
+  run cargo check --manifest-path web/rest-api/Cargo.toml
+fi
+
+if [[ "${need_editor}" -eq 1 ]]; then
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "pre-commit: error: npm not found (needed for web/session-editor changes)" >&2
+    exit 1
+  fi
+  if [[ ! -d web/session-editor/node_modules ]]; then
+    run npm ci --prefix web/session-editor
+  fi
+  run npm test --prefix web/session-editor
+fi
+
+echo ""
+echo "pre-commit: ok"
