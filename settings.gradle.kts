@@ -13,8 +13,6 @@ dependencyResolutionManagement {
         }
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
-        // mint-api (before broken/unreachable mirrors)
-        maven("https://gitlab.com/api/v4/projects/77453344/packages/maven")
         maven("https://jitpack.io")
         maven("https://repo.codemc.io/repository/maven-public/")
         maven("https://nexus.neetgames.com/repository/maven-releases/")

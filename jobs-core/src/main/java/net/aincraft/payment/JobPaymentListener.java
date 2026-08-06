@@ -31,7 +31,6 @@ import net.aincraft.util.LocationKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -102,27 +101,25 @@ final class JobPaymentListener implements Listener {
 
   private static final String CITIZENS = "NPC";
 
-  private static final Predicate<Player> NO_PAY_IN_CREATIVE = player ->
-      player.getGameMode() != GameMode.CREATIVE && false;
-
-  private static final Predicate<Player> NO_PAY_WHILE_RIDING = player ->
-      !player.isInsideVehicle() && false;
-
-  public static final Predicate<Player> PLAYER_WORLD_DISABLED = player -> false;
-
   public static final Predicate<Player> IS_CITIZEN = player -> player.hasMetadata(CITIZENS);
 
-  private static final Predicate<Player> ADVENTURE_MODE = player -> player.getGameMode()
-      == GameMode.ADVENTURE;
+  private final PaymentEligibility eligibility;
 
   JobPaymentListener(BlockOwnershipService blockOwnershipService, MobDamageTracker mobDamageTracker, JobsPaymentHandler paymentHandler,
-      EntityValidationService entityValidationService, ExploitService exploitService, PlayerChunkExplorationService chunkExplorationStore) {
+      EntityValidationService entityValidationService, ExploitService exploitService, PlayerChunkExplorationService chunkExplorationStore,
+      PaymentEligibility eligibility) {
     this.blockOwnershipService = blockOwnershipService;
     this.mobDamageTracker = mobDamageTracker;
     this.paymentHandler = paymentHandler;
     this.entityValidationService = entityValidationService;
     this.exploitService = exploitService;
     this.chunkExplorationStore = chunkExplorationStore;
+    this.eligibility = eligibility;
+  }
+
+  /** @return true when the player must not receive job pay */
+  boolean blocksPay(Player player) {
+    return eligibility.blocksPay(player);
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -132,8 +129,7 @@ final class JobPaymentListener implements Listener {
         .isValid(event.getEntity())) {
       return;
     }
-    if (PLAYER_WORLD_DISABLED.or(NO_PAY_IN_CREATIVE).or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     paymentHandler.pay(player, ActionTypes.BUCKET_ENTITY, new ItemContext(event.getEntityBucket()));
@@ -148,8 +144,7 @@ final class JobPaymentListener implements Listener {
     }
     Material material = block.getType();
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED.or(NO_PAY_IN_CREATIVE).or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     ItemStack itemStack = event.getItem();
@@ -182,8 +177,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED.or(NO_PAY_IN_CREATIVE).or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE).or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     ItemStack itemStack = event.getItem();
@@ -205,8 +199,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED.or(NO_PAY_IN_CREATIVE).or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     Block block = event.getBlock();
@@ -233,8 +226,7 @@ final class JobPaymentListener implements Listener {
     if (!(owner instanceof Player player)) {
       return;
     }
-    if (PLAYER_WORLD_DISABLED.or(NO_PAY_IN_CREATIVE).or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     paymentHandler.pay(player, ActionTypes.TAME, new EntityContext(entity));
@@ -243,8 +235,7 @@ final class JobPaymentListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onEntityShear(final PlayerShearEntityEvent event) {
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED.or(NO_PAY_IN_CREATIVE).or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     Entity entity = event.getEntity();
@@ -263,11 +254,7 @@ final class JobPaymentListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onBlockBreak(final BlockBreakEvent event) {
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     Block block = event.getBlock();
@@ -333,11 +320,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     PlayerInventory inventory = player.getInventory();
@@ -359,11 +342,7 @@ final class JobPaymentListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onBrushBlock(final BlockDropItemEvent event) {
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     Block block = event.getBlock();
@@ -389,11 +368,7 @@ final class JobPaymentListener implements Listener {
         event.getMother())) {
       return;
     }
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     paymentHandler.pay(player, ActionTypes.BREED, new EntityContext(event.getEntity()));
@@ -412,11 +387,7 @@ final class JobPaymentListener implements Listener {
     }
     @Nullable Player player = resolveKillingPlayer(killer);
     if (player == null ||
-        PLAYER_WORLD_DISABLED
-            .or(NO_PAY_IN_CREATIVE)
-            .or(NO_PAY_WHILE_RIDING)
-            .or(ADVENTURE_MODE)
-            .or(IS_CITIZEN).test(player)) {
+        eligibility.blocksPay(player)) {
       return;
     }
     boolean victimIsRealPlayer =
@@ -444,11 +415,7 @@ final class JobPaymentListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onEat(final PlayerItemConsumeEvent event) {
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     ItemStack itemStack = event.getItem();
@@ -465,11 +432,7 @@ final class JobPaymentListener implements Listener {
     if (!(entity instanceof Player player)) {
       return;
     }
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     Item item = event.getItem();
@@ -494,11 +457,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     BlockState state = block.getState();
@@ -544,11 +503,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     ItemStack itemStack = item.getItemStack();
@@ -564,11 +519,7 @@ final class JobPaymentListener implements Listener {
     }
     Player player = owner.getPlayer();
     assert player != null;
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     //TODO make this not explicit
@@ -593,11 +544,7 @@ final class JobPaymentListener implements Listener {
     }
     Player player = owner.getPlayer();
     assert player != null;
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     double v = block.getLocation().distanceSquared(player.getLocation());
@@ -610,11 +557,7 @@ final class JobPaymentListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onExplore(final PlayerMoveEvent event) {
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     Chunk from = event.getFrom().getChunk();
@@ -635,11 +578,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Player player = event.getPlayer();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     if (exploitService.canProtect(ExploitProtectionType.DYE_ENTITY, entity)) {
@@ -654,11 +593,7 @@ final class JobPaymentListener implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onEnchant(final EnchantItemEvent event) {
     Player player = event.getEnchanter();
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     Inventory inventory = event.getInventory();
@@ -687,11 +622,7 @@ final class JobPaymentListener implements Listener {
     if (!(entity instanceof TNTPrimed tnt) || !(tnt.getSource() instanceof Player player)) {
       return;
     }
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     for (Block block : event.blockList()) {
@@ -718,11 +649,7 @@ final class JobPaymentListener implements Listener {
     if (!(entity instanceof Player player)) {
       return;
     }
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     paymentHandler.pay(player, ActionTypes.VILLAGER_TRADE, new ItemContext(resultItem));
@@ -750,11 +677,7 @@ final class JobPaymentListener implements Listener {
     if (!(entity instanceof Player player)) {
       return;
     }
-    if (PLAYER_WORLD_DISABLED
-        .or(NO_PAY_IN_CREATIVE)
-        .or(NO_PAY_WHILE_RIDING)
-        .or(ADVENTURE_MODE)
-        .or(IS_CITIZEN).test(player)) {
+    if (eligibility.blocksPay(player)) {
       return;
     }
     PlayerInventory inventory = player.getInventory();

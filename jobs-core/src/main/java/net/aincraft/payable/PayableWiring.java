@@ -1,8 +1,5 @@
 package net.aincraft.payable;
 
-import dev.mintychochip.mint.Mint;
-import dev.mintychochip.mint.preferences.PreferenceService;
-import dev.mintychochip.mint.preferences.types.EnumPreferenceType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -22,8 +19,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.kyori.adventure.bossbar.BossBar.Color;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 
@@ -44,30 +39,14 @@ public final class PayableWiring {
 
   public static PayableWiring create(
       Plugin plugin, JobService jobService, Registry<PayableType> payableTypeRegistry) {
-    ExperienceBarColorProvider fallback = new DefaultExperienceBarColorProvider();
-    ExperienceBarColorPreference colorPreference = new ExperienceBarColorPreference();
-    ExperienceBarColorProvider colorProvider =
-        new PreferenceExperienceBarColorProvider(colorPreference, fallback);
-
-    if (Mint.PREFERENCE_SERVICE.isLoaded()) {
-      PreferenceService service = Mint.PREFERENCE_SERVICE.get();
-      service.registerType(new EnumPreferenceType<>(Color.class));
-      service.register(colorPreference);
-    }
-
+    ExperienceBarColorProvider colorProvider = new DefaultExperienceBarColorProvider();
     ExperienceBarController controller = new ExperienceBarControllerImpl(plugin);
     ExperienceBarFormatter formatter = new ExperienceBarFormatterImpl(colorProvider);
     PayableHandler experienceHandler =
         new BufferedExperienceHandlerImpl(controller, formatter, jobService);
 
-    EconomyProvider economyProvider = createEconomyProvider();
-    PayableHandler economyHandler = context -> {
-      if (economyProvider == null) {
-        LOGGER.warning("Cannot pay economy - no provider available");
-        return;
-      }
-      economyProvider.deposit(context.player(), context.payable().amount());
-    };
+    EconomyProvider economyProvider = EconomyProviderFactory.createOrFail(plugin);
+    PayableHandler economyHandler = economyHandlerFor(economyProvider);
 
     payableTypeRegistry.register(economyType(economyHandler));
     payableTypeRegistry.register(experienceType(experienceHandler));
@@ -75,14 +54,20 @@ public final class PayableWiring {
     return new PayableWiring(economyProvider);
   }
 
-  @Nullable
-  private static EconomyProvider createEconomyProvider() {
-    org.bukkit.plugin.Plugin mint = Bukkit.getPluginManager().getPlugin("Mint");
-    if (mint != null && mint.isEnabled() && Mint.ECONOMY_SERVICE.isLoaded()) {
-      return new MintEconomyProviderImpl(Mint.ECONOMY_SERVICE);
-    }
-    LOGGER.warning("No economy provider available - Mint not found or not enabled");
-    return null;
+  /**
+   * Economy deposit handler. Never silently no-ops: missing provider throws so misconfiguration is
+   * loud at pay time (enable-time hard-fail is handled by {@link EconomyProviderFactory}).
+   */
+  static PayableHandler economyHandlerFor(@Nullable EconomyProvider economyProvider) {
+    return context -> {
+      if (economyProvider == null) {
+        throw new IllegalStateException(
+            "Cannot deposit economy payable: no EconomyProvider (Vault). "
+                + "Install Vault + an economy plugin or set economy.required: false only for "
+                + "experience-only configs that never pay modularjobs:economy");
+      }
+      economyProvider.deposit(context.player(), context.payable().amount());
+    };
   }
 
   private static PayableType economyType(PayableHandler handler) {
