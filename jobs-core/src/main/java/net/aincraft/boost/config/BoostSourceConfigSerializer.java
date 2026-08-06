@@ -1,0 +1,304 @@
+package net.aincraft.boost.config;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import net.aincraft.boost.AdditiveBoostImpl;
+import net.aincraft.boost.MultiplicativeBoostImpl;
+import net.aincraft.boost.RuledBoostSourceImpl;
+import net.aincraft.boost.conditions.AlwaysTrueConditionImpl;
+import net.aincraft.boost.conditions.BiomeConditionImpl;
+import net.aincraft.boost.conditions.ComposableConditionImpl;
+import net.aincraft.boost.conditions.JobConditionImpl;
+import net.aincraft.boost.conditions.LiquidConditionImpl;
+import net.aincraft.boost.conditions.NegatingConditionImpl;
+import net.aincraft.boost.conditions.PlayerResourceConditionImpl;
+import net.aincraft.boost.conditions.PotionConditionImpl;
+import net.aincraft.boost.conditions.PotionTypeConditionImpl;
+import net.aincraft.boost.conditions.SneakConditionImpl;
+import net.aincraft.boost.conditions.SprintConditionImpl;
+import net.aincraft.boost.conditions.WeatherConditionImpl;
+import net.aincraft.boost.conditions.WorldConditionImpl;
+import net.aincraft.boost.config.BoostSourceConfig.BoostConfig;
+import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
+import net.aincraft.boost.config.BoostSourceConfig.RuleConfig;
+import net.aincraft.container.Boost;
+import net.aincraft.container.BoostSource;
+import net.aincraft.container.boost.Condition;
+import net.aincraft.container.boost.LogicalOperator;
+import net.aincraft.container.boost.PlayerResourceType;
+import net.aincraft.container.boost.RelationalOperator;
+import net.aincraft.container.boost.RuledBoostSource;
+import net.aincraft.container.boost.RuledBoostSource.Rule;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * Serializes runtime {@link BoostSource}/{@link Condition} graphs back to
+ * {@link BoostSourceConfig} JSON models for editor export / round-trip.
+ */
+public final class BoostSourceConfigSerializer {
+
+  private BoostSourceConfigSerializer() {}
+
+  public static BoostSourceConfig serialize(@NotNull BoostSource source) {
+    String key = source.key() != null ? source.key().asString() : "modularjobs:unknown";
+    String description = source.description();
+    List<RuleConfig> rules = new ArrayList<>();
+
+    if (source instanceof RuledBoostSource ruled) {
+      for (Rule rule : ruled.rules()) {
+        rules.add(serializeRule(rule));
+      }
+    }
+
+    return new BoostSourceConfig(key, description, null, rules);
+  }
+
+  /**
+   * Serialize only the rules list (for upgrade effect export).
+   */
+  public static List<RuleConfig> serializeRules(@NotNull BoostSource source) {
+    if (source instanceof RuledBoostSource ruled) {
+      List<RuleConfig> rules = new ArrayList<>();
+      for (Rule rule : ruled.rules()) {
+        rules.add(serializeRule(rule));
+      }
+      return rules;
+    }
+    return List.of();
+  }
+
+  public static RuleConfig serializeRule(@NotNull Rule rule) {
+    return new RuleConfig(
+        rule.priority(),
+        serializeCondition(rule.condition()),
+        serializeBoost(rule.boost())
+    );
+  }
+
+  public static BoostConfig serializeBoost(@NotNull Boost boost) {
+    return switch (boost) {
+      case MultiplicativeBoostImpl mult ->
+          new BoostConfig("multiplicative", mult.amount().doubleValue());
+      case AdditiveBoostImpl add ->
+          new BoostConfig("additive", add.amount().doubleValue());
+      default -> throw new IllegalArgumentException(
+          "Cannot serialize boost type: " + boost.getClass().getName());
+    };
+  }
+
+  public static ConditionConfig serializeCondition(@NotNull Condition condition) {
+    return switch (condition) {
+      case AlwaysTrueConditionImpl ignored -> always();
+      case BiomeConditionImpl biome -> simple("biome", biome.biomeKey().asString());
+      case WorldConditionImpl world -> simple("world", preferredWorldName(world));
+      case SneakConditionImpl sneak -> simple("sneaking", sneak.state());
+      case SprintConditionImpl sprint -> simple("sprinting", sprint.state());
+      case WeatherConditionImpl weather ->
+          simple("weather", weather.state().name().toLowerCase(Locale.ROOT));
+      case LiquidConditionImpl liquid -> liquid(liquid);
+      case PlayerResourceConditionImpl resource -> playerResource(resource);
+      case PotionTypeConditionImpl potionType -> potionType(potionType);
+      case PotionConditionImpl potion -> potion(potion);
+      case JobConditionImpl job -> job(job);
+      case NegatingConditionImpl not -> not(not);
+      case ComposableConditionImpl composite -> composite(composite);
+      default -> {
+        // Always-true lambdas / unknown types fall back to "always"
+        if (isAlwaysTrue(condition)) {
+          yield always();
+        }
+        throw new IllegalArgumentException(
+            "Cannot serialize condition type: " + condition.getClass().getName());
+      }
+    };
+  }
+
+  private static String preferredWorldName(WorldConditionImpl world) {
+    // Prefer plain name when namespace is minecraft for cleaner YAML/JSON
+    if ("minecraft".equals(world.worldKey().namespace())) {
+      return world.worldKey().value();
+    }
+    return world.worldKey().asString();
+  }
+
+  private static ConditionConfig liquid(LiquidConditionImpl liquid) {
+    return new ConditionConfig(
+        "liquid",
+        null,
+        liquid.liquid().name(),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        true
+    );
+  }
+
+  private static ConditionConfig playerResource(PlayerResourceConditionImpl resource) {
+    return new ConditionConfig(
+        "player_resource",
+        operatorName(resource.operator()),
+        resource.expected(),
+        null,
+        null,
+        null,
+        resourceTypeName(resource.type()),
+        null,
+        null,
+        null,
+        null,
+        null
+    );
+  }
+
+  private static ConditionConfig potionType(PotionTypeConditionImpl potionType) {
+    return new ConditionConfig(
+        "potion_effect",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        potionType.effectKey().asString().startsWith("minecraft:")
+            ? potionType.effectKey().value()
+            : potionType.effectKey().asString(),
+        null,
+        null,
+        null,
+        null
+    );
+  }
+
+  private static ConditionConfig potion(PotionConditionImpl potion) {
+    return new ConditionConfig(
+        "potion_effect",
+        operatorName(potion.relationalOperator()),
+        null,
+        null,
+        null,
+        null,
+        null,
+        potion.effectKey().asString().startsWith("minecraft:")
+            ? potion.effectKey().value()
+            : potion.effectKey().asString(),
+        potion.expected(),
+        null,
+        null,
+        null
+    );
+  }
+
+  private static ConditionConfig job(JobConditionImpl job) {
+    List<String> keys = new ArrayList<>(job.jobKeys());
+    if (keys.size() == 1) {
+      return simple("job", stripJobNamespace(keys.getFirst()));
+    }
+    List<Object> values = keys.stream()
+        .map(BoostSourceConfigSerializer::stripJobNamespace)
+        .map(s -> (Object) s)
+        .toList();
+    return new ConditionConfig(
+        "job", null, null, values, null, null, null, null, null, null, null, null
+    );
+  }
+
+  private static ConditionConfig not(NegatingConditionImpl not) {
+    return new ConditionConfig(
+        "not",
+        null,
+        null,
+        null,
+        null,
+        serializeCondition(not.condition()),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+    );
+  }
+
+  private static ConditionConfig composite(ComposableConditionImpl composite) {
+    String type = composite.logicalOperator() == LogicalOperator.AND ? "and" : "or";
+    List<ConditionConfig> children = flattenComposite(composite, composite.logicalOperator());
+    return new ConditionConfig(
+        type, null, null, null, children, null, null, null, null, null, null, null
+    );
+  }
+
+  /**
+   * Flatten chained binary composites of the same operator into a multi-condition list.
+   */
+  private static List<ConditionConfig> flattenComposite(
+      ComposableConditionImpl composite,
+      LogicalOperator operator) {
+    List<ConditionConfig> result = new ArrayList<>();
+    collectComposite(composite.a(), operator, result);
+    collectComposite(composite.b(), operator, result);
+    return result;
+  }
+
+  private static void collectComposite(
+      Condition condition,
+      LogicalOperator operator,
+      List<ConditionConfig> out) {
+    if (condition instanceof ComposableConditionImpl nested
+        && nested.logicalOperator() == operator) {
+      collectComposite(nested.a(), operator, out);
+      collectComposite(nested.b(), operator, out);
+    } else {
+      out.add(serializeCondition(condition));
+    }
+  }
+
+  private static ConditionConfig always() {
+    return new ConditionConfig(
+        "always", null, null, null, null, null, null, null, null, null, null, null
+    );
+  }
+
+  private static ConditionConfig simple(String type, @Nullable Object value) {
+    return new ConditionConfig(
+        type, null, value, null, null, null, null, null, null, null, null, null
+    );
+  }
+
+  private static String operatorName(RelationalOperator operator) {
+    return switch (operator) {
+      case LESS_THAN -> "less_than";
+      case LESS_THAN_OR_EQUAL -> "less_than_or_equal";
+      case GREATER_THAN -> "greater_than";
+      case GREATER_THAN_OR_EQUAL -> "greater_than_or_equal";
+      case EQUAL -> "equal";
+      case NOT_EQUAL -> "not_equal";
+    };
+  }
+
+  private static String resourceTypeName(PlayerResourceType type) {
+    return switch (type) {
+      case HEALTH -> "health";
+      case HUNGER -> "hunger";
+      case EXPERIENCE -> "experience";
+    };
+  }
+
+  private static String stripJobNamespace(String jobKey) {
+    if (jobKey.startsWith("modularjobs:")) {
+      return jobKey.substring("modularjobs:".length());
+    }
+    return jobKey;
+  }
+
+  private static boolean isAlwaysTrue(Condition condition) {
+    // Legacy AlwaysTrueCondition from ConditionConfigParser (pre-extract)
+    return condition.getClass().getSimpleName().equals("AlwaysTrueCondition");
+  }
+}
