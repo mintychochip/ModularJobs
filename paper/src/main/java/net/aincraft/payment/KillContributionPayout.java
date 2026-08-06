@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import net.aincraft.container.ActionTypes;
-import net.aincraft.container.Context.EntityContext;
+import net.aincraft.paper.BukkitContexts;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -45,7 +45,7 @@ public final class KillContributionPayout {
       @NotNull JobsPaymentHandler paymentHandler,
       @NotNull LivingEntity victim) {
     for (Player payee : selectPayees(damageContribution, cutoff, eligibility)) {
-      paymentHandler.pay(payee, ActionTypes.KILL, new EntityContext(victim));
+      paymentHandler.pay(payee, ActionTypes.KILL, BukkitContexts.entity(victim));
     }
   }
 }

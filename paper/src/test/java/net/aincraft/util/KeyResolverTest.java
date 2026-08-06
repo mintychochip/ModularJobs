@@ -4,16 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import net.aincraft.container.Context.MaterialContext;
-import net.aincraft.test.MockBukkitSupport;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Material;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
  * Drives shipped {@link KeyResolver} strategy registration and resolve dispatch.
- * Material keys require MockBukkit server lifecycle on Paper 26.2.
+ * Pure Context material keys need no MockBukkit lifecycle.
  */
 class KeyResolverTest {
 
@@ -21,31 +18,24 @@ class KeyResolverTest {
 
   @BeforeEach
   void setUp() {
-    MockBukkitSupport.mockServer();
     resolver = new KeyResolver();
-  }
-
-  @AfterEach
-  void tearDown() {
-    MockBukkitSupport.unmockServer();
   }
 
   @Test
   void resolveWithoutStrategyReturnsNull() {
-    MaterialContext ctx = new MaterialContext(Material.STONE);
+    MaterialContext ctx = new MaterialContext("minecraft:stone");
     assertNull(resolver.resolve(ctx));
   }
 
   @Test
   void resolveUsesRegisteredStrategy() {
-    resolver.addStrategy(MaterialContext.class, context -> context.material().getKey());
+    resolver.addStrategy(MaterialContext.class, context -> Key.key(context.materialKey()));
 
-    Key stone = resolver.resolve(new MaterialContext(Material.STONE));
-    Key dirt = resolver.resolve(new MaterialContext(Material.DIRT));
+    Key stone = resolver.resolve(new MaterialContext("minecraft:stone"));
+    Key dirt = resolver.resolve(new MaterialContext("minecraft:dirt"));
 
-    assertEquals(Material.STONE.getKey(), stone);
-    assertEquals(Material.DIRT.getKey(), dirt);
     assertEquals(Key.key("minecraft", "stone"), stone);
+    assertEquals(Key.key("minecraft", "dirt"), dirt);
   }
 
   @Test
@@ -53,7 +43,7 @@ class KeyResolverTest {
     resolver.addStrategy(MaterialContext.class, context -> Key.key("test", "first"));
     resolver.addStrategy(MaterialContext.class, context -> Key.key("test", "second"));
 
-    Key result = resolver.resolve(new MaterialContext(Material.STONE));
+    Key result = resolver.resolve(new MaterialContext("minecraft:stone"));
     assertEquals(Key.key("test", "second"), result);
   }
 }

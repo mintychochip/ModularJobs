@@ -25,7 +25,6 @@ import net.aincraft.service.JobService;
 import net.aincraft.test.MockBukkitSupport;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -116,7 +115,7 @@ class JobsPaymentHandlerReloadTest {
     // Offline player → BoostEngine.evaluate returns empty without needing services
     JobsPaymentHandler handler =
         new JobsPaymentHandler(plugin, new BoostEngine(null, null, null), service);
-    handler.pay(player, blockBreak, new MaterialContext(Material.STONE));
+    handler.pay(player, blockBreak, new MaterialContext("minecraft:stone"));
 
     assertEquals(2, getProgressionCalls.get(), "one reload per payable");
     assertEquals(2, xpSnapshotsAtPay.size());
