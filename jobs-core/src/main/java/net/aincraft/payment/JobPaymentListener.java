@@ -397,16 +397,12 @@ final class JobPaymentListener implements Listener {
     }
     if (mobDamageTracker.isTracking(victim)) {
       DamageContribution damageContribution = mobDamageTracker.endTracking(victim);
-      Collection<Entity> contributors = damageContribution.getContributors();
-      for (Entity contributor : contributors) {
-        if (contributor instanceof Player) {
-          double normalized = damageContribution.getContribution(contributor, true);
-          //TODO: configure cutoff
-          if (normalized > 0.5) {
-            paymentHandler.pay(player, ActionTypes.KILL, new EntityContext(victim));
-          }
-        }
-      }
+      KillContributionPayout.payContributors(
+          damageContribution,
+          eligibility.settings().killContributionCutoff(),
+          eligibility,
+          paymentHandler,
+          victim);
       return;
     }
     paymentHandler.pay(player, ActionTypes.KILL, new EntityContext(victim));
