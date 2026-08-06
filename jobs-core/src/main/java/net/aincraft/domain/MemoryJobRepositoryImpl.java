@@ -6,12 +6,11 @@ import java.util.List;
 import java.util.Map;
 import net.aincraft.config.YamlConfiguration;
 import net.aincraft.domain.model.JobRecord;
-import net.aincraft.domain.repository.JobRepository;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-final class MemoryJobRepositoryImpl implements JobRepository {
+public final class MemoryJobRepositoryImpl {
 
   private final Map<String, JobRecord> records;
 
@@ -19,12 +18,10 @@ final class MemoryJobRepositoryImpl implements JobRepository {
     this.records = records;
   }
 
-  @Override
   public @NotNull List<JobRecord> getJobs() {
     return records.values().stream().toList();
   }
 
-  @Override
   public @Nullable JobRecord load(String jobKey) {
     return records.get(jobKey);
   }

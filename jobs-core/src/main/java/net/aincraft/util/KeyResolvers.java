@@ -21,7 +21,7 @@ public final class KeyResolvers {
   private KeyResolvers() {}
 
   public static KeyResolver create() {
-    KeyResolverImpl resolver = new KeyResolverImpl();
+    KeyResolver resolver = new KeyResolver();
     resolver.addStrategy(BlockContext.class, context -> context.block().getType().getKey());
     resolver.addStrategy(MaterialContext.class, context -> context.material().getKey());
     resolver.addStrategy(DyeContext.class,

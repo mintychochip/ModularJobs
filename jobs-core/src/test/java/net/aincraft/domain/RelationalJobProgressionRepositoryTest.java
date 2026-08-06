@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.repository.JobProgressionRepository;
-import net.aincraft.domain.repository.JobRepository;
 import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.DatabaseType;
 import net.aincraft.repository.NonClosableConnection;
@@ -70,7 +69,7 @@ class RelationalJobProgressionRepositoryTest {
     jobs.put(fisher.jobKey(), fisher);
 
     repository = RelationalJobProgressionRepositoryImpl.create(
-        new MapJobRepository(jobs),
+        new MemoryJobRepositoryImpl(jobs),
         new FixedConnectionSource(connection),
         TABLE
     );
@@ -148,24 +147,6 @@ class RelationalJobProgressionRepositoryTest {
     assertFalse(repository.delete("player-1", "modularjobs:miner"));
   }
 
-  private static final class MapJobRepository implements JobRepository {
-
-    private final Map<String, JobRecord> jobs;
-
-    MapJobRepository(Map<String, JobRecord> jobs) {
-      this.jobs = jobs;
-    }
-
-    @Override
-    public @NotNull List<JobRecord> getJobs() {
-      return List.copyOf(jobs.values());
-    }
-
-    @Override
-    public @Nullable JobRecord load(String jobKey) {
-      return jobs.get(jobKey);
-    }
-  }
 
   /** Reuses a single open JDBC connection (in-memory SQLite). */
   private static final class FixedConnectionSource implements ConnectionSource {

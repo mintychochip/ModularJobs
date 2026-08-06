@@ -4,7 +4,7 @@ import io.papermc.paper.persistence.PersistentDataContainerView;
 import java.util.Optional;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.ItemBoostDataService;
-import net.aincraft.serialization.CodecRegistry;
+import net.aincraft.serialization.KryoCodecRegistry;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -14,9 +14,9 @@ public final class ItemBoostDataServiceImpl implements ItemBoostDataService {
   private static final NamespacedKey ITEM_BOOST_DATA_KEY = NamespacedKey.fromString(
       "modular_jobs:item_boost_data");
 
-  private final CodecRegistry codecRegistry;
+  private final KryoCodecRegistry codecRegistry;
 
-  public ItemBoostDataServiceImpl(CodecRegistry codecRegistry) {
+  public ItemBoostDataServiceImpl(KryoCodecRegistry codecRegistry) {
     this.codecRegistry = codecRegistry;
   }
 

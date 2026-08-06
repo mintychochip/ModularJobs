@@ -49,13 +49,13 @@ public final class PaymentWiring {
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService,
       BlockOwnershipService blockOwnershipService) {
-    BoostEngine boostEngine = new BoostEngineImpl(
+    BoostEngine boostEngine = new BoostEngine(
         itemBoostDataService, timedBoostDataService, upgradeBoostDataService);
-    PlayerChunkExplorationService chunkExploration = new PlayerChunkExplorationServiceImpl();
-    MobDamageTrackerStore damageStore = new MobDamageTrackerStoreImpl();
-    EntityValidationService entityValidation = new EntityValidationServiceImpl(plugin);
-    MobDamageTracker mobDamageTracker = new MobDamageTrackerImpl(damageStore);
-    JobsPaymentHandler paymentHandler = new JobsPaymentHandlerImpl(plugin, boostEngine, jobService);
+    PlayerChunkExplorationService chunkExploration = new PlayerChunkExplorationService();
+    MobDamageTrackerStore damageStore = new MobDamageTrackerStore();
+    EntityValidationService entityValidation = new EntityValidationService(plugin);
+    MobDamageTracker mobDamageTracker = new MobDamageTracker(damageStore);
+    JobsPaymentHandler paymentHandler = new JobsPaymentHandler(plugin, boostEngine, jobService);
     ExploitService exploitService = createExploitService();
 
     List<Listener> listeners = List.of(
@@ -114,6 +114,6 @@ public final class PaymentWiring {
             CacheLoader.from(
                 block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
                     block.getZ()))));
-    return new ExploitServiceImpl(providers);
+    return new ExploitService(providers);
   }
 }
