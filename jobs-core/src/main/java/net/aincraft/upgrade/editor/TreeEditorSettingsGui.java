@@ -1,6 +1,6 @@
 package net.aincraft.upgrade.editor;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -296,7 +296,7 @@ public final class TreeEditorSettingsGui {
     switch (action) {
       case "back" -> {
         if (mainEditor == null) {
-          Mint.sendThemedMessage(player, "<error>Error: Main editor not available!");
+          Messages.send(player, "<error>Error: Main editor not available!");
           player.closeInventory();
           return;
         }
@@ -307,7 +307,7 @@ public final class TreeEditorSettingsGui {
       }
 
       case "add_archetype" -> {
-        Mint.sendThemedMessage(player, "<accent>Type archetype data as 'ID Name Color' (e.g., 'xp XP Focus green'):");
+        Messages.send(player, "<accent>Type archetype data as 'ID Name Color' (e.g., 'xp XP Focus green'):");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           String[] parts = input.split("\\s+", 3);
@@ -317,9 +317,9 @@ public final class TreeEditorSettingsGui {
             String name = parts[1];
             String color = parts.length >= 3 ? parts[2] : "white";
             tree.archetypes().add(new EditorTree.EditorArchetype(id, name, color));
-            Mint.sendThemedMessage(player, "<success>Added archetype: <secondary>" + name);
+            Messages.send(player, "<success>Added archetype: <secondary>" + name);
           } else {
-            Mint.sendThemedMessage(player, "<error>Invalid format. Use: ID Name Color");
+            Messages.send(player, "<error>Invalid format. Use: ID Name Color");
           }
           chatInputHandlers.remove(player.getUniqueId());
           Bukkit.getScheduler().runTask(plugin, () -> open(player, session));
@@ -327,8 +327,8 @@ public final class TreeEditorSettingsGui {
       }
 
       case "add_policy" -> {
-        Mint.sendThemedMessage(player, "<accent>Type perk policy as 'PERK_ID TYPE' (e.g., 'mining_speed MAX'):");
-        Mint.sendThemedMessage(player, "<neutral>Types: MAX, ADDITIVE");
+        Messages.send(player, "<accent>Type perk policy as 'PERK_ID TYPE' (e.g., 'mining_speed MAX'):");
+        Messages.send(player, "<neutral>Types: MAX, ADDITIVE");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           String[] parts = input.split("\\s+", 2);
@@ -338,12 +338,12 @@ public final class TreeEditorSettingsGui {
             if (type.equals("MAX") || type.equals("ADDITIVE")) {
               session.saveSnapshot();
               tree.perkPolicies().put(perkId, type);
-              Mint.sendThemedMessage(player, "<success>Added policy: <secondary>" + perkId + " -> " + type);
+              Messages.send(player, "<success>Added policy: <secondary>" + perkId + " -> " + type);
             } else {
-              Mint.sendThemedMessage(player, "<error>Invalid type. Use MAX or ADDITIVE");
+              Messages.send(player, "<error>Invalid type. Use MAX or ADDITIVE");
             }
           } else {
-            Mint.sendThemedMessage(player, "<error>Invalid format. Use: PERK_ID TYPE");
+            Messages.send(player, "<error>Invalid format. Use: PERK_ID TYPE");
           }
           chatInputHandlers.remove(player.getUniqueId());
           Bukkit.getScheduler().runTask(plugin, () -> open(player, session));
@@ -366,13 +366,13 @@ public final class TreeEditorSettingsGui {
 
     switch (action) {
       case "display_name" -> {
-        Mint.sendThemedMessage(player, "<accent>Type the new display name in chat (or 'cancel' to abort):");
+        Messages.send(player, "<accent>Type the new display name in chat (or 'cancel' to abort):");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           if (!"cancel".equalsIgnoreCase(input)) {
             session.saveSnapshot();
             tree.setDisplayName(input);
-            Mint.sendThemedMessage(player, "<success>Display name set to: <secondary>" + input);
+            Messages.send(player, "<success>Display name set to: <secondary>" + input);
           }
           chatInputHandlers.remove(player.getUniqueId());
           Bukkit.getScheduler().runTask(plugin, () -> open(player, session));
@@ -390,17 +390,17 @@ public final class TreeEditorSettingsGui {
       }
 
       case "root_node" -> {
-        Mint.sendThemedMessage(player, "<info>Current root: <secondary>" + tree.rootNodeId());
-        Mint.sendThemedMessage(player, "<neutral>Type new root node ID (or 'cancel' to abort):");
+        Messages.send(player, "<info>Current root: <secondary>" + tree.rootNodeId());
+        Messages.send(player, "<neutral>Type new root node ID (or 'cancel' to abort):");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           if (!"cancel".equalsIgnoreCase(input)) {
             if (tree.getNode(input).isPresent()) {
               session.saveSnapshot();
               tree.setRootNodeId(input);
-              Mint.sendThemedMessage(player, "<success>Root node set to: <secondary>" + input);
+              Messages.send(player, "<success>Root node set to: <secondary>" + input);
             } else {
-              Mint.sendThemedMessage(player, "<error>Node not found: " + input);
+              Messages.send(player, "<error>Node not found: " + input);
             }
           }
           chatInputHandlers.remove(player.getUniqueId());
@@ -422,7 +422,7 @@ public final class TreeEditorSettingsGui {
       // Remove archetype
       session.saveSnapshot();
       EditorTree.EditorArchetype removed = tree.archetypes().remove(index);
-      Mint.sendThemedMessage(player, "<accent>Removed archetype: <secondary>" + removed.name());
+      Messages.send(player, "<accent>Removed archetype: <secondary>" + removed.name());
       refreshGui(player, session);
       player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
     } else {
@@ -440,7 +440,7 @@ public final class TreeEditorSettingsGui {
       session.saveSnapshot();
       tree.archetypes().set(index, new EditorTree.EditorArchetype(arch.id(), arch.name(), newColor));
       refreshGui(player, session);
-      Mint.sendThemedMessage(player, "<success>Color changed to: <secondary>" + newColor);
+      Messages.send(player, "<success>Color changed to: <secondary>" + newColor);
       player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
     }
 
@@ -455,7 +455,7 @@ public final class TreeEditorSettingsGui {
       // Remove policy
       session.saveSnapshot();
       tree.perkPolicies().remove(perkId);
-      Mint.sendThemedMessage(player, "<accent>Removed policy: <secondary>" + perkId);
+      Messages.send(player, "<accent>Removed policy: <secondary>" + perkId);
       refreshGui(player, session);
       player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
     } else {
@@ -465,7 +465,7 @@ public final class TreeEditorSettingsGui {
       session.saveSnapshot();
       tree.perkPolicies().put(perkId, newType);
       refreshGui(player, session);
-      Mint.sendThemedMessage(player, "<success>Policy type changed to: <secondary>" + newType);
+      Messages.send(player, "<success>Policy type changed to: <secondary>" + newType);
       player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
     }
 

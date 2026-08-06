@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Job;
@@ -35,7 +35,7 @@ public final class JoinCommand implements JobsCommand {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
           if (!(sender instanceof Player player)) {
-            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+            Messages.send(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -48,17 +48,17 @@ public final class JoinCommand implements JobsCommand {
             // Try fuzzy matching for suggestions
             List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-            Mint.sendThemedMessage(player, "<error>Job not found: " + input);
+            Messages.send(player, "<error>Job not found: " + input);
             if (!suggestions.isEmpty()) {
-              Mint.sendThemedMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
+              Messages.send(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
             }
             return 0;
           }
 
           if (jobService.joinJob(player.getUniqueId().toString(), job.key().toString())) {
-            Mint.sendThemedMessage(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
+            Messages.send(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
           } else {
-            Mint.sendThemedMessage(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
+            Messages.send(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
           }
 
           return Command.SINGLE_SUCCESS;

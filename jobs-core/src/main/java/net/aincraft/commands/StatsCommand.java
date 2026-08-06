@@ -17,7 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 
 public class StatsCommand implements JobsCommand {
 
@@ -44,7 +44,7 @@ public class StatsCommand implements JobsCommand {
                   OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
 
                   if (target == null) {
-                    Mint.sendThemedMessage(sender, "<error>Player not found: " + playerName);
+                    Messages.send(sender, "<error>Player not found: " + playerName);
                     return 0;
                   }
 
@@ -58,7 +58,7 @@ public class StatsCommand implements JobsCommand {
               CommandSender sender = source.getSender();
 
               if (!(sender instanceof Player player)) {
-                Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+                Messages.send(sender, "<error>This command can only be used by players.");
                 return 0;
               }
 
@@ -76,7 +76,7 @@ public class StatsCommand implements JobsCommand {
               OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
 
               if (target == null) {
-                Mint.sendThemedMessage(sender, "<error>Player not found: " + playerName);
+                Messages.send(sender, "<error>Player not found: " + playerName);
                 return 0;
               }
 
@@ -90,7 +90,7 @@ public class StatsCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+            Messages.send(sender, "<error>This command can only be used by players.");
             return 0;
           }
 
@@ -130,17 +130,17 @@ public class StatsCommand implements JobsCommand {
         ? "<primary>Job Statistics"
         : "<primary>" + targetName + "'s Job Statistics";
 
-    Mint.sendThemedMessage(viewer, "");
-    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral> ━━━━━━━━━");
-    Mint.sendThemedMessage(viewer, "");
+    Messages.send(viewer, "");
+    Messages.send(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral> ━━━━━━━━━");
+    Messages.send(viewer, "");
 
     if (progressions.isEmpty()) {
       String message = viewer.equals(target)
           ? "<neutral>  You are not in any jobs."
           : "<neutral>  " + targetName + " is not in any jobs.";
-      Mint.sendThemedMessage(viewer, message);
-      Mint.sendThemedMessage(viewer, "<neutral>  Use <secondary>/jobs join<neutral> to join a job.");
-      Mint.sendThemedMessage(viewer, "");
+      Messages.send(viewer, message);
+      Messages.send(viewer, "<neutral>  Use <secondary>/jobs join<neutral> to join a job.");
+      Messages.send(viewer, "");
     } else {
       PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
@@ -149,9 +149,9 @@ public class StatsCommand implements JobsCommand {
       }
     }
 
-    Mint.sendThemedMessage(viewer, "");
-    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    Mint.sendThemedMessage(viewer, "");
+    Messages.send(viewer, "");
+    Messages.send(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Messages.send(viewer, "");
   }
 
   private void displayJobStats(CommandSender viewer, JobProgression progression,
@@ -184,13 +184,13 @@ public class StatsCommand implements JobsCommand {
 
     // Build main display: bar + Lvl. [level] + [name]
     String bar = createProgressBar(percentage);
-    Component barComponent = Mint.createThemedComponent(viewer, bar);
+    Component barComponent = Messages.component(bar);
     Component jobName = progression.job().displayName();
     Component mainDisplay = Component.text("  ")
         .append(barComponent)
         .append(Component.space())
-        .append(Mint.createThemedComponent(viewer, "<neutral>Lvl. "))
-        .append(Mint.createThemedComponent(viewer, "<secondary>" + currentLevel))
+        .append(Messages.component("<neutral>Lvl. "))
+        .append(Messages.component("<secondary>" + currentLevel))
         .append(Component.space())
         .append(jobName)
         .hoverEvent(HoverEvent.showText(hoverText));
@@ -206,8 +206,7 @@ public class StatsCommand implements JobsCommand {
     String totalXpStr = formatFullNumber(currentXp);
     String progressColor = getProgressColorTag(percentage);
 
-    return Mint.createThemedComponent(viewer,
-        "<neutral>Level: <primary>" + currentLevel + " / " + maxLevel +
+    return Messages.component("<neutral>Level: <primary>" + currentLevel + " / " + maxLevel +
         "\n<neutral>Progress: <" + progressColor + ">" + percentageStr +
         "\n<neutral>XP in level: <secondary>" + xpCurrentStr + " / " + xpTotalStr +
         "\n<neutral>Total XP: <accent>" + totalXpStr);

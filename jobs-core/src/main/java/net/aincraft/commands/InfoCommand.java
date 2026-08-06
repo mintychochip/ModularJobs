@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import net.aincraft.Job;
 import net.aincraft.JobTask;
 import net.aincraft.container.ActionType;
@@ -130,13 +130,13 @@ public class InfoCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      Mint.sendThemedMessage(sender, "<error>The job you specified does not exist.");
+      Messages.send(sender, "<error>The job you specified does not exist.");
       return 0;
     }
 
@@ -154,13 +154,13 @@ public class InfoCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      Mint.sendThemedMessage(sender, "<error>The job you specified does not exist.");
+      Messages.send(sender, "<error>The job you specified does not exist.");
       return 0;
     }
 
@@ -174,7 +174,7 @@ public class InfoCommand implements JobsCommand {
     int totalPages = calculateTotalPages(tasks, entriesPerPage);
 
     if (page < 1 || page > totalPages) {
-      Mint.sendThemedMessage(player, "<error>Invalid page. Valid: 1-" + totalPages);
+      Messages.send(player, "<error>Invalid page. Valid: 1-" + totalPages);
       return 0;
     }
 
@@ -186,13 +186,13 @@ public class InfoCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      Mint.sendThemedMessage(sender, "<error>The job you specified does not exist.");
+      Messages.send(sender, "<error>The job you specified does not exist.");
       return 0;
     }
 
@@ -206,7 +206,7 @@ public class InfoCommand implements JobsCommand {
     int totalPages = calculateTotalPages(tasks, entriesPerPage);
 
     if (page < 1 || page > totalPages) {
-      Mint.sendThemedMessage(player, "<error>Invalid page. Valid: 1-" + totalPages);
+      Messages.send(player, "<error>Invalid page. Valid: 1-" + totalPages);
       return 0;
     }
 
@@ -220,12 +220,12 @@ public class InfoCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     preferencesService.setEntriesPerPage(player, count);
-    Mint.sendThemedMessage(player, "<primary>Entries per page set to <secondary>" + count + "</secondary>.");
+    Messages.send(player, "<primary>Entries per page set to <secondary>" + count + "</secondary>.");
     return Command.SINGLE_SUCCESS;
   }
 
@@ -233,15 +233,15 @@ public class InfoCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     preferencesService.setGuiMode(player, guiMode);
     if (guiMode) {
-      Mint.sendThemedMessage(player, "<primary>Default view mode set to <secondary>GUI</secondary>.");
+      Messages.send(player, "<primary>Default view mode set to <secondary>GUI</secondary>.");
     } else {
-      Mint.sendThemedMessage(player, "<primary>Default view mode set to <secondary>Chat</secondary>.");
+      Messages.send(player, "<primary>Default view mode set to <secondary>Chat</secondary>.");
     }
     return Command.SINGLE_SUCCESS;
   }
@@ -260,16 +260,16 @@ public class InfoCommand implements JobsCommand {
 
     // Header
     String jobDisplayName = serializePlain(job.displayName());
-    Mint.sendThemedMessage(player, "");
-    Mint.sendThemedMessage(player,
+    Messages.send(player, "");
+    Messages.send(player,
         "<neutral>━━━━━━━━━ <primary>Job Info: " + jobDisplayName + " <neutral>━━━━━━━━━");
-    Mint.sendThemedMessage(player, "");
+    Messages.send(player, "");
 
     // Job description
     Component desc = job.description();
     player.sendMessage(Component.text("  ").append(desc.color(TextColor.color(0xAEB4BF))));
-    Mint.sendThemedMessage(player, "<neutral>  Max Level: <secondary>" + job.maxLevel());
-    Mint.sendThemedMessage(player, "");
+    Messages.send(player, "<neutral>  Max Level: <secondary>" + job.maxLevel());
+    Messages.send(player, "");
 
     // Paginate action types
     List<Map.Entry<ActionType, List<JobTask>>> entries = new ArrayList<>(tasks.entrySet());
@@ -283,20 +283,20 @@ public class InfoCommand implements JobsCommand {
       }
     }
 
-    Mint.sendThemedMessage(player, "");
+    Messages.send(player, "");
 
     // Pagination controls with clickable components
     Component pagination = buildPaginationControls(jobName, page, totalPages);
     player.sendMessage(pagination);
 
-    Mint.sendThemedMessage(player, "");
-    Mint.sendThemedMessage(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    Mint.sendThemedMessage(player, "");
+    Messages.send(player, "");
+    Messages.send(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Messages.send(player, "");
   }
 
   private void displayActionTypeSectionChat(Player player, ActionType type, List<JobTask> tasks) {
     // Section header
-    Mint.sendThemedMessage(player, "<neutral>  ━━ <accent>" + 
+    Messages.send(player, "<neutral>  ━━ <accent>" + 
         formatActionTypeName(type.name()) + "<neutral> ━━");
 
     // Show all tasks for this action type

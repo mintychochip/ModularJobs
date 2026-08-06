@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.math.BigDecimal;
@@ -39,7 +39,7 @@ public class ArchiveCommand implements JobsCommand {
               OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
 
               if (target == null) {
-                Mint.sendThemedMessage(sender, "<error>Player not found: " + playerName);
+                Messages.send(sender, "<error>Player not found: " + playerName);
                 return 0;
               }
 
@@ -53,7 +53,7 @@ public class ArchiveCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+            Messages.send(sender, "<error>This command can only be used by players.");
             return 0;
           }
 
@@ -71,10 +71,10 @@ public class ArchiveCommand implements JobsCommand {
         ? "<primary>Your Archived Jobs"
         : "<primary>" + targetName + "'s Archived Jobs";
 
-    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral>━━━━━━━━━");
+    Messages.send(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral>━━━━━━━━━");
 
     if (archivedProgressions.isEmpty()) {
-      Mint.sendThemedMessage(viewer, "<neutral>  No archived jobs found.");
+      Messages.send(viewer, "<neutral>  No archived jobs found.");
     } else {
       for (JobProgression progression : archivedProgressions) {
         displayJobEntry(viewer, progression);
@@ -82,15 +82,15 @@ public class ArchiveCommand implements JobsCommand {
     }
 
     // Footer
-    Mint.sendThemedMessage(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Messages.send(viewer, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   }
 
   private void displayJobEntry(CommandSender viewer, JobProgression progression) {
     int level = progression.level();
     BigDecimal experience = progression.experience();
 
-    Mint.sendThemedMessage(viewer, "  " + progression.job().getPlainName() + " <neutral>- Level <accent>" + level);
-    Mint.sendThemedMessage(viewer, "    <neutral>Total XP: <accent>" + formatNumber(experience));
+    Messages.send(viewer, "  " + progression.job().getPlainName() + " <neutral>- Level <accent>" + level);
+    Messages.send(viewer, "    <neutral>Total XP: <accent>" + formatNumber(experience));
   }
 
   private String formatNumber(BigDecimal number) {

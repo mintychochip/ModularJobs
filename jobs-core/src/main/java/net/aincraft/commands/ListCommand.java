@@ -2,7 +2,7 @@ package net.aincraft.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.List;
@@ -37,13 +37,13 @@ public class ListCommand implements JobsCommand {
   private void displayJobsList(CommandSender sender) {
     List<Job> jobs = jobService.getJobs();
 
-    Mint.sendThemedMessage(sender, "");
-    Mint.sendThemedMessage(sender, "<neutral>━━━━━━━━━ <primary>Available Jobs <neutral>━━━━━━━━━");
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "");
+    Messages.send(sender, "<neutral>━━━━━━━━━ <primary>Available Jobs <neutral>━━━━━━━━━");
+    Messages.send(sender, "");
 
     if (jobs.isEmpty()) {
-      Mint.sendThemedMessage(sender, "<neutral>  No jobs are currently available.");
-      Mint.sendThemedMessage(sender, "");
+      Messages.send(sender, "<neutral>  No jobs are currently available.");
+      Messages.send(sender, "");
     } else {
       PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
 
@@ -51,14 +51,14 @@ public class ListCommand implements JobsCommand {
         displayJobEntry(sender, job, serializer);
       }
 
-      Mint.sendThemedMessage(sender, "");
-      Mint.sendThemedMessage(sender, "<neutral>  Use <secondary>/jobs join <job><neutral> to join a job.");
-      Mint.sendThemedMessage(sender, "<neutral>  Use <secondary>/jobs info <job><neutral> for detailed information.");
+      Messages.send(sender, "");
+      Messages.send(sender, "<neutral>  Use <secondary>/jobs join <job><neutral> to join a job.");
+      Messages.send(sender, "<neutral>  Use <secondary>/jobs info <job><neutral> for detailed information.");
     }
 
-    Mint.sendThemedMessage(sender, "");
-    Mint.sendThemedMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "");
+    Messages.send(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Messages.send(sender, "");
   }
 
   private void displayJobEntry(CommandSender sender, Job job, PlainTextComponentSerializer serializer) {
@@ -68,17 +68,16 @@ public class ListCommand implements JobsCommand {
     String plainName = job.getPlainName();
 
     // Build hover text with detailed info
-    Component hoverText = Mint.createThemedComponent(sender,
-        "<primary>Job: <secondary>" + plainName +
+    Component hoverText = Messages.component("<primary>Job: <secondary>" + plainName +
         "\n<neutral>Max Level: <accent>" + maxLevel +
         "\n\n<neutral>Click to view details");
 
     // Build main display: ● JobName (Level X)
     Component mainDisplay = Component.text("  ")
-        .append(Mint.createThemedComponent(sender, "<accent>● "))
+        .append(Messages.component("<accent>● "))
         .append(jobName)
         .append(Component.space())
-        .append(Mint.createThemedComponent(sender, "<neutral>(Level " + maxLevel + ")"))
+        .append(Messages.component("<neutral>(Level " + maxLevel + ")"))
         .hoverEvent(HoverEvent.showText(hoverText))
         .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/jobs info " + plainName));
 
@@ -86,7 +85,7 @@ public class ListCommand implements JobsCommand {
 
     // Show description on separate line
     Component descLine = Component.text("    ")
-        .append(Mint.createThemedComponent(sender, "<neutral>▸ "))
+        .append(Messages.component("<neutral>▸ "))
         .append(description);
 
     sender.sendMessage(descLine);

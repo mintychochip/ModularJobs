@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -97,7 +97,7 @@ public final class ItemBoostCommand implements JobsCommand {
     try {
       material = Material.valueOf(materialName.toUpperCase());
     } catch (IllegalArgumentException e) {
-      Mint.sendThemedMessage(sender, "<error>Invalid material: " + materialName);
+      Messages.send(sender, "<error>Invalid material: " + materialName);
       return 0;
     }
 
@@ -105,7 +105,7 @@ public final class ItemBoostCommand implements JobsCommand {
     Key boostKey = Key.key(boostKeyStr);
     BoostSource boostSource = boostSourceRegistry.get(boostKey).orElse(null);
     if (boostSource == null) {
-      Mint.sendThemedMessage(sender, "<error>Boost source not found: " + boostKeyStr);
+      Messages.send(sender, "<error>Boost source not found: " + boostKeyStr);
       return 0;
     }
 
@@ -114,7 +114,7 @@ public final class ItemBoostCommand implements JobsCommand {
     try {
       slotSet = SlotSetParser.parse(slotSetSpec);
     } catch (IllegalArgumentException e) {
-      Mint.sendThemedMessage(sender, "<error>Invalid slot specification: " + e.getMessage());
+      Messages.send(sender, "<error>Invalid slot specification: " + e.getMessage());
       return 0;
     }
 
@@ -132,7 +132,7 @@ public final class ItemBoostCommand implements JobsCommand {
     // Give to player
     target.getInventory().addItem(item);
 
-    Mint.sendThemedMessage(sender, "<accent>Gave <secondary>" + target.getName() + "<accent> an item with boost <primary>" + boostKeyStr);
+    Messages.send(sender, "<accent>Gave <secondary>" + target.getName() + "<accent> an item with boost <primary>" + boostKeyStr);
 
     return Command.SINGLE_SUCCESS;
   }

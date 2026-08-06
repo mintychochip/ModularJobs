@@ -1,6 +1,6 @@
 package net.aincraft.commands;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.connection.PlayerGameConnection;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.event.player.PlayerCustomClickEvent;
@@ -91,7 +91,7 @@ public class DialogNavigationListener implements Listener {
 
     Job job = jobResolver.resolveInNamespace(jobName, NAMESPACE);
     if (job == null) {
-      Mint.sendThemedMessage(player, "<error>Job not found!");
+      Messages.send(player, "<error>Job not found!");
       return;
     }
 

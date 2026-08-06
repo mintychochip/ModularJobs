@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Job;
@@ -35,14 +35,14 @@ public class LeaveCommand implements JobsCommand {
               CommandSourceStack source = context.getSource();
               CommandSender sender = source.getSender();
               if (!(sender instanceof Player player)) {
-                Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+                Messages.send(sender, "<error>This command can only be used by players.");
                 return 0;
               }
 
               List<JobProgression> progressions = jobService.getProgressions(player);
 
               if (progressions.isEmpty()) {
-                Mint.sendThemedMessage(player, "<neutral>You are not in any jobs.");
+                Messages.send(player, "<neutral>You are not in any jobs.");
                 return 0;
               }
 
@@ -54,11 +54,11 @@ public class LeaveCommand implements JobsCommand {
               }
 
               if (leftCount == 0) {
-                Mint.sendThemedMessage(player, "<error>Failed to leave any jobs.");
+                Messages.send(player, "<error>Failed to leave any jobs.");
               } else if (leftCount == 1) {
-                Mint.sendThemedMessage(player, "<primary>✗ You left</primary> <secondary>1 job</secondary> <primary>!</primary>");
+                Messages.send(player, "<primary>✗ You left</primary> <secondary>1 job</secondary> <primary>!</primary>");
               } else {
-                Mint.sendThemedMessage(player, "<primary>✗ You left</primary> <secondary>" + leftCount + " jobs</secondary> <primary>!</primary>");
+                Messages.send(player, "<primary>✗ You left</primary> <secondary>" + leftCount + " jobs</secondary> <primary>!</primary>");
               }
 
               return Command.SINGLE_SUCCESS;
@@ -71,7 +71,7 @@ public class LeaveCommand implements JobsCommand {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
           if (!(sender instanceof Player player)) {
-            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+            Messages.send(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -84,17 +84,17 @@ public class LeaveCommand implements JobsCommand {
             // Try fuzzy matching for suggestions
             List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-            Mint.sendThemedMessage(player, "<error>Job not found:</error> <secondary>" + input + "</secondary>");
+            Messages.send(player, "<error>Job not found:</error> <secondary>" + input + "</secondary>");
             if (!suggestions.isEmpty()) {
-              Mint.sendThemedMessage(player, "<neutral>Did you mean:</neutral> <secondary>" + String.join(", ", suggestions) + "</secondary>");
+              Messages.send(player, "<neutral>Did you mean:</neutral> <secondary>" + String.join(", ", suggestions) + "</secondary>");
             }
             return 0;
           }
 
           if (jobService.leaveJob(player.getUniqueId().toString(), job.key().toString())) {
-            Mint.sendThemedMessage(player, "<primary>✗ You left</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
+            Messages.send(player, "<primary>✗ You left</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
           } else {
-            Mint.sendThemedMessage(player, "<neutral>You are not in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
+            Messages.send(player, "<neutral>You are not in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
           }
 
           return Command.SINGLE_SUCCESS;

@@ -1,6 +1,6 @@
 package net.aincraft.upgrade.editor;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -260,7 +260,7 @@ public final class TreeEditorGui {
                 // Remove path point from tree
                 session.saveSnapshot();
                 tree.paths().remove(pathPosition);
-                Mint.sendThemedMessage(player, "<accent>Removed path point at (" + pathPosition.x() + ", " + pathPosition.y() + ")");
+                Messages.send(player, "<accent>Removed path point at (" + pathPosition.x() + ", " + pathPosition.y() + ")");
                 refresh(player);
                 player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
               }
@@ -522,7 +522,7 @@ public final class TreeEditorGui {
       // Delete node
       event.setCancelled(true);
       if (node.id().equals(tree.rootNodeId())) {
-        Mint.sendThemedMessage(player, "<error>Cannot delete root node!");
+        Messages.send(player, "<error>Cannot delete root node!");
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
         return;
       }
@@ -532,7 +532,7 @@ public final class TreeEditorGui {
       if (node.id().equals(session.selectedNodeId())) {
         session.selectNode(null);
       }
-      Mint.sendThemedMessage(player, "<accent>Deleted node: <secondary>" + node.id());
+      Messages.send(player, "<accent>Deleted node: <secondary>" + node.id());
       refresh(player);
       player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
       return;
@@ -543,7 +543,7 @@ public final class TreeEditorGui {
       event.setCancelled(true);
       String selectedId = session.selectedNodeId();
       if (selectedId == null || selectedId.equals(node.id())) {
-        Mint.sendThemedMessage(player, "<error>Select a different node first!");
+        Messages.send(player, "<error>Select a different node first!");
         return;
       }
 
@@ -559,12 +559,12 @@ public final class TreeEditorGui {
         // Remove connection
         selected.children().remove(node.id());
         node.prerequisites().remove(selectedId);
-        Mint.sendThemedMessage(player, "<accent>Removed link: <secondary>" + selectedId + " -> " + node.id());
+        Messages.send(player, "<accent>Removed link: <secondary>" + selectedId + " -> " + node.id());
       } else {
         // Add connection
         selected.children().add(node.id());
         node.prerequisites().add(selectedId);
-        Mint.sendThemedMessage(player, "<success>Added link: <secondary>" + selectedId + " -> " + node.id());
+        Messages.send(player, "<success>Added link: <secondary>" + selectedId + " -> " + node.id());
       }
 
       refresh(player);
@@ -576,10 +576,10 @@ public final class TreeEditorGui {
     event.setCancelled(true);
     if (node.id().equals(session.selectedNodeId())) {
       session.selectNode(null);
-      Mint.sendThemedMessage(player, "<accent>Deselected node");
+      Messages.send(player, "<accent>Deselected node");
     } else {
       session.selectNode(node.id());
-      Mint.sendThemedMessage(player, "<accent>Selected: <secondary>" + node.id());
+      Messages.send(player, "<accent>Selected: <secondary>" + node.id());
     }
     refresh(player);
     player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.3f, 1.2f);
@@ -600,20 +600,20 @@ public final class TreeEditorGui {
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
       }
       case "add_node" -> {
-        Mint.sendThemedMessage(player, "<accent>Click an empty slot to place a new node");
+        Messages.send(player, "<accent>Click an empty slot to place a new node");
         session.setDragging(true);
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.5f);
       }
       case "undo" -> {
         if (session.undo()) {
-          Mint.sendThemedMessage(player, "<accent>Undone");
+          Messages.send(player, "<accent>Undone");
           refresh(player);
           player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 0.8f);
         }
       }
       case "redo" -> {
         if (session.redo()) {
-          Mint.sendThemedMessage(player, "<accent>Redone");
+          Messages.send(player, "<accent>Redone");
           refresh(player);
           player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.2f);
         }
@@ -624,11 +624,11 @@ public final class TreeEditorGui {
         String treeId = tree.treeId();
 
         if (treeLoader.saveTree(treeId, json)) {
-          Mint.sendThemedMessage(player, "<success>Saved tree '<secondary>" + treeId +
+          Messages.send(player, "<success>Saved tree '<secondary>" + treeId +
               "<success>' to <primary>upgrade_trees/" + treeId + ".json");
           player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 0.5f, 1.0f);
         } else {
-          Mint.sendThemedMessage(player, "<error>Failed to save tree. Check server logs.");
+          Messages.send(player, "<error>Failed to save tree. Check server logs.");
           player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
         }
       }
@@ -639,9 +639,9 @@ public final class TreeEditorGui {
       case "path_edit" -> {
         session.setPathEditMode(!session.isPathEditMode());
         if (session.isPathEditMode()) {
-          Mint.sendThemedMessage(player, "<accent>Path edit mode <success>enabled<accent>. Click empty slots to add path points, click existing paths to remove.");
+          Messages.send(player, "<accent>Path edit mode <success>enabled<accent>. Click empty slots to add path points, click existing paths to remove.");
         } else {
-          Mint.sendThemedMessage(player, "<accent>Path edit mode <error>disabled<accent>.");
+          Messages.send(player, "<accent>Path edit mode <error>disabled<accent>.");
         }
         refresh(player);
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, session.isPathEditMode() ? 1.5f : 0.8f);
@@ -673,7 +673,7 @@ public final class TreeEditorGui {
       newNode.setPosition(newPos);
       tree.addNode(newNode);
 
-      Mint.sendThemedMessage(player, "<success>Created node: <secondary>" + nodeId + " <success>at (" + worldX + ", " + worldY + ")");
+      Messages.send(player, "<success>Created node: <secondary>" + nodeId + " <success>at (" + worldX + ", " + worldY + ")");
       refresh(player);
       player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.0f);
       return;
@@ -686,7 +686,7 @@ public final class TreeEditorGui {
           .anyMatch(p -> p.x() == worldX && p.y() == worldY);
 
       if (pathExists) {
-        Mint.sendThemedMessage(player, "<error>Path point already exists at this position!");
+        Messages.send(player, "<error>Path point already exists at this position!");
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
         return;
       }
@@ -694,7 +694,7 @@ public final class TreeEditorGui {
       // Add path point to tree
       session.saveSnapshot();
       tree.paths().add(newPos);
-      Mint.sendThemedMessage(player, "<accent>Added path point at (" + worldX + ", " + worldY + ")");
+      Messages.send(player, "<accent>Added path point at (" + worldX + ", " + worldY + ")");
       refresh(player);
       player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.5f, 1.5f);
       return;
@@ -708,7 +708,7 @@ public final class TreeEditorGui {
         EditorNode selected = selectedOpt.get();
         session.saveSnapshot();
         selected.setPosition(newPos);
-        Mint.sendThemedMessage(player, "<accent>Moved <secondary>" + selectedId + " <accent>to (" + worldX + ", " + worldY + ")");
+        Messages.send(player, "<accent>Moved <secondary>" + selectedId + " <accent>to (" + worldX + ", " + worldY + ")");
         refresh(player);
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.5f, 1.2f);
       }
@@ -737,7 +737,7 @@ public final class TreeEditorGui {
       player.updateInventory();
     }
 
-    Mint.sendThemedMessage(player, "<accent>Closed tree editor. Use <secondary>/jobs treeeditor<accent> to reopen.");
+    Messages.send(player, "<accent>Closed tree editor. Use <secondary>/jobs treeeditor<accent> to reopen.");
   }
 
   /**

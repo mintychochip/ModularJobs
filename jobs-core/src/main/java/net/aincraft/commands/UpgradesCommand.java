@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.Optional;
@@ -84,19 +84,19 @@ public class UpgradesCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      Mint.sendThemedMessage(sender, "<error>Job not found: " + jobName);
+      Messages.send(sender, "<error>Job not found: " + jobName);
       return 0;
     }
 
     Optional<UpgradeTree> treeOpt = upgradeService.getTree(job.key().value());
     if (treeOpt.isEmpty()) {
-      Mint.sendThemedMessage(sender, "<neutral>This job has no upgrade tree.");
+      Messages.send(sender, "<neutral>This job has no upgrade tree.");
       return 0;
     }
 
@@ -111,13 +111,13 @@ public class UpgradesCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      Mint.sendThemedMessage(sender, "<error>Job not found: " + jobName);
+      Messages.send(sender, "<error>Job not found: " + jobName);
       return 0;
     }
 
@@ -128,33 +128,33 @@ public class UpgradesCommand implements JobsCommand {
 
     switch (result) {
       case UnlockResult.Success success -> {
-        Mint.sendThemedMessage(player, "<accent>Unlocked: <primary>" + success.node().name()
+        Messages.send(player, "<accent>Unlocked: <primary>" + success.node().name()
             + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
       }
       case UnlockResult.InsufficientPoints ip -> {
-        Mint.sendThemedMessage(player, "<error>Not enough skill points. Need <secondary>" + ip.required()
+        Messages.send(player, "<error>Not enough skill points. Need <secondary>" + ip.required()
             + "<error>, have <secondary>" + ip.available());
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.PrerequisitesNotMet pm -> {
-        Mint.sendThemedMessage(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
+        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.ExcludedByChoice ec -> {
-        Mint.sendThemedMessage(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.AlreadyUnlocked au -> {
-        Mint.sendThemedMessage(player, "<neutral>Already unlocked: " + au.nodeKey());
+        Messages.send(player, "<neutral>Already unlocked: " + au.nodeKey());
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
       }
       case UnlockResult.NodeNotFound nf -> {
-        Mint.sendThemedMessage(player, "<error>Node not found: " + nf.nodeKey());
+        Messages.send(player, "<error>Node not found: " + nf.nodeKey());
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
       }
       case UnlockResult.TreeNotFound tf -> {
-        Mint.sendThemedMessage(player, "<error>No upgrade tree for job: " + tf.jobKey());
+        Messages.send(player, "<error>No upgrade tree for job: " + tf.jobKey());
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
       }
     }
@@ -166,13 +166,13 @@ public class UpgradesCommand implements JobsCommand {
     CommandSender sender = source.getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
     Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
     if (job == null) {
-      Mint.sendThemedMessage(sender, "<error>Job not found: " + jobName);
+      Messages.send(sender, "<error>Job not found: " + jobName);
       return 0;
     }
 
@@ -182,11 +182,11 @@ public class UpgradesCommand implements JobsCommand {
     boolean success = upgradeService.resetUpgrades(playerId, jobKey);
     if (success) {
       PlayerUpgradeData data = upgradeService.getPlayerData(playerId, jobKey);
-      Mint.sendThemedMessage(player, "<accent>Upgrades reset for " + job.getPlainName()
+      Messages.send(player, "<accent>Upgrades reset for " + job.getPlainName()
           + "<neutral>. You now have <primary>" + data.availableSkillPoints() + " SP");
       player.playSound(player, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.0f);
     } else {
-      Mint.sendThemedMessage(player, "<error>Failed to reset upgrades.");
+      Messages.send(player, "<error>Failed to reset upgrades.");
       player.playSound(player, Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
     }
 
