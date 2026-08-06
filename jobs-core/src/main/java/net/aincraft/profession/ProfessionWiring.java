@@ -17,35 +17,27 @@ public final class ProfessionWiring {
   public final BuffService buffService;
   public final StationService stationService;
   public final NodeHarvestService nodeHarvestService;
-  public final TierAntiFarmEngine antiFarmEngine;
 
   private ProfessionWiring(
       ProfessionService professionService,
       RecipeService recipeService,
       BuffService buffService,
       StationService stationService,
-      NodeHarvestService nodeHarvestService,
-      TierAntiFarmEngine antiFarmEngine) {
+      NodeHarvestService nodeHarvestService) {
     this.professionService = professionService;
     this.recipeService = recipeService;
     this.buffService = buffService;
     this.stationService = stationService;
     this.nodeHarvestService = nodeHarvestService;
-    this.antiFarmEngine = antiFarmEngine;
   }
 
   public static ProfessionWiring create(JobService jobService) {
-    return create(jobService, TierAntiFarmConfig.defaults());
-  }
-
-  public static ProfessionWiring create(JobService jobService, TierAntiFarmConfig antiFarmConfig) {
     return new ProfessionWiring(
         new ProfessionServiceImpl(jobService),
         new MemoryRecipeService(),
         new MemoryBuffService(),
         new StubStationService(),
-        new StubNodeHarvestService(),
-        new TierAntiFarmEngine(antiFarmConfig)
+        new StubNodeHarvestService()
     );
   }
 }

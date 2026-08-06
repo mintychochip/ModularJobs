@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  * @param id               recipe key
  * @param professionId     canonical profession id (e.g. {@code weaponsmithing})
  * @param requiredLevel    minimum profession level to craft
- * @param tier             resource/recipe tier 1–5 (for anti-farm / XP)
+ * @param tier             resource/recipe tier 1–5
  */
 public record RecipeDefinition(
     @NotNull Key id,
