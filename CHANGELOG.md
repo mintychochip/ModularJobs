@@ -8,7 +8,7 @@
   - Build: `./gradlew :paper:build` → artifact `paper/build/libs/paper-all.jar` (was `:jobs-core:build` / `jobs-core-all.jar`).
   - Tests: `./gradlew :api:test :common:test :paper:test`.
   - Schema SQL: `paper/src/main/resources/sql/postgres.sql`.
-  - Session stack: `web/session-api` (Rust), `web/session-editor` (React).
+  - Session stack: `web/rest-api` (Rust), `web/session-editor` (React).
 - **`api` is pure**: public contracts have **no Paper/Bukkit dependency**. Paper-only types and wiring live in `paper`; shared editor/session DTOs live in `common`.
 - Downstream consumers of the old Maven/module coordinates (`jobs-api` / `jobs-core`) must switch to the new module paths and jar name.
 

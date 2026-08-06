@@ -105,7 +105,7 @@ describe('SessionApiClient', () => {
       }),
     );
 
-    const client = new SessionApiClient('http://session-api.test:18787');
+    const client = new SessionApiClient('http://rest-api.test:18787');
     const loaded = await client.fetchSession('sess1', 'tok-abc');
     expect(loaded.jobs['modularjobs:miner'].tasks[0].payables[0].amount).toBe('2.5');
 
@@ -115,9 +115,9 @@ describe('SessionApiClient', () => {
     expect(saved.payload.jobs['modularjobs:miner'].tasks[0].payables[0].amount).toBe(
       '99.125',
     );
-    expect(calls[0].url).toContain('http://session-api.test:18787/api/v1/sessions/sess1/payload');
+    expect(calls[0].url).toContain('http://rest-api.test:18787/api/v1/sessions/sess1/payload');
     expect(calls[0].url).not.toContain('bytebin');
-    expect(calls[1].url).toBe('http://session-api.test:18787/api/v1/sessions/sess1');
+    expect(calls[1].url).toBe('http://rest-api.test:18787/api/v1/sessions/sess1');
     expect(calls[1].init?.method).toBe('PUT');
 
     const saveBody = JSON.parse(String(calls[1].init?.body));
@@ -137,7 +137,7 @@ describe('SessionApiClient', () => {
         json: async () => ({ error: 'invalid session token' }),
       })),
     );
-    const client = new SessionApiClient('http://session-api.test:18787');
+    const client = new SessionApiClient('http://rest-api.test:18787');
     await expect(client.fetchSession('x', 'bad')).rejects.toThrow(/token/i);
   });
 });

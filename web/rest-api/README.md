@@ -1,4 +1,4 @@
-# session-api (`web/session-api`)
+# rest-api (`web/rest-api`)
 
 Rust REST service for ModularJobs secure editor sessions stored in PostgreSQL.
 

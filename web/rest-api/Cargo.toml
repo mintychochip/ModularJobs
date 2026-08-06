@@ -1,5 +1,5 @@
 [package]
-name = "session-api"
+name = "rest-api"
 version = "0.1.0"
 edition = "2021"
 description = "Secure REST API for ModularJobs web editor sessions backed by PostgreSQL"
