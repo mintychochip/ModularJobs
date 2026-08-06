@@ -10,11 +10,12 @@ import net.aincraft.container.Context.ItemContext;
 import net.aincraft.container.Context.MaterialContext;
 import net.aincraft.container.Context.PotionContext;
 import net.kyori.adventure.key.Key;
-import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 
 /**
  * Factory for the shared {@link KeyResolver} (replaces Guice UtilModule).
+ * Strategies read pure {@link net.aincraft.container.Context} string/coord fields.
  */
 public final class KeyResolvers {
 
@@ -22,20 +23,29 @@ public final class KeyResolvers {
 
   public static KeyResolver create() {
     KeyResolver resolver = new KeyResolver();
-    resolver.addStrategy(BlockContext.class, context -> context.block().getType().getKey());
-    resolver.addStrategy(MaterialContext.class, context -> context.material().getKey());
+    resolver.addStrategy(BlockContext.class, context -> Key.key(context.materialKey()));
+    resolver.addStrategy(MaterialContext.class, context -> Key.key(context.materialKey()));
     resolver.addStrategy(DyeContext.class,
-        context -> NamespacedKey.minecraft(context.color().name().toLowerCase(Locale.ENGLISH)));
+        context -> Key.key("minecraft", context.dyeColorName().toLowerCase(Locale.ENGLISH)));
     resolver.addStrategy(EntityContext.class, new EntityResolvingStrategyImpl());
-    resolver.addStrategy(ItemContext.class, context -> context.itemStack().getType().getKey());
-    resolver.addStrategy(PotionContext.class, context -> context.type().key());
+    resolver.addStrategy(ItemContext.class, context -> Key.key(context.materialKey()));
+    resolver.addStrategy(PotionContext.class, context -> Key.key(context.potionTypeKey()));
     resolver.addStrategy(EnchantmentContext.class, context -> {
-      Enchantment enchantment = context.enchantment();
-      Key enchantmentKey = enchantment.key();
-      return new NamespacedKey(enchantmentKey.namespace(),
-          enchantmentKey.value() + "_" + context.level());
+      Key base = Key.key(context.enchantmentKey());
+      return Key.key(base.namespace(), base.value() + "_" + context.level());
     });
-    resolver.addStrategy(ChunkContext.class, context -> context.chunk().getWorld().getKey());
+    // Explore tasks historically keyed by world NamespacedKey (not display name).
+    resolver.addStrategy(ChunkContext.class, context -> {
+      World world = Bukkit.getWorld(context.worldName());
+      if (world != null) {
+        return world.getKey();
+      }
+      String name = context.worldName();
+      if (name.indexOf(':') >= 0) {
+        return Key.key(name);
+      }
+      return Key.key("minecraft", name.toLowerCase(Locale.ENGLISH));
+    });
     return resolver;
   }
 }

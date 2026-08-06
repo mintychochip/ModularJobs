@@ -16,14 +16,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.aincraft.PluginProvider;
 import net.aincraft.container.ActionTypes;
-import net.aincraft.container.Context.BlockContext;
-import net.aincraft.container.Context.ChunkContext;
-import net.aincraft.container.Context.DyeContext;
-import net.aincraft.container.Context.EnchantmentContext;
-import net.aincraft.container.Context.EntityContext;
-import net.aincraft.container.Context.ItemContext;
-import net.aincraft.container.Context.MaterialContext;
-import net.aincraft.container.Context.PotionContext;
+import net.aincraft.paper.BukkitContexts;
 import net.aincraft.payment.ExploitService.ExploitProtectionType;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.payment.DamageContribution;
@@ -141,7 +134,7 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.BUCKET_ENTITY, new ItemContext(event.getEntityBucket()));
+    paymentHandler.pay(player, ActionTypes.BUCKET_ENTITY, BukkitContexts.item(event.getEntityBucket()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -170,7 +163,7 @@ final class JobPaymentListener implements Listener {
       }
       exploitService.addProtection(ExploitProtectionType.WAX, block);
     }
-    paymentHandler.pay(player, ActionTypes.WAX, new MaterialContext(material));
+    paymentHandler.pay(player, ActionTypes.WAX, BukkitContexts.material(material));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -206,7 +199,7 @@ final class JobPaymentListener implements Listener {
       }
       exploitService.addProtection(ExploitProtectionType.STRIP, block);
     }
-    paymentHandler.pay(player, ActionTypes.STRIP_LOG, new MaterialContext(material));
+    paymentHandler.pay(player, ActionTypes.STRIP_LOG, BukkitContexts.material(material));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -227,7 +220,7 @@ final class JobPaymentListener implements Listener {
     if (exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
       exploitService.addProtection(ExploitProtectionType.PLACED, block);
     }
-    paymentHandler.pay(event.getPlayer(), ActionTypes.BLOCK_PLACE, new MaterialContext(block
+    paymentHandler.pay(event.getPlayer(), ActionTypes.BLOCK_PLACE, BukkitContexts.material(block
         .getType()));
   }
 
@@ -245,7 +238,7 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.TAME, new EntityContext(entity));
+    paymentHandler.pay(player, ActionTypes.TAME, BukkitContexts.entity(entity));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -264,7 +257,7 @@ final class JobPaymentListener implements Listener {
     if (drops.isEmpty()) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.SHEAR, new ItemContext(drops.getFirst()));
+    paymentHandler.pay(player, ActionTypes.SHEAR, BukkitContexts.item(drops.getFirst()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -291,7 +284,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
 
-    paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
+    paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, BukkitContexts.block(block));
     breakCache.put(LocationKey.create(block.getLocation()), player);
 
     // Jobs Reborn global break timer: re-arm protection after a paid break so re-place/break farms fail.
@@ -341,7 +334,7 @@ final class JobPaymentListener implements Listener {
         && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, new BlockContext(block));
+    paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, BukkitContexts.block(block));
     if (exploitService.settings().rearmAfterBreak()
         && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
       exploitService.addProtection(ExploitProtectionType.PLACED, block);
@@ -375,7 +368,7 @@ final class JobPaymentListener implements Listener {
       }
       exploitService.addProtection(ExploitProtectionType.MILK, entity);
     }
-    paymentHandler.pay(player, ActionTypes.MILK, new EntityContext(entity));
+    paymentHandler.pay(player, ActionTypes.MILK, BukkitContexts.entity(entity));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -393,7 +386,7 @@ final class JobPaymentListener implements Listener {
     if (items.isEmpty()) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.BRUSH, new ItemContext(items.getFirst().getItemStack()));
+    paymentHandler.pay(player, ActionTypes.BRUSH, BukkitContexts.item(items.getFirst().getItemStack()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -410,7 +403,7 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.BREED, new EntityContext(event.getEntity()));
+    paymentHandler.pay(player, ActionTypes.BREED, BukkitContexts.entity(event.getEntity()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -458,7 +451,7 @@ final class JobPaymentListener implements Listener {
     if (exploitService.settings().monsterDamageRequired() && !isMonsterDamageBossExempt(victim)) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.KILL, new EntityContext(victim));
+    paymentHandler.pay(player, ActionTypes.KILL, BukkitContexts.entity(victim));
   }
 
   private static double maxHealthOf(LivingEntity victim) {
@@ -494,10 +487,10 @@ final class JobPaymentListener implements Listener {
     }
     ItemStack itemStack = event.getItem();
     if (itemStack.getItemMeta() instanceof PotionMeta potionMeta) {
-      paymentHandler.pay(player, ActionTypes.CONSUME, new PotionContext(potionMeta.getBasePotionType()));
+      paymentHandler.pay(player, ActionTypes.CONSUME, BukkitContexts.potion(potionMeta.getBasePotionType()));
       return;
     }
-    paymentHandler.pay(player, ActionTypes.CONSUME, new ItemContext(itemStack));
+    paymentHandler.pay(player, ActionTypes.CONSUME, BukkitContexts.item(itemStack));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -510,7 +503,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     Item item = event.getItem();
-    paymentHandler.pay(player, ActionTypes.COLLECT, new ItemContext(item.getItemStack()));
+    paymentHandler.pay(player, ActionTypes.COLLECT, BukkitContexts.item(item.getItemStack()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -564,7 +557,7 @@ final class JobPaymentListener implements Listener {
       default -> new ItemStack(Material.GLOW_BERRIES); // CAVE_VINES*
     };
 
-    paymentHandler.pay(player, ActionTypes.COLLECT, new ItemContext(collectedItem));
+    paymentHandler.pay(player, ActionTypes.COLLECT, BukkitContexts.item(collectedItem));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -581,7 +574,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     ItemStack itemStack = item.getItemStack();
-    paymentHandler.pay(player, ActionTypes.FISH, new ItemContext(itemStack));
+    paymentHandler.pay(player, ActionTypes.FISH, BukkitContexts.item(itemStack));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -605,10 +598,10 @@ final class JobPaymentListener implements Listener {
       return;
     }
     ItemStack result = event.getResult();
-    paymentHandler.pay(player, ActionTypes.SMELT, new ItemContext(result));
+    paymentHandler.pay(player, ActionTypes.SMELT, BukkitContexts.item(result));
     // Also pay for BAKE action if the smelted result is food
     if (result.getType().isEdible()) {
-      paymentHandler.pay(player, ActionTypes.BAKE, new ItemContext(result));
+      paymentHandler.pay(player, ActionTypes.BAKE, BukkitContexts.item(result));
     }
   }
 
@@ -632,7 +625,7 @@ final class JobPaymentListener implements Listener {
     if (v > eligibility.settings().furnaceMaxDistanceSquared()) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.BREW, new ItemContext(event.getContents().getIngredient()));
+    paymentHandler.pay(player, ActionTypes.BREW, BukkitContexts.item(event.getContents().getIngredient()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -648,7 +641,7 @@ final class JobPaymentListener implements Listener {
     }
     if (!chunkExplorationStore.hasExplored(player, to)) {
       chunkExplorationStore.addExploration(player, to);
-      paymentHandler.pay(player, ActionTypes.EXPLORE, new ChunkContext(to));
+      paymentHandler.pay(player, ActionTypes.EXPLORE, BukkitContexts.chunk(to));
     }
   }
 
@@ -668,7 +661,7 @@ final class JobPaymentListener implements Listener {
       }
       exploitService.addProtection(ExploitProtectionType.DYE_ENTITY, entity);
     }
-    paymentHandler.pay(player, ActionTypes.DYE, new DyeContext(event.getColor()));
+    paymentHandler.pay(player, ActionTypes.DYE, BukkitContexts.dye(event.getColor()));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -692,9 +685,9 @@ final class JobPaymentListener implements Listener {
         continue;
       }
       paymentHandler.pay(player, ActionTypes.ENCHANT,
-          new EnchantmentContext(enchantment, entry.getValue()));
+          BukkitContexts.enchantment(enchantment, entry.getValue()));
     }
-    paymentHandler.pay(player, ActionTypes.ENCHANT, new ItemContext(result));
+    paymentHandler.pay(player, ActionTypes.ENCHANT, BukkitContexts.item(result));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -712,7 +705,7 @@ final class JobPaymentListener implements Listener {
           && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
         continue;
       }
-      paymentHandler.pay(player, ActionTypes.TNT_BREAK, new BlockContext(block));
+      paymentHandler.pay(player, ActionTypes.TNT_BREAK, BukkitContexts.block(block));
       if (exploitService.settings().rearmAfterBreak()
           && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
         exploitService.addProtection(ExploitProtectionType.PLACED, block);
@@ -742,7 +735,7 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
-    paymentHandler.pay(player, ActionTypes.VILLAGER_TRADE, new ItemContext(resultItem));
+    paymentHandler.pay(player, ActionTypes.VILLAGER_TRADE, BukkitContexts.item(resultItem));
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -781,7 +774,7 @@ final class JobPaymentListener implements Listener {
     Set<Material> unique = contents.stream().map(ItemStack::getType).collect(
         Collectors.toSet());
     if (contents.size() == 3 && unique.size() == 1) {
-      paymentHandler.pay(player, ActionTypes.REPAIR, new ItemContext(resultStack.clone()));
+      paymentHandler.pay(player, ActionTypes.REPAIR, BukkitContexts.item(resultStack.clone()));
       return;
     }
     List<DyeColor> dyes = contents.stream().map(ItemStack::getType)
@@ -793,9 +786,9 @@ final class JobPaymentListener implements Listener {
       default -> material.toString().contains("SHULKER_BOX");
     }).findFirst();
     if (!dyes.isEmpty() && dyedMaterial.isPresent()) {
-      paymentHandler.pay(player, ActionTypes.DYE, new ItemContext(ItemStack.of(dyedMaterial.get())));
+      paymentHandler.pay(player, ActionTypes.DYE, BukkitContexts.item(ItemStack.of(dyedMaterial.get())));
       for (DyeColor color : dyes) {
-        paymentHandler.pay(player, ActionTypes.DYE, new DyeContext(color));
+        paymentHandler.pay(player, ActionTypes.DYE, BukkitContexts.dye(color));
       }
       return;
     }
@@ -810,12 +803,12 @@ final class JobPaymentListener implements Listener {
           int before = countSimilarItems(snapShot, reference);
           int after = countSimilarItems(Arrays.asList(inventory.getContents()), reference);
           for (int i = 0; i < Math.max(1, after - before); ++i) {
-            paymentHandler.pay(player, ActionTypes.CRAFT, new ItemContext(reference));
+            paymentHandler.pay(player, ActionTypes.CRAFT, BukkitContexts.item(reference));
           }
         });
       } else {
         for (int i = 0; i < resultStack.getAmount(); ++i) {
-          paymentHandler.pay(player, ActionTypes.CRAFT, new ItemContext(resultStack));
+          paymentHandler.pay(player, ActionTypes.CRAFT, BukkitContexts.item(resultStack));
         }
       }
     }
