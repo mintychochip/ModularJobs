@@ -27,6 +27,9 @@ triumph-gui = "3.1.12"
 mockbukkit = "26.2.0-mj"
 postgresql = "42.7.5"
 
+# Adventure (api pure surface — Keyed/Key/Component without Paper)
+adventure = "4.21.0"
+
 # Development tools
 jetbrains-annotations = "24.1.0"
 
@@ -42,6 +45,9 @@ caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "c
 exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 configurate-core = { module = "org.spongepowered:configurate-core", version.ref = "configurate" }
+
+# Adventure (standalone; paper still ships its own via paper-api)
+adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
 
 # Minecraft APIs
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
