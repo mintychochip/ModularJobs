@@ -2,14 +2,13 @@ package net.aincraft.domain;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,8 +16,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.aincraft.domain.model.JobProgressionRecord;
-import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.repository.JobProgressionRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -26,15 +26,22 @@ import org.jetbrains.annotations.Nullable;
 
 final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepository {
 
+  private static final Logger LOGGER =
+      Logger.getLogger(WriteBackJobProgressionRepositoryImpl.class.getName());
+
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(5);
 
   private static final int CACHE_MAX_SIZE = 1000;
 
+  /** Max wait for scheduled flush to release the lock before disable flush fails loudly. */
+  private static final long FLUSH_LOCK_WAIT_MS = 30_000L;
+
   private final JobProgressionRepository delegate;
 
   private final Cache<Key, JobProgressionRecord> readCache = Caffeine.newBuilder()
-      .expireAfterWrite(
-          CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAX_SIZE).build();
+      .expireAfterWrite(CACHE_TIME_TO_LIVE)
+      .maximumSize(CACHE_MAX_SIZE)
+      .build();
 
   private final Map<Key, JobProgressionRecord> pendingUpserts = new ConcurrentHashMap<>();
   private final Set<Key> pendingDeletes = ConcurrentHashMap.newKeySet();
@@ -42,23 +49,32 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   private final int upsertBatchSize;
   private final int deleteBatchSize;
 
-  private WriteBackJobProgressionRepositoryImpl(JobProgressionRepository delegate,
-      int upsertBatchSize,
-      int deleteBatchSize) {
+  private WriteBackJobProgressionRepositoryImpl(
+      JobProgressionRepository delegate, int upsertBatchSize, int deleteBatchSize) {
     this.delegate = delegate;
     this.upsertBatchSize = upsertBatchSize;
     this.deleteBatchSize = deleteBatchSize;
   }
 
-  public static WriteBackJobProgressionRepositoryImpl create(Plugin plugin,
+  public static WriteBackJobProgressionRepositoryImpl create(
+      Plugin plugin,
       JobProgressionRepository delegate,
-      int upsertBatchSize, int deleteBatchSize, long rate, TimeUnit rateUnit) {
-    WriteBackJobProgressionRepositoryImpl repository = new WriteBackJobProgressionRepositoryImpl(
-        delegate, upsertBatchSize, deleteBatchSize);
-    Bukkit.getAsyncScheduler().runAtFixedRate(plugin, task -> {
-      repository.flush();
-    }, 0L, rate, rateUnit);
+      int upsertBatchSize,
+      int deleteBatchSize,
+      long rate,
+      TimeUnit rateUnit) {
+    WriteBackJobProgressionRepositoryImpl repository =
+        new WriteBackJobProgressionRepositoryImpl(delegate, upsertBatchSize, deleteBatchSize);
+    Bukkit.getAsyncScheduler().runAtFixedRate(plugin, task -> repository.flush(), 0L, rate, rateUnit);
     return repository;
+  }
+
+  /**
+   * Test / manual construction without scheduling a Bukkit task.
+   */
+  static WriteBackJobProgressionRepositoryImpl createUnscheduled(
+      JobProgressionRepository delegate, int upsertBatchSize, int deleteBatchSize) {
+    return new WriteBackJobProgressionRepositoryImpl(delegate, upsertBatchSize, deleteBatchSize);
   }
 
   private void flush() {
@@ -74,10 +90,22 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
 
   /**
    * Drain all pending progression writes before ConnectionSource shutdown.
+   * Waits with sleep (not busy-spin) for an in-flight scheduled flush.
    */
   public void flushPending() {
+    long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(FLUSH_LOCK_WAIT_MS);
     while (!flushing.compareAndSet(false, true)) {
-      Thread.onSpinWait();
+      if (System.nanoTime() >= deadline) {
+        throw new IllegalStateException(
+            "Timed out waiting for progression write-back flush lock after "
+                + FLUSH_LOCK_WAIT_MS + "ms");
+      }
+      try {
+        Thread.sleep(10L);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IllegalStateException("Interrupted waiting for progression write-back flush", e);
+      }
     }
     try {
       while (flushOnce(true)) {
@@ -89,12 +117,10 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   }
 
   /**
-   * @param rethrow if true, propagate delegate failures (disable path); scheduled flush swallows
+   * @param rethrow if true, propagate delegate failures (disable path); scheduled flush logs
    * @return true if any work was flushed
    */
   private boolean flushOnce(boolean rethrow) {
-    // Process deletes first to ensure clean state before upserts
-    // This prevents desync when a player leaves and quickly rejoins a job
     Set<Key> batchDeletes = new HashSet<>();
     Iterator<Key> deleteIterator = pendingDeletes.iterator();
     while (deleteIterator.hasNext() && batchDeletes.size() < deleteBatchSize) {
@@ -117,22 +143,51 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       return false;
     }
     try {
-      // Execute deletes before upserts to ensure proper cleanup
       for (Key key : batchDeletes) {
         delegate.delete(key.playerId(), key.jobKey());
       }
-      batchUpserts.forEach((__, record) -> {
-        delegate.save(record);
-      });
+      batchUpserts.forEach((__, record) -> delegate.save(record));
       return true;
     } catch (Throwable t) {
-      pendingUpserts.putAll(batchUpserts);
-      pendingDeletes.addAll(batchDeletes);
+      requeueFailedBatch(batchUpserts, batchDeletes);
       if (rethrow) {
         throw t;
       }
+      LOGGER.log(
+          Level.SEVERE,
+          "Progression write-back flush failed; re-queued "
+              + batchUpserts.size() + " upsert(s) and "
+              + batchDeletes.size() + " delete(s)",
+          t);
       return true;
     }
+  }
+
+  /**
+   * Re-queue a failed batch without clobbering a newer staged experience value.
+   * Uses max-experience merge so concurrent awards that staged higher XP after the batch
+   * was taken out of pending are preserved.
+   */
+  void requeueFailedBatch(
+      Map<Key, JobProgressionRecord> batchUpserts, Set<Key> batchDeletes) {
+    for (Entry<Key, JobProgressionRecord> entry : batchUpserts.entrySet()) {
+      pendingUpserts.merge(entry.getKey(), entry.getValue(), this::preferHigherExperience);
+    }
+    pendingDeletes.addAll(batchDeletes);
+  }
+
+  /**
+   * Keep the record with the higher absolute experience (monotonic awards). On tie keep
+   * {@code existing} (already in pending).
+   */
+  JobProgressionRecord preferHigherExperience(
+      JobProgressionRecord existing, JobProgressionRecord incoming) {
+    BigDecimal existingXp = existing.experience();
+    BigDecimal incomingXp = incoming.experience();
+    if (incomingXp.compareTo(existingXp) > 0) {
+      return incoming;
+    }
+    return existing;
   }
 
   @Override
@@ -167,7 +222,7 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       merged.put(new Key(record.playerId(), record.jobRecord().jobKey()), record);
     }
     for (Key key : pendingDeletes) {
-      if (jobKey.equals(key.playerId())) {
+      if (jobKey.equals(key.jobKey())) {
         merged.remove(key);
       }
     }
@@ -176,7 +231,9 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       if (record == null) {
         continue;
       }
-      merged.put(key, record);
+      if (jobKey.equals(key.jobKey())) {
+        merged.put(key, record);
+      }
     }
     List<JobProgressionRecord> records = new ArrayList<>(merged.values());
     records.sort(
@@ -207,7 +264,9 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
       if (record == null) {
         continue;
       }
-      merged.put(key, record);
+      if (playerId.equals(key.playerId())) {
+        merged.put(key, record);
+      }
     }
     List<JobProgressionRecord> records = new ArrayList<>(merged.values());
     records.sort(
