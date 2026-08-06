@@ -1,6 +1,6 @@
 package net.aincraft.payment;
 
-import net.aincraft.event.JobLevelEvent;
+import net.aincraft.paper.event.BukkitJobLevelEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -18,7 +18,7 @@ final class JobLevelUpListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onJobLevelUp(JobLevelEvent event) {
+  public void onJobLevelUp(BukkitJobLevelEvent event) {
     Player player = event.getPlayer();
     int newLevel = event.getNewLevel();
     int oldLevel = event.getOldLevel();

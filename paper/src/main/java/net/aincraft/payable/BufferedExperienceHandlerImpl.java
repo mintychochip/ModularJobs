@@ -2,6 +2,7 @@ package net.aincraft.payable;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import net.aincraft.Bridge;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.container.ExperiencePayableHandler;
@@ -9,6 +10,7 @@ import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
 import net.aincraft.event.JobExperienceGainEvent;
 import net.aincraft.event.JobLevelEvent;
+import net.aincraft.paper.event.PaperEventBridge;
 import net.aincraft.service.JobService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -32,25 +34,26 @@ final class BufferedExperienceHandlerImpl implements
   public void pay(PayableContext context) throws IllegalArgumentException {
     UUID playerId = context.playerId();
     OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+    Player onlinePlayer = player.isOnline() ? player.getPlayer() : null;
     JobProgression progression = context.jobProgression();
     Payable payable = context.payable();
     PayableAmount amount = payable.amount();
     BigDecimal amountDecimal = amount.value();
+    PaperEventBridge events = new PaperEventBridge(Bridge.bridge().eventBus());
 
-    // Fire experience gain event (pre-calculation)
-    if (player.isOnline()) {
-      Player onlinePlayer = player.getPlayer();
-      Job job = progression.job();
-      JobExperienceGainEvent expEvent = new JobExperienceGainEvent(onlinePlayer, job, progression, amountDecimal);
-      Bukkit.getPluginManager().callEvent(expEvent);
+    // Fire experience gain event (pre-calculation); pure + Bukkit dual-fire
+    Job job = progression.job();
+    JobExperienceGainEvent expEvent =
+        events.publishExperienceGain(
+            new JobExperienceGainEvent(playerId, job, progression, amountDecimal),
+            onlinePlayer);
 
-      if (expEvent.isCancelled()) {
-        return;
-      }
-
-      // Use potentially modified experience amount from event
-      amountDecimal = expEvent.getExperienceGained();
+    if (expEvent.isCancelled()) {
+      return;
     }
+
+    // Use potentially modified experience amount from event
+    amountDecimal = expEvent.getExperienceGained();
 
     int oldLevel = progression.level();
     int maxLevel = progression.job().maxLevel();
@@ -63,19 +66,19 @@ final class BufferedExperienceHandlerImpl implements
     JobProgression calculatedProgression = progression.addExperience(amountDecimal);
     int newLevel = calculatedProgression.level();
 
-    if (jobService.update(calculatedProgression) && player.isOnline()) {
-      Player onlinePlayer = player.getPlayer();
-
+    if (jobService.update(calculatedProgression)) {
       // Fire level up event if level changed
       if (newLevel > oldLevel) {
-        Job job = progression.job();
-        JobLevelEvent levelEvent = new JobLevelEvent(onlinePlayer, job, oldLevel, newLevel, calculatedProgression);
-        Bukkit.getPluginManager().callEvent(levelEvent);
+        events.publishLevel(
+            new JobLevelEvent(playerId, job, oldLevel, newLevel, calculatedProgression),
+            onlinePlayer);
       }
 
-      controller.display(
-          new ExperienceBarContext(calculatedProgression, playerId, amountDecimal),
-          formatter);
+      if (onlinePlayer != null) {
+        controller.display(
+            new ExperienceBarContext(calculatedProgression, playerId, amountDecimal),
+            formatter);
+      }
     }
   }
 }

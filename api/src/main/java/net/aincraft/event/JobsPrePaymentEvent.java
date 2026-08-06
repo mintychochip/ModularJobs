@@ -1,28 +1,31 @@
 package net.aincraft.event;
 
+import java.util.Objects;
+import java.util.UUID;
 import net.aincraft.Job;
 import net.aincraft.JobTask;
 import net.aincraft.container.Payable;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.event.Cancellable;
 
-public class JobsPrePaymentEvent extends AbstractEvent implements Cancellable {
+/**
+ * Fired before a jobs payment is processed.
+ */
+public final class JobsPrePaymentEvent implements Cancellable {
 
-  private final OfflinePlayer player;
+  private final UUID playerId;
   private final Payable payable;
   private final Job job;
   private final JobTask jobTask;
-  private boolean cancelled = false;
+  private boolean cancelled;
 
-  public JobsPrePaymentEvent(OfflinePlayer player, Payable payable, Job job, JobTask jobTask) {
-    this.player = player;
+  public JobsPrePaymentEvent(UUID playerId, Payable payable, Job job, JobTask jobTask) {
+    this.playerId = Objects.requireNonNull(playerId, "playerId");
     this.payable = payable;
     this.job = job;
     this.jobTask = jobTask;
   }
 
-  public OfflinePlayer getPlayer() {
-    return player;
+  public UUID getPlayerId() {
+    return playerId;
   }
 
   public Payable getPayable() {
@@ -43,7 +46,7 @@ public class JobsPrePaymentEvent extends AbstractEvent implements Cancellable {
   }
 
   @Override
-  public void setCancelled(boolean cancel) {
-    this.cancelled = cancel;
+  public void setCancelled(boolean cancelled) {
+    this.cancelled = cancelled;
   }
 }

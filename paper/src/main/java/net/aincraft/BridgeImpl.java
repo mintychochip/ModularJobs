@@ -6,6 +6,7 @@ import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
+import net.aincraft.event.EventBus;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.service.BuffService;
 import net.aincraft.service.JobService;
@@ -25,7 +26,8 @@ record BridgeImpl(
     @Nullable EconomyProvider economyProvider,
     ConditionFactory conditionFactory,
     BoostFactory boostFactory,
-    TimedBoostDataService timedBoostDataService) implements Bridge {
+    TimedBoostDataService timedBoostDataService,
+    EventBus eventBus) implements Bridge {
 
   @Override
   public Optional<EconomyProvider> economy() {

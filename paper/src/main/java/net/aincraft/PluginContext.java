@@ -38,6 +38,7 @@ import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.domain.DomainWiring;
+import net.aincraft.event.EventBus;
 import net.aincraft.editor.BytebinClient;
 import net.aincraft.editor.EditorConfig;
 import net.aincraft.editor.EditorService;
@@ -294,6 +295,7 @@ public final class PluginContext {
     listenerList.add(new UpgradePermissionRestoreListener(
         upgradeService, effectApplier, permissionManager));
 
+    EventBus eventBus = new EventBus();
     Bridge bridge = new BridgeImpl(
         registryContainer,
         domain.jobService,
@@ -305,7 +307,8 @@ public final class PluginContext {
         payables.economyProvider,
         conditionFactory,
         boostFactory,
-        timedBoostDataService);
+        timedBoostDataService,
+        eventBus);
 
     PlaceholderExpansion placeholderExpansion = null;
     if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {

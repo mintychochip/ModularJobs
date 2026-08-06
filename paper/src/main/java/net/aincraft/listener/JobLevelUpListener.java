@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import net.aincraft.Job;
-import net.aincraft.event.JobJoinEvent;
-import net.aincraft.event.JobLeaveEvent;
-import net.aincraft.event.JobLevelEvent;
 import net.aincraft.hooks.JobPetsHook;
+import net.aincraft.paper.event.BukkitJobJoinEvent;
+import net.aincraft.paper.event.BukkitJobLeaveEvent;
+import net.aincraft.paper.event.BukkitJobLevelEvent;
 import net.aincraft.service.PetUpgradeService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -36,7 +36,7 @@ public final class JobLevelUpListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onLevelUp(JobLevelEvent event) {
+  public void onLevelUp(BukkitJobLevelEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     int oldLevel = event.getOldLevel();
@@ -110,7 +110,7 @@ public final class JobLevelUpListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onJobJoin(JobJoinEvent event) {
+  public void onJobJoin(BukkitJobJoinEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     int level = event.getLevel();
@@ -256,7 +256,7 @@ public final class JobLevelUpListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onJobLeave(JobLeaveEvent event) {
+  public void onJobLeave(BukkitJobLeaveEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     String jobKey = job.key().toString();

@@ -3,7 +3,7 @@ package net.aincraft.upgrade;
 import net.aincraft.util.Messages;
 import java.util.Optional;
 import net.aincraft.Job;
-import net.aincraft.event.JobLevelEvent;
+import net.aincraft.paper.event.BukkitJobLevelEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -21,7 +21,7 @@ public final class UpgradeLevelUpListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
-  public void onJobLevelUp(JobLevelEvent event) {
+  public void onJobLevelUp(BukkitJobLevelEvent event) {
     Player player = event.getPlayer();
     Job job = event.getJob();
     int newLevel = event.getNewLevel();

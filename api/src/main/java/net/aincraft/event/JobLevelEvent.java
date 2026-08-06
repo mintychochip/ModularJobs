@@ -1,10 +1,14 @@
 package net.aincraft.event;
 
+import java.util.Objects;
+import java.util.UUID;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
-import org.bukkit.entity.Player;
 
-public class JobLevelEvent extends AbstractEvent {
+/**
+ * Fired when a player's job level changes.
+ */
+public final class JobLevelEvent {
 
   public enum Reason {
     /** Natural level up from gaining experience */
@@ -15,28 +19,35 @@ public class JobLevelEvent extends AbstractEvent {
     OTHER
   }
 
-  private final Player player;
+  private final UUID playerId;
   private final Job job;
   private final int oldLevel;
   private final int newLevel;
   private final JobProgression progression;
   private final Reason reason;
 
-  public JobLevelEvent(Player player, Job job, int oldLevel, int newLevel, JobProgression progression) {
-    this(player, job, oldLevel, newLevel, progression, Reason.EXPERIENCE);
+  public JobLevelEvent(
+      UUID playerId, Job job, int oldLevel, int newLevel, JobProgression progression) {
+    this(playerId, job, oldLevel, newLevel, progression, Reason.EXPERIENCE);
   }
 
-  public JobLevelEvent(Player player, Job job, int oldLevel, int newLevel, JobProgression progression, Reason reason) {
-    this.player = player;
+  public JobLevelEvent(
+      UUID playerId,
+      Job job,
+      int oldLevel,
+      int newLevel,
+      JobProgression progression,
+      Reason reason) {
+    this.playerId = Objects.requireNonNull(playerId, "playerId");
     this.job = job;
     this.oldLevel = oldLevel;
     this.newLevel = newLevel;
     this.progression = progression;
-    this.reason = reason;
+    this.reason = reason == null ? Reason.OTHER : reason;
   }
 
-  public Player getPlayer() {
-    return player;
+  public UUID getPlayerId() {
+    return playerId;
   }
 
   public Job getJob() {

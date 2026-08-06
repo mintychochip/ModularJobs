@@ -1,38 +1,36 @@
 package net.aincraft.event;
 
+import java.util.Objects;
+import java.util.UUID;
 import net.aincraft.Job;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Event fired when a player leaves a job.
  */
-public class JobLeaveEvent extends AbstractEvent {
+public final class JobLeaveEvent {
 
-    private final Player player;
-    private final Job job;
-    private final int finalLevel;
+  private final UUID playerId;
+  private final Job job;
+  private final int finalLevel;
 
-    public JobLeaveEvent(@NotNull Player player, @NotNull Job job, int finalLevel) {
-        this.player = player;
-        this.job = job;
-        this.finalLevel = finalLevel;
-    }
+  public JobLeaveEvent(UUID playerId, Job job, int finalLevel) {
+    this.playerId = Objects.requireNonNull(playerId, "playerId");
+    this.job = job;
+    this.finalLevel = finalLevel;
+  }
 
-    @NotNull
-    public Player getPlayer() {
-        return player;
-    }
+  public UUID getPlayerId() {
+    return playerId;
+  }
 
-    @NotNull
-    public Job getJob() {
-        return job;
-    }
+  public Job getJob() {
+    return job;
+  }
 
-    /**
-     * Gets the player's level at time of leaving.
-     */
-    public int getFinalLevel() {
-        return finalLevel;
-    }
+  /**
+   * Gets the player's level at time of leaving.
+   */
+  public int getFinalLevel() {
+    return finalLevel;
+  }
 }

@@ -19,8 +19,10 @@ import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.MemoryJobRepositoryImpl;
 import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.domain.repository.JobProgressionRepository;
+import net.aincraft.Bridge;
 import net.aincraft.event.JobJoinEvent;
 import net.aincraft.event.JobLeaveEvent;
+import net.aincraft.paper.event.PaperEventBridge;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
 import net.aincraft.util.KeyResolver;
@@ -115,14 +117,15 @@ final class JobServiceImpl implements JobService {
     UUID uuid = UUID.fromString(playerId);
     Player player = Bukkit.getPlayer(uuid);
     Job job = PersistenceConverters.fromRecord(jobRecord, plugin, payableTypeRegistry);
+    PaperEventBridge events = new PaperEventBridge(Bridge.bridge().eventBus());
 
     // Try to restore from archive first (rejoin case)
     if (progressionService.restore(playerId, jobKey)) {
-      if (player != null) {
-        JobProgressionRecord restored = progressionService.load(playerId, jobKey);
-        int level = PersistenceConverters.fromRecord(restored, plugin, payableTypeRegistry).level();
-        Bukkit.getPluginManager().callEvent(new JobJoinEvent(player, job, level, true));
-      }
+      JobProgressionRecord restored = progressionService.load(playerId, jobKey);
+      int level = restored == null
+          ? 1
+          : PersistenceConverters.fromRecord(restored, plugin, payableTypeRegistry).level();
+      events.publishJoin(new JobJoinEvent(uuid, job, level, true), player);
       return true;
     }
 
@@ -135,9 +138,7 @@ final class JobServiceImpl implements JobService {
     // New join - use starting experience from leveling curve
     BigDecimal startExperience = job.levelingCurve().evaluate(new LevelingCurve.Parameters(1));
     if (progressionService.save(new JobProgressionRecord(playerId, jobRecord, startExperience))) {
-      if (player != null) {
-        Bukkit.getPluginManager().callEvent(new JobJoinEvent(player, job, 1, false));
-      }
+      events.publishJoin(new JobJoinEvent(uuid, job, 1, false), player);
       return true;
     }
     return false;
@@ -154,13 +155,10 @@ final class JobServiceImpl implements JobService {
     int finalLevel = progression.level();
     Job job = progression.job();
 
-    // Get player if online and fire event
     UUID uuid = UUID.fromString(playerId);
     Player player = Bukkit.getPlayer(uuid);
-    if (player != null) {
-      JobLeaveEvent event = new JobLeaveEvent(player, job, finalLevel);
-      Bukkit.getPluginManager().callEvent(event);
-    }
+    new PaperEventBridge(Bridge.bridge().eventBus())
+        .publishLeave(new JobLeaveEvent(uuid, job, finalLevel), player);
 
     return progressionService.archive(playerId,jobKey);
   }
