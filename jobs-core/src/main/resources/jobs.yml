@@ -112,3 +112,88 @@ alchemist:
   payable-curves:
     experience: base + (base * (level - 1) * 0.01)
     economy: base + (base * (level - 1) * 0.01)
+
+# --- AzothMC §8.1 tracks not covered by legacy keys above ---
+# (mining→miner, woodcutting→lumberjack, farming→farmer, fishing→fisher,
+#  alchemy→alchemist, weaponsmithing→blacksmith via ProfessionCatalog)
+
+herbalism:
+  display-name: "<dark_green>Herbalism"
+  description: "Gathers herbs and plants for alchemy and cooking."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+smelting:
+  display-name: "<gray>Smelting"
+  description: "Processes ores into refined metals."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+milling:
+  display-name: "<yellow>Milling"
+  description: "Mills grains and plant fibers into useful materials."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+tanning:
+  display-name: "<gold>Tanning"
+  description: "Turns hides into leather and treated materials."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+refining:
+  display-name: "<aqua>Refining"
+  description: "Refines raw goods into higher-tier crafting inputs."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+cooking:
+  display-name: "<red>Cooking"
+  description: "Prepares food and consumable buffs."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+armorsmithing:
+  display-name: "<dark_aqua>Armorsmithing"
+  description: "Forges armor and defensive gear."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+tailoring:
+  display-name: "<light_purple>Tailoring"
+  description: "Sews cloth and light armor from fibers and hides."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+engineering:
+  display-name: "<dark_purple>Engineering"
+  description: "Builds tools, gadgets, and mechanical components."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
