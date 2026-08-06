@@ -8,14 +8,14 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 /**
- * Record condition that checks if the player is in a specific liquid (water or lava).
- * Delegates to {@link Conditions#liquid(Material)} for implementation.
+ * Checks if the player is in a specific liquid (water or lava).
+ * Material is stored as a key/name string and resolved at evaluation.
  */
-public record LiquidConditionImpl(Material liquid) implements Condition {
+public record LiquidConditionImpl(String materialKey) implements Condition {
 
   public LiquidConditionImpl {
-    Preconditions.checkArgument(liquid == Material.WATER || liquid == Material.LAVA,
-        "Liquid material must be WATER or LAVA, got: " + liquid);
+    Preconditions.checkArgument(materialKey != null && !materialKey.isBlank(),
+        "Liquid material key must be non-blank");
   }
 
   @Override
@@ -24,9 +24,30 @@ public record LiquidConditionImpl(Material liquid) implements Condition {
     if (player == null) {
       return false;
     }
-    if (liquid == Material.WATER) {
+    Material liquid = Material.matchMaterial(materialKey);
+    if (liquid == null) {
+      // bare names / keys without registry prefix
+      String bare = materialKey.contains(":")
+          ? materialKey.substring(materialKey.indexOf(':') + 1)
+          : materialKey;
+      liquid = Material.matchMaterial(bare);
+    }
+    if (liquid == Material.WATER || isWaterName(materialKey)) {
       return player.isInWater();
     }
-    return player.isInLava();
+    if (liquid == Material.LAVA || isLavaName(materialKey)) {
+      return player.isInLava();
+    }
+    return false;
+  }
+
+  private static boolean isWaterName(String key) {
+    String v = key.contains(":") ? key.substring(key.indexOf(':') + 1) : key;
+    return "water".equalsIgnoreCase(v);
+  }
+
+  private static boolean isLavaName(String key) {
+    String v = key.contains(":") ? key.substring(key.indexOf(':') + 1) : key;
+    return "lava".equalsIgnoreCase(v);
   }
 }

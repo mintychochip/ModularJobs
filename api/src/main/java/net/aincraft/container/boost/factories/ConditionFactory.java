@@ -7,11 +7,6 @@ import net.aincraft.container.boost.PlayerResourceType;
 import net.aincraft.container.boost.PotionConditionType;
 import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.WeatherState;
-import net.kyori.adventure.key.Key;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
 @Internal
@@ -21,14 +16,15 @@ public interface ConditionFactory {
     return Bridge.bridge().conditionFactory();
   }
 
-  Condition biome(Biome biome);
+  /**
+   * @param biomeKey biome id or namespaced key (resolved at evaluation)
+   */
+  Condition biome(String biomeKey);
 
   /**
-   * World condition by namespaced key / name token (no live {@link World} required).
+   * @param worldName world name or namespaced key (resolved at evaluation)
    */
-  Condition world(Key worldKey);
-
-  Condition world(World world);
+  Condition world(String worldName);
 
   Condition playerResource(PlayerResourceType type, double expected, RelationalOperator operator);
 
@@ -38,11 +34,20 @@ public interface ConditionFactory {
 
   Condition negate(Condition condition);
 
-  Condition liquid(Material liquid) throws IllegalArgumentException;
+  /**
+   * @param materialKey liquid material name or key ({@code water}/{@code lava})
+   */
+  Condition liquid(String materialKey) throws IllegalArgumentException;
 
-  Condition potionType(PotionEffectType type);
+  /**
+   * @param potionEffectTypeKey effect id or namespaced key
+   */
+  Condition potionType(String potionEffectTypeKey);
 
-  Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
+  /**
+   * @param potionEffectTypeKey effect id or namespaced key
+   */
+  Condition potion(String potionEffectTypeKey, int expected, PotionConditionType conditionType,
       RelationalOperator operator);
 
   Condition compose(Condition a, Condition b, LogicalOperator operator);

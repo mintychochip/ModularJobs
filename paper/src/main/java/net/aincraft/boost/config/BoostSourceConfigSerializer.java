@@ -127,7 +127,7 @@ public final class BoostSourceConfigSerializer {
     return new ConditionConfig(
         "liquid",
         null,
-        liquid.liquid().name(),
+        liquid.materialKey(),
         null,
         null,
         null,
