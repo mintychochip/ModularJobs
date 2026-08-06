@@ -51,10 +51,10 @@ public class PreferencesServiceImpl implements PreferencesService {
   @Override
   public boolean prefersGuiMode(@NotNull Player player) {
     PlayerPreferences prefs = preferencesCache.get(player.getUniqueId());
-    if (prefs != null) {
+    if (prefs != null && prefs.guiModeSet) {
       return prefs.guiMode;
     }
-    return DEFAULT_GUI_MODE;
+    return getDefaultGuiMode();
   }
   
   @Override
@@ -62,6 +62,12 @@ public class PreferencesServiceImpl implements PreferencesService {
     PlayerPreferences prefs = preferencesCache.computeIfAbsent(
         player.getUniqueId(), k -> new PlayerPreferences());
     prefs.guiMode = guiMode;
+    prefs.guiModeSet = true;
+  }
+
+  /** Config default for GUI mode ({@code preferences.default-gui-mode}). */
+  public boolean getDefaultGuiMode() {
+    return plugin.getConfig().getBoolean("preferences.default-gui-mode", DEFAULT_GUI_MODE);
   }
   
   /**
@@ -72,7 +78,8 @@ public class PreferencesServiceImpl implements PreferencesService {
   }
   
   private static class PlayerPreferences {
-    int entriesPerPage = DEFAULT_ENTRIES_PER_PAGE;
+    int entriesPerPage = 0;
     boolean guiMode = DEFAULT_GUI_MODE;
+    boolean guiModeSet = false;
   }
 }
