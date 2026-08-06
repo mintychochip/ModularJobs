@@ -1,6 +1,6 @@
-use session_api::app;
-use session_api::db::SessionStore;
-use session_api::handlers::AppState;
+use rest_api::app;
+use rest_api::db::SessionStore;
+use rest_api::handlers::AppState;
 use std::env;
 use std::net::SocketAddr;
 use tracing_subscriber::EnvFilter;
@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
     });
     let bind = env::var("BIND_ADDR").unwrap_or_else(|_| "127.0.0.1:18787".to_string());
 
-    tracing::info!(%database_url, %bind, "starting session-api (connect-only, no DDL)");
+    tracing::info!(%database_url, %bind, "starting rest-api (connect-only, no DDL)");
 
     // Connect only — schema must already exist (scripts/apply-postgres-schema.sh).
     let store = SessionStore::connect(&database_url, 5).await?;

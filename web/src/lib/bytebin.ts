@@ -1,5 +1,5 @@
 /**
- * @deprecated Secure production session editor is React + web/session-api
+ * @deprecated Secure production session editor is React + web/rest-api
  * (`web/session-editor`). Prefer that path over bytebin.
  *
  * Kept for legacy Vue TaskTable demos only.
@@ -8,7 +8,7 @@ import type { EditorPayload } from './types';
 
 const BYTEBIN_URL = 'https://bytebin.lucko.me';
 
-/** @deprecated Use SessionApiClient (session-editor) against web/session-api. */
+/** @deprecated Use SessionApiClient (session-editor) against web/rest-api. */
 export async function fetchSession(code: string): Promise<EditorPayload> {
   const response = await fetch(`${BYTEBIN_URL}/${code}`);
   if (!response.ok) {
@@ -20,7 +20,7 @@ export async function fetchSession(code: string): Promise<EditorPayload> {
   return response.json();
 }
 
-/** @deprecated Use SessionApiClient (session-editor) against web/session-api. */
+/** @deprecated Use SessionApiClient (session-editor) against web/rest-api. */
 export async function saveSession(payload: EditorPayload): Promise<string> {
   const response = await fetch(`${BYTEBIN_URL}/post`, {
     method: 'POST',

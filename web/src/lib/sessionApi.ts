@@ -1,6 +1,6 @@
 /**
  * Thin pointer for Astro/docs consumers: the secure session editor lives in
- * `web/session-editor` (React) and talks to the Rust `web/session-api`.
+ * `web/session-editor` (React) and talks to the Rust `web/rest-api`.
  * Production session load/save must not use bytebin.lucko.me.
  */
 export const SESSION_API_DEFAULT_BASE =
