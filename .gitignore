@@ -50,3 +50,10 @@ WORKLOG.md
 working_log.md
 ### Git worktrees ###
 .worktrees/
+
+### Rust ###
+jobs-session-api/target/
+
+### Node / React session editor ###
+jobs-web/session-editor/node_modules/
+jobs-web/session-editor/dist/
