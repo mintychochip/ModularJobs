@@ -1,5 +1,4 @@
-database:
-  type: sqlite
+# Database is configured in database.yml (PostgreSQL only).
 
 # Payment eligibility (honored by JobPaymentListener via PaymentSettings)
 pay-in-creative: true
@@ -14,6 +13,11 @@ furnace-max-distance: 25.0
 # Economy deposits (Vault). When required=true, plugin enable fails without a Vault economy.
 economy:
   required: true
+
+# AzothMC profession service APIs. Default false: stubs are not registered as Bukkit services.
+# Set true only when integrating consumers that expect ProfessionService / RecipeService / etc.
+profession-apis:
+  register-bukkit-services: false
 
 trackable_entities:
 
