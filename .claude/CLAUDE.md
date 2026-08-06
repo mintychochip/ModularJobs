@@ -15,7 +15,7 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 | `api` | Pure public contracts (no Paper) |
 | `common` | Shared DTOs (editor payload, …) |
 | `paper` | Paper plugin implementation (shadow jar) |
-| `web` | Docs + session-editor + session-api |
+| `web` | Docs + session-editor + rest-api |
 
 ## Core Features
 - Job progression system with leveling
@@ -35,7 +35,7 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - **Caching**: Caffeine
 - **Math**: exp4j
 - **Documentation**: Astro + Starlight (`web/`)
-- **Session stack**: Rust `web/session-api` + React `web/session-editor`
+- **Session stack**: Rust `web/rest-api` + React `web/session-editor`
 
 ## Key Modules & Components
 
@@ -66,7 +66,7 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 ### web
 - Astro + Starlight docs site
 - `web/session-editor` — React secure session editor
-- `web/session-api` — Rust REST API for editor sessions on Postgres
+- `web/rest-api` — Rust REST API for editor sessions on Postgres
 
 ## Design Patterns
 - **Composition root**: `PluginContext` + package `*Wiring` classes construct the object graph
@@ -81,12 +81,12 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - **Schema ownership:** Postgres is **connect-only** — apply
   `paper/src/main/resources/sql/postgres.sql` via `scripts/apply-postgres-schema.sh`
   (never CREATE from the game/API process). See `docs/database-schema.md` and root `AGENTS.md`.
-- Also: `web/session-api` (Rust) + `web/session-editor` (React) for secure editor sessions
+- Also: `web/rest-api` (Rust) + `web/session-editor` (React) for secure editor sessions
 
 ## Development
 - Build: `./gradlew :paper:build` → shadow jar at `paper/build/libs/paper-all.jar`
 - Tests: `./gradlew :api:test :common:test :paper:test`
-- Session API: `cd web/session-api && cargo test`
+- Session API: `cd web/rest-api && cargo test`
 - Session editor: `cd web/session-editor && npm test && npm run build`
 - Test server: `./gradlew :paper:runServer` (when configured)
 - Server data in `paper/run/` (when runServer used)
@@ -127,4 +127,4 @@ tools to resolve library id and get library docs without me having to explicitly
 
 ### Module layout (2026-08)
 - Renamed Gradle modules: `jobs-api`→`api`, `jobs-core`→`paper`; added `common`
-- Web stack under `web/` (`session-editor`, `session-api`); pure `api` has no Paper dependency
+- Web stack under `web/` (`session-editor`, `rest-api`); pure `api` has no Paper dependency

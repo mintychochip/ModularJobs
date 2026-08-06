@@ -1,7 +1,7 @@
 # ModularJobs — agent notes
 
 PaperMC job progression plugin (Java 21 / 25 toolchain, Gradle multi-module) plus
-Postgres-backed session API (Rust) and React secure session editor.
+Postgres-backed REST API (Rust) and React secure session editor.
 
 ## Modules
 
@@ -10,13 +10,28 @@ Postgres-backed session API (Rust) and React secure session editor.
 | `api` | Pure public contracts (no Paper) |
 | `common` | Shared DTOs (editor payload, …) |
 | `paper` | Paper plugin implementation (shadow jar) |
-| `web` | Docs + session-editor + session-api |
+| `web` | Docs + session-editor + rest-api |
 | `scripts/` | Out-of-band ops helpers (schema apply) |
 
 Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-all.jar`).  
 Unit tests: `./gradlew :api:test :common:test :paper:test`.  
-Rust API: `cd web/session-api && cargo test` / `cargo run --release`.  
+Static analysis (Error Prone on compile; Checkstyle/PMD/SpotBugs on `check`):  
+`./gradlew check` — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
+Enforce fail-on-findings: `./gradlew check -Pquality.fail=true`.  
+Configs: `config/checkstyle/`, `config/pmd/`, `config/spotbugs/`.  
+Rust API: `cd web/rest-api && cargo test` / `cargo run --release`.  
 React editor: `cd web/session-editor && npm test && npm run build`.
+
+### Git hooks + CI
+
+- **Install hooks** (once per clone): `./scripts/install-git-hooks.sh`  
+  Sets `core.hooksPath=.githooks`. Pre-commit runs compile/tests for staged Java,
+  `cargo check` for `web/rest-api`, `npm test` for `web/session-editor`.  
+  Skip once: `SKIP_PRECOMMIT=1 git commit ...`
+- **GitHub Actions**: `.github/workflows/ci.yml`  
+  - `java` — JDK 25, Postgres service, `./gradlew check`, shadow jar + report artifacts  
+  - `rest-api` — Rust stable + Postgres, `cargo test`  
+  - `session-editor` — Node 22, `npm ci && npm test && npm run build`
 
 ## Database schema ownership (important)
 
@@ -40,14 +55,14 @@ Lab tests may apply the shared SQL file explicitly; production paths must stay c
 
 ```
 Plugin export (payload JSON)
-    → POST web/session-api /api/v1/sessions  (or create via API)
+    → POST web/rest-api /api/v1/sessions  (or create via API)
     → Postgres table editor_sessions
     → React session-editor loads by ?code=&token=
     → PUT save with Bearer / X-Session-Token
 ```
 
 - Payload contract: version, metadata.sessionToken, jobs map, registered action/payable types  
-  (`paper` editor JSON, `web/session-api` models, `web/session-editor` types; shared DTOs in `common`)
+  (`paper` editor JSON, `web/rest-api` models, `web/session-editor` types; shared DTOs in `common`)
 - Auth: session **code** (public) + **token** (secret). Wrong/missing token → 401; no cross-session overwrite
 - React client base URL: `VITE_SESSION_API_URL` (default `http://127.0.0.1:18787`)
 - **Do not** use `bytebin.lucko.me` for the production secure editor path  
@@ -60,7 +75,7 @@ Plugin export (payload JSON)
 export DATABASE_URL=postgres://user:pass@host:5432/modularjobs
 export BIND_ADDR=127.0.0.1:18787
 # schema must already exist
-cargo run --release --manifest-path web/session-api/Cargo.toml
+cargo run --release --manifest-path web/rest-api/Cargo.toml
 ```
 
 ### Plugin remote DB (`database.yml`)
@@ -95,4 +110,4 @@ payable:
 - MockBukkit 26.2 / Paper 26.2 / Java toolchain 25
 - Postgres DDL + fidelity tests; connect-only remote schema ownership
 - Module layout rename: `jobs-api`→`api`, `jobs-core`→`paper`, `jobs-web`/`jobs-session-api`→`web/*`
-- `web/session-api` (Rust) + React `web/session-editor` for secure sessions
+- `web/rest-api` (Rust) + React `web/session-editor` for secure sessions

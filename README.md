@@ -9,7 +9,7 @@ Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 | `api` | Pure public contracts (no Paper) |
 | `common` | Shared DTOs (editor payload, …) |
 | `paper` | Paper plugin implementation (shadow jar) |
-| `web` | Docs + session-editor + session-api |
+| `web` | Docs + session-editor + rest-api |
 
 ## Build
 
@@ -27,9 +27,18 @@ Unit tests:
 Session stack:
 
 ```bash
-cd web/session-api && cargo test
+cd web/rest-api && cargo test
 cd web/session-editor && npm test && npm run build
 ```
+
+Git hooks (once per clone):
+
+```bash
+./scripts/install-git-hooks.sh
+# SKIP_PRECOMMIT=1 git commit ...  # emergency bypass
+```
+
+CI: `.github/workflows/ci.yml` — Java 25 + Postgres (`check` + shadow jar), Rust rest-api, React session-editor.
 
 ## Operator quick start
 
