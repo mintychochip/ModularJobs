@@ -5,6 +5,15 @@ run-paper = "3.0.2"
 # GradleUp shadow 9.x: ASM supports Java 25 class files (major 69)
 shadow = "9.6.1"
 
+# Static analysis (tool versions + Gradle plugins)
+errorprone = "2.50.0"
+errorprone-plugin = "5.1.0"
+# Distinct keys so version catalog accessors don't nest under "spotbugs"
+spotbugs-tool = "4.10.3"
+spotbugs-gradle = "6.5.10"
+pmd = "7.26.0"
+checkstyle = "13.9.0"
+
 # Core infrastructure
 kryo = "5.6.2"
 guava = "33.4.0-jre"
@@ -66,9 +75,14 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" 
 # Development
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 
+# Static analysis
+errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone" }
+
 [bundles]
 minecraft-api = ["paper-api", "mcmmo"]
 
 [plugins]
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone-plugin" }
+spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugs-gradle" }

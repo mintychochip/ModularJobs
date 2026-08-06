@@ -9,7 +9,7 @@ public enum LogicalOperator implements BiPredicate<Boolean, Boolean> {
   XOR((a, b) -> a ^ b),
   NAND((a, b) -> !(a && b)),
   NOR((a, b) -> !(a || b)),
-  XNOR((a, b) -> a == b),
+  XNOR((a, b) -> a.booleanValue() == b.booleanValue()),
   IMPLIES((a, b) -> !a || b); // A → B
 
   private final BiPredicate<Boolean, Boolean> predicate;
