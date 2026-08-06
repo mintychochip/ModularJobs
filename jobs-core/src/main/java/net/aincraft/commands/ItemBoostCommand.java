@@ -12,7 +12,7 @@ import java.util.BitSet;
 import net.aincraft.boost.SlotSetParser;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
-import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.registry.Registry;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;

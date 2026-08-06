@@ -3,7 +3,7 @@ package net.aincraft.boost;
 import java.util.Optional;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
-import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
 import org.bukkit.Bukkit;

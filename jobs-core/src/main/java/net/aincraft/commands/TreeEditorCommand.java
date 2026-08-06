@@ -8,7 +8,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.Optional;
 import net.aincraft.Job;
-import net.aincraft.service.JobResolver;
+import net.aincraft.domain.JobResolver;
 import net.aincraft.upgrade.UpgradeService;
 import net.aincraft.upgrade.UpgradeTree;
 import net.aincraft.upgrade.config.UpgradeTreeLoader;

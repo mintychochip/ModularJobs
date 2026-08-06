@@ -19,13 +19,19 @@ import net.aincraft.container.BoostContext;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.aincraft.container.boost.Condition;
-import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
+import java.sql.Connection;
+import java.sql.SQLException;
+import net.aincraft.registry.SimpleRegistryImpl;
+import net.aincraft.repository.ConnectionSource;
+import net.aincraft.repository.DatabaseType;
+import net.aincraft.serialization.KryoCodecRegistry;
+import net.aincraft.service.ItemBoostDataService;
+import net.aincraft.upgrade.PlayerUpgradeRepository;
 import net.aincraft.upgrade.UpgradeBoostDataService;
 import net.kyori.adventure.key.Key;
-import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -132,16 +138,8 @@ class BoostEngineAggregationTest {
   }
 
   private static ItemBoostDataService unusedItemService() {
-    return new ItemBoostDataService() {
-      @Override
-      public void addData(SerializableBoostData data, ItemStack stack) {
-      }
-
-      @Override
-      public Optional<SerializableBoostData> getData(ItemStack itemStack) {
-        return Optional.empty();
-      }
-    };
+    // evaluateSources does not call item service; real concrete still wires BoostEngine
+    return new ItemBoostDataService(new KryoCodecRegistry());
   }
 
   private static TimedBoostDataService unusedTimedService() {
@@ -169,6 +167,37 @@ class BoostEngineAggregationTest {
   }
 
   private static UpgradeBoostDataService unusedUpgradeService() {
-    return (playerId, jobKey) -> List.of();
+    // Connection never used on evaluateSources path
+    return new UpgradeBoostDataService(
+        new PlayerUpgradeRepository(unusedConnectionSource()),
+        new SimpleRegistryImpl<>());
+  }
+
+  private static ConnectionSource unusedConnectionSource() {
+    return new ConnectionSource() {
+      @Override
+      public void shutdown() {
+      }
+
+      @Override
+      public DatabaseType getType() {
+        return DatabaseType.POSTGRES;
+      }
+
+      @Override
+      public boolean isClosed() {
+        return false;
+      }
+
+      @Override
+      public Connection getConnection() throws SQLException {
+        throw new UnsupportedOperationException("unused in evaluateSources test");
+      }
+
+      @Override
+      public boolean isSetup() {
+        return true;
+      }
+    };
   }
 }

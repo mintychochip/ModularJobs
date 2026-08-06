@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.aincraft.container.boost.ItemBoostDataService;
+import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.payment.ExploitService.ExploitProtectionType;
 import net.aincraft.protection.BlockOwnershipService;

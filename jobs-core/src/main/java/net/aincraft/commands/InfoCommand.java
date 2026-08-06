@@ -23,7 +23,7 @@ import net.aincraft.Job;
 import net.aincraft.JobTask;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.Payable;
-import net.aincraft.service.JobResolver;
+import net.aincraft.domain.JobResolver;
 import net.aincraft.service.JobService;
 import net.aincraft.service.PreferencesService;
 import net.kyori.adventure.key.Key;
