@@ -1,3 +1,19 @@
+# Schema ownership: see docs/database-schema.md
+#
+# SQLite (default): plugin applies sql/sqlite.sql on connect (local file exception).
+# Postgres/MySQL:  connect only. Provision with:
+#   ./scripts/apply-postgres-schema.sh
+#   # or: psql "$DATABASE_URL" -f jobs-core/src/main/resources/sql/postgres.sql
+# Missing tables → plugin fails at startup (does not CREATE).
+#
+# Remote example:
+# payable:
+#   type: postgres
+#   jdbc-url: jdbc:postgresql://db.example.com:5432/modularjobs
+#   username: modularjobs
+#   password: secret
+#   maximum-pool-size: 10
+
 payable:
   type: sqlite
   file-path: modularjobs.db
