@@ -22,6 +22,8 @@ dependencies {
     }
     compileOnly(libs.lwc)
     compileOnly(libs.bolt)
+    // Preferences public API only (soft-depend; not shaded into the plugin fat jar)
+    compileOnly(libs.preferences.api)
     // JobPets API for pet change events (file dependency from parent workspace)
     compileOnly(files("../../jobpets-api/build/libs/jobpets-api-1.0.0.jar"))
 
@@ -30,10 +32,9 @@ dependencies {
     // MockBukkit for Paper 26.2 — mock server for OfflinePlayer / Material runtime
     testImplementation(libs.mockbukkit)
     testImplementation(libs.paper.api)
-    // SQLite JDBC — default database path; must ship in the plugin artifact
-    implementation(libs.sqlite.jdbc)
-    testImplementation(libs.sqlite.jdbc)
-    // PostgreSQL driver for remote DB fidelity tests and runtime
+    // Preferences API for unit tests of the bridge (still not packaged into shadowJar)
+    testImplementation(libs.preferences.api)
+    // PostgreSQL only — driver ships in the plugin artifact
     implementation(libs.postgresql)
     testImplementation(libs.postgresql)
 }

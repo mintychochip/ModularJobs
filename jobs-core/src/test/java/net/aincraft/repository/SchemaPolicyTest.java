@@ -7,46 +7,28 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.junit.jupiter.api.Test;
 
 /**
- * Schema ownership: SQLite may bootstrap in-process; remote never does.
+ * Schema ownership: PostgreSQL only; plugin never applies DDL in-process.
  */
 class SchemaPolicyTest {
 
   @Test
-  void sqliteAppliesSchemaByDefault() {
-    assertTrue(SchemaPolicy.shouldApplySchemaOnConnect(DatabaseType.SQLITE, null));
-    assertTrue(
-        SchemaPolicy.shouldApplySchemaOnConnect(DatabaseType.SQLITE, new MemoryConfiguration()));
-  }
-
-  @Test
-  void sqliteCanDisableBootstrap() {
-    MemoryConfiguration section = new MemoryConfiguration();
-    section.set("auto-schema", false);
-    assertFalse(SchemaPolicy.shouldApplySchemaOnConnect(DatabaseType.SQLITE, section));
-  }
-
-  @Test
-  void remoteNeverAppliesSchemaEvenIfAutoSchemaTrue() {
+  void neverAppliesSchemaOnConnect() {
     MemoryConfiguration section = new MemoryConfiguration();
     section.set("auto-schema", true);
+    assertFalse(SchemaPolicy.shouldApplySchemaOnConnect(DatabaseType.POSTGRES, null));
     assertFalse(SchemaPolicy.shouldApplySchemaOnConnect(DatabaseType.POSTGRES, section));
-    assertFalse(SchemaPolicy.shouldApplySchemaOnConnect(DatabaseType.MYSQL, section));
-    assertFalse(SchemaPolicy.shouldApplySchemaOnConnect(DatabaseType.MARIADB, section));
   }
 
   @Test
-  void remoteVerifiesPresence() {
+  void alwaysVerifiesPresence() {
     assertTrue(SchemaPolicy.shouldVerifySchemaPresent(DatabaseType.POSTGRES));
-    assertTrue(SchemaPolicy.shouldVerifySchemaPresent(DatabaseType.MYSQL));
-    assertFalse(SchemaPolicy.shouldVerifySchemaPresent(DatabaseType.SQLITE));
   }
 
   @Test
-  void remoteAutoSchemaFlagIsMisconfiguration() {
+  void autoSchemaFlagIsMisconfiguration() {
     MemoryConfiguration section = new MemoryConfiguration();
     section.set("auto-schema", true);
     assertTrue(SchemaPolicy.hasIgnoredRemoteAutoSchema(DatabaseType.POSTGRES, section));
-    assertFalse(SchemaPolicy.hasIgnoredRemoteAutoSchema(DatabaseType.SQLITE, section));
     assertFalse(SchemaPolicy.hasIgnoredRemoteAutoSchema(DatabaseType.POSTGRES, null));
   }
 }

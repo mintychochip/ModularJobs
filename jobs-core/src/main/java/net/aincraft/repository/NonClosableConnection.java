@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * JDBC {@link Connection} wrapper that ignores {@code close()} so try-with-resources
- * in repositories can share an in-memory SQLite connection across operations.
+ * in repositories can share one connection across operations (e.g. unit tests).
  * Call {@link #shutdown()} to actually close the delegate.
  */
 @Internal

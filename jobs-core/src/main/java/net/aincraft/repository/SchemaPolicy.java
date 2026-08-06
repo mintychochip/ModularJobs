@@ -5,56 +5,38 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Schema ownership rules for ModularJobs.
+ * Schema ownership for ModularJobs (PostgreSQL only).
  *
- * <ul>
- *   <li><b>SQLite (local file):</b> the plugin may apply {@code sql/sqlite.sql} on connect.
- *       Zero-config Paper installs need that exception.
- *   <li><b>Postgres / MySQL / MariaDB (remote or shared):</b> the runtime process never runs
- *       DDL. Schema is provisioned out-of-band from {@code sql/&lt;dialect&gt;.sql}
- *       (see {@code scripts/apply-postgres-schema.sh}).
- * </ul>
+ * <p>The plugin process never runs DDL. Ops provision tables from
+ * {@code sql/postgres.sql} via {@code scripts/apply-postgres-schema.sh} (or equivalent).
+ * On connect the plugin only verifies required tables exist.
  *
- * <p>Config key {@code auto-schema} is ignored for non-SQLite dialects (and logged as a
- * misconfiguration if present). For SQLite it can force bootstrap off with
- * {@code auto-schema: false}.
+ * <p>Config key {@code auto-schema} is ignored (logged as a misconfiguration if present).
  */
 public final class SchemaPolicy {
 
   private SchemaPolicy() {}
 
   /**
-   * @return true only when this JVM process should execute shipped DDL on connect
+   * @return always false — never CREATE TABLE inside the game process
    */
   public static boolean shouldApplySchemaOnConnect(
       @NotNull DatabaseType type, @Nullable ConfigurationSection configuration) {
-    if (type != DatabaseType.SQLITE) {
-      // Remote / shared: never create tables inside the game process.
-      return false;
-    }
-    if (configuration != null && configuration.contains("auto-schema")) {
-      return configuration.getBoolean("auto-schema");
-    }
-    return true;
+    return false;
   }
 
   /**
-   * @return true when the process should verify required tables already exist (fail fast)
+   * @return true — fail fast when ops has not applied {@code sql/postgres.sql}
    */
-  public static boolean shouldVerifySchemaPresent(
-      @NotNull DatabaseType type) {
-    return type == DatabaseType.POSTGRES
-        || type == DatabaseType.MYSQL
-        || type == DatabaseType.MARIADB;
+  public static boolean shouldVerifySchemaPresent(@NotNull DatabaseType type) {
+    return type == DatabaseType.POSTGRES;
   }
 
   /**
-   * @return true if config still sets {@code auto-schema} on a remote dialect (misconfig)
+   * @return true if config still sets {@code auto-schema} (unsupported; ops must apply DDL)
    */
   public static boolean hasIgnoredRemoteAutoSchema(
       @NotNull DatabaseType type, @Nullable ConfigurationSection configuration) {
-    return type != DatabaseType.SQLITE
-        && configuration != null
-        && configuration.contains("auto-schema");
+    return configuration != null && configuration.contains("auto-schema");
   }
 }

@@ -20,21 +20,20 @@ React editor: `cd jobs-web/session-editor && npm test && npm run build`.
 
 ## Database schema ownership (important)
 
-**Remote Postgres/MySQL/MariaDB: the Java plugin and Rust API never create tables.**
+**PostgreSQL only. The Java plugin and Rust API never create tables.**
 
 | Store | Who applies DDL | Runtime process |
 |-------|-----------------|-----------------|
-| SQLite (local file) | Plugin on connect (`sql/sqlite.sql`) | Bootstrap OK |
-| Postgres (remote) | Ops / CI / script **once** | Connect + verify only |
+| Postgres | Ops / CI / script **once** | Connect + verify only |
 
-- Source of truth: `jobs-core/src/main/resources/sql/postgres.sql` (and `sqlite.sql`)
-- Apply Postgres: `./scripts/apply-postgres-schema.sh` or  
+- Source of truth: `jobs-core/src/main/resources/sql/postgres.sql`
+- Apply: `./scripts/apply-postgres-schema.sh` or  
   `psql "$DATABASE_URL" -f jobs-core/src/main/resources/sql/postgres.sql`
-- Policy: `SchemaPolicy` — remote never runs DDL in-process (`auto-schema` on remote is ignored)
-- Fail-fast: `SchemaPresence` on remote connect; missing tables → hard error, no CREATE
+- Policy: `SchemaPolicy` — never runs DDL in-process (`auto-schema` is ignored)
+- Fail-fast: `SchemaPresence` on connect; missing tables → hard error, no CREATE
 - Details: `docs/database-schema.md`
 
-Do **not** reintroduce boot-time `CREATE TABLE` for Postgres in the plugin or session API.
+Do **not** reintroduce boot-time `CREATE TABLE` or SQLite/MySQL/MariaDB support.
 Lab tests may apply the shared SQL file explicitly; production paths must stay connect-only.
 
 ## Secure session stack
@@ -77,10 +76,10 @@ payable:
 ## Architecture notes (core)
 
 - Composition root: `PluginContext` + package `*Wiring` (no Guice)
-- Repository pattern + HikariCP for remote; SQLite for local default
+- Repository pattern + HikariCP against PostgreSQL only
 - Commands: Paper Brigadier; themed text via `net.aincraft.util.Messages` (not Mint)
-- Tests: JUnit 5; MockBukkit for Bukkit-touching tests; Postgres fidelity tests need a live PG  
-  (`MODULARJOBS_TEST_PG_*` or default `localhost:55432`)
+- Tests: JUnit 5; MockBukkit for Bukkit-touching tests; repository SQL tests need a live PG  
+  (`MODULARJOBS_TEST_PG_*` or default `localhost:55432`; skipped when unavailable)
 
 ## Agent rules
 

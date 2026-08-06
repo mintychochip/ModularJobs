@@ -70,7 +70,8 @@ class SchemaPresenceTest {
         () -> SchemaPresence.requireTables(
             connection, DatabaseType.POSTGRES, List.of(probe)));
 
-    assertTrue(ex.getMessage().contains("does not create remote tables"));
+    assertTrue(ex.getMessage().contains("does not create")
+        || ex.getMessage().contains("not provisioned"));
     assertTrue(ex.getMessage().contains("apply-postgres-schema")
         || ex.getMessage().contains("sql/postgres.sql"));
     assertTrue(ex.getMissingTables().contains(probe));

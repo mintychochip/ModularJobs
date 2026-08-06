@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -28,11 +27,11 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Drives shipped {@link RelationalJobProgressionRepositoryImpl} save/load/delete against
- * in-memory SQLite (real SQL path, fake job catalog only).
+ * PostgreSQL (real SQL path, fake job catalog only). Requires live Postgres (see {@link net.aincraft.test.TestPostgres}).
  */
 class RelationalJobProgressionRepositoryTest {
 
-  private static final String TABLE = "job_progressions";
+  private static final String TABLE = "job_progressions_test";
 
   private Connection connection;
   private JobProgressionRepository repository;
@@ -41,15 +40,16 @@ class RelationalJobProgressionRepositoryTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    Class.forName("org.sqlite.JDBC");
-    Connection raw = DriverManager.getConnection("jdbc:sqlite::memory:");
+    net.aincraft.test.TestPostgres.assumeAvailable();
+    Connection raw = net.aincraft.test.TestPostgres.open();
     connection = NonClosableConnection.create(raw);
     try (Statement st = connection.createStatement()) {
+      st.execute("DROP TABLE IF EXISTS " + TABLE);
       st.execute("""
-          CREATE TABLE job_progressions (
+          CREATE TABLE job_progressions_test (
             player_id  TEXT NOT NULL,
             job_key    TEXT NOT NULL,
-            experience NUMERIC NOT NULL,
+            experience NUMERIC(38, 10) NOT NULL,
             PRIMARY KEY (player_id, job_key)
           )
           """);
@@ -77,8 +77,15 @@ class RelationalJobProgressionRepositoryTest {
 
   @AfterEach
   void tearDown() throws SQLException {
-    if (connection instanceof NonClosableConnection nc) {
-      nc.shutdown();
+    if (connection != null) {
+      try (Statement st = connection.createStatement()) {
+        st.execute("DROP TABLE IF EXISTS " + TABLE);
+      } catch (SQLException ignored) {
+        // best-effort
+      }
+      if (connection instanceof NonClosableConnection nc) {
+        nc.shutdown();
+      }
     }
   }
 
@@ -148,7 +155,7 @@ class RelationalJobProgressionRepositoryTest {
   }
 
 
-  /** Reuses a single open JDBC connection (in-memory SQLite). */
+  /** Reuses a single open JDBC connection (shared NonClosableConnection). */
   private static final class FixedConnectionSource implements ConnectionSource {
     private final Connection connection;
 
@@ -176,7 +183,7 @@ class RelationalJobProgressionRepositoryTest {
 
     @Override
     public DatabaseType getType() {
-      return DatabaseType.SQLITE;
+      return DatabaseType.POSTGRES;
     }
 
     @Override
