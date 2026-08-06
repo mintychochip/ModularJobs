@@ -16,8 +16,8 @@ import net.aincraft.container.PayableType;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.model.JobTaskRecord;
-import net.aincraft.domain.repository.JobRepository;
-import net.aincraft.domain.repository.JobTaskRepository;
+import net.aincraft.domain.MemoryJobRepositoryImpl;
+import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.event.JobJoinEvent;
 import net.aincraft.event.JobLeaveEvent;
@@ -36,18 +36,18 @@ final class JobServiceImpl implements JobService {
 
   private final Registry<ActionType> actionTypeRegistry;
   private final Registry<PayableType> payableTypeRegistry;
-  private final JobTaskRepository jobTaskRepository;
+  private final RelationalJobTaskRepositoryImpl jobTaskRepository;
   private final KeyResolver keyResolver;
-  private final JobRepository jobRepository;
+  private final MemoryJobRepositoryImpl jobRepository;
   private final ProgressionService progressionService;
   private final Plugin plugin;
 
   public JobServiceImpl(
       Registry<ActionType> actionTypeRegistry,
       Registry<PayableType> payableTypeRegistry,
-      JobTaskRepository jobTaskRepository,
+      RelationalJobTaskRepositoryImpl jobTaskRepository,
       KeyResolver keyResolver,
-      JobRepository jobRepository,
+      MemoryJobRepositoryImpl jobRepository,
       ProgressionService progressionService,
       Plugin plugin) {
     this.actionTypeRegistry = actionTypeRegistry;

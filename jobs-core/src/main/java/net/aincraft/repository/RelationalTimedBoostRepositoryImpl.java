@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
-import net.aincraft.serialization.CodecRegistry;
+import net.aincraft.serialization.KryoCodecRegistry;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +30,7 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   static final char KEY_SEP = '\u001f';
 
   private final ConnectionSource connectionSource;
-  private final CodecRegistry codecRegistry;
+  private final KryoCodecRegistry codecRegistry;
   private final RelationalRepositoryImpl<String, ActiveBoostData> relational;
   /** Null when constructed for synchronous (test) access without write-back. */
   @Nullable
@@ -39,7 +39,7 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   private final Map<String, Set<String>> knownBoostKeys = new ConcurrentHashMap<>();
 
   public RelationalTimedBoostRepositoryImpl(Plugin plugin, ConnectionSource connectionSource,
-      CodecRegistry codecRegistry) {
+      KryoCodecRegistry codecRegistry) {
     this(connectionSource, codecRegistry, plugin);
   }
 
@@ -48,13 +48,13 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
    * Still uses the production SQL context.
    */
   static RelationalTimedBoostRepositoryImpl createSynchronous(
-      ConnectionSource connectionSource, CodecRegistry codecRegistry) {
+      ConnectionSource connectionSource, KryoCodecRegistry codecRegistry) {
     return new RelationalTimedBoostRepositoryImpl(connectionSource, codecRegistry, null);
   }
 
   private RelationalTimedBoostRepositoryImpl(
       ConnectionSource connectionSource,
-      CodecRegistry codecRegistry,
+      KryoCodecRegistry codecRegistry,
       @Nullable Plugin plugin) {
     this.connectionSource = connectionSource;
     this.codecRegistry = codecRegistry;
@@ -188,9 +188,9 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   static final class TimedBoostRelationalContext
       implements RelationalRepositoryContext<String, ActiveBoostData> {
 
-    private final CodecRegistry codecRegistry;
+    private final KryoCodecRegistry codecRegistry;
 
-    TimedBoostRelationalContext(CodecRegistry codecRegistry) {
+    TimedBoostRelationalContext(KryoCodecRegistry codecRegistry) {
       this.codecRegistry = codecRegistry;
     }
 

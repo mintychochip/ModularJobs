@@ -12,17 +12,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link KeyResolverImpl} strategy registration and resolve dispatch.
+ * Drives shipped {@link KeyResolver} strategy registration and resolve dispatch.
  * Material keys require MockBukkit server lifecycle on Paper 26.2.
  */
-class KeyResolverImplTest {
+class KeyResolverTest {
 
-  private KeyResolverImpl resolver;
+  private KeyResolver resolver;
 
   @BeforeEach
   void setUp() {
     MockBukkitSupport.mockServer();
-    resolver = new KeyResolverImpl();
+    resolver = new KeyResolver();
   }
 
   @AfterEach

@@ -1,18 +1,30 @@
 package net.aincraft.payment;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
-import net.aincraft.payment.MobDamageTracker.DamageContribution;
-import net.kyori.adventure.key.Key;
+import net.aincraft.payment.DamageContribution;
 import org.bukkit.entity.Entity;
-import org.jetbrains.annotations.ApiStatus.Internal;
 
-@Internal
-interface MobDamageTrackerStore {
+public final class MobDamageTrackerStore {
 
-  DamageContribution getContribution(Entity entity,
-      Supplier<DamageContribution> contributionSupplier);
+  private final Map<UUID, DamageContribution> damageContributions = new HashMap<>();
 
-  DamageContribution removeContribution(Entity entity);
+  public MobDamageTrackerStore() {
+  }
 
-  boolean hasContribution(Entity entity);
+  public DamageContribution getContribution(Entity entity,
+      Supplier<DamageContribution> contributionSupplier) {
+    return damageContributions.computeIfAbsent(entity.getUniqueId(),
+        __ -> contributionSupplier.get());
+  }
+
+  public DamageContribution removeContribution(Entity entity) {
+    return damageContributions.remove(entity.getUniqueId());
+  }
+
+  public boolean hasContribution(Entity entity) {
+    return damageContributions.containsKey(entity.getUniqueId());
+  }
 }

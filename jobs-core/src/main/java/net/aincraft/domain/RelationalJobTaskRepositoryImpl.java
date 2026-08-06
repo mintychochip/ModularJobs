@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
-import net.aincraft.domain.repository.JobTaskRepository;
+import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.repository.ConnectionSource;
 
-final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
+public final class RelationalJobTaskRepositoryImpl {
 
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
   private static final int CACHE_MAXIMUM_SIZE = 10_000;
@@ -40,7 +40,6 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     this.connectionSource = connectionSource;
   }
 
-  @Override
   public JobTaskRecord load(String jobKey, String actionTypeKey, String contextKey) {
     String cacheKey = jobKey + actionTypeKey + contextKey;
     JobTaskRecord taskRecord = readCache.getIfPresent(cacheKey);
@@ -71,7 +70,6 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     }
   }
 
-  @Override
   public boolean save(JobTaskRecord record) {
     String cacheKey = createCacheKey(record.jobKey(), record.actionTypeKey(), record.contextKey());
     try (Connection connection = connectionSource.getConnection()) {
@@ -142,7 +140,6 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     }
   }
 
-  @Override
   public boolean delete(String jobKey, String actionTypeKey, String contextKey) {
     String cacheKey = createCacheKey(jobKey, actionTypeKey, contextKey);
     try (Connection connection = connectionSource.getConnection()) {
@@ -192,7 +189,6 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     }
   }
 
-  @Override
   public Map<String, List<JobTaskRecord>> getRecords(String jobKey) {
     Map<String, Map<Integer, TaskRecordAccumulator>> actionTypeTaskMap = new LinkedHashMap<>();
     try (Connection connection = connectionSource.getConnection();
@@ -241,7 +237,6 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     }
   }
 
-  @Override
   public List<JobTaskRecord> getRecords(String jobKey, String actionTypeKey) {
     List<JobTaskRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
@@ -262,7 +257,6 @@ final class RelationalJobTaskRepositoryImpl implements JobTaskRepository {
     }
   }
 
-  @Override
   public List<JobTaskRecord> getAllRecords(String jobKey) {
     Map<String, List<JobTaskRecord>> grouped = getRecords(jobKey);
     List<JobTaskRecord> all = new ArrayList<>();

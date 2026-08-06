@@ -2,14 +2,26 @@ package net.aincraft.protection;
 
 import java.util.Optional;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
-import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-@Internal
-public interface BlockOwnershipService {
-  @NotNull
-  Optional<OfflinePlayer> getOwner(Block block);
+public final class BlockOwnershipService {
 
+  @Nullable
+  private final BlockProtectionAdapter protectionAdapter;
+
+  public BlockOwnershipService(@org.jetbrains.annotations.Nullable BlockProtectionAdapter protectionAdapter) {
+    this.protectionAdapter = protectionAdapter;
+  }
+
+  public @NotNull Optional<OfflinePlayer> getOwner(Block block) {
+    if (protectionAdapter == null) {
+      return Optional.empty();
+    }
+    Optional<UUID> owner = protectionAdapter.getOwner(block);
+    return owner.map(Bukkit::getOfflinePlayer);
+  }
 }

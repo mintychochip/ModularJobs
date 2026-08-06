@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link ProgressionServiceImpl} archive/restore migration against in-memory repos.
+ * Drives shipped {@link ProgressionService} archive/restore migration against in-memory repos.
  */
 class ProgressionServiceArchiveTest {
 
@@ -33,7 +33,7 @@ class ProgressionServiceArchiveTest {
   void setUp() {
     live = new InMemoryProgressionRepository();
     archive = new InMemoryProgressionRepository();
-    service = new ProgressionServiceImpl(live, archive);
+    service = new ProgressionService(live, archive);
     job = new JobRecord(
         "modularjobs:miner",
         "Miner",
@@ -123,7 +123,7 @@ class ProgressionServiceArchiveTest {
   }
 
   /**
-   * In-memory fake for collaborator only — SUT is ProgressionServiceImpl.
+   * In-memory fake for collaborator only — SUT is ProgressionService.
    */
   private static final class InMemoryProgressionRepository implements JobProgressionRepository {
 

@@ -8,8 +8,8 @@ import net.aincraft.container.PayableType;
 import net.aincraft.domain.MemoryJobRepositoryImpl.YamlRecordLoader;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.repository.JobProgressionRepository;
-import net.aincraft.domain.repository.JobRepository;
-import net.aincraft.domain.repository.JobTaskRepository;
+import net.aincraft.domain.MemoryJobRepositoryImpl;
+import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.registry.Registry;
 import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.PluginResources;
@@ -27,15 +27,15 @@ public final class DomainWiring {
   public static final String LIVE_REPOSITORY = "job_progression";
   public static final String ARCHIVE_REPOSITORY = "archive_job_progression";
 
-  public final JobRepository jobRepository;
-  public final JobTaskRepository jobTaskRepository;
+  public final MemoryJobRepositoryImpl jobRepository;
+  public final RelationalJobTaskRepositoryImpl jobTaskRepository;
   public final ProgressionService progressionService;
   public final JobService jobService;
   public final JobResolver jobResolver;
 
   private DomainWiring(
-      JobRepository jobRepository,
-      JobTaskRepository jobTaskRepository,
+      MemoryJobRepositoryImpl jobRepository,
+      RelationalJobTaskRepositoryImpl jobTaskRepository,
       ProgressionService progressionService,
       JobService jobService,
       JobResolver jobResolver) {
@@ -59,11 +59,11 @@ public final class DomainWiring {
       KeyResolver keyResolver) {
     YamlRecordLoader loader = new YamlRecordLoader();
     Map<String, JobRecord> records = loader.load(YamlConfiguration.create(plugin, "jobs.yml"));
-    JobRepository jobRepository = new MemoryJobRepositoryImpl(records);
+    MemoryJobRepositoryImpl jobRepository = new MemoryJobRepositoryImpl(records);
 
     YamlJobTaskLoader taskLoader = new YamlJobTaskLoader(plugin, connectionSource);
     taskLoader.loadIfEmpty();
-    JobTaskRepository jobTaskRepository = new RelationalJobTaskRepositoryImpl(connectionSource);
+    RelationalJobTaskRepositoryImpl jobTaskRepository = new RelationalJobTaskRepositoryImpl(connectionSource);
 
     // Reuse the composition-owned payable ConnectionSource for progression tables
     // (same DB section as before; avoids untracked extra pools).
@@ -82,7 +82,7 @@ public final class DomainWiring {
 
     JobProgressionRepository liveView = live;
     JobProgressionRepository archiveView = archive;
-    ProgressionService progressionService = new ProgressionServiceImpl(liveView, archiveView);
+    ProgressionService progressionService = new ProgressionService(liveView, archiveView);
     JobService jobService = new JobServiceImpl(
         actionTypeRegistry,
         payableTypeRegistry,

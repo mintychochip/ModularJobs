@@ -2,24 +2,64 @@ package net.aincraft.domain;
 
 import java.util.List;
 import net.aincraft.domain.model.JobProgressionRecord;
+import net.aincraft.domain.repository.JobProgressionRepository;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
-public interface ProgressionService {
+public final class ProgressionService {
 
-  boolean save(JobProgressionRecord record);
+  private final JobProgressionRepository live;
 
-  @Nullable
-  JobProgressionRecord load(String playerId, String jobKey);
+  private final JobProgressionRepository archive;
 
-  List<JobProgressionRecord> loadAllForJob(String jobKey, int limit);
+  public ProgressionService(
+      JobProgressionRepository live,
+      JobProgressionRepository archive) {
+    this.live = live;
+    this.archive = archive;
+  }
 
-  List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit);
+  public boolean save(JobProgressionRecord record) {
+    return live.save(record);
+  }
 
-  boolean delete(String playerId, String jobKey);
+  public @Nullable JobProgressionRecord load(String playerId, String jobKey) {
+    return live.load(playerId, jobKey);
+  }
 
-  boolean archive(String playerId, String jobKey);
+  public List<JobProgressionRecord> loadAllForJob(String jobKey, int limit) {
+    return live.loadAllForJob(jobKey, limit);
+  }
 
-  boolean restore(String playerId, String jobKey);
+  public List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit) {
+    return live.loadAllForPlayer(playerId, limit);
+  }
 
-  List<JobProgressionRecord> loadAllArchivedForPlayer(String playerId, int limit);
+  public boolean delete(String playerId, String jobKey) {
+    return live.delete(playerId, jobKey);
+  }
+
+  public boolean archive(String playerId, String jobKey) {
+    return migrate(live, archive, playerId, jobKey);
+  }
+
+  public boolean restore(String playerId, String jobKey) {
+    return migrate(archive, live, playerId, jobKey);
+  }
+
+  public List<JobProgressionRecord> loadAllArchivedForPlayer(String playerId, int limit) {
+    return archive.loadAllForPlayer(playerId, limit);
+  }
+
+  private boolean migrate(JobProgressionRepository from, JobProgressionRepository to,
+      String playerId, String jobKey) {
+    JobProgressionRecord record = from.load(playerId, jobKey);
+    if (record == null) {
+      return false;
+    }
+    if (to.save(record)) {
+      return from.delete(playerId, jobKey);
+    }
+    return false;
+  }
 }
