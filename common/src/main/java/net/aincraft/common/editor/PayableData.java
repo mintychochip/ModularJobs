@@ -1,4 +1,4 @@
-package net.aincraft.editor.json;
+package net.aincraft.common.editor;
 
 import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
