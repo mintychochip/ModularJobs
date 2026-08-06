@@ -1,6 +1,5 @@
 package net.aincraft.boost.conditions;
 
-import com.google.common.base.Preconditions;
 import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.LogicalOperator;
 import net.aincraft.container.boost.PlayerResourceType;
@@ -8,8 +7,6 @@ import net.aincraft.container.boost.PotionConditionType;
 import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.WeatherState;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Material;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
 /**
@@ -41,25 +38,19 @@ public final class Conditions {
     return new NegatingConditionImpl(condition);
   }
 
-  public static Condition liquid(Material liquid) {
-    return new LiquidConditionImpl(liquid);
+  /**
+   * @param materialKey liquid material name or key ({@code water}/{@code lava}); resolved at evaluation
+   */
+  public static Condition liquid(String materialKey) {
+    return new LiquidConditionImpl(materialKey);
   }
 
   public static Condition weather(WeatherState state) {
     return new WeatherConditionImpl(state);
   }
 
-  public static Condition potionType(PotionEffectType type) {
-    return new PotionTypeConditionImpl(type.getKey());
-  }
-
   public static Condition potionType(Key effectKey) {
     return new PotionTypeConditionImpl(effectKey);
-  }
-
-  public static Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
-      RelationalOperator relationalOperator) {
-    return new PotionConditionImpl(type.getKey(), expected, conditionType, relationalOperator);
   }
 
   public static Condition potion(Key effectKey, int expected, PotionConditionType conditionType,

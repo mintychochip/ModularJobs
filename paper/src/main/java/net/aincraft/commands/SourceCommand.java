@@ -195,7 +195,7 @@ public final class SourceCommand implements JobsCommand {
       case PotionConditionImpl p -> lines.add(baseIndent + prefix + connector + "Potion: " + p.effectKey().value() + " " + p.conditionType() + " " + formatOperator(p.relationalOperator()) + " " + p.expected());
       case PotionTypeConditionImpl p -> lines.add(baseIndent + prefix + connector + "Has Potion: " + p.effectKey().value());
       case WeatherConditionImpl w -> lines.add(baseIndent + prefix + connector + "Weather: " + w.state());
-      case LiquidConditionImpl l -> lines.add(baseIndent + prefix + connector + "In Liquid: " + l.liquid().name().toLowerCase());
+      case LiquidConditionImpl l -> lines.add(baseIndent + prefix + connector + "In Liquid: " + l.materialKey().toLowerCase());
       default -> lines.add(baseIndent + prefix + connector + condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", ""));
     }
   }

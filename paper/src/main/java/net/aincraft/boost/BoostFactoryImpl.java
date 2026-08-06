@@ -12,10 +12,6 @@ import net.aincraft.container.boost.WeatherState;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
-import org.bukkit.potion.PotionEffectType;
 
 public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
 
@@ -34,18 +30,13 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   }
 
   @Override
-  public Condition biome(Biome biome) {
-    return Conditions.biome(biome.key());
+  public Condition biome(String biomeKey) {
+    return Conditions.biome(toKey(biomeKey));
   }
 
   @Override
-  public Condition world(Key worldKey) {
-    return Conditions.world(worldKey);
-  }
-
-  @Override
-  public Condition world(World world) {
-    return world(world.key());
+  public Condition world(String worldName) {
+    return Conditions.world(toKey(worldName));
   }
 
   @Override
@@ -70,19 +61,19 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   }
 
   @Override
-  public Condition liquid(Material liquid) throws IllegalArgumentException {
-    return Conditions.liquid(liquid);
+  public Condition liquid(String materialKey) throws IllegalArgumentException {
+    return Conditions.liquid(materialKey);
   }
 
   @Override
-  public Condition potionType(PotionEffectType type) {
-    return Conditions.potionType(type);
+  public Condition potionType(String potionEffectTypeKey) {
+    return Conditions.potionType(toKey(potionEffectTypeKey));
   }
 
   @Override
-  public Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
-      RelationalOperator operator) {
-    return Conditions.potion(type, expected, conditionType, operator);
+  public Condition potion(String potionEffectTypeKey, int expected,
+      PotionConditionType conditionType, RelationalOperator operator) {
+    return Conditions.potion(toKey(potionEffectTypeKey), expected, conditionType, operator);
   }
 
   @Override
@@ -103,5 +94,16 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   @Override
   public Condition jobAny(String... jobKeys) {
     return Conditions.jobAny(jobKeys);
+  }
+
+  private static Key toKey(String raw) {
+    if (raw == null || raw.isBlank()) {
+      throw new IllegalArgumentException("key must be non-blank");
+    }
+    String trimmed = raw.trim();
+    if (trimmed.contains(":")) {
+      return Key.key(trimmed.toLowerCase());
+    }
+    return Key.key("minecraft", trimmed.toLowerCase());
   }
 }

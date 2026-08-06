@@ -9,8 +9,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
- * Record condition that checks a player resource value against an expected value.
- * Delegates to {@link Conditions#playerResource(PlayerResourceType, double, RelationalOperator)} for implementation.
+ * Checks a player resource value against an expected value.
+ * Resource extraction is Paper-side (API enum is pure).
  */
 public record PlayerResourceConditionImpl(PlayerResourceType type, double expected,
                                    RelationalOperator operator) implements Condition {
@@ -21,7 +21,11 @@ public record PlayerResourceConditionImpl(PlayerResourceType type, double expect
     if (player == null) {
       return false;
     }
-    double actual = type.getValue(player);
+    double actual = switch (type) {
+      case HEALTH -> player.getHealth();
+      case HUNGER -> player.getFoodLevel();
+      case EXPERIENCE -> player.getExp();
+    };
     return operator.test(BigDecimal.valueOf(actual), BigDecimal.valueOf(expected));
   }
 }

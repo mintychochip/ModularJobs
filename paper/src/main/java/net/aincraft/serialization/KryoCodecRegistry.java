@@ -114,7 +114,7 @@ public final class KryoCodecRegistry {
     kryo.register(PlayerResourceConditionImpl.class, new PlayerResourceConditionSerializer(), id++);
     kryo.register(PotionTypeConditionImpl.class, new PotionTypeConditionSerializer(), id++);
     kryo.register(PotionConditionImpl.class, new PotionConditionSerializer(), id++);
-    kryo.register(LiquidConditionImpl.class, obj(LiquidConditionImpl::liquid, LiquidConditionImpl::new, Material.class), id++);
+    kryo.register(LiquidConditionImpl.class, new LiquidConditionSerializer(), id++);
     kryo.register(WeatherConditionImpl.class, obj(WeatherConditionImpl::state, WeatherConditionImpl::new, WeatherState.class), id++);
 
     // Rules & RuledBoostSource
@@ -347,6 +347,16 @@ public final class KryoCodecRegistry {
       String value = input.readString();
       Key effectKey = value.contains(":") ? Key.key(value) : Key.key("minecraft", value);
       return new PotionTypeConditionImpl(effectKey);
+    }
+  }
+
+  private static final class LiquidConditionSerializer extends Serializer<LiquidConditionImpl> {
+    public void write(Kryo kryo, Output output, LiquidConditionImpl value) {
+      output.writeString(value.materialKey());
+    }
+
+    public LiquidConditionImpl read(Kryo kryo, Input input, Class<? extends LiquidConditionImpl> type) {
+      return new LiquidConditionImpl(input.readString());
     }
   }
 

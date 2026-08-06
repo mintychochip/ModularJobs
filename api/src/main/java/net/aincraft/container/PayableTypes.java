@@ -2,7 +2,7 @@ package net.aincraft.container;
 
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
-import org.bukkit.NamespacedKey;
+import net.kyori.adventure.key.Key;
 
 public class PayableTypes {
 
@@ -16,6 +16,6 @@ public class PayableTypes {
 
   private static PayableType type(String keyString) {
     return RegistryContainer.registryContainer().getRegistry(
-        RegistryKeys.PAYABLE_TYPES).getOrThrow(new NamespacedKey("modularjobs",keyString));
+        RegistryKeys.PAYABLE_TYPES).getOrThrow(Key.key("modularjobs", keyString));
   }
 }

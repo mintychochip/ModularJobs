@@ -10,8 +10,6 @@ import net.aincraft.container.boost.PotionConditionType;
 import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.WeatherState;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import net.kyori.adventure.key.Key;
-import org.bukkit.Material;
 
 /**
  * Parses ConditionConfig from JSON into Condition instances.
@@ -47,11 +45,8 @@ public final class ConditionConfigParser {
     if (!(config.value() instanceof String biomeStr) || biomeStr.isBlank()) {
       throw new IllegalArgumentException("biome condition requires a non-empty string 'value'");
     }
-    // Key-based: no live biome registry required at parse time
-    Key biomeKey = biomeStr.contains(":")
-        ? Key.key(biomeStr)
-        : Key.key("minecraft", biomeStr.toLowerCase());
-    return net.aincraft.boost.conditions.Conditions.biome(biomeKey);
+    // String key: resolved at evaluation; no live biome registry at parse time
+    return conditionFactory.biome(biomeStr);
   }
 
   /**
@@ -62,10 +57,7 @@ public final class ConditionConfigParser {
     if (!(config.value() instanceof String worldName) || worldName.isBlank()) {
       throw new IllegalArgumentException("world condition requires a non-empty string 'value'");
     }
-    Key worldKey = worldName.contains(":")
-        ? Key.key(worldName)
-        : Key.key("minecraft", worldName);
-    return conditionFactory.world(worldKey);
+    return conditionFactory.world(worldName);
   }
 
   private Condition parseSneaking(ConditionConfig config) {
@@ -107,22 +99,16 @@ public final class ConditionConfigParser {
       throw new IllegalArgumentException("potion_effect condition requires 'effect'");
     }
 
-    // Key-based identity: no live potion registry required at parse time
-    Key effectKey = effectStr.contains(":")
-        ? Key.key(effectStr)
-        : Key.key("minecraft", effectStr.toLowerCase());
-
-    // If amplifier and operator specified, use full potion condition
+    // String key identity: no live potion registry required at parse time
     if (config.amplifier() != null && config.operator() != null) {
       int amplifier = config.amplifier();
       RelationalOperator operator = parseRelationalOperator(config.operator());
       PotionConditionType conditionType = PotionConditionType.AMPLIFIER;
-      return net.aincraft.boost.conditions.Conditions.potion(
-          effectKey, amplifier, conditionType, operator);
+      return conditionFactory.potion(effectStr, amplifier, conditionType, operator);
     }
 
     // Otherwise just check if effect is present
-    return net.aincraft.boost.conditions.Conditions.potionType(effectKey);
+    return conditionFactory.potionType(effectStr);
   }
 
   private Condition parseLiquid(ConditionConfig config) {
@@ -130,8 +116,12 @@ public final class ConditionConfigParser {
     if (touching == null || !touching) {
       throw new IllegalArgumentException("liquid condition currently only supports touching=true");
     }
-    // Use water as default liquid material
-    return conditionFactory.liquid(Material.WATER);
+    // Prefer explicit material from value when present; default water
+    String materialKey = "water";
+    if (config.value() instanceof String raw && !raw.isBlank()) {
+      materialKey = raw;
+    }
+    return conditionFactory.liquid(materialKey);
   }
 
   private Condition parseWeather(ConditionConfig config) {

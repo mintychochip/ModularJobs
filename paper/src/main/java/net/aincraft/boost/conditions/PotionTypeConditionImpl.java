@@ -14,10 +14,6 @@ import org.bukkit.potion.PotionEffectType;
  */
 public record PotionTypeConditionImpl(Key effectKey) implements Condition {
 
-  public PotionTypeConditionImpl(PotionEffectType type) {
-    this(type.getKey());
-  }
-
   @Override
   public boolean applies(BoostContext context) {
     Player player = Bukkit.getPlayer(context.playerId());

@@ -15,20 +15,13 @@ import org.bukkit.potion.PotionEffectType;
 /**
  * Checks a potion effect value (e.g. amplifier) against an expected value.
  * Effect identity is a key so config can be parsed without a live potion registry.
+ * Dimension extraction is Paper-side (API enum is pure).
  */
 public record PotionConditionImpl(
     Key effectKey,
     int expected,
     PotionConditionType conditionType,
     RelationalOperator relationalOperator) implements Condition {
-
-  public PotionConditionImpl(
-      PotionEffectType type,
-      int expected,
-      PotionConditionType conditionType,
-      RelationalOperator relationalOperator) {
-    this(type.getKey(), expected, conditionType, relationalOperator);
-  }
 
   @Override
   public boolean applies(BoostContext context) {
@@ -39,7 +32,10 @@ public record PotionConditionImpl(
     Collection<PotionEffect> effects = player.getActivePotionEffects();
     for (PotionEffect effect : effects) {
       if (matches(effect.getType())) {
-        Integer actual = conditionType.getValue(effect);
+        int actual = switch (conditionType) {
+          case DURATION -> effect.getDuration();
+          case AMPLIFIER -> effect.getAmplifier();
+        };
         return relationalOperator.test(BigDecimal.valueOf(actual), BigDecimal.valueOf(expected));
       }
     }

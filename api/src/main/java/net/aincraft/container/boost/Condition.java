@@ -3,10 +3,6 @@ package net.aincraft.container.boost;
 import net.aincraft.Bridge;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.factories.ConditionFactory;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
-import org.bukkit.potion.PotionEffectType;
 
 public interface Condition {
 
@@ -20,12 +16,18 @@ public interface Condition {
     return Bridge.bridge().conditionFactory();
   }
 
-  static Condition biome(Biome biome) {
-    return factory().biome(biome);
+  /**
+   * @param biomeKey biome id or namespaced key (e.g. {@code plains}, {@code minecraft:desert})
+   */
+  static Condition biome(String biomeKey) {
+    return factory().biome(biomeKey);
   }
 
-  static Condition world(World world) {
-    return factory().world(world);
+  /**
+   * @param worldName world name or namespaced key (e.g. {@code world_nether}, {@code minecraft:the_end})
+   */
+  static Condition world(String worldName) {
+    return factory().world(worldName);
   }
 
   static Condition playerResource(PlayerResourceType type, double expected,
@@ -41,17 +43,26 @@ public interface Condition {
     return factory().sprinting(state);
   }
 
-  static Condition liquid(Material liquid) throws IllegalArgumentException {
-    return factory().liquid(liquid);
+  /**
+   * @param materialKey liquid material name or key ({@code water}/{@code lava})
+   */
+  static Condition liquid(String materialKey) throws IllegalArgumentException {
+    return factory().liquid(materialKey);
   }
 
-  static Condition potionType(PotionEffectType type) {
-    return factory().potionType(type);
+  /**
+   * @param potionEffectTypeKey effect id or namespaced key (e.g. {@code speed}, {@code minecraft:strength})
+   */
+  static Condition potionType(String potionEffectTypeKey) {
+    return factory().potionType(potionEffectTypeKey);
   }
 
-  static Condition potion(PotionEffectType type, int expected, PotionConditionType conditionType,
-      RelationalOperator operator) {
-    return factory().potion(type, expected, conditionType, operator);
+  /**
+   * @param potionEffectTypeKey effect id or namespaced key
+   */
+  static Condition potion(String potionEffectTypeKey, int expected,
+      PotionConditionType conditionType, RelationalOperator operator) {
+    return factory().potion(potionEffectTypeKey, expected, conditionType, operator);
   }
 
   static Condition weather(WeatherState state) {
