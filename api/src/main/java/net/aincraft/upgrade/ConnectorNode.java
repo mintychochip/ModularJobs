@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
-import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -18,8 +17,8 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param key            unique identifier (e.g., "miner:connector_basics_to_eff1")
  * @param name           display name (typically "Connector" or similar)
- * @param icon           locked state icon
- * @param unlockedIcon   unlocked state icon
+ * @param icon           locked state icon material name
+ * @param unlockedIcon   unlocked state icon material name
  * @param links          node IDs that this connector connects (start and end)
  * @param position       position for UI rendering (x, y)
  * @param lockedCustomModelData   custom model data for locked state (0 if unused)
@@ -29,8 +28,8 @@ import org.jetbrains.annotations.NotNull;
 public record ConnectorNode(
     @NotNull Key key,
     @NotNull String name,
-    @NotNull Material icon,
-    @NotNull Material unlockedIcon,
+    @NotNull String icon,
+    @NotNull String unlockedIcon,
     @NotNull List<String> links,
     @NotNull Position position,
     int lockedCustomModelData,
@@ -49,12 +48,12 @@ public record ConnectorNode(
   }
 
   /**
-   * Get the icon to display based on unlock status.
+   * Get the icon material name to display based on unlock status.
    *
    * @param unlocked true if path is unlocked
-   * @return the appropriate icon material
+   * @return the appropriate icon material name
    */
-  public Material getIconForState(boolean unlocked) {
+  public String getIconForState(boolean unlocked) {
     return unlocked ? unlockedIcon : icon;
   }
 

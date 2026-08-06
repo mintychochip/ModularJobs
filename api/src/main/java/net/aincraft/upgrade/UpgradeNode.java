@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
-import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,8 +14,8 @@ import org.jetbrains.annotations.Nullable;
  * @param key              unique identifier (e.g., "miner:efficiency_1")
  * @param name             display name shown in UI
  * @param description      description of what this upgrade does
- * @param icon             material to display when locked
- * @param unlockedIcon     material to display when unlocked
+ * @param icon             material name to display when locked (e.g. "DIAMOND_PICKAXE")
+ * @param unlockedIcon     material name to display when unlocked
  * @param itemModel        item model namespace:key when locked (null = none)
  * @param unlockedItemModel item model namespace:key when unlocked (null = none)
  * @param cost             skill point cost to unlock
@@ -34,8 +33,8 @@ public record UpgradeNode(
     @NotNull Key key,
     @NotNull String name,
     @Nullable String description,
-    @NotNull Material icon,
-    @NotNull Material unlockedIcon,
+    @NotNull String icon,
+    @NotNull String unlockedIcon,
     @Nullable String itemModel,
     @Nullable String unlockedItemModel,
     int cost,
@@ -66,12 +65,12 @@ public record UpgradeNode(
   }
 
   /**
-   * Get the appropriate icon material based on unlock state.
+   * Get the appropriate icon material name based on unlock state.
    *
    * @param unlocked true if the node is unlocked
-   * @return the locked or unlocked icon
+   * @return the locked or unlocked icon material name
    */
-  public Material getIconForState(boolean unlocked) {
+  public String getIconForState(boolean unlocked) {
     return unlocked ? unlockedIcon : icon;
   }
 
