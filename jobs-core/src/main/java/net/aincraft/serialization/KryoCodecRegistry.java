@@ -49,7 +49,7 @@ import org.bukkit.Registry;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
-public final class KryoCodecRegistry implements CodecRegistry {
+public final class KryoCodecRegistry {
 
   private static final int BUFFER_SIZE = 256;
 
@@ -124,7 +124,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
     return kryo;
   }
 
-  @Override
   public byte @NotNull [] encode(Object object) {
     Kryo kryo = kryoThreadLocal.get();
     try (Output output = new Output(BUFFER_SIZE, -1)) {
@@ -133,7 +132,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
     }
   }
 
-  @Override
   public Object decode(byte[] bytes) {
     return decodeCache.get(ByteBuffer.wrap(bytes), ignored -> {
       Kryo kryo = kryoThreadLocal.get();
@@ -144,7 +142,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   @SuppressWarnings("unchecked")
-  @Override
   public <T> T decode(byte[] bytes, Class<T> clazz) {
     return (T) decode(bytes);
   }
@@ -184,7 +181,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
   // ========== Built-in Type Serializers ==========
 
   private static final class BigDecimalSerializer extends Serializer<BigDecimal> {
-    @Override
     public void write(Kryo kryo, Output output, BigDecimal value) {
       if (value.signum() == 0) {
         output.writeVarInt(0, true);
@@ -197,7 +193,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
       output.writeBytes(unscaled);
     }
 
-    @Override
     public BigDecimal read(Kryo kryo, Input input, Class<? extends BigDecimal> type) {
       int scale = input.readVarInt(false);
       int len = input.readVarInt(true);
@@ -210,13 +205,11 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class DurationSerializer extends Serializer<Duration> {
-    @Override
     public void write(Kryo kryo, Output output, Duration value) {
       output.writeVarLong(value.getSeconds(), false);
       output.writeVarInt(value.getNano(), true);
     }
 
-    @Override
     public Duration read(Kryo kryo, Input input, Class<? extends Duration> type) {
       long seconds = input.readVarLong(false);
       int nanos = input.readVarInt(true);
@@ -225,7 +218,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class KeySerializer extends Serializer<Key> {
-    @Override
     public void write(Kryo kryo, Output output, Key key) {
       String ns = key.namespace();
       boolean minecraft = "minecraft".equals(ns);
@@ -236,7 +228,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
       output.writeString(key.value());
     }
 
-    @Override
     public Key read(Kryo kryo, Input input, Class<? extends Key> type) {
       boolean minecraft = input.readBoolean();
       String ns = minecraft ? "minecraft" : input.readString();
@@ -246,12 +237,10 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class MaterialSerializer extends Serializer<Material> {
-    @Override
     public void write(Kryo kryo, Output output, Material material) {
       output.writeString(material.key().value());
     }
 
-    @Override
     public Material read(Kryo kryo, Input input, Class<? extends Material> type) {
       String value = input.readString();
       return Registry.MATERIAL.get(NamespacedKey.minecraft(value));
@@ -259,12 +248,10 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class PotionEffectTypeSerializer extends Serializer<PotionEffectType> {
-    @Override
     public void write(Kryo kryo, Output output, PotionEffectType pet) {
       output.writeString(pet.key().value());
     }
 
-    @Override
     public PotionEffectType read(Kryo kryo, Input input, Class<? extends PotionEffectType> type) {
       String value = input.readString();
       return Registry.POTION_EFFECT_TYPE.get(NamespacedKey.minecraft(value));
@@ -272,14 +259,12 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class BitSetSerializer extends Serializer<BitSet> {
-    @Override
     public void write(Kryo kryo, Output output, BitSet bitSet) {
       long[] arr = bitSet.toLongArray();
       long value = arr.length > 0 ? arr[0] : 0L;
       output.writeVarLong(value, false);
     }
 
-    @Override
     public BitSet read(Kryo kryo, Input input, Class<? extends BitSet> type) {
       long value = input.readVarLong(false);
       return BitSet.valueOf(new long[]{value});
@@ -287,13 +272,11 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class ConsumableBoostDataSerializer extends Serializer<ConsumableBoostData> {
-    @Override
     public void write(Kryo kryo, Output output, ConsumableBoostData value) {
       kryo.writeClassAndObject(output, value.boostSource());
       kryo.writeObject(output, value.duration());
     }
 
-    @Override
     public ConsumableBoostData read(Kryo kryo, Input input, Class<? extends ConsumableBoostData> type) {
       BoostSource boostSource = (BoostSource) kryo.readClassAndObject(input);
       Duration duration = kryo.readObject(input, Duration.class);
@@ -302,13 +285,11 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class PassiveBoostDataSerializer extends Serializer<PassiveBoostData> {
-    @Override
     public void write(Kryo kryo, Output output, PassiveBoostData value) {
       kryo.writeClassAndObject(output, value.boostSource());
       kryo.writeObject(output, value.slotSet());
     }
 
-    @Override
     public PassiveBoostData read(Kryo kryo, Input input, Class<? extends PassiveBoostData> type) {
       BoostSource boostSource = (BoostSource) kryo.readClassAndObject(input);
       BitSet slotSet = kryo.readObject(input, BitSet.class);
@@ -317,14 +298,12 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class ComposableConditionSerializer extends Serializer<ComposableConditionImpl> {
-    @Override
     public void write(Kryo kryo, Output output, ComposableConditionImpl value) {
       kryo.writeObject(output, value.logicalOperator());
       kryo.writeClassAndObject(output, value.a());
       kryo.writeClassAndObject(output, value.b());
     }
 
-    @Override
     public ComposableConditionImpl read(Kryo kryo, Input input, Class<? extends ComposableConditionImpl> type) {
       LogicalOperator operator = kryo.readObject(input, LogicalOperator.class);
       Condition a = (Condition) kryo.readClassAndObject(input);
@@ -334,12 +313,10 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class NegatingConditionSerializer extends Serializer<NegatingConditionImpl> {
-    @Override
     public void write(Kryo kryo, Output output, NegatingConditionImpl value) {
       kryo.writeClassAndObject(output, value.condition());
     }
 
-    @Override
     public NegatingConditionImpl read(Kryo kryo, Input input, Class<? extends NegatingConditionImpl> type) {
       Condition condition = (Condition) kryo.readClassAndObject(input);
       return new NegatingConditionImpl(condition);
@@ -347,14 +324,12 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class PlayerResourceConditionSerializer extends Serializer<PlayerResourceConditionImpl> {
-    @Override
     public void write(Kryo kryo, Output output, PlayerResourceConditionImpl value) {
       kryo.writeObject(output, value.type());
       output.writeDouble(value.expected());
       kryo.writeObject(output, value.operator());
     }
 
-    @Override
     public PlayerResourceConditionImpl read(Kryo kryo, Input input, Class<? extends PlayerResourceConditionImpl> type) {
       PlayerResourceType resourceType = kryo.readObject(input, PlayerResourceType.class);
       double expected = input.readDouble();
@@ -364,12 +339,10 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class PotionTypeConditionSerializer extends Serializer<PotionTypeConditionImpl> {
-    @Override
     public void write(Kryo kryo, Output output, PotionTypeConditionImpl value) {
       output.writeString(value.effectKey().asString());
     }
 
-    @Override
     public PotionTypeConditionImpl read(Kryo kryo, Input input, Class<? extends PotionTypeConditionImpl> type) {
       String value = input.readString();
       Key effectKey = value.contains(":") ? Key.key(value) : Key.key("minecraft", value);
@@ -378,7 +351,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class PotionConditionSerializer extends Serializer<PotionConditionImpl> {
-    @Override
     public void write(Kryo kryo, Output output, PotionConditionImpl value) {
       output.writeString(value.effectKey().asString());
       output.writeVarInt(value.expected(), true);
@@ -386,7 +358,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
       kryo.writeObject(output, value.relationalOperator());
     }
 
-    @Override
     public PotionConditionImpl read(Kryo kryo, Input input, Class<? extends PotionConditionImpl> type) {
       String value = input.readString();
       Key effectKey = value.contains(":") ? Key.key(value) : Key.key("minecraft", value);
@@ -398,14 +369,12 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class RuleSerializer extends Serializer<Rule> {
-    @Override
     public void write(Kryo kryo, Output output, Rule value) {
       output.writeVarInt(value.priority(), true);
       kryo.writeClassAndObject(output, value.condition());
       kryo.writeClassAndObject(output, value.boost());
     }
 
-    @Override
     public Rule read(Kryo kryo, Input input, Class<? extends Rule> type) {
       int priority = input.readVarInt(true);
       Condition condition = (Condition) kryo.readClassAndObject(input);
@@ -415,7 +384,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
   }
 
   private static final class RuledBoostSourceSerializer extends Serializer<RuledBoostSourceImpl> {
-    @Override
     public void write(Kryo kryo, Output output, RuledBoostSourceImpl value) {
       kryo.writeObject(output, value.key());
       output.writeString(value.description());
@@ -426,7 +394,6 @@ public final class KryoCodecRegistry implements CodecRegistry {
       }
     }
 
-    @Override
     public RuledBoostSourceImpl read(Kryo kryo, Input input, Class<? extends RuledBoostSourceImpl> type) {
       Key key = kryo.readObject(input, NamespacedKey.class);
       String description = input.readString();

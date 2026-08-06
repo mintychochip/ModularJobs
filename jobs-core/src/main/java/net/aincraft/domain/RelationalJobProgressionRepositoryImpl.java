@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
-import net.aincraft.domain.repository.JobRepository;
+import net.aincraft.domain.MemoryJobRepositoryImpl;
 import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.repository.ConnectionSource;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +22,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
   private static final int CACHE_MAXIMUM_SIZE = 10_000;
 
-  private final JobRepository jobRepository;
+  private final MemoryJobRepositoryImpl jobRepository;
   private final ConnectionSource connectionSource;
   private final String tableName;
   private final Cache<JobProgressionRepository.Key, JobProgressionRecord> readCache = Caffeine.newBuilder()
@@ -56,14 +56,14 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       DELETE FROM %s WHERE player_id = ? AND job_key = ?
       """;
 
-  private RelationalJobProgressionRepositoryImpl(JobRepository jobRepository,
+  private RelationalJobProgressionRepositoryImpl(MemoryJobRepositoryImpl jobRepository,
       ConnectionSource connectionSource, String tableName) {
     this.jobRepository = jobRepository;
     this.connectionSource = connectionSource;
     this.tableName = tableName;
   }
 
-  static JobProgressionRepository create(JobRepository jobRepository,
+  static JobProgressionRepository create(MemoryJobRepositoryImpl jobRepository,
       ConnectionSource connectionSource, String tableName) {
     return new RelationalJobProgressionRepositoryImpl(jobRepository, connectionSource, tableName);
   }

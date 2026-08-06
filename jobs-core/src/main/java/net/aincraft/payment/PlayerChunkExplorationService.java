@@ -1,32 +1,90 @@
 package net.aincraft.payment;
 
+import com.google.gson.Gson;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import org.bukkit.Chunk;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
-public interface PlayerChunkExplorationService {
+public final class PlayerChunkExplorationService {
 
-  /**
-   * Checks if the player has explored the given chunk.
-   *
-   * @param player the player to check
-   * @param chunk  the chunk to check
-   * @return true if explored, false otherwise
-   */
-  boolean hasExplored(OfflinePlayer player, Chunk chunk);
+  private static final NamespacedKey CHUNK_KEY = new NamespacedKey("jobs", "chunk");
 
-  /**
-   * Marks the chunk as explored by the player.
-   *
-   * @param player the player exploring the chunk
-   * @param chunk  the chunk explored
-   */
-  void addExploration(OfflinePlayer player, Chunk chunk);
+  private static final PersistentDataType<String, PersistentChunkData> DATA_TYPE = new PersistentChunkDataType();
 
-  /**
-   * Removes the player's exploration record for the chunk.
-   *
-   * @param player the player to remove
-   * @param chunk  the chunk to clear
-   */
-  void removeExploration(OfflinePlayer player, Chunk chunk);
+  public boolean hasExplored(OfflinePlayer player, Chunk chunk) {
+    PersistentChunkData data = chunk.getPersistentDataContainer().get(CHUNK_KEY, DATA_TYPE);
+    return data != null && data.getPlayers().contains(player.getUniqueId());
+  }
+
+  public void addExploration(OfflinePlayer player, Chunk chunk) {
+    updateData(chunk, data -> data.getPlayers().add(player.getUniqueId()));
+  }
+
+  public void removeExploration(OfflinePlayer player, Chunk chunk) {
+    updateData(chunk, data -> data.getPlayers().remove(player.getUniqueId()));
+  }
+
+  private void updateData(Chunk chunk, Function<PersistentChunkData, Boolean> mutator) {
+    PersistentDataContainer pdc = chunk.getPersistentDataContainer();
+    PersistentChunkData data = pdc.get(CHUNK_KEY, DATA_TYPE);
+
+    if (data == null) {
+      data = new PersistentChunkData();
+    }
+
+    if (!mutator.apply(data)) {
+      return;
+    }
+
+    if (data.getPlayers().isEmpty()) {
+      pdc.remove(CHUNK_KEY);
+    } else {
+      pdc.set(CHUNK_KEY, DATA_TYPE, data);
+    }
+  }
+
+  private static final class PersistentChunkData {
+
+    private final Set<UUID> players = new HashSet<>();
+
+    public Set<UUID> getPlayers() {
+      return players;
+    }
+
+    public String toString() {
+      return "PersistentChunkData[players=" + players + "]";
+    }
+  }
+
+  private static final class PersistentChunkDataType implements
+      PersistentDataType<String, PersistentChunkData> {
+
+    private static final Gson GSON = new Gson();
+
+    public @NotNull Class<String> getPrimitiveType() {
+      return String.class;
+    }
+
+    public @NotNull Class<PersistentChunkData> getComplexType() {
+      return PersistentChunkData.class;
+    }
+
+    public @NotNull String toPrimitive(@NotNull PersistentChunkData complex,
+        @NotNull PersistentDataAdapterContext context) {
+      return GSON.toJson(complex);
+    }
+
+    public @NotNull PersistentChunkData fromPrimitive(@NotNull String primitive,
+        @NotNull PersistentDataAdapterContext context) {
+      return GSON.fromJson(primitive, PersistentChunkData.class);
+    }
+  }
 }
