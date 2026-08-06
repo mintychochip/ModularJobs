@@ -10,6 +10,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,9 +30,13 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
   @Override
   public BossBar format(@NotNull BossBar bossBar,
       @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
+    Player player = Bukkit.getPlayer(context.playerId());
+    BossBar.Color color = player != null
+        ? colorProvider.getColor(player)
+        : BossBar.Color.GREEN;
     return bossBar.name(formatter.format(context))
         .progress(progress(context.progression()))
-        .color(colorProvider.getColor(context.player()))
+        .color(color)
         .overlay(overlay);
   }
 

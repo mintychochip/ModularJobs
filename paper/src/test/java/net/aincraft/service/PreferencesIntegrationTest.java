@@ -49,7 +49,7 @@ class PreferencesIntegrationTest {
 
   private static void assertEqualsDefaultFromConfig(
       PreferencesService service, PlayerMock player) {
-    assertTrue(service.getEntriesPerPage(player) == 8);
-    assertTrue(service.prefersGuiMode(player));
+    assertTrue(service.getEntriesPerPage(player.getUniqueId()) == 8);
+    assertTrue(service.prefersGuiMode(player.getUniqueId()));
   }
 }

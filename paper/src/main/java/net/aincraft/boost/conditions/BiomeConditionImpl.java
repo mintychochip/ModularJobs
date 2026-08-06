@@ -3,6 +3,7 @@ package net.aincraft.boost.conditions;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.Condition;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -15,7 +16,10 @@ public record BiomeConditionImpl(Key biomeKey) implements Condition {
 
   @Override
   public boolean applies(BoostContext context) {
-    Player player = context.player();
+    Player player = Bukkit.getPlayer(context.playerId());
+    if (player == null) {
+      return false;
+    }
     Location location = player.getLocation();
     World world = location.getWorld();
     return biomeKey.equals(world.getBiome(location).getKey());

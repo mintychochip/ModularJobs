@@ -36,7 +36,7 @@ final class UpgradeCommand implements JobsCommand {
                     // Suggest only jobs the player has joined
                     CommandSender sender = context.getSource().getSender();
                     if (sender instanceof Player player) {
-                        jobService.getProgressions(player).stream()
+                        jobService.getProgressions(player.getUniqueId()).stream()
                             .map(p -> p.job().key().value())
                             .forEach(builder::suggest);
                     }
@@ -63,7 +63,7 @@ final class UpgradeCommand implements JobsCommand {
                     }
 
                     // Check player has joined this job
-                    List<JobProgression> progressions = jobService.getProgressions(player);
+                    List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
                     JobProgression playerProgression = null;
                     for (JobProgression prog : progressions) {
                         if (prog.job().key().toString().equals(jobKey.toString())) {

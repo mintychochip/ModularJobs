@@ -1,12 +1,12 @@
 package net.aincraft.container;
 
+import java.util.UUID;
 import net.aincraft.JobProgressionView;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
 
-public record BoostContext(ActionType type, JobProgressionView progression, Player player, Payable payable) {
-
-  public World world() {
-    return player.getWorld();
-  }
+public record BoostContext(
+    ActionType type,
+    JobProgressionView progression,
+    UUID playerId,
+    String worldName,
+    Payable payable) {
 }

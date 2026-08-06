@@ -57,10 +57,15 @@ public final class BoostEngine {
       return Map.of();
     }
 
-    BoostContext boostContext = new BoostContext(type, progression, onlinePlayer, payable);
+    BoostContext boostContext = new BoostContext(
+        type,
+        progression,
+        onlinePlayer.getUniqueId(),
+        onlinePlayer.getWorld().getName(),
+        payable);
     List<BoostSource> itemSources = aggregateItemSources(onlinePlayer);
     List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
-        new PlayerTarget(onlinePlayer));
+        new PlayerTarget(onlinePlayer.getUniqueId()));
     List<BoostSource> upgradeSources = upgradeBoostDataService.getBoostSources(
         onlinePlayer.getUniqueId(),
         progression.job().key()

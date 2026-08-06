@@ -27,7 +27,6 @@ import net.aincraft.util.KeyResolver;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -180,8 +179,8 @@ final class JobServiceImpl implements JobService {
   }
 
   @Override
-  public List<JobProgression> getProgressions(OfflinePlayer player) {
-    return progressionService.loadAllForPlayer(player.getUniqueId().toString(), 100).stream()
+  public List<JobProgression> getProgressions(UUID playerId) {
+    return progressionService.loadAllForPlayer(playerId.toString(), 100).stream()
         .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
         .toList();
   }
@@ -194,8 +193,8 @@ final class JobServiceImpl implements JobService {
   }
 
   @Override
-  public List<JobProgression> getArchivedProgressions(OfflinePlayer player) {
-    return progressionService.loadAllArchivedForPlayer(player.getUniqueId().toString(), 100).stream()
+  public List<JobProgression> getArchivedProgressions(UUID playerId) {
+    return progressionService.loadAllArchivedForPlayer(playerId.toString(), 100).stream()
         .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
         .toList();
   }

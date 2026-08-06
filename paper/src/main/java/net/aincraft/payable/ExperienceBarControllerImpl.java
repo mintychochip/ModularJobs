@@ -15,6 +15,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,7 +43,10 @@ final class ExperienceBarControllerImpl implements ExperienceBarController, List
 
   @Override
   public void display(ExperienceBarContext context, ExperienceBarFormatter formatter) {
-    Player player = context.player();
+    Player player = Bukkit.getPlayer(context.playerId());
+    if (player == null) {
+      return;
+    }
     JobProgressionView progression = context.progression();
     PlayerJobCompositeKey compositeKey = PlayerJobCompositeKey.create(player, progression.job());
     BossBar bossBar = bossBarCache.get(compositeKey,
@@ -51,7 +55,7 @@ final class ExperienceBarControllerImpl implements ExperienceBarController, List
       return;
     }
     BigDecimal merged = bufferedAmounts.merge(compositeKey, context.amount(), BigDecimal::add);
-    formatter.format(bossBar, new ExperienceBarContext(progression,player,merged));
+    formatter.format(bossBar, new ExperienceBarContext(progression, context.playerId(), merged));
 
     // Only add viewer if not already viewing to prevent duplicate boss bars
     boolean isViewing = false;

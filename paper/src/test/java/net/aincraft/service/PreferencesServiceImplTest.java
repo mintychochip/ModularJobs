@@ -40,29 +40,29 @@ class PreferencesServiceImplTest {
     PreferencesService service = new PreferencesServiceImpl(plugin);
 
     assertEquals(12, service.getDefaultEntriesPerPage());
-    assertEquals(12, service.getEntriesPerPage(player));
-    assertFalse(service.prefersGuiMode(player));
+    assertEquals(12, service.getEntriesPerPage(player.getUniqueId()));
+    assertFalse(service.prefersGuiMode(player.getUniqueId()));
   }
 
   @Test
   void localSetThenGetRoundTrip() {
     PreferencesService service = new PreferencesServiceImpl(plugin);
 
-    service.setEntriesPerPage(player, 20);
-    service.setGuiMode(player, true);
+    service.setEntriesPerPage(player.getUniqueId(), 20);
+    service.setGuiMode(player.getUniqueId(), true);
 
-    assertEquals(20, service.getEntriesPerPage(player));
-    assertTrue(service.prefersGuiMode(player));
+    assertEquals(20, service.getEntriesPerPage(player.getUniqueId()));
+    assertTrue(service.prefersGuiMode(player.getUniqueId()));
   }
 
   @Test
   void localSetClampsEntriesPerPage() {
     PreferencesService service = new PreferencesServiceImpl(plugin);
 
-    service.setEntriesPerPage(player, -5);
-    assertEquals(1, service.getEntriesPerPage(player));
+    service.setEntriesPerPage(player.getUniqueId(), -5);
+    assertEquals(1, service.getEntriesPerPage(player.getUniqueId()));
 
-    service.setEntriesPerPage(player, 100);
-    assertEquals(50, service.getEntriesPerPage(player));
+    service.setEntriesPerPage(player.getUniqueId(), 100);
+    assertEquals(50, service.getEntriesPerPage(player.getUniqueId()));
   }
 }

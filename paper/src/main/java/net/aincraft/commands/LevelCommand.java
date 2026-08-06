@@ -131,7 +131,7 @@ public final class LevelCommand implements JobsCommand {
     }
 
     // Get current level before change
-    List<JobProgression> progressions = jobService.getProgressions(targetPlayer);
+    List<JobProgression> progressions = jobService.getProgressions(targetPlayer.getUniqueId());
     int oldLevel = progressions.stream()
         .filter(p -> p.job().key().toString().equals(jobKey.toString()))
         .findFirst()
@@ -199,7 +199,7 @@ public final class LevelCommand implements JobsCommand {
     }
 
     // Get current level from JobProgression
-    List<JobProgression> progressions = jobService.getProgressions(targetPlayer);
+    List<JobProgression> progressions = jobService.getProgressions(targetPlayer.getUniqueId());
     int currentLevel = progressions.stream()
         .filter(p -> p.job().key().toString().equals(jobKey.toString()))
         .findFirst()
@@ -276,7 +276,7 @@ public final class LevelCommand implements JobsCommand {
     }
 
     // Get current level from JobProgression
-    List<JobProgression> progressions = jobService.getProgressions(targetPlayer);
+    List<JobProgression> progressions = jobService.getProgressions(targetPlayer.getUniqueId());
     int currentLevel = progressions.stream()
         .filter(p -> p.job().key().toString().equals(jobKey.toString()))
         .findFirst()

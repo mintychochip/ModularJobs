@@ -10,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -35,7 +36,7 @@ public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsu
     int pageSize = page.size();
     for (int i = 0; i < data.size(); i++) {
       JobProgression progression = data.get(i);
-      OfflinePlayer progressionPlayer = progression.player();
+      OfflinePlayer progressionPlayer = Bukkit.getOfflinePlayer(progression.playerId());
       Component row = MiniMessage.miniMessage().deserialize(ENTRY_FORMAT, TagResolver.builder()
           .tag("rank", Tag.inserting(Component.text((i + 1) + (pageNumber - 1) * pageSize)))
           .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))

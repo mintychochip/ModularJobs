@@ -97,7 +97,7 @@ class JobsPaymentHandlerReloadTest {
 
     JobService service = new StubJobService() {
       @Override
-      public List<JobProgression> getProgressions(OfflinePlayer p) {
+      public List<JobProgression> getProgressions(UUID p) {
         return List.of(p0);
       }
 
@@ -193,8 +193,8 @@ class JobsPaymentHandlerReloadTest {
       }
 
       @Override
-      public OfflinePlayer player() {
-        return player;
+      public UUID playerId() {
+        return player.getUniqueId();
       }
 
       @Override
@@ -290,7 +290,7 @@ class JobsPaymentHandlerReloadTest {
     }
 
     @Override
-    public List<JobProgression> getProgressions(OfflinePlayer player) {
+    public List<JobProgression> getProgressions(UUID playerId) {
       return List.of();
     }
 
@@ -300,7 +300,7 @@ class JobsPaymentHandlerReloadTest {
     }
 
     @Override
-    public List<JobProgression> getArchivedProgressions(OfflinePlayer player) {
+    public List<JobProgression> getArchivedProgressions(UUID playerId) {
       return List.of();
     }
   }

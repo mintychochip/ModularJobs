@@ -14,21 +14,18 @@ import net.aincraft.math.ExpressionCurves;
 import net.aincraft.test.MockBukkitSupport;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import org.bukkit.OfflinePlayer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
  * Drives shipped {@link JobProgressionImpl} level-from-experience binary search + XP thresholds.
- * Uses MockBukkit for {@link OfflinePlayer} (Paper 26.2 line).
  */
 class JobProgressionLevelTest {
 
   private static final UUID PLAYER_ID = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 
   private Job job;
-  private OfflinePlayer player;
 
   @BeforeEach
   void setUp() {
@@ -46,7 +43,6 @@ class JobProgressionLevelTest {
         Map.of(),
         Map.of()
     );
-    player = MockBukkitSupport.offlinePlayer(PLAYER_ID);
   }
 
   @AfterEach
@@ -56,7 +52,7 @@ class JobProgressionLevelTest {
 
   @Test
   void zeroExperienceIsLevelOne() {
-    JobProgression progression = new JobProgressionImpl(player, job, BigDecimal.ZERO);
+    JobProgression progression = new JobProgressionImpl(PLAYER_ID, job, BigDecimal.ZERO);
     assertEquals(1, progression.level());
     assertEquals(0, BigDecimal.ZERO.compareTo(progression.experience()));
   }
@@ -79,7 +75,7 @@ class JobProgressionLevelTest {
 
   @Test
   void experienceForLevelUsesJobCurve() {
-    JobProgression progression = new JobProgressionImpl(player, job, BigDecimal.ZERO);
+    JobProgression progression = new JobProgressionImpl(PLAYER_ID, job, BigDecimal.ZERO);
     assertEquals(0, new BigDecimal("100.0").compareTo(progression.experienceForLevel(1)));
     assertEquals(0, new BigDecimal("500.0").compareTo(progression.experienceForLevel(5)));
     assertEquals(0, new BigDecimal("1000.0").compareTo(progression.experienceForLevel(10)));
@@ -87,7 +83,7 @@ class JobProgressionLevelTest {
 
   @Test
   void setExperienceReturnsNewInstanceWithRecalculatedLevel() {
-    JobProgression base = new JobProgressionImpl(player, job, BigDecimal.ZERO);
+    JobProgression base = new JobProgressionImpl(PLAYER_ID, job, BigDecimal.ZERO);
     JobProgression leveled = base.setExperience(new BigDecimal("400"));
     assertNotSame(base, leveled);
     assertEquals(1, base.level());
@@ -98,13 +94,13 @@ class JobProgressionLevelTest {
   @Test
   void setExperienceSameValueReturnsSameInstance() {
     BigDecimal xp = new BigDecimal("250");
-    JobProgression base = new JobProgressionImpl(player, job, xp);
+    JobProgression base = new JobProgressionImpl(PLAYER_ID, job, xp);
     assertSame(base, base.setExperience(xp));
   }
 
   @Test
   void addExperienceIncrementsAndLevelsUp() {
-    JobProgression base = new JobProgressionImpl(player, job, new BigDecimal("150"));
+    JobProgression base = new JobProgressionImpl(PLAYER_ID, job, new BigDecimal("150"));
     JobProgression next = base.addExperience(new BigDecimal("100"));
     assertEquals(0, new BigDecimal("250").compareTo(next.experience()));
     assertTrue(next.level() >= base.level());
@@ -125,11 +121,11 @@ class JobProgressionLevelTest {
         Map.of(),
         Map.of()
     );
-    JobProgression progression = new JobProgressionImpl(player, uncapped, new BigDecimal("9999"));
+    JobProgression progression = new JobProgressionImpl(PLAYER_ID, uncapped, new BigDecimal("9999"));
     assertEquals(1, progression.level());
   }
 
   private int levelAt(BigDecimal experience) {
-    return new JobProgressionImpl(player, job, experience).level();
+    return new JobProgressionImpl(PLAYER_ID, job, experience).level();
   }
 }

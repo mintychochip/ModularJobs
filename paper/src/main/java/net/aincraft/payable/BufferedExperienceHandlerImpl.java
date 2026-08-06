@@ -1,12 +1,12 @@
 package net.aincraft.payable;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.container.ExperiencePayableHandler;
 import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
-import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.event.JobExperienceGainEvent;
 import net.aincraft.event.JobLevelEvent;
 import net.aincraft.service.JobService;
@@ -30,7 +30,8 @@ final class BufferedExperienceHandlerImpl implements
 
   @Override
   public void pay(PayableContext context) throws IllegalArgumentException {
-    OfflinePlayer player = context.player();
+    UUID playerId = context.playerId();
+    OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
     JobProgression progression = context.jobProgression();
     Payable payable = context.payable();
     PayableAmount amount = payable.amount();
@@ -73,7 +74,7 @@ final class BufferedExperienceHandlerImpl implements
       }
 
       controller.display(
-          new ExperienceBarContext(calculatedProgression, onlinePlayer, amountDecimal),
+          new ExperienceBarContext(calculatedProgression, playerId, amountDecimal),
           formatter);
     }
   }

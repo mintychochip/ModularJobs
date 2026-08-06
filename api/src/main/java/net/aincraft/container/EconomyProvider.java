@@ -1,12 +1,10 @@
 package net.aincraft.container;
 
-import com.google.common.base.Preconditions;
-import org.bukkit.OfflinePlayer;
-import org.jetbrains.annotations.NotNull;
+import java.util.UUID;
 
 public interface EconomyProvider {
 
   boolean isCurrencySupported();
 
-  boolean deposit(OfflinePlayer player, PayableAmount payableAmount);
+  boolean deposit(UUID playerId, PayableAmount payableAmount);
 }

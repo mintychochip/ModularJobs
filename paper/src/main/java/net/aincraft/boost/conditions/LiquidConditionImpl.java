@@ -3,6 +3,7 @@ package net.aincraft.boost.conditions;
 import com.google.common.base.Preconditions;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.Condition;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -19,7 +20,10 @@ public record LiquidConditionImpl(Material liquid) implements Condition {
 
   @Override
   public boolean applies(BoostContext context) {
-    Player player = context.player();
+    Player player = Bukkit.getPlayer(context.playerId());
+    if (player == null) {
+      return false;
+    }
     if (liquid == Material.WATER) {
       return player.isInWater();
     }

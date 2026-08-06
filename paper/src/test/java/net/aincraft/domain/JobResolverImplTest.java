@@ -184,7 +184,7 @@ class JobResolverImplTest {
     }
 
     @Override
-    public List<JobProgression> getProgressions(OfflinePlayer player) {
+    public List<JobProgression> getProgressions(UUID playerId) {
       return List.of();
     }
 
@@ -194,7 +194,7 @@ class JobResolverImplTest {
     }
 
     @Override
-    public List<JobProgression> getArchivedProgressions(OfflinePlayer player) {
+    public List<JobProgression> getArchivedProgressions(UUID playerId) {
       return List.of();
     }
   }

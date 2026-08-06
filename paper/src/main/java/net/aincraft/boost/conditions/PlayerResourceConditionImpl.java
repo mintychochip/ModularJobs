@@ -5,6 +5,8 @@ import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.PlayerResourceType;
 import net.aincraft.container.boost.RelationalOperator;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 /**
  * Record condition that checks a player resource value against an expected value.
@@ -15,7 +17,11 @@ public record PlayerResourceConditionImpl(PlayerResourceType type, double expect
 
   @Override
   public boolean applies(BoostContext context) {
-    double actual = type.getValue(context.player());
+    Player player = Bukkit.getPlayer(context.playerId());
+    if (player == null) {
+      return false;
+    }
+    double actual = type.getValue(player);
     return operator.test(BigDecimal.valueOf(actual), BigDecimal.valueOf(expected));
   }
 }

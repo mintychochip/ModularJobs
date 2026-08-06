@@ -361,7 +361,7 @@ public final class PetSelectionGui {
   }
 
   private int getPlayerLevel(Player player, String jobKey) {
-    List<JobProgression> progressions = jobService.getProgressions(player);
+    List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
     for (JobProgression prog : progressions) {
       if (prog.job().key().toString().equals(jobKey)) {
         return prog.level();

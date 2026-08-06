@@ -93,6 +93,6 @@ class RuledBoostSourcePriorityTest {
 
   private static BoostContext dummyContext() {
     // Conditions used in these tests do not touch context fields
-    return new BoostContext(null, null, null, null);
+    return new BoostContext(null, null, null, null, null);
   }
 }

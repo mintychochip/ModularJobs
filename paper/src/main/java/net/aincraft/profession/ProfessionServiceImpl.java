@@ -8,8 +8,6 @@ import java.util.UUID;
 import net.aincraft.JobProgression;
 import net.aincraft.service.JobService;
 import net.aincraft.service.ProfessionService;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -73,8 +71,7 @@ public final class ProfessionServiceImpl implements ProfessionService {
     if (direct != null) {
       return Optional.of(direct);
     }
-    OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
-    return jobService.getProgressions(player).stream()
+    return jobService.getProgressions(playerId).stream()
         .filter(p -> p.job().key().value().equalsIgnoreCase(storageKey))
         .findFirst();
   }
