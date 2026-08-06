@@ -27,6 +27,8 @@ public final class ModularJobsBootstrap extends JavaPlugin {
       PluginContext created = PluginContext.create(this);
       this.context = created;
 
+      PluginProvider.set(this);
+      Bridge.register(created.bridge);
       Bukkit.getServicesManager()
           .register(Bridge.class, created.bridge, this, ServicePriority.High);
 
@@ -91,7 +93,9 @@ public final class ModularJobsBootstrap extends JavaPlugin {
           getSLF4JLogger().warn("Failed to unregister PlaceholderAPI expansion", t);
         }
       }
-      // Unregister Bridge + any profession services registered by this plugin
+      // Unregister Bridge holder + Bukkit services registered by this plugin
+      Bridge.unregister();
+      PluginProvider.set(null);
       Bukkit.getServicesManager().unregisterAll(this);
       ctx.shutdown();
     } catch (SQLException e) {

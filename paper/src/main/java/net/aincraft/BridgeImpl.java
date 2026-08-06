@@ -13,10 +13,8 @@ import net.aincraft.service.NodeHarvestService;
 import net.aincraft.service.ProfessionService;
 import net.aincraft.service.RecipeService;
 import net.aincraft.service.StationService;
-import org.bukkit.plugin.Plugin;
 
 record BridgeImpl(
-    Plugin plugin,
     RegistryContainer registryContainer,
     JobService jobService,
     ProfessionService professionService,

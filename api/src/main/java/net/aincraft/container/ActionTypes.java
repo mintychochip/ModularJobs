@@ -1,10 +1,9 @@
 package net.aincraft.container;
 
-import net.aincraft.Bridge;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.RegistryView;
-import org.bukkit.NamespacedKey;
+import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
 public final class ActionTypes {
@@ -134,6 +133,6 @@ public final class ActionTypes {
   private static ActionType type(String keyString) {
     RegistryView<ActionType> registry = RegistryContainer.registryContainer()
         .getRegistry(RegistryKeys.ACTION_TYPES);
-    return registry.getOrThrow(new NamespacedKey(Bridge.bridge().plugin(), keyString));
+    return registry.getOrThrow(Key.key("modularjobs", keyString));
   }
 }

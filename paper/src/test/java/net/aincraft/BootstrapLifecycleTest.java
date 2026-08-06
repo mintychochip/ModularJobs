@@ -17,6 +17,9 @@ class BootstrapLifecycleTest {
   void onDisableUnregistersServicesAndPapiAndDoesNotBusySpin() throws Exception {
     Path bootstrap = locate("ModularJobsBootstrap.java");
     String text = Files.readString(bootstrap, StandardCharsets.UTF_8);
+    assertTrue(text.contains("Bridge.register"), "must register static Bridge holder on enable");
+    assertTrue(text.contains("Bridge.unregister"), "must clear static Bridge holder on disable");
+    assertTrue(text.contains("PluginProvider.set"), "must set/clear paper PluginProvider");
     assertTrue(text.contains("unregisterAll"), "must unregister Bukkit services on disable");
     assertTrue(text.contains("unregister()"), "must unregister PlaceholderAPI expansion");
     assertTrue(text.contains("ctx.shutdown()"), "must flush/close via PluginContext.shutdown");

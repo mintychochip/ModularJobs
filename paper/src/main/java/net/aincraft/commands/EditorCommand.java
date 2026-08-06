@@ -6,7 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import net.aincraft.Bridge;
+import net.aincraft.PluginProvider;
 import net.aincraft.editor.EditorService;
 import net.aincraft.domain.JobResolver;
 import net.aincraft.service.JobService;
@@ -107,7 +107,7 @@ public final class EditorCommand implements JobsCommand {
     editorService.exportTasks(jobKey, player.getUniqueId())
         .thenAccept(result -> {
           // Run on main thread to safely send messages
-          Bukkit.getScheduler().runTask(Bridge.bridge().plugin(), () -> {
+          Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
             Component message = Component.text("Click to open editor: ")
                 .append(Component.text(result.webEditorUrl())
                     .clickEvent(ClickEvent.openUrl(result.webEditorUrl())));
@@ -117,7 +117,7 @@ public final class EditorCommand implements JobsCommand {
         })
         .exceptionally(throwable -> {
           // Run on main thread to safely send messages
-          Bukkit.getScheduler().runTask(Bridge.bridge().plugin(), () -> {
+          Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
             Messages.send(player, "<error>Failed to export job data: " + throwable.getMessage());
           });
           return null;
