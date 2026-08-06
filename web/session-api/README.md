@@ -1,4 +1,4 @@
-# jobs-session-api
+# session-api (`web/session-api`)
 
 Rust REST service for ModularJobs secure editor sessions stored in PostgreSQL.
 
@@ -9,7 +9,7 @@ This process **never creates tables**. Provision once:
 ```bash
 ./scripts/apply-postgres-schema.sh
 # or
-psql "$DATABASE_URL" -f jobs-core/src/main/resources/sql/postgres.sql
+psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
 ```
 
 See `docs/database-schema.md`.
@@ -38,6 +38,6 @@ On boot the API only **checks** that `editor_sessions` exists; missing schema â†
 ## Tests
 
 ```bash
-# tests apply shared sql/postgres.sql themselves (not production boot)
+# tests apply shared paper sql/postgres.sql themselves (not production boot)
 DATABASE_URL=postgres://test:test@127.0.0.1:55432/modularjobs cargo test
 ```

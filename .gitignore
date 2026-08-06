@@ -52,8 +52,11 @@ working_log.md
 .worktrees/
 
 ### Rust ###
-jobs-session-api/target/
+web/session-api/target/
+**/target/
 
 ### Node / React session editor ###
+web/session-editor/node_modules/
+web/session-editor/dist/
 jobs-web/session-editor/node_modules/
 jobs-web/session-editor/dist/
