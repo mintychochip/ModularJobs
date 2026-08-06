@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.time.Duration;
@@ -400,16 +400,16 @@ public final class TopCommand implements JobsCommand {
                   CommandSourceStack source = context.getSource();
                   CommandSender sender = source.getSender();
                   if (!(sender instanceof Player player)) {
-                    Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+                    Messages.send(sender, "<error>This command can only be used by players.");
                     return 0;
                   }
                   String mode = context.getArgument("displayMode", String.class);
                   if (!mode.equalsIgnoreCase("chat") && !mode.equalsIgnoreCase("scoreboard")) {
-                    Mint.sendThemedMessage(sender, "<error>Invalid display mode. Use 'chat' or 'scoreboard'.");
+                    Messages.send(sender, "<error>Invalid display mode. Use 'chat' or 'scoreboard'.");
                     return 0;
                   }
                   player.setMetadata("jobs_display_mode", new FixedMetadataValue(plugin, mode.toLowerCase()));
-                  Mint.sendThemedMessage(sender, "<success>Display mode set to <secondary>" + mode.toLowerCase());
+                  Messages.send(sender, "<success>Display mode set to <secondary>" + mode.toLowerCase());
                   return 1;
                 })))
         .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
@@ -476,7 +476,7 @@ public final class TopCommand implements JobsCommand {
   }
 
   private void displayOverallLeaderboard(CommandSender sender, int page) {
-    Mint.sendThemedMessage(sender,
+    Messages.send(sender,
         "<error>Overall leaderboard is not yet implemented. Please specify a job: <secondary>/jobs top <job>");
   }
 

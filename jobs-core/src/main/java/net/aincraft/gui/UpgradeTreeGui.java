@@ -1,6 +1,6 @@
 package net.aincraft.gui;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -807,23 +807,23 @@ public final class UpgradeTreeGui implements Listener {
 
     switch (result) {
       case UnlockResult.Success success -> {
-        Mint.sendThemedMessage(player, "<accent>Unlocked: <primary>" + success.node().name()
+        Messages.send(player, "<accent>Unlocked: <primary>" + success.node().name()
             + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
         // Refresh the GUI
         refresh(player);
       }
       case UnlockResult.InsufficientPoints ip -> {
-        Mint.sendThemedMessage(player, "<error>Not enough SP! Need <secondary>" + ip.required()
+        Messages.send(player, "<error>Not enough SP! Need <secondary>" + ip.required()
             + "<error>, have <secondary>" + ip.available());
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.PrerequisitesNotMet pm -> {
-        Mint.sendThemedMessage(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
+        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.ExcludedByChoice ec -> {
-        Mint.sendThemedMessage(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.AlreadyUnlocked au -> {
@@ -831,11 +831,11 @@ public final class UpgradeTreeGui implements Listener {
         player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f);
       }
       case UnlockResult.NodeNotFound nf -> {
-        Mint.sendThemedMessage(player, "<error>Node not found: " + nf.nodeKey());
+        Messages.send(player, "<error>Node not found: " + nf.nodeKey());
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
       }
       case UnlockResult.TreeNotFound tf -> {
-        Mint.sendThemedMessage(player, "<error>No upgrade tree for this job.");
+        Messages.send(player, "<error>No upgrade tree for this job.");
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
       }
     }

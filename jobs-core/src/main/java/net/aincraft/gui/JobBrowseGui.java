@@ -1,6 +1,6 @@
 package net.aincraft.gui;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -227,7 +227,7 @@ public final class JobBrowseGui {
 
       try {
         if (jobService.joinJob(playerId, jobKey)) {
-          Mint.sendThemedMessage(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
+          Messages.send(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
           player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.2f);
 
           // Refresh the GUI to show updated status
@@ -238,11 +238,11 @@ public final class JobBrowseGui {
               1L
           );
         } else {
-          Mint.sendThemedMessage(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
+          Messages.send(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
           player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.0f);
         }
       } catch (IllegalArgumentException e) {
-        Mint.sendThemedMessage(player, "<error>Job not found: " + jobKey);
+        Messages.send(player, "<error>Job not found: " + jobKey);
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
     });

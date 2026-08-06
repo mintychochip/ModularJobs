@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.editor.EditorService;
@@ -19,39 +19,43 @@ public final class ApplyEditsCommand implements JobsCommand {
     this.editorService = editorService;
   }
 
+  /** Admin permission required to import web-editor payloads into live job tasks. */
+  public static final String PERMISSION = AdminPermissions.ADMIN;
+
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("applyedits")
+        .requires(AdminPermissions::isAdmin)
         .then(Commands.argument("code", StringArgumentType.string())
             .executes(context -> {
               CommandSourceStack source = context.getSource();
               CommandSender sender = source.getSender();
 
               if (!(sender instanceof Player player)) {
-                Mint.sendThemedMessage(sender, "<error>This command can only be executed by players");
+                Messages.send(sender, "<error>This command can only be executed by players");
                 return Command.SINGLE_SUCCESS;
               }
 
               String code = context.getArgument("code", String.class);
 
-              Mint.sendThemedMessage(player, "<primary>Applying edits...");
+              Messages.send(player, "<primary>Applying edits...");
 
               editorService.importTasks(code, player.getUniqueId())
                   .thenAccept(result -> {
                     // Run on main thread to safely send messages
                     org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
                       if (result.errors().isEmpty()) {
-                        Mint.sendThemedMessage(player, "<success>Successfully applied edits!");
-                        Mint.sendThemedMessage(player, "<accent>Tasks imported: " + result.tasksImported());
-                        Mint.sendThemedMessage(player, "<accent>Tasks deleted: " + result.tasksDeleted());
+                        Messages.send(player, "<success>Successfully applied edits!");
+                        Messages.send(player, "<accent>Tasks imported: " + result.tasksImported());
+                        Messages.send(player, "<accent>Tasks deleted: " + result.tasksDeleted());
                       } else {
-                        Mint.sendThemedMessage(player, "<primary>Edits applied with errors:");
-                        Mint.sendThemedMessage(player, "<accent>Tasks imported: " + result.tasksImported());
-                        Mint.sendThemedMessage(player, "<accent>Tasks deleted: " + result.tasksDeleted());
-                        Mint.sendThemedMessage(player, "<error>Errors:");
+                        Messages.send(player, "<primary>Edits applied with errors:");
+                        Messages.send(player, "<accent>Tasks imported: " + result.tasksImported());
+                        Messages.send(player, "<accent>Tasks deleted: " + result.tasksDeleted());
+                        Messages.send(player, "<error>Errors:");
 
                         for (String error : result.errors()) {
-                          Mint.sendThemedMessage(player, "<error>  - " + error);
+                          Messages.send(player, "<error>  - " + error);
                         }
                       }
                     });
@@ -59,7 +63,7 @@ public final class ApplyEditsCommand implements JobsCommand {
                   .exceptionally(throwable -> {
                     // Run on main thread to safely send messages
                     org.bukkit.Bukkit.getScheduler().runTask(net.aincraft.Bridge.bridge().plugin(), () -> {
-                      Mint.sendThemedMessage(player, "<error>Failed to apply edits: " + throwable.getMessage());
+                      Messages.send(player, "<error>Failed to apply edits: " + throwable.getMessage());
                     });
                     return null;
                   });

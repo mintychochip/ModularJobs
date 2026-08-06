@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.util.List;
@@ -46,7 +46,7 @@ final class UpgradeCommand implements JobsCommand {
                     CommandSourceStack source = context.getSource();
                     CommandSender sender = source.getSender();
                     if (!(sender instanceof Player player)) {
-                        Mint.sendThemedMessage(sender, "<error>This command can only be used by players");
+                        Messages.send(sender, "<error>This command can only be used by players");
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -58,7 +58,7 @@ final class UpgradeCommand implements JobsCommand {
                     try {
                         job = jobService.getJob(jobKey.toString());
                     } catch (IllegalArgumentException e) {
-                        Mint.sendThemedMessage(player, "<error>Invalid job: " + jobName);
+                        Messages.send(player, "<error>Invalid job: " + jobName);
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -73,7 +73,7 @@ final class UpgradeCommand implements JobsCommand {
                     }
 
                     if (playerProgression == null) {
-                        Mint.sendThemedMessage(player, "<error>You haven't joined the " + job.displayName().toString() + " job!");
+                        Messages.send(player, "<error>You haven't joined the " + job.displayName().toString() + " job!");
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -81,7 +81,7 @@ final class UpgradeCommand implements JobsCommand {
                     int currentLevel = playerProgression.level();
                     int upgradeLevel = job.upgradeLevel();
                     if (currentLevel < upgradeLevel) {
-                        Mint.sendThemedMessage(player, "<error>You need to reach level <secondary>" + upgradeLevel
+                        Messages.send(player, "<error>You need to reach level <secondary>" + upgradeLevel
                             + "<error> to upgrade. Current: <secondary>" + currentLevel);
                         return Command.SINGLE_SUCCESS;
                     }
@@ -89,7 +89,7 @@ final class UpgradeCommand implements JobsCommand {
                     // Check if available pets exist for this job
                     List<String> availablePets = petUpgradeService.getAvailablePets(jobKey.toString());
                     if (availablePets.isEmpty()) {
-                        Mint.sendThemedMessage(player, "<error>No pet upgrades available for this job.");
+                        Messages.send(player, "<error>No pet upgrades available for this job.");
                         return Command.SINGLE_SUCCESS;
                     }
 
@@ -99,7 +99,7 @@ final class UpgradeCommand implements JobsCommand {
                                                        player.hasPermission("modularjobs.specialization.bypass." + jobName);
                     
                     if (existingPet != null && !canChangeSpecialization) {
-                        Mint.sendThemedMessage(player, "<error>Your pet specialization is permanent! You chose <secondary>" + formatPetName(existingPet) + "<error>.");
+                        Messages.send(player, "<error>Your pet specialization is permanent! You chose <secondary>" + formatPetName(existingPet) + "<error>.");
                         return Command.SINGLE_SUCCESS;
                     }
 

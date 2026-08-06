@@ -1,6 +1,6 @@
 package net.aincraft.upgrade.editor;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
@@ -269,7 +269,7 @@ public final class TreeEditorNodeGui {
       case "back" -> {
         // Return to main editor
         if (mainEditor == null) {
-          Mint.sendThemedMessage(player, "<error>Error: Main editor not available!");
+          Messages.send(player, "<error>Error: Main editor not available!");
           player.closeInventory();
           return;
         }
@@ -284,21 +284,21 @@ public final class TreeEditorNodeGui {
         EditorEffect newEffect = new EditorEffect();
         node.effects().add(newEffect);
         refreshGui(player, session, node);
-        Mint.sendThemedMessage(player, "<success>Added new effect");
+        Messages.send(player, "<success>Added new effect");
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.5f, 1.0f);
       }
 
       case "delete" -> {
         EditorTree tree = session.tree();
         if (node.id().equals(tree.rootNodeId())) {
-          Mint.sendThemedMessage(player, "<error>Cannot delete root node!");
+          Messages.send(player, "<error>Cannot delete root node!");
           player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
           return;
         }
 
         session.saveSnapshot();
         tree.removeNode(node.id());
-        Mint.sendThemedMessage(player, "<accent>Deleted node: <secondary>" + node.id());
+        Messages.send(player, "<accent>Deleted node: <secondary>" + node.id());
         editSessions.remove(player.getUniqueId());
         openGuis.remove(player.getUniqueId());
         player.closeInventory();
@@ -321,13 +321,13 @@ public final class TreeEditorNodeGui {
 
     switch (action) {
       case "name" -> {
-        Mint.sendThemedMessage(player, "<accent>Type the new name in chat (or 'cancel' to abort):");
+        Messages.send(player, "<accent>Type the new name in chat (or 'cancel' to abort):");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           if (!"cancel".equalsIgnoreCase(input)) {
             session.saveSnapshot();
             node.setName(input);
-            Mint.sendThemedMessage(player, "<success>Name set to: <secondary>" + input);
+            Messages.send(player, "<success>Name set to: <secondary>" + input);
           }
           chatInputHandlers.remove(player.getUniqueId());
           reopeningToNodeEditor.add(player.getUniqueId());
@@ -336,13 +336,13 @@ public final class TreeEditorNodeGui {
       }
 
       case "description" -> {
-        Mint.sendThemedMessage(player, "<accent>Type the new description in chat (or 'cancel' to abort):");
+        Messages.send(player, "<accent>Type the new description in chat (or 'cancel' to abort):");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           if (!"cancel".equalsIgnoreCase(input)) {
             session.saveSnapshot();
             node.setDescription(input);
-            Mint.sendThemedMessage(player, "<success>Description set!");
+            Messages.send(player, "<success>Description set!");
           }
           chatInputHandlers.remove(player.getUniqueId());
           reopeningToNodeEditor.add(player.getUniqueId());
@@ -385,17 +385,17 @@ public final class TreeEditorNodeGui {
       }
 
       case "perk_id" -> {
-        Mint.sendThemedMessage(player, "<accent>Type the perk ID in chat (or 'cancel' to abort, 'clear' to remove):");
+        Messages.send(player, "<accent>Type the perk ID in chat (or 'cancel' to abort, 'clear' to remove):");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           if ("clear".equalsIgnoreCase(input)) {
             session.saveSnapshot();
             node.setPerkId("");
-            Mint.sendThemedMessage(player, "<success>Perk ID cleared");
+            Messages.send(player, "<success>Perk ID cleared");
           } else if (!"cancel".equalsIgnoreCase(input)) {
             session.saveSnapshot();
             node.setPerkId(input);
-            Mint.sendThemedMessage(player, "<success>Perk ID set to: <secondary>" + input);
+            Messages.send(player, "<success>Perk ID set to: <secondary>" + input);
           }
           chatInputHandlers.remove(player.getUniqueId());
           reopeningToNodeEditor.add(player.getUniqueId());
@@ -414,7 +414,7 @@ public final class TreeEditorNodeGui {
       case "archetype" -> {
         List<EditorTree.EditorArchetype> archetypes = session.tree().archetypes();
         if (archetypes.isEmpty()) {
-          Mint.sendThemedMessage(player, "<error>No archetypes defined!");
+          Messages.send(player, "<error>No archetypes defined!");
           return;
         }
 
@@ -438,7 +438,7 @@ public final class TreeEditorNodeGui {
       }
 
       case "position" -> {
-        Mint.sendThemedMessage(player, "<accent>Type new position as 'X Y' (e.g., '4 2'):");
+        Messages.send(player, "<accent>Type new position as 'X Y' (e.g., '4 2'):");
         player.closeInventory();
         chatInputHandlers.put(player.getUniqueId(), input -> {
           if (!"cancel".equalsIgnoreCase(input)) {
@@ -448,9 +448,9 @@ public final class TreeEditorNodeGui {
               int y = Integer.parseInt(parts[1]);
               session.saveSnapshot();
               node.setPosition(new net.aincraft.upgrade.Position(x, y));
-              Mint.sendThemedMessage(player, "<success>Position set to: <secondary>" + x + ", " + y);
+              Messages.send(player, "<success>Position set to: <secondary>" + x + ", " + y);
             } catch (Exception e) {
-              Mint.sendThemedMessage(player, "<error>Invalid format. Use 'X Y' (e.g., '4 2')");
+              Messages.send(player, "<error>Invalid format. Use 'X Y' (e.g., '4 2')");
             }
           }
           chatInputHandlers.remove(player.getUniqueId());
@@ -473,7 +473,7 @@ public final class TreeEditorNodeGui {
         session.saveSnapshot();
         node.effects().remove((int) index);
         refreshGui(player, session, node);
-        Mint.sendThemedMessage(player, "<accent>Removed effect");
+        Messages.send(player, "<accent>Removed effect");
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
       }
     } else {

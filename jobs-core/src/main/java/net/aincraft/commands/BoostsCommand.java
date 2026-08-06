@@ -26,7 +26,7 @@ import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
 import net.aincraft.service.JobService;
 import net.aincraft.upgrade.UpgradeBoostDataService;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -55,40 +55,40 @@ public class BoostsCommand implements JobsCommand {
           CommandSourceStack source = context.getSource();
 
           if (!(source.getSender() instanceof Player player)) {
-            Mint.sendThemedMessage(source.getSender(), "<error>This command can only be used by players.");
+            Messages.send(source.getSender(), "<error>This command can only be used by players.");
             return 0;
           }
 
           // Header
-          Mint.sendThemedMessage(player, "<neutral>━━━━━━━━━ <primary>Active Boosts<neutral> ━━━━━━━━━");
-          Mint.sendThemedMessage(player, "");
+          Messages.send(player, "<neutral>━━━━━━━━━ <primary>Active Boosts<neutral> ━━━━━━━━━");
+          Messages.send(player, "");
 
           // Timed Boosts
           List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
               new PlayerTarget(player));
 
           if (!timedBoosts.isEmpty()) {
-            Mint.sendThemedMessage(player, "<secondary>⏰ Timed Boosts:");
+            Messages.send(player, "<secondary>⏰ Timed Boosts:");
             for (ActiveBoostData boost : timedBoosts) {
               String timeRemaining = getTimeRemaining(boost);
               String boostEffects = formatBoostEffects(boost.boostSource());
-              Mint.sendThemedMessage(player, "<neutral>  • <secondary>" + boost.boostSource().key().asString());
-              Mint.sendThemedMessage(player, "<neutral>      <accent>" + boostEffects + " <neutral>- " + timeRemaining);
+              Messages.send(player, "<neutral>  • <secondary>" + boost.boostSource().key().asString());
+              Messages.send(player, "<neutral>      <accent>" + boostEffects + " <neutral>- " + timeRemaining);
             }
-            Mint.sendThemedMessage(player, "");
+            Messages.send(player, "");
           }
 
           // Passive Item Boosts
           List<PassiveBoostInfo> passiveBoosts = getPassiveBoosts(player);
 
           if (!passiveBoosts.isEmpty()) {
-            Mint.sendThemedMessage(player, "<secondary>🛡 Passive Boosts:");
+            Messages.send(player, "<secondary>🛡 Passive Boosts:");
             for (PassiveBoostInfo info : passiveBoosts) {
               String boostEffects = formatBoostEffects(info.boostSource);
-              Mint.sendThemedMessage(player, "<neutral>  • <secondary>" + info.boostSource.key().asString() + " <neutral>(Slot " + info.slot + ")");
-              Mint.sendThemedMessage(player, "<neutral>      <accent>" + boostEffects);
+              Messages.send(player, "<neutral>  • <secondary>" + info.boostSource.key().asString() + " <neutral>(Slot " + info.slot + ")");
+              Messages.send(player, "<neutral>      <accent>" + boostEffects);
             }
-            Mint.sendThemedMessage(player, "");
+            Messages.send(player, "");
           }
 
           // Upgrade Tree Boosts (now uses the same BoostSource API)
@@ -101,7 +101,7 @@ public class BoostsCommand implements JobsCommand {
 
             if (!upgradeBoosts.isEmpty()) {
               if (!hasUpgradeBoosts) {
-                Mint.sendThemedMessage(player, "<secondary>⬆ Upgrade Boosts:");
+                Messages.send(player, "<secondary>⬆ Upgrade Boosts:");
                 hasUpgradeBoosts = true;
               }
 
@@ -109,23 +109,23 @@ public class BoostsCommand implements JobsCommand {
               for (BoostSource upgradeSource : upgradeBoosts) {
                 String boostEffects = formatBoostEffects(upgradeSource);
                 String desc = upgradeSource.description() != null ? upgradeSource.description() : upgradeSource.key().value();
-                Mint.sendThemedMessage(player, "<neutral>  • <secondary>" + jobName + " <neutral>(" + desc + "): <accent>" + boostEffects);
+                Messages.send(player, "<neutral>  • <secondary>" + jobName + " <neutral>(" + desc + "): <accent>" + boostEffects);
               }
             }
           }
 
           if (hasUpgradeBoosts) {
-            Mint.sendThemedMessage(player, "");
+            Messages.send(player, "");
           }
 
           // No boosts message
           if (timedBoosts.isEmpty() && passiveBoosts.isEmpty() && !hasUpgradeBoosts) {
-            Mint.sendThemedMessage(player, "<neutral>  You have no active boosts. ☹");
-            Mint.sendThemedMessage(player, "");
+            Messages.send(player, "<neutral>  You have no active boosts. ☹");
+            Messages.send(player, "");
           }
 
           // Footer
-          Mint.sendThemedMessage(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+          Messages.send(player, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
           return Command.SINGLE_SUCCESS;
         });

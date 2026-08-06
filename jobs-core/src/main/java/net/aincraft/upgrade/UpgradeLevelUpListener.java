@@ -1,6 +1,6 @@
 package net.aincraft.upgrade;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import java.util.Optional;
 import net.aincraft.Job;
 import net.aincraft.event.JobLevelEvent;
@@ -62,6 +62,6 @@ public final class UpgradeLevelUpListener implements Listener {
     String pointsText = pointsToAward > 1 ? "Skill Points" : "Skill Point";
     String message = String.format("<accent>+<primary> %d %s<neutral> (<secondary>%d available<neutral>)",
         pointsToAward, pointsText, updatedData.availableSkillPoints());
-    Mint.sendThemedMessage(player, message);
+    Messages.send(player, message);
   }
 }

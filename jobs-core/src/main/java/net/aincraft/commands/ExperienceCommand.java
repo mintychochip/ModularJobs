@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -86,7 +86,7 @@ public final class ExperienceCommand implements JobsCommand {
     Player targetPlayer = playerResolver.resolve(source).getFirst();
 
     if (targetPlayer == null) {
-      Mint.sendThemedMessage(sender, "<error>Player not found.</error>");
+      Messages.send(sender, "<error>Player not found.</error>");
       return 0;
     }
 
@@ -95,7 +95,7 @@ public final class ExperienceCommand implements JobsCommand {
     try {
       job = jobService.getJob(jobKey.toString());
     } catch (IllegalArgumentException e) {
-      Mint.sendThemedMessage(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
+      Messages.send(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
       return 0;
     }
 
@@ -103,7 +103,7 @@ public final class ExperienceCommand implements JobsCommand {
     JobProgressionRecord currentRecord = progressionService.load(playerId, jobKey.toString());
 
     if (currentRecord == null) {
-      Mint.sendThemedMessage(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
+      Messages.send(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
       return 0;
     }
 
@@ -115,11 +115,11 @@ public final class ExperienceCommand implements JobsCommand {
     );
 
     if (progressionService.save(newRecord)) {
-      Mint.sendThemedMessage(sender, "<primary>✓ Set</primary> <secondary>" + targetPlayer.getName() + "</secondary><primary>'s experience in</primary> <accent>" + job.getPlainName() + "</accent> <primary>to</primary> <secondary>" + String.format("%.2f", amount) + "</secondary>");
-      Mint.sendThemedMessage(targetPlayer, "<primary>✓ Your experience in</primary> <accent>" + job.getPlainName() + "</accent> <primary>has been set to</primary> <secondary>" + String.format("%.2f", amount) + "</secondary>");
+      Messages.send(sender, "<primary>✓ Set</primary> <secondary>" + targetPlayer.getName() + "</secondary><primary>'s experience in</primary> <accent>" + job.getPlainName() + "</accent> <primary>to</primary> <secondary>" + String.format("%.2f", amount) + "</secondary>");
+      Messages.send(targetPlayer, "<primary>✓ Your experience in</primary> <accent>" + job.getPlainName() + "</accent> <primary>has been set to</primary> <secondary>" + String.format("%.2f", amount) + "</secondary>");
       return Command.SINGLE_SUCCESS;
     } else {
-      Mint.sendThemedMessage(sender, "<error>Failed to update progression. Please check server logs.</error>");
+      Messages.send(sender, "<error>Failed to update progression. Please check server logs.</error>");
       return 0;
     }
   }
@@ -130,7 +130,7 @@ public final class ExperienceCommand implements JobsCommand {
     Player targetPlayer = playerResolver.resolve(source).getFirst();
 
     if (targetPlayer == null) {
-      Mint.sendThemedMessage(sender, "<error>Player not found.</error>");
+      Messages.send(sender, "<error>Player not found.</error>");
       return 0;
     }
 
@@ -139,7 +139,7 @@ public final class ExperienceCommand implements JobsCommand {
     try {
       job = jobService.getJob(jobKey.toString());
     } catch (IllegalArgumentException e) {
-      Mint.sendThemedMessage(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
+      Messages.send(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
       return 0;
     }
 
@@ -147,7 +147,7 @@ public final class ExperienceCommand implements JobsCommand {
     JobProgressionRecord currentRecord = progressionService.load(playerId, jobKey.toString());
 
     if (currentRecord == null) {
-      Mint.sendThemedMessage(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
+      Messages.send(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
       return 0;
     }
 
@@ -159,11 +159,11 @@ public final class ExperienceCommand implements JobsCommand {
     );
 
     if (progressionService.save(newRecord)) {
-      Mint.sendThemedMessage(sender, "<primary>✓ Added</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>to</primary> <accent>" + targetPlayer.getName() + "</accent> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
-      Mint.sendThemedMessage(targetPlayer, "<primary>✓ You gained</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
+      Messages.send(sender, "<primary>✓ Added</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>to</primary> <accent>" + targetPlayer.getName() + "</accent> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
+      Messages.send(targetPlayer, "<primary>✓ You gained</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
       return Command.SINGLE_SUCCESS;
     } else {
-      Mint.sendThemedMessage(sender, "<error>Failed to update progression. Please check server logs.</error>");
+      Messages.send(sender, "<error>Failed to update progression. Please check server logs.</error>");
       return 0;
     }
   }
@@ -174,7 +174,7 @@ public final class ExperienceCommand implements JobsCommand {
     Player targetPlayer = playerResolver.resolve(source).getFirst();
 
     if (targetPlayer == null) {
-      Mint.sendThemedMessage(sender, "<error>Player not found.</error>");
+      Messages.send(sender, "<error>Player not found.</error>");
       return 0;
     }
 
@@ -183,7 +183,7 @@ public final class ExperienceCommand implements JobsCommand {
     try {
       job = jobService.getJob(jobKey.toString());
     } catch (IllegalArgumentException e) {
-      Mint.sendThemedMessage(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
+      Messages.send(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
       return 0;
     }
 
@@ -191,7 +191,7 @@ public final class ExperienceCommand implements JobsCommand {
     JobProgressionRecord currentRecord = progressionService.load(playerId, jobKey.toString());
 
     if (currentRecord == null) {
-      Mint.sendThemedMessage(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
+      Messages.send(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
       return 0;
     }
 
@@ -207,11 +207,11 @@ public final class ExperienceCommand implements JobsCommand {
     );
 
     if (progressionService.save(newRecord)) {
-      Mint.sendThemedMessage(sender, "<primary>✗ Subtracted</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>from</primary> <accent>" + targetPlayer.getName() + "</accent> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
-      Mint.sendThemedMessage(targetPlayer, "<primary>✗ You lost</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
+      Messages.send(sender, "<primary>✗ Subtracted</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>from</primary> <accent>" + targetPlayer.getName() + "</accent> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
+      Messages.send(targetPlayer, "<primary>✗ You lost</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
       return Command.SINGLE_SUCCESS;
     } else {
-      Mint.sendThemedMessage(sender, "<error>Failed to update progression. Please check server logs.</error>");
+      Messages.send(sender, "<error>Failed to update progression. Please check server logs.</error>");
       return 0;
     }
   }

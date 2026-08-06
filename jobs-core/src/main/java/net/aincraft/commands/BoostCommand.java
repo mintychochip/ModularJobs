@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -104,9 +104,13 @@ public final class BoostCommand implements JobsCommand {
     this.jobService = jobService;
   }
 
+  /** Admin permission required for all boost management subcommands. */
+  public static final String PERMISSION = AdminPermissions.ADMIN;
+
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("boost")
+        .requires(AdminPermissions::isAdmin)
         .then(buildApplyCommand())
         .then(buildRemoveCommand())
         .then(buildListCommand())
@@ -150,7 +154,7 @@ public final class BoostCommand implements JobsCommand {
     // Validate boost source
     BoostSource boostSource = boostSourceRegistry.get(sourceKey).orElse(null);
     if (boostSource == null) {
-      Mint.sendThemedMessage(sender,
+      Messages.send(sender,
           "<error>Unknown boost source: <secondary>" + sourceKey.asString());
       return 0;
     }
@@ -160,7 +164,7 @@ public final class BoostCommand implements JobsCommand {
     try {
       duration = DurationParser.parse(durationStr);
     } catch (IllegalArgumentException e) {
-      Mint.sendThemedMessage(sender, "<error>Invalid duration: <secondary>" + e.getMessage());
+      Messages.send(sender, "<error>Invalid duration: <secondary>" + e.getMessage());
       return 0;
     }
 
@@ -169,7 +173,7 @@ public final class BoostCommand implements JobsCommand {
     // Apply based on target type
     if (GLOBAL_TARGET.equalsIgnoreCase(targetStr)) {
       timedBoostDataService.addData(boostData, new GlobalTarget());
-      Mint.sendThemedMessage(sender,
+      Messages.send(sender,
           "<accent>Applied <primary>" + sourceKey.asString() + "<accent> globally for <secondary>"
               + DurationParser.format(duration));
 
@@ -179,18 +183,18 @@ public final class BoostCommand implements JobsCommand {
         timedBoostDataService.addData(boostData, new PlayerTarget(player));
         count++;
       }
-      Mint.sendThemedMessage(sender,
+      Messages.send(sender,
           "<accent>Applied <primary>" + sourceKey.asString() + "<accent> to <secondary>" + count
               + " player(s)<accent> for <secondary>" + DurationParser.format(duration));
 
     } else {
       Player target = Bukkit.getPlayer(targetStr);
       if (target == null) {
-        Mint.sendThemedMessage(sender, "<error>Player not found: <secondary>" + targetStr);
+        Messages.send(sender, "<error>Player not found: <secondary>" + targetStr);
         return 0;
       }
       timedBoostDataService.addData(boostData, new PlayerTarget(target));
-      Mint.sendThemedMessage(sender,
+      Messages.send(sender,
           "<accent>Applied <primary>" + sourceKey.asString() + "<accent> to <secondary>"
               + target.getName() + "<accent> for <secondary>" + DurationParser.format(duration));
     }
@@ -236,7 +240,7 @@ public final class BoostCommand implements JobsCommand {
     } else {
       Player player = Bukkit.getPlayer(targetStr);
       if (player == null) {
-        Mint.sendThemedMessage(sender, "<error>Player not found: <secondary>" + targetStr);
+        Messages.send(sender, "<error>Player not found: <secondary>" + targetStr);
         return 0;
       }
       target = new PlayerTarget(player);
@@ -246,11 +250,11 @@ public final class BoostCommand implements JobsCommand {
     boolean removed = timedBoostDataService.removeBoost(target, sourceKey.asString());
 
     if (removed) {
-      Mint.sendThemedMessage(sender,
+      Messages.send(sender,
           "<accent>Removed <primary>" + sourceKey.asString() + "<accent> from <secondary>"
               + targetDisplay);
     } else {
-      Mint.sendThemedMessage(sender, "<error>No active boost <secondary>" + sourceKey.asString()
+      Messages.send(sender, "<error>No active boost <secondary>" + sourceKey.asString()
           + "<error> found for <secondary>" + targetDisplay);
     }
 
@@ -280,7 +284,7 @@ public final class BoostCommand implements JobsCommand {
     // Default to self if player, otherwise require target
     if (targetStr == null) {
       if (!(sender instanceof Player player)) {
-        Mint.sendThemedMessage(sender,
+        Messages.send(sender,
             "<error>Specify a target: <secondary>/jobs boost list <player|@global>");
         return 0;
       }
@@ -293,7 +297,7 @@ public final class BoostCommand implements JobsCommand {
 
     Player target = Bukkit.getPlayer(targetStr);
     if (target == null) {
-      Mint.sendThemedMessage(sender, "<error>Player not found: <secondary>" + targetStr);
+      Messages.send(sender, "<error>Player not found: <secondary>" + targetStr);
       return 0;
     }
 
@@ -301,40 +305,40 @@ public final class BoostCommand implements JobsCommand {
   }
 
   private int listPlayerBoosts(CommandSender sender, Player player) {
-    Mint.sendThemedMessage(sender,
+    Messages.send(sender,
         "<neutral>━━━━━━━━━ <primary>Boosts: " + player.getName() + "<neutral> ━━━━━━━━━");
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "");
 
     // Timed boosts
     List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
         new PlayerTarget(player));
 
     if (!timedBoosts.isEmpty()) {
-      Mint.sendThemedMessage(sender, "<secondary>Timed Boosts:");
+      Messages.send(sender, "<secondary>Timed Boosts:");
       for (ActiveBoostData boost : timedBoosts) {
         String remaining = DurationParser.formatRemaining(boost.started().getTime(),
             boost.duration());
         String boostEffects = formatBoostEffects(boost.boostSource());
-        Mint.sendThemedMessage(sender,
+        Messages.send(sender,
             "<neutral>  - <accent>" + boost.boostSource().key().asString());
-        Mint.sendThemedMessage(sender,
+        Messages.send(sender,
             "<neutral>      <secondary>" + boostEffects + " <neutral>[" + remaining + "]");
       }
-      Mint.sendThemedMessage(sender, "");
+      Messages.send(sender, "");
     }
 
     // Passive item boosts
     List<PassiveBoostInfo> passiveBoosts = getPassiveBoosts(player);
     if (!passiveBoosts.isEmpty()) {
-      Mint.sendThemedMessage(sender, "<secondary>Passive Boosts:");
+      Messages.send(sender, "<secondary>Passive Boosts:");
       for (PassiveBoostInfo info : passiveBoosts) {
         String boostEffects = formatBoostEffects(info.boostSource);
-        Mint.sendThemedMessage(sender,
+        Messages.send(sender,
             "<neutral>  - <accent>" + info.boostSource.key().asString() + " <neutral>(slot "
                 + info.slot + ")");
-        Mint.sendThemedMessage(sender, "<neutral>      <secondary>" + boostEffects);
+        Messages.send(sender, "<neutral>      <secondary>" + boostEffects);
       }
-      Mint.sendThemedMessage(sender, "");
+      Messages.send(sender, "");
     }
 
     // Upgrade tree boosts (now uses the same BoostSource API)
@@ -347,7 +351,7 @@ public final class BoostCommand implements JobsCommand {
 
       if (!upgradeBoosts.isEmpty()) {
         if (!hasUpgradeBoosts) {
-          Mint.sendThemedMessage(sender, "<secondary>Upgrade Boosts:");
+          Messages.send(sender, "<secondary>Upgrade Boosts:");
           hasUpgradeBoosts = true;
         }
 
@@ -355,33 +359,33 @@ public final class BoostCommand implements JobsCommand {
         for (BoostSource source : upgradeBoosts) {
           String boostEffects = formatBoostEffects(source);
           String desc = source.description() != null ? source.description() : source.key().value();
-          Mint.sendThemedMessage(sender,
+          Messages.send(sender,
               "<neutral>  - <accent>" + jobName + " <neutral>(" + desc + "): <secondary>" + boostEffects);
         }
       }
     }
 
     if (hasUpgradeBoosts) {
-      Mint.sendThemedMessage(sender, "");
+      Messages.send(sender, "");
     }
 
     if (timedBoosts.isEmpty() && passiveBoosts.isEmpty() && !hasUpgradeBoosts) {
-      Mint.sendThemedMessage(sender, "<neutral>  No active boosts.");
-      Mint.sendThemedMessage(sender, "");
+      Messages.send(sender, "<neutral>  No active boosts.");
+      Messages.send(sender, "");
     }
 
-    Mint.sendThemedMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Messages.send(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     return Command.SINGLE_SUCCESS;
   }
 
   private int listGlobalBoosts(CommandSender sender) {
-    Mint.sendThemedMessage(sender, "<neutral>━━━━━━━━━ <primary>Global Boosts<neutral> ━━━━━━━━━");
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "<neutral>━━━━━━━━━ <primary>Global Boosts<neutral> ━━━━━━━━━");
+    Messages.send(sender, "");
 
     List<ActiveBoostData> globalBoosts = timedBoostDataService.findBoosts(new GlobalTarget());
 
     if (globalBoosts.isEmpty()) {
-      Mint.sendThemedMessage(sender, "<neutral>  No global boosts active.");
+      Messages.send(sender, "<neutral>  No global boosts active.");
     } else {
       for (ActiveBoostData boost : globalBoosts) {
         if (boost.isExpired()) {
@@ -390,15 +394,15 @@ public final class BoostCommand implements JobsCommand {
         String remaining = DurationParser.formatRemaining(boost.started().getTime(),
             boost.duration());
         String boostEffects = formatBoostEffects(boost.boostSource());
-        Mint.sendThemedMessage(sender,
+        Messages.send(sender,
             "<neutral>  - <accent>" + boost.boostSource().key().asString());
-        Mint.sendThemedMessage(sender,
+        Messages.send(sender,
             "<neutral>      <secondary>" + boostEffects + " <neutral>[" + remaining + "]");
       }
     }
 
-    Mint.sendThemedMessage(sender, "");
-    Mint.sendThemedMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Messages.send(sender, "");
+    Messages.send(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     return Command.SINGLE_SUCCESS;
   }
 
@@ -460,7 +464,7 @@ public final class BoostCommand implements JobsCommand {
     CommandSender sender = context.getSource().getSender();
 
     if (!(sender instanceof Player player)) {
-      Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+      Messages.send(sender, "<error>This command can only be used by players.");
       return 0;
     }
 
@@ -470,7 +474,7 @@ public final class BoostCommand implements JobsCommand {
     // Validate boost source
     BoostSource boostSource = boostSourceRegistry.get(sourceKey).orElse(null);
     if (boostSource == null) {
-      Mint.sendThemedMessage(sender,
+      Messages.send(sender,
           "<error>Unknown boost source: <secondary>" + sourceKey.asString());
       return 0;
     }
@@ -480,7 +484,7 @@ public final class BoostCommand implements JobsCommand {
     try {
       duration = DurationParser.parse(durationStr);
     } catch (IllegalArgumentException e) {
-      Mint.sendThemedMessage(sender, "<error>Invalid duration: <secondary>" + e.getMessage());
+      Messages.send(sender, "<error>Invalid duration: <secondary>" + e.getMessage());
       return 0;
     }
 
@@ -507,7 +511,7 @@ public final class BoostCommand implements JobsCommand {
 
     player.getInventory().addItem(item);
 
-    Mint.sendThemedMessage(sender,
+    Messages.send(sender,
         "<accent>Created <secondary>" + amount + "x<primary> " + sourceKey.asString()
             + "<accent> consumable(s) [<secondary>" + DurationParser.format(duration)
             + "<accent>]");
@@ -544,11 +548,11 @@ public final class BoostCommand implements JobsCommand {
     var sources = boostSourceRegistry.stream().toList();
 
     if (sources.isEmpty()) {
-      Mint.sendThemedMessage(sender, "<secondary>No boost sources registered.");
+      Messages.send(sender, "<secondary>No boost sources registered.");
       return 0;
     }
 
-    Mint.sendThemedMessage(sender,
+    Messages.send(sender,
         "<neutral>━━━━ <primary>Boost Sources (" + sources.size() + ")<neutral> ━━━━");
 
     for (BoostSource bs : sources) {
@@ -558,7 +562,7 @@ public final class BoostCommand implements JobsCommand {
       if (desc != null && !desc.isEmpty()) {
         message += "\n<neutral>      " + desc;
       }
-      Mint.sendThemedMessage(sender, message);
+      Messages.send(sender, message);
     }
 
     return Command.SINGLE_SUCCESS;
@@ -566,11 +570,11 @@ public final class BoostCommand implements JobsCommand {
 
   private int reloadSources(CommandSourceStack source) {
     CommandSender sender = source.getSender();
-    Mint.sendThemedMessage(sender, "<secondary>Reloading boost sources...");
+    Messages.send(sender, "<secondary>Reloading boost sources...");
 
     int count = boostSourceLoader.reload();
 
-    Mint.sendThemedMessage(sender,
+    Messages.send(sender,
         "<accent>Reloaded <primary>" + count + "<accent> boost source(s).");
 
     return Command.SINGLE_SUCCESS;
@@ -581,18 +585,18 @@ public final class BoostCommand implements JobsCommand {
 
     BoostSource boostSource = boostSourceRegistry.get(sourceKey).orElse(null);
     if (boostSource == null) {
-      Mint.sendThemedMessage(sender,
+      Messages.send(sender,
           "<error>Boost source not found: <secondary>" + sourceKey.asString());
       return 0;
     }
 
-    Mint.sendThemedMessage(sender, "<neutral>━━━━ <primary>Boost Source Info<neutral> ━━━━");
+    Messages.send(sender, "<neutral>━━━━ <primary>Boost Source Info<neutral> ━━━━");
 
-    Mint.sendThemedMessage(sender, "<neutral>Key: <accent>" + boostSource.key().asString());
+    Messages.send(sender, "<neutral>Key: <accent>" + boostSource.key().asString());
 
     String desc = boostSource.description();
     if (desc != null && !desc.isEmpty()) {
-      Mint.sendThemedMessage(sender, "<neutral>Description: <secondary>" + desc);
+      Messages.send(sender, "<neutral>Description: <secondary>" + desc);
     }
 
     if (boostSource instanceof RuledBoostSource ruled) {
@@ -604,24 +608,24 @@ public final class BoostCommand implements JobsCommand {
 
   private void showRuledSourceDetails(CommandSender sender, RuledBoostSource source) {
     var rules = source.rules();
-    Mint.sendThemedMessage(sender, "<neutral>Rules: <secondary>" + rules.size() + " rule(s)");
+    Messages.send(sender, "<neutral>Rules: <secondary>" + rules.size() + " rule(s)");
 
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "");
 
     for (int i = 0; i < rules.size(); i++) {
       Rule rule = rules.get(i);
-      Mint.sendThemedMessage(sender, "<secondary>  Rule #" + (i + 1));
-      Mint.sendThemedMessage(sender, "<neutral>    Priority: <secondary>" + rule.priority());
-      Mint.sendThemedMessage(sender, "<neutral>    Boost: <accent>" + formatBoost(rule.boost()));
-      Mint.sendThemedMessage(sender, "<neutral>    Condition:");
+      Messages.send(sender, "<secondary>  Rule #" + (i + 1));
+      Messages.send(sender, "<neutral>    Priority: <secondary>" + rule.priority());
+      Messages.send(sender, "<neutral>    Boost: <accent>" + formatBoost(rule.boost()));
+      Messages.send(sender, "<neutral>    Condition:");
 
       List<String> tree = formatConditionTree(rule.condition(), "      ");
       for (String line : tree) {
-        Mint.sendThemedMessage(sender, "<accent>" + line);
+        Messages.send(sender, "<accent>" + line);
       }
 
       if (i < rules.size() - 1) {
-        Mint.sendThemedMessage(sender, "");
+        Messages.send(sender, "");
       }
     }
   }

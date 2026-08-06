@@ -1,6 +1,6 @@
 package net.aincraft.commands.top;
 
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import java.util.List;
 import net.aincraft.JobProgression;
 import net.aincraft.commands.Page;
@@ -29,23 +29,23 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     int pageNumber = page.pageNumber();
 
     // Header with page info
-    Mint.sendThemedMessage(sender, "");
-    Mint.sendThemedMessage(sender, "<neutral>━━━━━━ <primary>Jobs Top </primary><accent>"
+    Messages.send(sender, "");
+    Messages.send(sender, "<neutral>━━━━━━ <primary>Jobs Top </primary><accent>"
         + jobNameText + "</accent> <neutral>━━━━━━");
-    Mint.sendThemedMessage(sender, "<neutral>Page " + pageNumber + " of " + maxPages);
+    Messages.send(sender, "<neutral>Page " + pageNumber + " of " + maxPages);
 
     // Show viewer's rank if they're a player and in the leaderboard
     if (sender instanceof Player player) {
       int rank = findPlayerRank(player, allEntries);
       if (rank > 0) {
-        Mint.sendThemedMessage(sender, "<accent>Your Rank: <primary>#" + rank);
+        Messages.send(sender, "<accent>Your Rank: <primary>#" + rank);
       }
     }
 
     // Show total players
-    Mint.sendThemedMessage(sender, "<neutral>Showing top <accent>" + allEntries.size()
+    Messages.send(sender, "<neutral>Showing top <accent>" + allEntries.size()
         + "<neutral> players");
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "");
 
     // Leaderboard entries
     Component body = Component.empty();
@@ -72,11 +72,11 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     sender.sendMessage(body);
 
     // Navigation footer
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "");
     Component navigation = buildNavigation(jobNameText, pageNumber, maxPages);
     sender.sendMessage(navigation);
-    Mint.sendThemedMessage(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    Mint.sendThemedMessage(sender, "");
+    Messages.send(sender, "<neutral>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Messages.send(sender, "");
   }
 
   private Component buildNavigation(String jobName, int currentPage, int maxPages) {

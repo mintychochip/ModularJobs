@@ -3,7 +3,7 @@ package net.aincraft.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.mint.Mint;
+import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Bridge;
@@ -39,9 +39,13 @@ public final class EditorCommand implements JobsCommand {
     this.jobResolver = jobResolver;
   }
 
+  /** Admin permission required to export job data to the web editor. */
+  public static final String PERMISSION = AdminPermissions.ADMIN;
+
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("editor")
+        .requires(AdminPermissions::isAdmin)
         // /jobs editor [job] - with optional job argument
         .then(Commands.argument("job", StringArgumentType.string())
             .suggests((context, builder) -> {
@@ -53,7 +57,7 @@ public final class EditorCommand implements JobsCommand {
               CommandSender sender = source.getSender();
 
               if (!(sender instanceof Player player)) {
-                Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+                Messages.send(sender, "<error>This command can only be used by players.");
                 return Command.SINGLE_SUCCESS;
               }
 
@@ -66,9 +70,9 @@ public final class EditorCommand implements JobsCommand {
                 // Try fuzzy matching for suggestions
                 java.util.List<String> suggestions = jobResolver.suggestSimilar(input, 3);
 
-                Mint.sendThemedMessage(player, "<error>Job not found: " + input);
+                Messages.send(player, "<error>Job not found: " + input);
                 if (!suggestions.isEmpty()) {
-                  Mint.sendThemedMessage(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
+                  Messages.send(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
                 }
                 return 0;
               }
@@ -82,7 +86,7 @@ public final class EditorCommand implements JobsCommand {
           CommandSender sender = source.getSender();
 
           if (!(sender instanceof Player player)) {
-            Mint.sendThemedMessage(sender, "<error>This command can only be used by players.");
+            Messages.send(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
 
@@ -98,7 +102,7 @@ public final class EditorCommand implements JobsCommand {
    * @param jobKey the job key to export, or null to export all jobs
    */
   private void handleExport(Player player, String jobKey) {
-    Mint.sendThemedMessage(player, "<neutral>Exporting job data to web editor...");
+    Messages.send(player, "<neutral>Exporting job data to web editor...");
 
     editorService.exportTasks(jobKey, player.getUniqueId())
         .thenAccept(result -> {
@@ -114,7 +118,7 @@ public final class EditorCommand implements JobsCommand {
         .exceptionally(throwable -> {
           // Run on main thread to safely send messages
           Bukkit.getScheduler().runTask(Bridge.bridge().plugin(), () -> {
-            Mint.sendThemedMessage(player, "<error>Failed to export job data: " + throwable.getMessage());
+            Messages.send(player, "<error>Failed to export job data: " + throwable.getMessage());
           });
           return null;
         });
