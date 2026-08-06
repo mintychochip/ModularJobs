@@ -3,8 +3,8 @@ import Base from '../../layouts/Base.astro';
 ---
 
 <!--
-  Secure session editor is the React app under jobs-web/session-editor.
-  It talks to jobs-session-api (Postgres), not bytebin.lucko.me.
+  Secure session editor is the React app under web/session-editor.
+  It talks to web/session-api (Postgres), not bytebin.lucko.me.
   Query params: code, token — forwarded into the iframe/embed or open the React build.
 -->
 <Base title="Edit Jobs — Secure Session">
@@ -16,7 +16,7 @@ import Base from '../../layouts/Base.astro';
         (Rust + PostgreSQL). Session <strong>code</strong> and <strong>token</strong> are required.
       </p>
       <p class="mb-4 text-sm text-slate-400">
-        Production editor: React app at <code>jobs-web/session-editor</code>
+        Production editor: React app at <code>web/session-editor</code>
         (<code>VITE_SESSION_API_URL</code>). Bytebin is not used for this path.
       </p>
       <a

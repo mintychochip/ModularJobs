@@ -1,7 +1,7 @@
 # ModularJobs Secure Session Editor (React)
 
 React UI for loading/editing/saving job task sessions against the Rust
-`jobs-session-api` (Postgres-backed). **Does not use bytebin.lucko.me.**
+`web/session-api` (Postgres-backed). **Does not use bytebin.lucko.me.**
 
 ## Configure
 

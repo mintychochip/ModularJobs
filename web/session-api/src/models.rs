@@ -1,5 +1,5 @@
-//! Editor payload contract aligned with jobs-web/src/lib/types.ts and
-//! jobs-core editor JSON records.
+//! Editor payload contract aligned with web/src/lib/types.ts and
+//! paper editor JSON records (shared DTOs in common).
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

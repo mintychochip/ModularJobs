@@ -1,7 +1,7 @@
 import type { CreateSessionResponse, EditorPayload, SessionEnvelope } from './types';
 
 /**
- * Client for the Rust jobs-session-api (Postgres-backed secure sessions).
+ * Client for the Rust web/session-api (Postgres-backed secure sessions).
  * Does not use bytebin.lucko.me.
  */
 export class SessionApiClient {

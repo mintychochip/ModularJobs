@@ -4,28 +4,36 @@ Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 
 ## Modules
 
-| Module | Role |
-|--------|------|
-| `jobs-api` | Public API (jobs, payables, boosts, services) |
-| `jobs-core` | Plugin implementation (shadow jar artifact) |
-| `jobs-web` | Optional docs / editor site |
+| Path | Role |
+|------|------|
+| `api` | Pure public contracts (no Paper) |
+| `common` | Shared DTOs (editor payload, …) |
+| `paper` | Paper plugin implementation (shadow jar) |
+| `web` | Docs + session-editor + session-api |
 
 ## Build
 
 ```bash
-./gradlew :jobs-core:build
-# artifact: jobs-core/build/libs/jobs-core-all.jar
+./gradlew :paper:build
+# artifact: paper/build/libs/paper-all.jar
 ```
 
 Unit tests:
 
 ```bash
-./gradlew :jobs-api:test :jobs-core:test
+./gradlew :api:test :common:test :paper:test
+```
+
+Session stack:
+
+```bash
+cd web/session-api && cargo test
+cd web/session-editor && npm test && npm run build
 ```
 
 ## Operator quick start
 
-1. Drop `jobs-core-all.jar` into `plugins/`.
+1. Drop `paper-all.jar` into `plugins/`.
 2. Start once to generate configs under `plugins/ModularJobs/`.
 3. Configure database, economy, and permissions (below).
 4. Restart or reload after config changes.
@@ -39,7 +47,7 @@ ModularJobs uses **PostgreSQL only** (no SQLite/MySQL/MariaDB).
 ```bash
 export DATABASE_URL=postgres://user:pass@host:5432/modularjobs
 ./scripts/apply-postgres-schema.sh
-# or: psql "$DATABASE_URL" -f jobs-core/src/main/resources/sql/postgres.sql
+# or: psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
 ```
 
 2. Configure `database.yml` (sections with the same jdbc-url + username share one pool):
