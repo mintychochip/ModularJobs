@@ -1,7 +1,9 @@
 [versions]
 # Build plugins
-run-paper = "2.3.1"
-shadow = "8.1.8"
+# run-paper 3.x uses Fill API (v2 sunset); needed for Paper 26.x downloads
+run-paper = "3.0.2"
+# GradleUp shadow 9.x: ASM supports Java 25 class files (major 69)
+shadow = "9.6.1"
 
 # Core infrastructure
 kryo = "5.6.2"
@@ -19,11 +21,12 @@ mcmmo = "2.2.004"
 lwc = "2.4.0"
 bolt = "1.1.52"
 placeholderapi = "2.11.6"
-mint-api = "1.4"
 triumph-gui = "3.1.12"
 
 # Test / MockBukkit (Paper 26.2 line; vendored until Central publishes mockbukkit-v26.2)
 mockbukkit = "26.2.0-mj"
+postgresql = "42.7.5"
+sqlite-jdbc = "3.47.2.0"
 
 # Development tools
 jetbrains-annotations = "24.1.0"
@@ -44,11 +47,12 @@ mcmmo = { module = "com.gmail.nossr50.mcMMO:mcMMO", version.ref = "mcmmo" }
 lwc = { module = "com.griefcraft:lwc", version.ref = "lwc" }
 bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }
 placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
-mint-api = { module = "dev.mintychochip:mint-api", version.ref = "mint-api" }
 triumph-gui = { module = "dev.triumphteam:triumph-gui", version.ref = "triumph-gui" }
 
 # Test
 mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v26.2", version.ref = "mockbukkit" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 
 # Development
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
@@ -58,4 +62,4 @@ minecraft-api = ["paper-api", "mcmmo"]
 
 [plugins]
 run-paper = { id = "xyz.jpenilla.run-paper", version.ref = "run-paper" }
-shadow = { id = "io.github.goooler.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

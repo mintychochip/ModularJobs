@@ -16,7 +16,6 @@ dependencies {
 
     compileOnly(libs.placeholderapi)
     compileOnly(libs.jetbrains.annotations)
-    compileOnly(libs.mint.api)
     compileOnly(libs.paper.api)
     compileOnly(libs.mcmmo) {
         exclude(group = "com.sk89q.worldguard")
@@ -31,8 +30,12 @@ dependencies {
     // MockBukkit for Paper 26.2 — mock server for OfflinePlayer / Material runtime
     testImplementation(libs.mockbukkit)
     testImplementation(libs.paper.api)
-    // SQLite for production-SQL timed boost repository tests
-    testImplementation("org.xerial:sqlite-jdbc:3.47.2.0")
+    // SQLite JDBC — default database path; must ship in the plugin artifact
+    implementation(libs.sqlite.jdbc)
+    testImplementation(libs.sqlite.jdbc)
+    // PostgreSQL driver for remote DB fidelity tests and runtime
+    implementation(libs.postgresql)
+    testImplementation(libs.postgresql)
 }
 
 tasks.test {
@@ -56,11 +59,11 @@ tasks {
                 languageVersion.set(JavaLanguageVersion.of(25))
             }
         )
-        minecraftVersion("1.21.11")
+        // Paper version line is 26.2 (post-1.21.11 renumbering); requires Java 25
+        minecraftVersion("26.2")
         downloadPlugins {
-            hangar("Bolt","1.1.78")
-            hangar("Mint","1.4.0")
+            // Bolt 1.2.x lists Paper 26.2 compatibility on Hangar
+            hangar("Bolt", "1.2.22")
         }
-
     }
 }
