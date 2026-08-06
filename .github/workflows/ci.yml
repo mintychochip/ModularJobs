@@ -23,13 +23,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Unit tests
-        run: ./gradlew :jobs-api:test :jobs-core:test --console=plain
+        run: ./gradlew :api:test :paper:test --console=plain
 
       - name: Shadow jar
-        run: ./gradlew :jobs-core:shadowJar --console=plain
+        run: ./gradlew :paper:shadowJar --console=plain
 
       - name: Upload shadow jar
         uses: actions/upload-artifact@v4
         with:
-          name: jobs-core-all
-          path: jobs-core/build/libs/jobs-core-all.jar
+          name: paper-all
+          path: paper/build/libs/*-all.jar

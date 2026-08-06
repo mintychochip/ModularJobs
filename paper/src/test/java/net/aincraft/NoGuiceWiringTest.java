@@ -27,7 +27,7 @@ class NoGuiceWiringTest {
   @Test
   void sourceTreeContainsNoGuiceImportsOrAnnotations() throws IOException {
     Path root = locateJobsCoreMainJava();
-    assertTrue(Files.isDirectory(root), "jobs-core main java dir: " + root);
+    assertTrue(Files.isDirectory(root), "paper main java dir: " + root);
 
     List<String> offenders = new ArrayList<>();
     try (Stream<Path> walk = Files.walk(root)) {
@@ -121,7 +121,7 @@ class NoGuiceWiringTest {
   @Test
   void buildFilesDoNotDeclareGuice() throws IOException {
     Path catalog = locateRepoRoot().resolve("gradle/libs.versions.toml");
-    Path coreBuild = locateRepoRoot().resolve("jobs-core/build.gradle.kts");
+    Path coreBuild = locateRepoRoot().resolve("paper/build.gradle.kts");
     assertTrue(Files.isRegularFile(catalog));
     assertTrue(Files.isRegularFile(coreBuild));
     assertFalse(Files.readString(catalog).contains("guice"));
@@ -136,11 +136,11 @@ class NoGuiceWiringTest {
     if (Files.isDirectory(fromModule)) {
       return fromModule.toAbsolutePath().normalize();
     }
-    Path fromRoot = Path.of("jobs-core/src/main/java");
+    Path fromRoot = Path.of("paper/src/main/java");
     if (Files.isDirectory(fromRoot)) {
       return fromRoot.toAbsolutePath().normalize();
     }
-    fail("Could not locate jobs-core/src/main/java from " + Path.of(".").toAbsolutePath());
+    fail("Could not locate paper/src/main/java from " + Path.of(".").toAbsolutePath());
     return null;
   }
 

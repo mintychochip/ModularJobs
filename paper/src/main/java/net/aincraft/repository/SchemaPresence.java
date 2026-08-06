@@ -96,7 +96,7 @@ public final class SchemaPresence {
     private static String buildMessage(DatabaseType type, List<String> missing) {
       return "Database schema not provisioned for PostgreSQL. Missing tables: " + missing
           + ". The plugin does not create tables. Apply "
-          + "jobs-core/src/main/resources/sql/postgres.sql out-of-band "
+          + "paper/src/main/resources/sql/postgres.sql out-of-band "
           + "(see scripts/apply-postgres-schema.sh).";
     }
   }

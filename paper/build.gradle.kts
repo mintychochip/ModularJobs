@@ -6,7 +6,7 @@ plugins {
 dependencies {
     implementation(libs.kryo)
     implementation(libs.guava)
-    implementation(project(":jobs-api"))
+    implementation(project(":api"))
     implementation(libs.exp4j)
     implementation(libs.hikaricp)
     implementation(libs.caffeine)

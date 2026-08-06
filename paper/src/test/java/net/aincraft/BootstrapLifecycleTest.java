@@ -93,7 +93,7 @@ class BootstrapLifecycleTest {
   private static Path locate(String relativeUnderAincraft) {
     Path root = Path.of("").toAbsolutePath();
     Path candidate =
-        root.resolve("jobs-core/src/main/java/net/aincraft/" + relativeUnderAincraft);
+        root.resolve("paper/src/main/java/net/aincraft/" + relativeUnderAincraft);
     if (Files.isRegularFile(candidate)) {
       return candidate;
     }

@@ -1,6 +1,6 @@
 rootProject.name = "jobs2"
 
-include("jobs-api", "jobs-core")
+include("api", "common", "paper")
 
 // Preferences API (live 0.1.0): resolve via mavenLocal (./gradlew -p ../preferences :api:publishToMavenLocal)
 // and/or GitHub Packages below. Composite includeBuild of ../preferences is optional — when

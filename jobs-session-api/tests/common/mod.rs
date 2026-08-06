@@ -1,10 +1,10 @@
-//! Test-only helpers: apply shared Postgres DDL from jobs-core (not the runtime path).
+//! Test-only helpers: apply shared Postgres DDL from paper (not the runtime path).
 
 use sqlx::PgPool;
 
-/// Source of truth: jobs-core shipped Postgres schema (include at compile time).
+/// Source of truth: paper shipped Postgres schema (include at compile time).
 const POSTGRES_SCHEMA: &str =
-    include_str!("../../../jobs-core/src/main/resources/sql/postgres.sql");
+    include_str!("../../../paper/src/main/resources/sql/postgres.sql");
 
 /// Split on `;` the same way DatabaseType.getSQLTables does.
 pub fn schema_statements() -> Vec<String> {
