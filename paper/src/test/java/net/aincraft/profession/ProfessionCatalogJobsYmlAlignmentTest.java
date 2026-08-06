@@ -22,7 +22,7 @@ class ProfessionCatalogJobsYmlAlignmentTest {
   void everyCatalogStorageKeyExistsInJobsYml() throws IOException {
     String yml;
     try (InputStream in = getClass().getClassLoader().getResourceAsStream("jobs.yml")) {
-      assertTrue(in != null, "jobs.yml must be on test classpath from jobs-core resources");
+      assertTrue(in != null, "jobs.yml must be on test classpath from paper resources");
       yml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
 

@@ -23,7 +23,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Unit tests
-        run: ./gradlew :api:test :paper:test --console=plain
+        run: ./gradlew :api:test :common:test :paper:test --console=plain
 
       - name: Shadow jar
         run: ./gradlew :paper:shadowJar --console=plain

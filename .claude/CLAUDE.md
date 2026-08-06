@@ -3,17 +3,26 @@ Codebase:
 This codebase is for ModularJobs - an extensible job progression system plugin for Minecraft PaperMC servers.
 
 ## Project Overview
-- **Type**: PaperMC/Spigot plugin for Minecraft 1.21.11
-- **Language**: Java 21
+- **Type**: PaperMC/Spigot plugin for Minecraft 1.21.11 / Paper 26.2
+- **Language**: Java 21 / 25 toolchain
 - **Build System**: Gradle (Kotlin DSL)
-- **Structure**: Multi-module project (jobs-api, jobs-core, jobs-web)
+- **Structure**: Multi-module project (`api`, `common`, `paper`, `web`)
+
+## Modules
+
+| Path | Role |
+|------|------|
+| `api` | Pure public contracts (no Paper) |
+| `common` | Shared DTOs (editor payload, …) |
+| `paper` | Paper plugin implementation (shadow jar) |
+| `web` | Docs + session-editor + session-api |
 
 ## Core Features
 - Job progression system with leveling
 - 40+ action types (block placement/breaking, crafting, killing entities, etc.)
 - Configurable reward system (Payables)
 - Timed & item-based boost system
-- Multiple database support (SQLite, MySQL, MariaDB, PostgreSQL)
+- PostgreSQL only (connect-only schema ownership)
 - PlaceholderAPI integration
 - Job upgrade system
 - Third-party plugin hooks (McMMO, Vault, LWC, Bolt)
@@ -22,54 +31,65 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - **Framework**: PaperMC API, Adventure/Kyori text components
 - **Wiring**: Manual composition root (`PluginContext`) — no DI framework
 - **Serialization**: Kryo 5.6.2
-- **Database**: HikariCP (connection pooling)
+- **Database**: HikariCP (connection pooling), PostgreSQL only
 - **Caching**: Caffeine
 - **Math**: exp4j
-- **Documentation**: Astro + Starlight
+- **Documentation**: Astro + Starlight (`web/`)
+- **Session stack**: Rust `web/session-api` + React `web/session-editor`
 
 ## Key Modules & Components
 
-### jobs-api
+### api
+- Pure public contracts (no Paper dependency)
 - `ActionTypes.java` - Predefined action types
 - `Job.java`, `JobTask.java` - Core abstractions
 - `Payable.java` - Reward abstraction
 - `Boost.java` - Boost system abstraction
 - `Bridge.java` - Plugin interface
 
-### jobs-core
+### common
+- Shared DTOs (editor payload, session contract types, …)
+
+### paper
 - **Domain Layer**: Job/JobProgression/JobTask/Payable services with mappers
 - **Payment**: `BoostEngineImpl`, `TimedBoostDataService` - boost calculation
 - **Repository**: Data persistence with repository pattern
   - `JobRepository`, `JobProgressionRepository`, `TimedBoostRepository`
   - `ConnectionSourceFactory`, `HikariConfigProvider` - DB config
 - **Service Layer**: `JobService`, `ProgressionService`
-- **Config**: `ConfigurationModule`, `YamlConfiguration`
+- **Config**: Yaml configuration under plugin resources
 - **Serialization**: `BinaryInImpl`, `BinaryOutImpl`, Kryo codecs
 - **Commands**: Command framework with Paper/Brigadier
 - **Upgrades**: `JobUpgradeNode`, `UserUpgradeRepository`
 - **Placeholders**: PlaceholderAPI expansion
 
+### web
+- Astro + Starlight docs site
+- `web/session-editor` — React secure session editor
+- `web/session-api` — Rust REST API for editor sessions on Postgres
+
 ## Design Patterns
 - **Composition root**: `PluginContext` + package `*Wiring` classes construct the object graph
-- **Repository Pattern**: Abstraction over relational databases
+- **Repository Pattern**: Abstraction over PostgreSQL
 - **Domain Mapping**: DomainMapper<Domain, Record> for model conversion
 - **Sealed Types**: Type-safe variants (e.g., `Target` for boost targets)
 - **Service Layer**: Business logic separation
 
 ## Database Configuration
-- Configured in `database.yml`
-- Supports SQLite (file-based) and relational DBs (MySQL/MariaDB/PostgreSQL)
-- Connection pooling with HikariCP
-- **Schema ownership:** SQLite may bootstrap `sql/sqlite.sql` in-process; remote Postgres is
-  **connect-only** — apply `sql/postgres.sql` via `scripts/apply-postgres-schema.sh` (never
-  CREATE from the game/API process). See `docs/database-schema.md` and root `AGENTS.md`.
-- Also: `jobs-session-api` (Rust) + `jobs-web/session-editor` (React) for secure editor sessions
+- Configured in `database.yml` (plugin data folder; template under `paper/src/main/resources/`)
+- **PostgreSQL only** — connection pooling with HikariCP
+- **Schema ownership:** Postgres is **connect-only** — apply
+  `paper/src/main/resources/sql/postgres.sql` via `scripts/apply-postgres-schema.sh`
+  (never CREATE from the game/API process). See `docs/database-schema.md` and root `AGENTS.md`.
+- Also: `web/session-api` (Rust) + `web/session-editor` (React) for secure editor sessions
 
 ## Development
-- Build: `gradle build` → builds shadowJar
-- Test server: `gradle runServer` (Minecraft 1.21.11)
-- Test plugins auto-downloaded: Mint, Bolt
-- Server data in `jobs-core/run/`
+- Build: `./gradlew :paper:build` → shadow jar at `paper/build/libs/paper-all.jar`
+- Tests: `./gradlew :api:test :common:test :paper:test`
+- Session API: `cd web/session-api && cargo test`
+- Session editor: `cd web/session-editor && npm test && npm run build`
+- Test server: `./gradlew :paper:runServer` (when configured)
+- Server data in `paper/run/` (when runServer used)
 
 Rules:
 
@@ -104,3 +124,7 @@ tools to resolve library id and get library docs without me having to explicitly
 - `testImplementation` MockBukkit `mockbukkit-v26.2:26.2.0-mj` (vendored from branch `upgrade/v26.2` in `libs/mockbukkit-maven` until Central publishes)
 - Paper API catalog: `26.2.build.65-beta`; Java toolchain 25; Gradle wrapper 9.6.1
 - Bukkit-touching tests use `MockBukkitSupport` (`MockBukkit.mock`/`unmock`); removed OfflinePlayer Proxy stubs
+
+### Module layout (2026-08)
+- Renamed Gradle modules: `jobs-api`→`api`, `jobs-core`→`paper`; added `common`
+- Web stack under `web/` (`session-editor`, `session-api`); pure `api` has no Paper dependency

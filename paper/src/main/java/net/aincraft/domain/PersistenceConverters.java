@@ -27,7 +27,7 @@ import org.bukkit.plugin.Plugin;
 
 /**
  * Utility class for converting between domain objects and persistence records.
- * This lives in jobs-core to avoid circular dependencies with jobs-api.
+ * This lives in paper to avoid circular dependencies with api.
  */
 public final class PersistenceConverters {
 

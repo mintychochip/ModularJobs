@@ -12,7 +12,7 @@ The **game process never runs DDL**. That is intentional: multi-instance servers
 
 ## Source of truth
 
-- `jobs-core/src/main/resources/sql/postgres.sql`
+- `paper/src/main/resources/sql/postgres.sql`
 
 ## Provision Postgres
 
@@ -22,7 +22,7 @@ export DATABASE_URL=postgres://user:pass@host:5432/modularjobs
 ./scripts/apply-postgres-schema.sh
 
 # Or
-psql "$DATABASE_URL" -f jobs-core/src/main/resources/sql/postgres.sql
+psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
 ```
 
 Then point the plugin at that database:
