@@ -62,8 +62,8 @@ public final class EditorNode {
 
     node.name = source.name();
     node.description = source.description();
-    node.icon = source.icon();
-    node.unlockedIcon = source.unlockedIcon();
+    node.icon = resolveMaterial(source.icon());
+    node.unlockedIcon = resolveMaterial(source.unlockedIcon());
     node.itemModel = source.itemModel();
     node.unlockedItemModel = source.unlockedItemModel();
     node.cost = source.cost();
@@ -127,6 +127,14 @@ public final class EditorNode {
   public List<EditorEffect> effects() { return effects; }
 
   // ========== Helpers ==========
+
+  private static Material resolveMaterial(@Nullable String name) {
+    if (name == null || name.isBlank()) {
+      return Material.BARRIER;
+    }
+    Material material = Material.matchMaterial(name);
+    return material != null ? material : Material.BARRIER;
+  }
 
   /**
    * Check if this is a root node (no prerequisites).

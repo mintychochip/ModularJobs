@@ -39,6 +39,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * GUI for displaying and interacting with job upgrade trees.
@@ -582,8 +583,8 @@ public final class UpgradeTreeGui implements Listener {
   private ItemStack createNodeItem(UpgradeNode node, NodeStatus status, PlayerUpgradeData data, UpgradeTree tree) {
     boolean unlocked = status == NodeStatus.UNLOCKED;
     Material material = switch (status) {
-      case UNLOCKED -> node.unlockedIcon();
-      case AVAILABLE -> node.icon();
+      case UNLOCKED -> resolveMaterial(node.unlockedIcon());
+      case AVAILABLE -> resolveMaterial(node.icon());
       case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE; // Lighter gray for locked nodes
       case EXCLUDED -> Material.RED_STAINED_GLASS_PANE; // Red pane instead of barrier for excluded
     };
@@ -706,6 +707,17 @@ public final class UpgradeTreeGui implements Listener {
 
     item.setItemMeta(meta);
     return item;
+  }
+
+  /**
+   * Resolve a material name string to a Bukkit Material (BARRIER if unknown/null).
+   */
+  private static Material resolveMaterial(@Nullable String name) {
+    if (name == null || name.isBlank()) {
+      return Material.BARRIER;
+    }
+    Material material = Material.matchMaterial(name);
+    return material != null ? material : Material.BARRIER;
   }
 
   private ItemStack createInfoItem(Job job, UpgradeTree tree, PlayerUpgradeData data) {

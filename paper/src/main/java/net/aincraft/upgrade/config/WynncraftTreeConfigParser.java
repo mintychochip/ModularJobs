@@ -35,7 +35,6 @@ import net.aincraft.upgrade.wynncraft.LayoutItem;
 import net.aincraft.upgrade.wynncraft.LayoutItemType;
 import net.aincraft.upgrade.wynncraft.WynncraftTreeConfig;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Material;
 
 /**
  * Parses WynncraftTreeConfig into UpgradeTree instances.
@@ -142,9 +141,9 @@ public final class WynncraftTreeConfigParser {
   private UpgradeNode parseAbilityNode(String jobKey, String nodeId, Position position, AbilityMeta meta) {
     Key key = Key.key(jobKey, nodeId);
 
-    // Extract locked and unlocked icons
-    Material lockedIcon = meta.icons().locked().toMaterial();
-    Material unlockedIcon = meta.icons().unlocked().toMaterial();
+    // Material names stored as strings; paper GUI resolves via Material.matchMaterial
+    String lockedIcon = meta.icons().locked().id();
+    String unlockedIcon = meta.icons().unlocked().id();
     String lockedItemModel = meta.icons().locked().itemModel();
     String unlockedItemModel = meta.icons().unlocked().itemModel();
 

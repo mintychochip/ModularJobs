@@ -29,7 +29,6 @@ import net.aincraft.upgrade.config.UpgradeTreeConfig.PositionConfig;
 import net.aincraft.upgrade.config.UpgradeTreeConfig.RuleConfig;
 import net.aincraft.upgrade.config.UpgradeTreeConfig.BoostConfig;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Material;
 
 /**
  * Parses UpgradeTreeConfig from JSON into UpgradeTree instances.
@@ -81,12 +80,8 @@ public final class UpgradeTreeConfigParser {
   private UpgradeNode parseNode(String jobKey, String nodeKey, NodeConfig config) {
     Key key = Key.key(jobKey, nodeKey);
 
-    Material icon;
-    try {
-      icon = Material.valueOf(config.icon().toUpperCase());
-    } catch (IllegalArgumentException e) {
-      icon = Material.BARRIER; // Fallback
-    }
+    // Material name string; paper GUI resolves via Material.matchMaterial (BARRIER fallback)
+    String icon = config.icon() != null ? config.icon() : "BARRIER";
 
     Set<String> prerequisites = config.prerequisites() != null
         ? new HashSet<>(config.prerequisites())
