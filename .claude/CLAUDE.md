@@ -60,8 +60,10 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - Configured in `database.yml`
 - Supports SQLite (file-based) and relational DBs (MySQL/MariaDB/PostgreSQL)
 - Connection pooling with HikariCP
-- Auto-table creation on first run
-- Tables: `timed_boosts`, `job_progressions`, `job_tasks`
+- **Schema ownership:** SQLite may bootstrap `sql/sqlite.sql` in-process; remote Postgres is
+  **connect-only** — apply `sql/postgres.sql` via `scripts/apply-postgres-schema.sh` (never
+  CREATE from the game/API process). See `docs/database-schema.md` and root `AGENTS.md`.
+- Also: `jobs-session-api` (Rust) + `jobs-web/session-editor` (React) for secure editor sessions
 
 ## Development
 - Build: `gradle build` → builds shadowJar
