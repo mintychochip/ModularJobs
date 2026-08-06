@@ -6,6 +6,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.sql.SQLException;
 import java.util.List;
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.commands.JobsCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
@@ -28,22 +29,28 @@ public final class ModularJobsBootstrap extends JavaPlugin {
 
       Bukkit.getServicesManager()
           .register(Bridge.class, created.bridge, this, ServicePriority.High);
-      // AzothMC P6 public services (soft-depend targets for missions/azoth/items)
-      Bukkit.getServicesManager().register(
-          net.aincraft.service.ProfessionService.class,
-          created.bridge.professionService(), this, ServicePriority.Normal);
-      Bukkit.getServicesManager().register(
-          net.aincraft.service.RecipeService.class,
-          created.bridge.recipeService(), this, ServicePriority.Normal);
-      Bukkit.getServicesManager().register(
-          net.aincraft.service.BuffService.class,
-          created.bridge.buffService(), this, ServicePriority.Normal);
-      Bukkit.getServicesManager().register(
-          net.aincraft.service.StationService.class,
-          created.bridge.stationService(), this, ServicePriority.Normal);
-      Bukkit.getServicesManager().register(
-          net.aincraft.service.NodeHarvestService.class,
-          created.bridge.nodeHarvestService(), this, ServicePriority.Normal);
+
+      // Profession APIs may be stubs — only expose when explicitly enabled.
+      if (getConfig().getBoolean("profession-apis.register-bukkit-services", false)) {
+        getSLF4JLogger().info(
+            "Registering profession Bukkit services (profession-apis.register-bukkit-services=true). "
+                + "Station/NodeHarvest may be stubs — see README.");
+        Bukkit.getServicesManager().register(
+            net.aincraft.service.ProfessionService.class,
+            created.bridge.professionService(), this, ServicePriority.Normal);
+        Bukkit.getServicesManager().register(
+            net.aincraft.service.RecipeService.class,
+            created.bridge.recipeService(), this, ServicePriority.Normal);
+        Bukkit.getServicesManager().register(
+            net.aincraft.service.BuffService.class,
+            created.bridge.buffService(), this, ServicePriority.Normal);
+        Bukkit.getServicesManager().register(
+            net.aincraft.service.StationService.class,
+            created.bridge.stationService(), this, ServicePriority.Normal);
+        Bukkit.getServicesManager().register(
+            net.aincraft.service.NodeHarvestService.class,
+            created.bridge.nodeHarvestService(), this, ServicePriority.Normal);
+      }
 
       for (Listener listener : created.listeners) {
         Bukkit.getPluginManager().registerEvents(listener, this);
@@ -76,6 +83,16 @@ public final class ModularJobsBootstrap extends JavaPlugin {
       return;
     }
     try {
+      PlaceholderExpansion expansion = ctx.placeholderExpansion;
+      if (expansion != null) {
+        try {
+          expansion.unregister();
+        } catch (Throwable t) {
+          getSLF4JLogger().warn("Failed to unregister PlaceholderAPI expansion", t);
+        }
+      }
+      // Unregister Bridge + any profession services registered by this plugin
+      Bukkit.getServicesManager().unregisterAll(this);
       ctx.shutdown();
     } catch (SQLException e) {
       throw new RuntimeException(e);
