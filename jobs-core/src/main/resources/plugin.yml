@@ -2,17 +2,18 @@ name: ModularJobs
 version: '1.1'
 main: net.aincraft.ModularJobsBootstrap
 authors: [ mintychochip ]
-api-version: '1.13'
-depend:
-  - Mint
+api-version: '1.21'
 softdepend:
+  - PlaceholderAPI
+  - Vault
+  - mcMMO
+  - Bolt
+  - LWC
+  - JobPets-Core
   - Choco
-commands:
-  test:
-    description: asdads
 permissions:
   modularjobs.admin:
-    description: Admin commands for ModularJobs
+    description: Admin commands for ModularJobs (level, experience, boost, editor, applyedits)
     default: op
   modularjobs.specialization.bypass:
     description: Allows changing pet specialization after initial choice
@@ -22,3 +23,37 @@ permissions:
     default: op
     children:
       modularjobs.specialization.bypass: true
+  jobs.command.browse:
+    description: Browse jobs GUI
+    default: true
+  jobs.command.list:
+    description: List available jobs
+    default: true
+  jobs.command.stats:
+    description: View own job stats
+    default: true
+  jobs.command.admin.stats:
+    description: View other players' job stats
+    default: op
+  jobs.command.archive:
+    description: View own archived job progress
+    default: true
+  jobs.command.admin.archive:
+    description: View other players' archived job progress
+    default: op
+  jobs.command.leaveall:
+    description: Leave all jobs at once
+    default: true
+  jobs.command.admin.treeeditor:
+    description: Open the upgrade tree editor
+    default: op
+  jobs.command.admin.boost:
+    description: Manage timed and item boosts (alias of modularjobs.admin)
+    default: op
+    children:
+      modularjobs.admin: true
+  jobs.command.admin.editor:
+    description: Export/import job tasks via web editor (alias of modularjobs.admin)
+    default: op
+    children:
+      modularjobs.admin: true
