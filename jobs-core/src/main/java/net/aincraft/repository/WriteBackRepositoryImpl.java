@@ -29,6 +29,9 @@ public final class WriteBackRepositoryImpl<K, V> {
 
   private final AtomicBoolean flushing = new AtomicBoolean(false);
 
+  /** Max wait for an in-flight scheduled flush before disable flush fails loudly. */
+  private static final long FLUSH_LOCK_WAIT_MS = 30_000L;
+
   public WriteBackRepositoryImpl(RelationalRepositoryImpl<K, V> delegate) {
     this.delegate = delegate;
   }
@@ -76,14 +79,21 @@ public final class WriteBackRepositoryImpl<K, V> {
 
   /**
    * Drain all pending upserts/deletes to the relational delegate. Called on plugin disable
-   * before ConnectionSource shutdown.
+   * before ConnectionSource shutdown. Waits with sleep (not busy-spin) for an in-flight
+   * scheduled flush; times out instead of hanging the main thread forever.
    */
   public void flushPending() {
-    if (!flushing.compareAndSet(false, true)) {
-      // Another flush is in flight; wait briefly then take over remaining work.
-      // For disable path, best-effort: spin until we acquire the lock.
-      while (!flushing.compareAndSet(false, true)) {
-        Thread.onSpinWait();
+    long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(FLUSH_LOCK_WAIT_MS);
+    while (!flushing.compareAndSet(false, true)) {
+      if (System.nanoTime() >= deadline) {
+        throw new IllegalStateException(
+            "Timed out waiting for write-back flush lock after " + FLUSH_LOCK_WAIT_MS + "ms");
+      }
+      try {
+        Thread.sleep(10L);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IllegalStateException("Interrupted waiting for write-back flush", e);
       }
     }
     try {
