@@ -21,6 +21,7 @@ import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.Target.GlobalTarget;
 import net.aincraft.repository.TimedBoostRepository;
+import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;

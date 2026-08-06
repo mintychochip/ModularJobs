@@ -29,7 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link BoostEngineImpl#evaluateSources} + {@link BoostEngineImpl#applyBoosts}
+ * Drives shipped {@link BoostEngine#evaluateSources} + {@link BoostEngine#applyBoosts}
  * with controlled item/timed/upgrade sources (fakes for deps only).
  */
 class BoostEngineAggregationTest {
@@ -51,7 +51,7 @@ class BoostEngineAggregationTest {
         new AdditiveBoostImpl(new BigDecimal("10"))
     );
 
-    BoostEngineImpl engine = new BoostEngineImpl(
+    BoostEngine engine = new BoostEngine(
         unusedItemService(),
         unusedTimedService(),
         unusedUpgradeService()
@@ -85,7 +85,7 @@ class BoostEngineAggregationTest {
     assertEquals(0, new BigDecimal("310.0").compareTo(deterministic),
         "100 * 2 * 1.5 + 10 = 310, got " + deterministic);
 
-    BigDecimal applied = BoostEngineImpl.applyBoosts(base, boosts);
+    BigDecimal applied = BoostEngine.applyBoosts(base, boosts);
     assertTrue(applied.compareTo(base) != 0, "payment path must change base amount");
 
     assertEquals(0, new BigDecimal("200").compareTo(boosts.get(itemSource.key()).boost(base)));
@@ -107,7 +107,7 @@ class BoostEngineAggregationTest {
     assertEquals(0, new BigDecimal("150.00").compareTo(multiFirst));
     assertEquals(0, new BigDecimal("156.25").compareTo(addFirst));
 
-    BigDecimal applied = BoostEngineImpl.applyBoosts(new BigDecimal("100"), boosts);
+    BigDecimal applied = BoostEngine.applyBoosts(new BigDecimal("100"), boosts);
     assertTrue(
         applied.compareTo(multiFirst) == 0 || applied.compareTo(addFirst) == 0,
         "applyBoosts must apply both boosts, got " + applied

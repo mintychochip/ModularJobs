@@ -11,7 +11,7 @@ import net.aincraft.boost.AdditiveBoostImpl;
 import net.aincraft.boost.conditions.BiomeConditionImpl;
 import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
-import net.aincraft.serialization.CodecRegistry;
+import net.aincraft.serialization.KryoCodecRegistry;
 import net.aincraft.service.JobService;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
@@ -24,10 +24,10 @@ import org.jetbrains.annotations.NotNull;
 public class Command implements CommandExecutor {
 
   private final JobService jobService;
-  private final CodecRegistry codecRegistry;
+  private final KryoCodecRegistry codecRegistry;
   private final ItemBoostDataService boostDataService;
 
-  public Command(JobService jobService, CodecRegistry codecRegistry,
+  public Command(JobService jobService, KryoCodecRegistry codecRegistry,
       ItemBoostDataService boostDataService) {
     this.jobService = jobService;
     this.codecRegistry = codecRegistry;

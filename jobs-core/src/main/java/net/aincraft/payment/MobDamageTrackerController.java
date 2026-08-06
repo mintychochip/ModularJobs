@@ -1,6 +1,6 @@
 package net.aincraft.payment;
 
-import net.aincraft.payment.MobDamageTracker.DamageContribution;
+import net.aincraft.payment.DamageContribution;
 import org.bukkit.Bukkit;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Entity;
@@ -36,7 +36,7 @@ final class MobDamageTrackerController implements Listener {
       }
       damager = entity;
     }
-    DamageContribution contribution = store.getContribution(victim, DamageContributionImpl::new);
+    DamageContribution contribution = store.getContribution(victim, DamageContribution::new);
     contribution.addContribution(damager, event.getFinalDamage());
   }
 }

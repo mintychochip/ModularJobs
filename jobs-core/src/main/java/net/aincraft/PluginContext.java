@@ -27,7 +27,6 @@ import net.aincraft.commands.ListCommand;
 import net.aincraft.commands.StatsCommand;
 import net.aincraft.commands.StatsDialog;
 import net.aincraft.commands.TopCommand;
-import net.aincraft.commands.TopCommand.JobTopPageProviderImpl;
 import net.aincraft.commands.TreeEditorCommand;
 import net.aincraft.commands.UpgradesCommand;
 import net.aincraft.config.YamlConfiguration;
@@ -40,10 +39,10 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.domain.DomainWiring;
 import net.aincraft.editor.BytebinClient;
-import net.aincraft.editor.BytebinClientImpl;
+import net.aincraft.editor.BytebinClient;
 import net.aincraft.editor.EditorConfig;
 import net.aincraft.editor.EditorService;
-import net.aincraft.editor.EditorServiceImpl;
+import net.aincraft.editor.EditorService;
 import net.aincraft.editor.EditorSessionStore;
 import net.aincraft.editor.json.GsonProvider;
 import net.aincraft.gui.JobBrowseGui;
@@ -52,7 +51,7 @@ import net.aincraft.payable.PayableWiring;
 import net.aincraft.payment.PaymentWiring;
 import net.aincraft.placeholders.ModularJobsPlaceholderExpansion;
 import net.aincraft.protection.BlockOwnershipService;
-import net.aincraft.protection.BlockOwnershipServiceImpl;
+import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.protection.BlockProtectionAdapter;
 import net.aincraft.protection.BlockProtectionAdapterProvider;
 import net.aincraft.registry.ActionTypeRegistryProvider;
@@ -65,14 +64,14 @@ import net.aincraft.repository.ConnectionSourceFactory;
 import net.aincraft.repository.DatabaseConfigSections;
 import net.aincraft.repository.PluginResources;
 import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
-import net.aincraft.serialization.CodecRegistry;
+import net.aincraft.serialization.KryoCodecRegistry;
 import net.aincraft.serialization.KryoCodecRegistry;
 import net.aincraft.service.ItemBoostDataServiceImpl;
 import net.aincraft.service.PreferencesService;
 import net.aincraft.service.PreferencesServiceImpl;
 import net.aincraft.service.TimedBoostDataServiceImpl;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
-import net.aincraft.upgrade.PlayerUpgradeRepositoryImpl;
+import net.aincraft.upgrade.PlayerUpgradeRepository;
 import net.aincraft.upgrade.UpgradeBoostDataService;
 import net.aincraft.upgrade.UpgradeBoostDataServiceImpl;
 import net.aincraft.upgrade.UpgradeEffectApplier;
@@ -162,7 +161,7 @@ public final class PluginContext {
     ConnectionSource connectionSource = resources.track(
         new ConnectionSourceFactory(plugin, payableSection).create());
 
-    CodecRegistry codecRegistry = new KryoCodecRegistry();
+    KryoCodecRegistry codecRegistry = new KryoCodecRegistry();
     KeyResolver keyResolver = KeyResolvers.create();
     BoostFactory boostFactory = BoostFactoryImpl.INSTANCE;
     ConditionFactory conditionFactory = BoostFactoryImpl.INSTANCE;
@@ -207,7 +206,7 @@ public final class PluginContext {
     ConnectionSource upgradeConnection = resources.track(
         new ConnectionSourceFactory(plugin, upgradesSection).create());
     PlayerUpgradeRepository playerUpgradeRepository =
-        new PlayerUpgradeRepositoryImpl(upgradeConnection);
+        new PlayerUpgradeRepository(upgradeConnection);
 
     Registry<UpgradeTree> upgradeTreeRegistry = new SimpleRegistryImpl<>();
     UpgradeTreeLoader upgradeTreeLoader = new UpgradeTreeLoader(
@@ -235,7 +234,7 @@ public final class PluginContext {
 
     BlockProtectionAdapter protectionAdapter = BlockProtectionAdapterProvider.create();
     BlockOwnershipService blockOwnershipService =
-        new BlockOwnershipServiceImpl(protectionAdapter);
+        new BlockOwnershipService(protectionAdapter);
 
     PaymentWiring payment = PaymentWiring.create(
         plugin,
@@ -247,8 +246,8 @@ public final class PluginContext {
 
     EditorConfig editorConfig = EditorConfig.defaults();
     EditorSessionStore sessionStore = new EditorSessionStore(editorConfig);
-    BytebinClient bytebinClient = new BytebinClientImpl(editorConfig, gson);
-    EditorService editorService = new EditorServiceImpl(
+    BytebinClient bytebinClient = new BytebinClient(editorConfig, gson);
+    EditorService editorService = new EditorService(
         domain.jobService,
         domain.jobTaskRepository,
         bytebinClient,
@@ -258,7 +257,7 @@ public final class PluginContext {
 
     JobBrowseGui jobBrowseGui = new JobBrowseGui(domain.jobService, upgradeService);
     StatsDialog statsDialog = new StatsDialog();
-    JobTopPageProvider topPageProvider = new JobTopPageProviderImpl(domain.jobService);
+    JobTopPageProvider topPageProvider = new JobTopPageProvider(domain.jobService);
 
     InfoCommand infoCommand = new InfoCommand(
         domain.jobService, domain.jobResolver, preferencesService);

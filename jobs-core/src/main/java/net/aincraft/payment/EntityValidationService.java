@@ -1,27 +1,43 @@
 package net.aincraft.payment;
 
+import com.google.errorprone.annotations.concurrent.LazyInit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
-/**
- * Service for tracking and modifying validation state for entities.
- *
- * <p>Typically used to mark entities spawned or handled by specific systems (e.g. spawners).
- */
-interface EntityValidationService {
+public final class EntityValidationService {
 
-  /**
-   * Checks if the given entity is marked as valid.
-   *
-   * @param entity the entity to check
-   * @return true if valid, false otherwise
-   */
-  boolean isValid(Entity entity);
+  @NotNull
+  private final Plugin plugin;
 
-  /**
-   * Sets the validity state for the given entity.
-   *
-   * @param entity the entity to modify
-   * @param valid  true to mark as valid, false to mark as invalid
-   */
-  void setValid(Entity entity, boolean valid);
+  @LazyInit
+  private NamespacedKey invalidationKey = null;
+
+  private NamespacedKey invalidationKey() {
+    if (invalidationKey == null) {
+      invalidationKey = new NamespacedKey(plugin, "invalid");
+    }
+    return invalidationKey;
+  }
+
+  public EntityValidationService(@NotNull Plugin plugin) {
+    this.plugin = plugin;
+  }
+
+  public boolean isValid(Entity entity) {
+    PersistentDataContainer pdc = entity.getPersistentDataContainer();
+    return !pdc.has(invalidationKey());
+  }
+
+  public void setValid(Entity entity, boolean valid) {
+    PersistentDataContainer pdc = entity.getPersistentDataContainer();
+    if (valid) {
+      pdc.remove(invalidationKey());
+      return;
+    }
+    pdc.set(invalidationKey(), PersistentDataType.BOOLEAN, true);
+  }
 }
