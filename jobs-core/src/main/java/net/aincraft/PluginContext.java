@@ -50,6 +50,7 @@ import net.aincraft.gui.UpgradeTreeGui;
 import net.aincraft.payable.PayableWiring;
 import net.aincraft.payment.PaymentWiring;
 import net.aincraft.placeholders.ModularJobsPlaceholderExpansion;
+import net.aincraft.profession.ProfessionWiring;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.protection.BlockProtectionAdapter;
@@ -236,13 +237,19 @@ public final class PluginContext {
     BlockOwnershipService blockOwnershipService =
         new BlockOwnershipService(protectionAdapter);
 
+    ProfessionWiring professions = ProfessionWiring.create(domain.jobService);
+
     PaymentWiring payment = PaymentWiring.create(
         plugin,
         domain.jobService,
         itemBoostDataService,
         timedBoostDataService,
         upgradeBoostDataService,
-        blockOwnershipService);
+        blockOwnershipService,
+        professions.antiFarmEngine,
+        keyResolver,
+        professions.recipeService,
+        professions.professionService);
 
     EditorConfig editorConfig = EditorConfig.defaults();
     EditorSessionStore sessionStore = new EditorSessionStore(editorConfig);
@@ -300,6 +307,11 @@ public final class PluginContext {
         plugin,
         registryContainer,
         domain.jobService,
+        professions.professionService,
+        professions.recipeService,
+        professions.buffService,
+        professions.stationService,
+        professions.nodeHarvestService,
         payables.economyProvider,
         conditionFactory,
         boostFactory,
