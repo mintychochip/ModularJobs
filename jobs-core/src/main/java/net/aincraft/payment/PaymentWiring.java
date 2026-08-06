@@ -8,10 +8,14 @@ import java.util.Map;
 import net.aincraft.container.boost.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.payment.ExploitService.ExploitProtectionType;
+import net.aincraft.profession.TierAntiFarmEngine;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.service.ExploitProtectionStore;
 import net.aincraft.service.JobService;
+import net.aincraft.service.ProfessionService;
+import net.aincraft.service.RecipeService;
 import net.aincraft.upgrade.UpgradeBoostDataService;
+import net.aincraft.util.KeyResolver;
 import net.aincraft.util.LocationKey;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
@@ -20,6 +24,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Manual composition for payment / exploit / damage tracking (replaces Guice PaymentModule).
@@ -49,30 +54,57 @@ public final class PaymentWiring {
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService,
       BlockOwnershipService blockOwnershipService) {
+    return create(
+        plugin,
+        jobService,
+        itemBoostDataService,
+        timedBoostDataService,
+        upgradeBoostDataService,
+        blockOwnershipService,
+        null,
+        null,
+        null,
+        null);
+  }
+
+  public static PaymentWiring create(
+      Plugin plugin,
+      JobService jobService,
+      ItemBoostDataService itemBoostDataService,
+      TimedBoostDataService timedBoostDataService,
+      UpgradeBoostDataService upgradeBoostDataService,
+      BlockOwnershipService blockOwnershipService,
+      @Nullable TierAntiFarmEngine antiFarmEngine,
+      @Nullable KeyResolver keyResolver,
+      @Nullable RecipeService recipeService,
+      @Nullable ProfessionService professionService) {
     BoostEngine boostEngine = new BoostEngine(
         itemBoostDataService, timedBoostDataService, upgradeBoostDataService);
     PlayerChunkExplorationService chunkExploration = new PlayerChunkExplorationService();
     MobDamageTrackerStore damageStore = new MobDamageTrackerStore();
     EntityValidationService entityValidation = new EntityValidationService(plugin);
     MobDamageTracker mobDamageTracker = new MobDamageTracker(damageStore);
-    JobsPaymentHandler paymentHandler = new JobsPaymentHandler(plugin, boostEngine, jobService);
+    JobsPaymentHandler paymentHandler = new JobsPaymentHandler(
+        plugin, boostEngine, jobService, antiFarmEngine, keyResolver);
     ExploitService exploitService = createExploitService();
 
-    List<Listener> listeners = List.of(
-        new MobDamageTrackerController(damageStore),
-        new JobPaymentListener(
-            blockOwnershipService,
-            mobDamageTracker,
-            paymentHandler,
-            entityValidation,
-            exploitService,
-            chunkExploration),
-        new MobTagController(entityValidation),
-        new ExploitStoreController(exploitService),
-        new JobLevelUpListener()
-    );
+    java.util.ArrayList<Listener> listeners = new java.util.ArrayList<>();
+    listeners.add(new MobDamageTrackerController(damageStore));
+    listeners.add(new JobPaymentListener(
+        blockOwnershipService,
+        mobDamageTracker,
+        paymentHandler,
+        entityValidation,
+        exploitService,
+        chunkExploration));
+    listeners.add(new MobTagController(entityValidation));
+    listeners.add(new ExploitStoreController(exploitService));
+    listeners.add(new JobLevelUpListener());
+    if (recipeService != null && professionService != null) {
+      listeners.add(new CraftRecipeGateListener(recipeService, professionService));
+    }
 
-    return new PaymentWiring(boostEngine, paymentHandler, exploitService, listeners);
+    return new PaymentWiring(boostEngine, paymentHandler, exploitService, List.copyOf(listeners));
   }
 
   private static ExploitService createExploitService() {

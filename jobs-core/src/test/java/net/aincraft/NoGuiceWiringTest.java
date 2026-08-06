@@ -76,6 +76,29 @@ class NoGuiceWiringTest {
   }
 
   @Test
+  void pluginContextWiresProfessionApis() throws IOException {
+    Path context = locateJobsCoreMainJava().resolve("net/aincraft/PluginContext.java");
+    String text = Files.readString(context);
+    assertTrue(text.contains("ProfessionWiring"),
+        "PluginContext must compose ProfessionWiring for P6 APIs");
+    assertTrue(text.contains("professionService"),
+        "Bridge construction must receive professionService");
+    assertTrue(text.contains("recipeService"));
+    assertTrue(text.contains("buffService"));
+  }
+
+  @Test
+  void bootstrapRegistersProfessionBukkitServices() throws IOException {
+    Path bootstrap = locateJobsCoreMainJava().resolve("net/aincraft/ModularJobsBootstrap.java");
+    String text = Files.readString(bootstrap);
+    assertTrue(text.contains("ProfessionService"));
+    assertTrue(text.contains("RecipeService"));
+    assertTrue(text.contains("BuffService"));
+    assertTrue(text.contains("StationService"));
+    assertTrue(text.contains("NodeHarvestService"));
+  }
+
+  @Test
   void gsonProviderFactoryCreatesWorkingGson() {
     // Real shipped factory that previously was a Guice Provider
     Gson gson = GsonProvider.create();

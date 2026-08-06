@@ -28,6 +28,22 @@ public final class ModularJobsBootstrap extends JavaPlugin {
 
       Bukkit.getServicesManager()
           .register(Bridge.class, created.bridge, this, ServicePriority.High);
+      // AzothMC P6 public services (soft-depend targets for missions/azoth/items)
+      Bukkit.getServicesManager().register(
+          net.aincraft.service.ProfessionService.class,
+          created.bridge.professionService(), this, ServicePriority.Normal);
+      Bukkit.getServicesManager().register(
+          net.aincraft.service.RecipeService.class,
+          created.bridge.recipeService(), this, ServicePriority.Normal);
+      Bukkit.getServicesManager().register(
+          net.aincraft.service.BuffService.class,
+          created.bridge.buffService(), this, ServicePriority.Normal);
+      Bukkit.getServicesManager().register(
+          net.aincraft.service.StationService.class,
+          created.bridge.stationService(), this, ServicePriority.Normal);
+      Bukkit.getServicesManager().register(
+          net.aincraft.service.NodeHarvestService.class,
+          created.bridge.nodeHarvestService(), this, ServicePriority.Normal);
 
       for (Listener listener : created.listeners) {
         Bukkit.getPluginManager().registerEvents(listener, this);
