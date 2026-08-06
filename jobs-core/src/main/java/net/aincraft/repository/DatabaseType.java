@@ -10,12 +10,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Supported store for ModularJobs. PostgreSQL only — schema is applied out-of-band
+ * ({@code sql/postgres.sql} / {@code scripts/apply-postgres-schema.sh}).
+ */
 public enum DatabaseType {
-  SQLITE("sqlite", "org.sqlite.JDBC"),
-  MYSQL("mysql", "com.mysql.cj.jdbc.Driver"),
-  POSTGRES("postgres", "org.postgresql.Driver"),
-  MARIADB("mariadb", "org.mariadb.jdbc.Driver"),
-  MONGO("mongo", "");
+  POSTGRES("postgres", "org.postgresql.Driver");
 
   @NotNull
   private final String identifier;
@@ -50,16 +50,24 @@ public enum DatabaseType {
     }
   }
 
+  /**
+   * @throws IllegalArgumentException if identifier is not {@code postgres}
+   */
   public static DatabaseType fromIdentifier(String identifier) {
-    for (DatabaseType type : DatabaseType.values()) {
-      if (type.identifier.equals(identifier)) {
-        return type;
-      }
+    if (identifier == null || identifier.isBlank()) {
+      return getDefault();
     }
-    return getDefault();
+    String id = identifier.trim().toLowerCase();
+    if (POSTGRES.identifier.equals(id) || "postgresql".equals(id)) {
+      return POSTGRES;
+    }
+    throw new IllegalArgumentException(
+        "Unsupported database type '" + identifier
+            + "'. ModularJobs supports PostgreSQL only (type: postgres). "
+            + "Provision schema with scripts/apply-postgres-schema.sh");
   }
 
   public static DatabaseType getDefault() {
-    return SQLITE;
+    return POSTGRES;
   }
 }

@@ -26,10 +26,12 @@ triumph-gui = "3.1.12"
 # Test / MockBukkit (Paper 26.2 line; vendored until Central publishes mockbukkit-v26.2)
 mockbukkit = "26.2.0-mj"
 postgresql = "42.7.5"
-sqlite-jdbc = "3.47.2.0"
 
 # Development tools
 jetbrains-annotations = "24.1.0"
+
+# Preferences public hooking API (live 0.1.0 on GH Packages / sibling ../preferences)
+preferences-api = "0.1.0"
 
 [libraries]
 # Infrastructure
@@ -48,11 +50,12 @@ lwc = { module = "com.griefcraft:lwc", version.ref = "lwc" }
 bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }
 placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
 triumph-gui = { module = "dev.triumphteam:triumph-gui", version.ref = "triumph-gui" }
+# Soft-depend Preferences: compileOnly on API only (not the plugin jar)
+preferences-api = { module = "dev.jlo:preferences-api", version.ref = "preferences-api" }
 
 # Test
 mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v26.2", version.ref = "mockbukkit" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 
 # Development
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }

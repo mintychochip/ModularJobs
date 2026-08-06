@@ -61,15 +61,15 @@ import net.aincraft.registry.RegistryContainerImpl;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.SimpleRegistryImpl;
 import net.aincraft.repository.ConnectionSource;
-import net.aincraft.repository.ConnectionSourceFactory;
 import net.aincraft.repository.DatabaseConfigSections;
 import net.aincraft.repository.PluginResources;
+import net.aincraft.repository.SharedConnectionSources;
 import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
 import net.aincraft.serialization.KryoCodecRegistry;
 import net.aincraft.serialization.KryoCodecRegistry;
 import net.aincraft.service.ItemBoostDataServiceImpl;
+import net.aincraft.service.PreferencesIntegration;
 import net.aincraft.service.PreferencesService;
-import net.aincraft.service.PreferencesServiceImpl;
 import net.aincraft.service.TimedBoostDataServiceImpl;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
@@ -156,8 +156,8 @@ public final class PluginContext {
 
     ConfigurationSection payableSection =
         DatabaseConfigSections.requireSection(databaseConfig, "payable");
-    ConnectionSource connectionSource = resources.track(
-        new ConnectionSourceFactory(plugin, payableSection).create());
+    SharedConnectionSources sharedSources = new SharedConnectionSources(plugin, resources);
+    ConnectionSource connectionSource = sharedSources.getOrCreate(payableSection);
 
     KryoCodecRegistry codecRegistry = new KryoCodecRegistry();
     KeyResolver keyResolver = KeyResolvers.create();
@@ -188,8 +188,7 @@ public final class PluginContext {
 
     ConfigurationSection timedBoostSection =
         DatabaseConfigSections.requireSection(databaseConfig, "timed-boost");
-    ConnectionSource timedBoostSource = resources.track(
-        new ConnectionSourceFactory(plugin, timedBoostSection).create());
+    ConnectionSource timedBoostSource = sharedSources.getOrCreate(timedBoostSection);
     RelationalTimedBoostRepositoryImpl timedBoostRepository = new RelationalTimedBoostRepositoryImpl(
         plugin, timedBoostSource, codecRegistry);
     resources.onFlush(timedBoostRepository::flushPending);
@@ -197,12 +196,17 @@ public final class PluginContext {
         new TimedBoostDataServiceImpl(timedBoostRepository);
     ItemBoostDataService itemBoostDataService = new ItemBoostDataServiceImpl(codecRegistry);
 
-    PreferencesService preferencesService = new PreferencesServiceImpl(plugin);
+    // Soft-depend Preferences: register entries-per-page + gui-mode when the service is live;
+    // otherwise keep local config defaults (PreferencesServiceImpl).
+    PreferencesIntegration.Wiring preferencesWiring = PreferencesIntegration.wire(plugin);
+    PreferencesService preferencesService = preferencesWiring.service();
+    if (preferencesWiring.onDisable() != null) {
+      resources.onFlush(preferencesWiring.onDisable());
+    }
 
     ConfigurationSection upgradesSection = DatabaseConfigSections.sectionOrFallback(
         databaseConfig, "upgrades", payableSection);
-    ConnectionSource upgradeConnection = resources.track(
-        new ConnectionSourceFactory(plugin, upgradesSection).create());
+    ConnectionSource upgradeConnection = sharedSources.getOrCreate(upgradesSection);
     PlayerUpgradeRepository playerUpgradeRepository =
         new PlayerUpgradeRepository(upgradeConnection);
 

@@ -18,12 +18,12 @@ class DatabaseConfigSectionsTest {
   void requireSectionReturnsNestedMap() {
     MemoryConfiguration root = new MemoryConfiguration();
     ConfigurationSection payable = root.createSection("payable");
-    payable.set("type", "sqlite");
-    payable.set("file-path", "modularjobs.db");
+    payable.set("type", "postgres");
+    payable.set("jdbc-url", "jdbc:postgresql://localhost:5432/modularjobs");
 
     ConfigurationSection section = DatabaseConfigSections.requireSection(root, "payable");
-    assertEquals("sqlite", section.getString("type"));
-    assertEquals("modularjobs.db", section.getString("file-path"));
+    assertEquals("postgres", section.getString("type"));
+    assertEquals("jdbc:postgresql://localhost:5432/modularjobs", section.getString("jdbc-url"));
   }
 
   @Test
@@ -67,20 +67,22 @@ class DatabaseConfigSectionsTest {
   void sectionOrFallbackUsesPreferredWhenPresent() {
     MemoryConfiguration root = new MemoryConfiguration();
     ConfigurationSection payable = root.createSection("payable");
-    payable.set("type", "sqlite");
+    payable.set("type", "postgres");
     ConfigurationSection upgrades = root.createSection("upgrades");
-    upgrades.set("type", "mysql");
+    upgrades.set("type", "postgres");
+    upgrades.set("jdbc-url", "jdbc:postgresql://other:5432/db");
 
     ConfigurationSection result =
         DatabaseConfigSections.sectionOrFallback(root, "upgrades", payable);
-    assertEquals("mysql", result.getString("type"));
+    assertEquals("postgres", result.getString("type"));
+    assertEquals("jdbc:postgresql://other:5432/db", result.getString("jdbc-url"));
   }
 
   @Test
   void sectionOrFallbackReturnsFallbackWhenPreferredAbsent() {
     MemoryConfiguration root = new MemoryConfiguration();
     ConfigurationSection payable = root.createSection("payable");
-    payable.set("type", "sqlite");
+    payable.set("type", "postgres");
 
     ConfigurationSection result =
         DatabaseConfigSections.sectionOrFallback(root, "upgrades", payable);

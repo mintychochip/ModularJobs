@@ -1,31 +1,34 @@
-# Schema ownership: see docs/database-schema.md
-#
-# SQLite (default): plugin applies sql/sqlite.sql on connect (local file exception).
-# Postgres/MySQL:  connect only. Provision with:
+# ModularJobs — PostgreSQL only
+# Schema is NOT created by the plugin. Provision first:
 #   ./scripts/apply-postgres-schema.sh
 #   # or: psql "$DATABASE_URL" -f jobs-core/src/main/resources/sql/postgres.sql
-# Missing tables → plugin fails at startup (does not CREATE).
-#
-# Remote example:
-# payable:
-#   type: postgres
-#   jdbc-url: jdbc:postgresql://db.example.com:5432/modularjobs
-#   username: modularjobs
-#   password: secret
-#   maximum-pool-size: 10
+# Missing tables → plugin fails at startup. See docs/database-schema.md
 
 payable:
-  type: sqlite
-  file-path: modularjobs.db
+  type: postgres
+  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  username: modularjobs
+  password: change-me
+  maximum-pool-size: 10
 
+# Same database is fine — pools with identical jdbc-url+username are shared.
 timed-boost:
-  type: sqlite
-  file-path: modularjobs.db
+  type: postgres
+  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  username: modularjobs
+  password: change-me
+  maximum-pool-size: 10
 
 progression:
-  type: sqlite
-  file-path: modularjobs.db
+  type: postgres
+  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  username: modularjobs
+  password: change-me
+  maximum-pool-size: 10
 
 upgrades:
-  type: sqlite
-  file-path: modularjobs.db
+  type: postgres
+  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  username: modularjobs
+  password: change-me
+  maximum-pool-size: 10

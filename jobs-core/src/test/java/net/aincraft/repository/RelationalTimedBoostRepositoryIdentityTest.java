@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,18 +45,19 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    Class.forName("org.sqlite.JDBC");
-    // Wrap so try-with-resources in RelationalRepositoryImpl does not close the shared in-memory DB
-    Connection raw = DriverManager.getConnection("jdbc:sqlite::memory:");
+    net.aincraft.test.TestPostgres.assumeAvailable();
+    // Wrap so try-with-resources in RelationalRepositoryImpl does not close the shared connection
+    Connection raw = net.aincraft.test.TestPostgres.open();
     connection = NonClosableConnection.create(raw);
     try (Statement st = connection.createStatement()) {
+      st.execute("DROP TABLE IF EXISTS time_boosts");
       st.execute("""
           CREATE TABLE time_boosts (
             target_id    TEXT    NOT NULL,
             source_id    TEXT    NOT NULL,
-            epoch_millis INTEGER NOT NULL,
-            duration     BLOB    NULL,
-            boost_source BLOB    NOT NULL,
+            epoch_millis BIGINT  NOT NULL,
+            duration     BYTEA   NULL,
+            boost_source BYTEA   NOT NULL,
             PRIMARY KEY (target_id, source_id)
           )
           """);
@@ -77,10 +77,17 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
   @AfterEach
   void tearDown() throws SQLException {
-    if (connection instanceof NonClosableConnection nonClosable) {
-      nonClosable.shutdown();
-    } else if (connection != null && !connection.isClosed()) {
-      connection.close();
+    if (connection != null) {
+      try (Statement st = connection.createStatement()) {
+        st.execute("DROP TABLE IF EXISTS time_boosts");
+      } catch (SQLException ignored) {
+        // best-effort
+      }
+      if (connection instanceof NonClosableConnection nonClosable) {
+        nonClosable.shutdown();
+      } else if (!connection.isClosed()) {
+        connection.close();
+      }
     }
   }
 
@@ -209,7 +216,7 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
     @Override
     public DatabaseType getType() {
-      return DatabaseType.SQLITE;
+      return DatabaseType.POSTGRES;
     }
 
     @Override

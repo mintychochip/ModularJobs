@@ -5,13 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Exercises the shipped {@link PluginResources} path used by PluginContext shutdown
@@ -19,25 +17,18 @@ import org.junit.jupiter.api.io.TempDir;
  */
 class PluginResourcesLifecycleTest {
 
-  @TempDir
-  Path tempDir;
-
   @Test
   void multiSourceShutdownClosesEveryTrackedSource() throws Exception {
     PluginResources resources = new PluginResources();
-    ConnectionSource payable = resources.track(
-        SQLiteSourceImpl.createAtPath(tempDir.resolve("payable.db")));
-    ConnectionSource timed = resources.track(
-        SQLiteSourceImpl.createAtPath(tempDir.resolve("timed.db")));
-    ConnectionSource upgrades = resources.track(
-        SQLiteSourceImpl.createAtPath(tempDir.resolve("upgrades.db")));
+    ConnectionSource payable = resources.track(new TrackingSource(new ArrayList<>()));
+    ConnectionSource timed = resources.track(new TrackingSource(new ArrayList<>()));
+    ConnectionSource upgrades = resources.track(new TrackingSource(new ArrayList<>()));
 
     assertEquals(3, resources.sourceCount());
     assertFalse(payable.isClosed());
     assertFalse(timed.isClosed());
     assertFalse(upgrades.isClosed());
 
-    // production disable sequence
     resources.shutdown();
 
     assertTrue(payable.isClosed());
@@ -65,12 +56,9 @@ class PluginResourcesLifecycleTest {
   @Test
   void closeQuietlyClosesSourcesOpenedBeforeSimulatedCompositionFailure() throws Exception {
     PluginResources resources = new PluginResources();
-    ConnectionSource first = resources.track(
-        SQLiteSourceImpl.createAtPath(tempDir.resolve("first.db")));
-    ConnectionSource second = resources.track(
-        SQLiteSourceImpl.createAtPath(tempDir.resolve("second.db")));
+    ConnectionSource first = resources.track(new TrackingSource(new ArrayList<>()));
+    ConnectionSource second = resources.track(new TrackingSource(new ArrayList<>()));
 
-    // Simulate mid-create failure cleanup (PluginContext.create catch path)
     assertThrows(IllegalStateException.class, () -> {
       try {
         throw new IllegalStateException("simulated composition failure after opening sources");
@@ -88,8 +76,7 @@ class PluginResourcesLifecycleTest {
   void shutdownIsIdempotent() throws Exception {
     PluginResources resources = new PluginResources();
     AtomicInteger flushes = new AtomicInteger();
-    ConnectionSource source = resources.track(
-        SQLiteSourceImpl.createAtPath(tempDir.resolve("once.db")));
+    ConnectionSource source = resources.track(new TrackingSource(new ArrayList<>()));
     resources.onFlush(flushes::incrementAndGet);
 
     resources.shutdown();
@@ -116,7 +103,7 @@ class PluginResourcesLifecycleTest {
 
     @Override
     public DatabaseType getType() {
-      return DatabaseType.SQLITE;
+      return DatabaseType.POSTGRES;
     }
 
     @Override

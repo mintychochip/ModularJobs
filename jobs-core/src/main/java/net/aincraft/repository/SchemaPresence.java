@@ -10,13 +10,10 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Fail-fast check that required tables exist. Does not create them.
- *
- * <p>Used for remote databases so a missing provision step fails at pool connect with a clear
- * message pointing at out-of-band schema application.
  */
 public final class SchemaPresence {
 
-  /** Core tables the plugin and session API depend on. */
+  /** Core tables the plugin depends on. */
   public static final List<String> REQUIRED_TABLES = List.of(
       "job_progression",
       "job_tasks",
@@ -55,12 +52,10 @@ public final class SchemaPresence {
   public static boolean tableExists(
       @NotNull Connection connection, @NotNull DatabaseType type, @NotNull String table)
       throws SQLException {
-    return switch (type) {
-      case POSTGRES -> existsPostgres(connection, table);
-      case MYSQL, MARIADB -> existsMysql(connection, table);
-      case SQLITE -> existsSqlite(connection, table);
-      default -> existsPostgres(connection, table);
-    };
+    if (type != DatabaseType.POSTGRES) {
+      throw new IllegalArgumentException("Only PostgreSQL is supported, got " + type);
+    }
+    return existsPostgres(connection, table);
   }
 
   private static boolean existsPostgres(Connection connection, String table) throws SQLException {
@@ -77,32 +72,8 @@ public final class SchemaPresence {
     }
   }
 
-  private static boolean existsMysql(Connection connection, String table) throws SQLException {
-    try (PreparedStatement ps = connection.prepareStatement(
-        """
-            SELECT 1 FROM information_schema.tables
-            WHERE table_schema = DATABASE()
-              AND table_name = ?
-            """)) {
-      ps.setString(1, table);
-      try (ResultSet rs = ps.executeQuery()) {
-        return rs.next();
-      }
-    }
-  }
-
-  private static boolean existsSqlite(Connection connection, String table) throws SQLException {
-    try (PreparedStatement ps = connection.prepareStatement(
-        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?")) {
-      ps.setString(1, table);
-      try (ResultSet rs = ps.executeQuery()) {
-        return rs.next();
-      }
-    }
-  }
-
   /**
-   * Thrown when remote schema was not provisioned. Message points operators at the SQL script.
+   * Thrown when schema was not provisioned. Message points operators at the SQL script.
    */
   public static final class SchemaMissingException extends RuntimeException {
     private final DatabaseType type;
@@ -123,11 +94,10 @@ public final class SchemaPresence {
     }
 
     private static String buildMessage(DatabaseType type, List<String> missing) {
-      return "Database schema not provisioned for type '" + type.getIdentifier()
-          + "'. Missing tables: " + missing
-          + ". The plugin does not create remote tables. Apply "
-          + "jobs-core/src/main/resources/sql/" + type.getIdentifier() + ".sql "
-          + "out-of-band (see scripts/apply-postgres-schema.sh for Postgres).";
+      return "Database schema not provisioned for PostgreSQL. Missing tables: " + missing
+          + ". The plugin does not create tables. Apply "
+          + "jobs-core/src/main/resources/sql/postgres.sql out-of-band "
+          + "(see scripts/apply-postgres-schema.sh).";
     }
   }
 }
