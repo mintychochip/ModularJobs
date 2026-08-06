@@ -1,28 +1,32 @@
 package net.aincraft.event;
 
 import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.UUID;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 
-public class JobExperienceGainEvent extends AbstractEvent implements Cancellable {
+/**
+ * Fired before experience is applied; listeners may cancel or mutate the amount.
+ */
+public final class JobExperienceGainEvent implements Cancellable {
 
-  private final Player player;
+  private final UUID playerId;
   private final Job job;
   private final JobProgression progression;
   private BigDecimal experienceGained;
-  private boolean cancelled = false;
+  private boolean cancelled;
 
-  public JobExperienceGainEvent(Player player, Job job, JobProgression progression, BigDecimal experienceGained) {
-    this.player = player;
+  public JobExperienceGainEvent(
+      UUID playerId, Job job, JobProgression progression, BigDecimal experienceGained) {
+    this.playerId = Objects.requireNonNull(playerId, "playerId");
     this.job = job;
     this.progression = progression;
     this.experienceGained = experienceGained;
   }
 
-  public Player getPlayer() {
-    return player;
+  public UUID getPlayerId() {
+    return playerId;
   }
 
   public Job getJob() {

@@ -5,6 +5,7 @@ import net.aincraft.container.EconomyProvider;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
+import net.aincraft.event.EventBus;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.service.BuffService;
 import net.aincraft.service.JobService;
@@ -58,6 +59,9 @@ public interface Bridge {
 
   /** Gather hook (stub until world P11). */
   NodeHarvestService nodeHarvestService();
+
+  /** Shared pure domain event bus. */
+  EventBus eventBus();
 
   /** Volatile holder; nested types on interfaces are public. */
   final class Holder {

@@ -16,9 +16,10 @@ import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.domain.ProgressionService;
 import net.aincraft.domain.model.JobProgressionRecord;
+import net.aincraft.Bridge;
 import net.aincraft.event.JobLevelEvent;
+import net.aincraft.paper.event.PaperEventBridge;
 import net.aincraft.service.JobService;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -155,8 +156,15 @@ public final class LevelCommand implements JobsCommand {
       if (targetLevel != oldLevel) {
         JobProgression updatedProgression = jobService.getProgression(playerId, jobKey.toString());
         if (updatedProgression != null) {
-          JobLevelEvent event = new JobLevelEvent(targetPlayer, job, oldLevel, targetLevel, updatedProgression, JobLevelEvent.Reason.ADMIN_COMMAND);
-          Bukkit.getPluginManager().callEvent(event);
+          new PaperEventBridge(Bridge.bridge().eventBus()).publishLevel(
+              new JobLevelEvent(
+                  targetPlayer.getUniqueId(),
+                  job,
+                  oldLevel,
+                  targetLevel,
+                  updatedProgression,
+                  JobLevelEvent.Reason.ADMIN_COMMAND),
+              targetPlayer);
         }
       }
 
@@ -232,8 +240,15 @@ public final class LevelCommand implements JobsCommand {
       if (levelsAdded > 0) {
         JobProgression updatedProgression = jobService.getProgression(playerId, jobKey.toString());
         if (updatedProgression != null) {
-          JobLevelEvent event = new JobLevelEvent(targetPlayer, job, currentLevel, newLevel, updatedProgression, JobLevelEvent.Reason.ADMIN_COMMAND);
-          Bukkit.getPluginManager().callEvent(event);
+          new PaperEventBridge(Bridge.bridge().eventBus()).publishLevel(
+              new JobLevelEvent(
+                  targetPlayer.getUniqueId(),
+                  job,
+                  currentLevel,
+                  newLevel,
+                  updatedProgression,
+                  JobLevelEvent.Reason.ADMIN_COMMAND),
+              targetPlayer);
         }
       }
 
@@ -309,8 +324,15 @@ public final class LevelCommand implements JobsCommand {
       if (levelsSubtracted > 0) {
         JobProgression updatedProgression = jobService.getProgression(playerId, jobKey.toString());
         if (updatedProgression != null) {
-          JobLevelEvent event = new JobLevelEvent(targetPlayer, job, currentLevel, newLevel, updatedProgression, JobLevelEvent.Reason.ADMIN_COMMAND);
-          Bukkit.getPluginManager().callEvent(event);
+          new PaperEventBridge(Bridge.bridge().eventBus()).publishLevel(
+              new JobLevelEvent(
+                  targetPlayer.getUniqueId(),
+                  job,
+                  currentLevel,
+                  newLevel,
+                  updatedProgression,
+                  JobLevelEvent.Reason.ADMIN_COMMAND),
+              targetPlayer);
         }
       }
 
