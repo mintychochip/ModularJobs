@@ -42,7 +42,7 @@ bin/
 .DS_Store
 
 ### Runtime & Local ###
-jobs-core/run/
+paper/run/
 .claude/settings.local.json
 *.bak
 *.backup
@@ -58,5 +58,3 @@ web/session-api/target/
 ### Node / React session editor ###
 web/session-editor/node_modules/
 web/session-editor/dist/
-jobs-web/session-editor/node_modules/
-jobs-web/session-editor/dist/
