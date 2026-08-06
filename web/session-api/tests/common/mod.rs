@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 /// Source of truth: paper shipped Postgres schema (include at compile time).
 const POSTGRES_SCHEMA: &str =
-    include_str!("../../../paper/src/main/resources/sql/postgres.sql");
+    include_str!("../../../../paper/src/main/resources/sql/postgres.sql");
 
 /// Split on `;` the same way DatabaseType.getSQLTables does.
 pub fn schema_statements() -> Vec<String> {
