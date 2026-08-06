@@ -16,7 +16,7 @@ pub enum SessionStoreError {
     Database(#[from] sqlx::Error),
     #[error("payload serialization: {0}")]
     Serde(#[from] serde_json::Error),
-    #[error("schema not provisioned: missing table(s) — apply jobs-core sql/postgres.sql out-of-band (scripts/apply-postgres-schema.sh)")]
+    #[error("schema not provisioned: missing table(s) — apply paper sql/postgres.sql out-of-band (scripts/apply-postgres-schema.sh)")]
     SchemaMissing,
 }
 

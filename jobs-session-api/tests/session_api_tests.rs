@@ -22,7 +22,7 @@ fn database_url() -> String {
 
 async fn setup() -> AppState {
     // Production path is connect-only. Tests provision schema out-of-band from the
-    // shared jobs-core sql/postgres.sql (same file as scripts/apply-postgres-schema.sh).
+    // shared paper sql/postgres.sql (same file as scripts/apply-postgres-schema.sh).
     let store = SessionStore::connect(&database_url(), 2)
         .await
         .expect("connect to postgres for session API tests");

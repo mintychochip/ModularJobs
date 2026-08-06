@@ -7,11 +7,11 @@
 #   ./scripts/apply-postgres-schema.sh postgres://user:pass@host:5432/db
 #
 # Schema source of truth:
-#   jobs-core/src/main/resources/sql/postgres.sql
+#   paper/src/main/resources/sql/postgres.sql
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SCHEMA="${ROOT}/jobs-core/src/main/resources/sql/postgres.sql"
+SCHEMA="${ROOT}/paper/src/main/resources/sql/postgres.sql"
 
 if [[ ! -f "${SCHEMA}" ]]; then
   echo "error: schema file not found: ${SCHEMA}" >&2

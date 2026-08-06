@@ -1,7 +1,7 @@
 # ModularJobs — PostgreSQL only
 # Schema is NOT created by the plugin. Provision first:
 #   ./scripts/apply-postgres-schema.sh
-#   # or: psql "$DATABASE_URL" -f jobs-core/src/main/resources/sql/postgres.sql
+#   # or: psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
 # Missing tables → plugin fails at startup. See docs/database-schema.md
 
 payable:
