@@ -11,7 +11,7 @@ export default defineConfig({
 
   integrations: [starlight({
       title: 'Modular Jobs',
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/mintychochip/modularjobs' }],
+      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/aincraft-org/modularjobs' }],
     sidebar: [
           {
               label: 'Guides',
