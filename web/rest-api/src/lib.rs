@@ -1,20 +1,22 @@
 pub mod db;
 pub mod handlers;
 pub mod models;
+pub mod security;
 
 use axum::routing::{get, post, put};
 use axum::Router;
 use handlers::AppState;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
 /// Build the HTTP router used by the binary and integration tests.
+/// CORS comes from env via [`security::cors_layer_from_env`] unless overridden.
 pub fn app(state: AppState) -> Router {
-    let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any);
+    app_with_cors(state, security::cors_layer_from_env())
+}
 
+/// Router with an explicit CORS layer (tests / custom deploys).
+pub fn app_with_cors(state: AppState, cors: CorsLayer) -> Router {
     Router::new()
         .route("/healthz", get(handlers::healthz))
         .route("/api/v1/sessions", post(handlers::create_session))

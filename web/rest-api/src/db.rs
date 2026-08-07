@@ -1,4 +1,5 @@
 use crate::models::EditorPayload;
+use crate::security::tokens_equal;
 use chrono::{DateTime, Duration, Utc};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Row};
@@ -118,9 +119,10 @@ impl SessionStore {
         .fetch_optional(&self.pool)
         .await?;
 
-        let row = row.ok_or(SessionStoreError::NotFound)?;
+        // Unknown code → Unauthorized (not NotFound) so clients cannot probe code existence.
+        let row = row.ok_or(SessionStoreError::Unauthorized)?;
         let stored_token: String = row.try_get("session_token")?;
-        if stored_token != token {
+        if !tokens_equal(&stored_token, token) {
             return Err(SessionStoreError::Unauthorized);
         }
         let expires_at: DateTime<Utc> = row.try_get("expires_at")?;
@@ -161,7 +163,8 @@ impl SessionStore {
                 let expires_at: DateTime<Utc> = row.try_get("expires_at")?;
                 Ok(expires_at)
             }
-            None => Err(SessionStoreError::NotFound),
+            // Auth already succeeded via get; treat lost race / expiry as unauthorized-ish 401.
+            None => Err(SessionStoreError::Unauthorized),
         }
     }
 }
