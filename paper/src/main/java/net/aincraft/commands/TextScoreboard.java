@@ -1,70 +1,68 @@
 package net.aincraft.commands;
 
-import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import net.aincraft.gui.craftux.CraftuxSurfaces;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Criteria;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
-import org.bukkit.scoreboard.Team;
 
+/**
+ * Ephemeral sidebar scoreboard backed by craftux {@link CraftuxSurfaces}.
+ *
+ * <p>Hosts accumulate lines then call {@link #setCurrent(Player)} to mount a
+ * craftux scoreboard plan for that audience.
+ */
 public final class TextScoreboard {
 
   private static final int MAX_LINES = 15;
+  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
-  private final Scoreboard scoreboard;
-  private final Objective objective;
-  private final Team[] teams = new Team[MAX_LINES];
-  private final String[] entries = new String[MAX_LINES];
+  private final CraftuxSurfaces surfaces;
+  private final String title;
+  private final String[] lines = new String[MAX_LINES];
 
-  private TextScoreboard(Scoreboard scoreboard, Objective objective) {
-    this.scoreboard = scoreboard;
-    this.objective = objective;
+  private TextScoreboard(CraftuxSurfaces surfaces, String title) {
+    this.surfaces = surfaces;
+    this.title = title;
   }
 
+  public static TextScoreboard create(CraftuxSurfaces surfaces, Component displayName) {
+    return new TextScoreboard(surfaces, PLAIN.serialize(displayName));
+  }
+
+  /** @deprecated use {@link #create(CraftuxSurfaces, Component)} */
+  @Deprecated
   public static TextScoreboard create(Component displayName) {
-    ScoreboardManager manager = Bukkit.getScoreboardManager();
-    if (manager == null) {
-      throw new IllegalStateException("ScoreboardManager is not available yet.");
-    }
-    Scoreboard scoreboard = manager.getNewScoreboard();
-    Objective objective = scoreboard.registerNewObjective("internal", Criteria.DUMMY, displayName);
-    objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-    objective.numberFormat(NumberFormat.blank());
-    return new TextScoreboard(scoreboard, objective);
+    throw new UnsupportedOperationException(
+        "TextScoreboard requires CraftuxSurfaces; use create(surfaces, title)");
   }
 
   public void setLine(int index, ComponentLike prefix, ComponentLike suffix) {
-    String entry = entries[index];
-    if (entry == null) {
-      entry = ChatColor.values()[index].toString();
-      entries[index] = entry;
+    if (index < 0 || index >= MAX_LINES) {
+      throw new IndexOutOfBoundsException("scoreboard line " + index);
     }
-    Team team = teams[index];
-    if (team == null) {
-      team = scoreboard.registerNewTeam(entry);
-      team.addEntry(entry);
-      teams[index] = team;
-      objective.getScore(entry).setScore(MAX_LINES - index);
-    }
-    team.prefix(prefix.asComponent());
-    team.suffix(suffix.asComponent());
+    String left = prefix == null ? "" : PLAIN.serialize(prefix.asComponent());
+    String right = suffix == null ? "" : PLAIN.serialize(suffix.asComponent());
+    lines[index] = left + right;
   }
 
   public void show(Player player, Duration duration) {
-    player.setScoreboard(scoreboard);
+    setCurrent(player);
   }
 
   public void setCurrent(Player player) {
     if (player == null) {
       return;
     }
-    player.setScoreboard(this.scoreboard);
+    List<String> body = new ArrayList<>(MAX_LINES);
+    for (String line : lines) {
+      if (line != null) {
+        body.add(line);
+      }
+    }
+    surfaces.showScoreboard(player.getUniqueId(), title, body);
   }
 }

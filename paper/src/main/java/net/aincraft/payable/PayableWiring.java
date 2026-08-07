@@ -12,6 +12,7 @@ import net.aincraft.container.ExperiencePayableHandler.ExperienceBarFormatter;
 import net.aincraft.container.PayableAmount;
 import net.aincraft.container.PayableHandler;
 import net.aincraft.container.PayableType;
+import net.aincraft.gui.craftux.CraftuxSurfaces;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.key.Key;
@@ -38,9 +39,12 @@ public final class PayableWiring {
   }
 
   public static PayableWiring create(
-      Plugin plugin, JobService jobService, Registry<PayableType> payableTypeRegistry) {
+      Plugin plugin,
+      JobService jobService,
+      Registry<PayableType> payableTypeRegistry,
+      CraftuxSurfaces surfaces) {
     ExperienceBarColorProvider colorProvider = new ExperienceBarColorProvider();
-    ExperienceBarController controller = new ExperienceBarControllerImpl(plugin);
+    ExperienceBarController controller = new ExperienceBarControllerImpl(plugin, surfaces);
     ExperienceBarFormatter formatter = new ExperienceBarFormatterImpl(colorProvider);
     PayableHandler experienceHandler =
         new BufferedExperienceHandlerImpl(controller, formatter, jobService);

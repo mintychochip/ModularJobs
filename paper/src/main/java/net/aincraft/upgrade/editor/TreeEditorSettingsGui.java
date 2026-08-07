@@ -1,50 +1,45 @@
 package net.aincraft.upgrade.editor;
 
-import net.aincraft.util.Messages;
-import dev.triumphteam.gui.builder.item.ItemBuilder;
-import dev.triumphteam.gui.guis.Gui;
-import dev.triumphteam.gui.guis.GuiItem;
-import java.util.ArrayList;
+import dev.craftux.api.inventory.ClickKind;
+import dev.craftux.api.inventory.InteractionPolicy;
+import dev.craftux.api.inventory.InventoryClick;
+import dev.craftux.api.inventory.InventoryView;
+import dev.craftux.api.inventory.Slot;
+import dev.craftux.api.inventory.SlotPixelIntent;
+import dev.craftux.common.inventory.InventoryRuntime;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.aincraft.gui.craftux.CraftuxItems;
+import net.aincraft.gui.craftux.CraftuxUiHost;
+import net.aincraft.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Sub-GUI for editing tree-level settings using Triumph GUI.
+ * Tree-level settings editor via craftux inventory.
  */
-public final class TreeEditorSettingsGui {
+public final class TreeEditorSettingsGui implements Listener {
 
   private static final int GUI_SIZE = 54;
-  private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacySection();
+  private static final String MENU_ID = "tree_editor_settings";
 
   private final Plugin plugin;
-
-  // Injected via setter to avoid circular dependency
+  private final InventoryRuntime inventory;
   private TreeEditorGui mainEditor;
 
-  // Active settings edit sessions
   private final Map<UUID, SettingsEditSession> editSessions = new HashMap<>();
-
-  // Chat input listeners
+  private final Map<UUID, Map<Integer, String>> slotActions = new HashMap<>();
   private final Map<UUID, ChatInputHandler> chatInputHandlers = new HashMap<>();
-
-  // Store open GUIs
-  private final Map<UUID, Gui> openGuis = new HashMap<>();
+  private boolean chatListenerRegistered;
 
   private record SettingsEditSession(EditorSession editorSession) {}
 
@@ -53,458 +48,157 @@ public final class TreeEditorSettingsGui {
     void handle(String input);
   }
 
-  public TreeEditorSettingsGui(Plugin plugin) {
+  public TreeEditorSettingsGui(Plugin plugin, InventoryRuntime inventory) {
     this.plugin = plugin;
+    this.inventory = inventory;
   }
 
-  /**
-   * Setter injection for TreeEditorGui to break circular dependency.
-   */
   public void setMainEditor(TreeEditorGui mainEditor) {
     this.mainEditor = mainEditor;
   }
 
-  /**
-   * Open the settings editor for the current session.
-   */
   public void open(@NotNull Player player, @NotNull EditorSession session) {
     UUID playerId = player.getUniqueId();
-
-    // Store edit session
     editSessions.put(playerId, new SettingsEditSession(session));
-
-    // Create and open GUI
-    Gui gui = createGui(player, session);
-    gui.open(player);
-    openGuis.put(playerId, gui);
+    ensureChatListener();
+    inventory.open(playerId, buildView(player, session));
   }
 
-  private Gui createGui(Player player, EditorSession session) {
-    EditorTree tree = session.tree();
-
-    Component title = Component.text()
-        .append(Component.text("Tree Settings: ", NamedTextColor.DARK_GRAY))
-        .append(Component.text(tree.displayName(), NamedTextColor.GOLD))
-        .build();
-
-    Gui gui = Gui.gui()
-        .title(title)
-        .rows(6)
-        .create();
-
-    // Cancel all clicks by default
-    gui.setDefaultClickAction(event -> event.setCancelled(true));
-
-    // Set close handler
-    gui.setCloseGuiAction(event -> {
-      Player p = (Player) event.getPlayer();
-      handleClose(p);
-    });
-
-    // Register chat listener
-    if (!chatInputHandlers.containsKey(player.getUniqueId())) {
-      plugin.getServer().getPluginManager().registerEvents(
-          new org.bukkit.event.Listener() {
-            @org.bukkit.event.EventHandler
-            public void onChat(org.bukkit.event.player.AsyncPlayerChatEvent event) {
-              handleChatEvent(event);
-            }
-          },
-          plugin
-      );
+  public void onAction(UUID audience, InventoryClick click) {
+    Player player = Bukkit.getPlayer(audience);
+    SettingsEditSession edit = editSessions.get(audience);
+    if (player == null || edit == null) {
+      return;
     }
-
-    renderGui(gui, session, player);
-
-    return gui;
+    Map<Integer, String> actions = slotActions.get(audience);
+    if (actions == null) {
+      return;
+    }
+    String action = actions.get(click.slot());
+    if (action != null) {
+      handleAction(player, edit, action, click.policyKind());
+    }
   }
 
-  private void renderGui(Gui gui, EditorSession session, Player player) {
+  InventoryView buildView(Player player, EditorSession session) {
+    UUID audience = player.getUniqueId();
     EditorTree tree = session.tree();
+    Map<Integer, String> actions = new HashMap<>();
+    Map<Integer, Slot> content = new HashMap<>();
 
-    // Fill background
-    GuiItem pane = ItemBuilder.from(Material.GRAY_STAINED_GLASS_PANE)
-        .setName(" ")
-        .asGuiItem();
+    put(content, actions, 0, Material.ARROW, "back", "Back", List.of("Return to tree editor"));
+    content.put(4, Slot.decorative(CraftuxItems.of(
+        Material.OAK_SIGN,
+        tree.treeId(),
+        List.of("Job: " + tree.jobKey(), "Nodes: " + tree.nodes().size()))));
+
+    put(content, actions, 10, Material.NAME_TAG, "display_name", "Display Name",
+        List.of("Current: " + tree.displayName(), "Click to edit"));
+    put(content, actions, 11, Material.PAPER, "tree_id", "Tree ID",
+        List.of("Current: " + tree.treeId(), "Click to edit"));
+    put(content, actions, 12, Material.EXPERIENCE_BOTTLE, "sp_per_level", "SP per Level",
+        List.of("Current: " + tree.skillPointsPerLevel(), "Left +1 | Right -1"));
+
+    put(content, actions, 19, Material.BOOK, "job_key", "Job Key",
+        List.of("Current: " + tree.jobKey(), "Click to edit"));
+
+    InventoryView.Builder builder = InventoryView.builder(MENU_ID, 6)
+        .title(trim("Tree Settings: " + tree.displayName()))
+        .interactionPolicy(new InteractionPolicy(
+            EnumSet.of(ClickKind.LEFT, ClickKind.RIGHT, ClickKind.SHIFT_LEFT, ClickKind.SHIFT_RIGHT),
+            true, true));
     for (int i = 0; i < GUI_SIZE; i++) {
-      gui.setItem(i, pane);
-    }
-
-    // Row 0: Back button and tree info
-    gui.setItem(0, createActionItem(Material.ARROW, "back", "Back", NamedTextColor.WHITE,
-        "Return to tree editor"));
-
-    // Tree preview
-    ItemStack preview = new ItemStack(Material.OAK_SIGN);
-    ItemMeta previewMeta = preview.getItemMeta();
-    previewMeta.displayName(Component.text(tree.treeId(), NamedTextColor.GOLD)
-        .decoration(TextDecoration.ITALIC, false));
-    List<Component> previewLore = new ArrayList<>();
-    previewLore.add(Component.text("Job: " + tree.jobKey(), NamedTextColor.DARK_GRAY)
-        .decoration(TextDecoration.ITALIC, false));
-    previewLore.add(Component.text("Nodes: " + tree.nodes().size(), NamedTextColor.DARK_GRAY)
-        .decoration(TextDecoration.ITALIC, false));
-    previewMeta.lore(previewLore);
-    preview.setItemMeta(previewMeta);
-    gui.setItem(4, ItemBuilder.from(preview).asGuiItem(event -> event.setCancelled(true)));
-
-    // Row 1: Basic properties
-    gui.setItem(10, createPropertyItem(Material.NAME_TAG, "display_name",
-        "Display Name", tree.displayName(), "Click to edit"));
-
-    gui.setItem(11, createPropertyItem(Material.EXPERIENCE_BOTTLE, "skill_points",
-        "Skill Points per Level", String.valueOf(tree.skillPointsPerLevel()),
-        "Left-click: +1", "Right-click: -1", "Shift: +/-5"));
-
-    gui.setItem(12, createPropertyItem(Material.REDSTONE_TORCH, "root_node",
-        "Root Node ID", tree.rootNodeId(), "Click to view/edit"));
-
-    // Row 2: Archetypes section
-    gui.setItem(19, createActionItem(Material.BLAZE_POWDER, "add_archetype",
-        "Add Archetype", NamedTextColor.GREEN, "Add a new archetype"));
-
-    // Archetype header
-    gui.setItem(20, ItemBuilder.from(Material.WRITABLE_BOOK)
-        .setName(LEGACY.serialize(Component.text("Archetypes", NamedTextColor.LIGHT_PURPLE)
-            .decoration(TextDecoration.ITALIC, false)))
-        .asGuiItem(event -> event.setCancelled(true)));
-
-    // Show existing archetypes (up to 5)
-    List<EditorTree.EditorArchetype> archetypes = tree.archetypes();
-    for (int i = 0; i < Math.min(archetypes.size(), 5); i++) {
-      EditorTree.EditorArchetype archetype = archetypes.get(i);
-      gui.setItem(21 + i, createArchetypeItem(session, archetype, i, player));
-    }
-
-    // Row 4: Perk policies section
-    gui.setItem(37, createActionItem(Material.ENCHANTED_BOOK, "add_policy",
-        "Add Perk Policy", NamedTextColor.GREEN, "Add a new perk policy"));
-
-    // Perk policies header
-    gui.setItem(38, ItemBuilder.from(Material.WRITTEN_BOOK)
-        .setName(LEGACY.serialize(Component.text("Perk Policies", NamedTextColor.AQUA)
-            .decoration(TextDecoration.ITALIC, false)))
-        .asGuiItem(event -> event.setCancelled(true)));
-
-    // Show existing perk policies (up to 6)
-    int policyIndex = 0;
-    for (Map.Entry<String, String> entry : tree.perkPolicies().entrySet()) {
-      if (policyIndex >= 6) break;
-      gui.setItem(39 + policyIndex, createPolicyItem(session, entry.getKey(), entry.getValue(), policyIndex, player));
-      policyIndex++;
-    }
-  }
-
-  private GuiItem createActionItem(Material material, String action, String name,
-      NamedTextColor color, String... loreLines) {
-    ItemBuilder builder = ItemBuilder.from(material)
-        .setName(LEGACY.serialize(Component.text(name, color)
-            .decoration(TextDecoration.ITALIC, false)));
-
-    if (loreLines.length > 0) {
-      List<String> lore = new ArrayList<>();
-      for (String line : loreLines) {
-        lore.add(LEGACY.serialize(Component.text(line, NamedTextColor.GRAY)
-            .decoration(TextDecoration.ITALIC, false)));
+      Slot slot = content.get(i);
+      if (slot != null) {
+        builder.slot(i, slot);
+      } else {
+        builder.decorative(i, CraftuxItems.pane(Material.GRAY_STAINED_GLASS_PANE));
       }
-      builder.setLore(lore);
     }
 
-    return builder.asGuiItem(event -> handleActionClick(event, action));
+    slotActions.put(audience, Map.copyOf(actions));
+    return builder.build();
   }
 
-  private GuiItem createPropertyItem(Material material, String action, String label,
-      String value, String... hints) {
-    ItemBuilder builder = ItemBuilder.from(material)
-        .setName(LEGACY.serialize(Component.text(label, NamedTextColor.YELLOW)
-            .decoration(TextDecoration.ITALIC, false)));
-
-    List<String> lore = new ArrayList<>();
-    lore.add(LEGACY.serialize(Component.text("Current: " + value, NamedTextColor.WHITE)
-        .decoration(TextDecoration.ITALIC, false)));
-    lore.add(LEGACY.serialize(Component.empty()));
-    for (String hint : hints) {
-      lore.add(LEGACY.serialize(Component.text(hint, NamedTextColor.GRAY)
-          .decoration(TextDecoration.ITALIC, false)));
-    }
-    builder.setLore(lore);
-
-    return builder.asGuiItem(event -> handlePropertyClick(event, action));
+  private void put(
+      Map<Integer, Slot> content,
+      Map<Integer, String> actions,
+      int index,
+      Material material,
+      String action,
+      String label,
+      List<String> lore) {
+    content.put(index, Slot.button(
+        "set." + action,
+        CraftuxItems.of(material, label, lore),
+        CraftuxUiHost.ACTION_EDITOR_SETTINGS,
+        SlotPixelIntent.UNVALIDATED));
+    actions.put(index, action);
   }
 
-  private GuiItem createArchetypeItem(EditorSession session, EditorTree.EditorArchetype archetype, int index, Player player) {
-    // Map color names to materials
-    Material colorMaterial = switch (archetype.color()) {
-      case "red" -> Material.RED_DYE;
-      case "green" -> Material.LIME_DYE;
-      case "blue" -> Material.BLUE_DYE;
-      case "yellow" -> Material.YELLOW_DYE;
-      case "gold" -> Material.YELLOW_DYE;
-      case "purple" -> Material.PURPLE_DYE;
-      case "aqua" -> Material.CYAN_DYE;
-      default -> Material.WHITE_DYE;
-    };
-
-    ItemBuilder builder = ItemBuilder.from(colorMaterial)
-        .setName(LEGACY.serialize(Component.text(archetype.name(), NamedTextColor.LIGHT_PURPLE)
-            .decoration(TextDecoration.ITALIC, false)));
-
-    List<String> lore = new ArrayList<>();
-    lore.add(LEGACY.serialize(Component.text("ID: " + archetype.id(), NamedTextColor.DARK_GRAY)
-        .decoration(TextDecoration.ITALIC, false)));
-    lore.add(LEGACY.serialize(Component.text("Color: " + archetype.color(), NamedTextColor.GRAY)
-        .decoration(TextDecoration.ITALIC, false)));
-    lore.add(LEGACY.serialize(Component.empty()));
-    lore.add(LEGACY.serialize(Component.text("Click to edit name/color", NamedTextColor.GRAY)
-        .decoration(TextDecoration.ITALIC, false)));
-    lore.add(LEGACY.serialize(Component.text("Shift+click to remove", NamedTextColor.RED)
-        .decoration(TextDecoration.ITALIC, false)));
-    builder.setLore(lore);
-
-    final int archIndex = index;
-    return builder.asGuiItem(event -> handleArchetypeClick(event, session, archIndex, player));
-  }
-
-  private GuiItem createPolicyItem(EditorSession session, String perkId, String policy, int index, Player player) {
-    ItemBuilder builder = ItemBuilder.from(Material.PAPER)
-        .setName(LEGACY.serialize(Component.text("Policy: " + perkId, NamedTextColor.AQUA)
-            .decoration(TextDecoration.ITALIC, false)));
-
-    List<String> lore = new ArrayList<>();
-    lore.add(LEGACY.serialize(Component.text("Type: " + policy, NamedTextColor.WHITE)
-        .decoration(TextDecoration.ITALIC, false)));
-    lore.add(LEGACY.serialize(Component.empty()));
-    lore.add(LEGACY.serialize(Component.text("Click to cycle type", NamedTextColor.GRAY)
-        .decoration(TextDecoration.ITALIC, false)));
-    lore.add(LEGACY.serialize(Component.text("Shift+click to remove", NamedTextColor.RED)
-        .decoration(TextDecoration.ITALIC, false)));
-    builder.setLore(lore);
-
-    final int policyIndex = index;
-    return builder.asGuiItem(event -> handlePolicyClick(event, session, perkId, policyIndex, player));
-  }
-
-  private void handleActionClick(InventoryClickEvent event, String action) {
-    if (!(event.getWhoClicked() instanceof Player player)) return;
-
-    SettingsEditSession editSession = editSessions.get(player.getUniqueId());
-    if (editSession == null) return;
-
-    EditorSession session = editSession.editorSession();
-    EditorTree tree = session.tree();
+  private void handleAction(Player player, SettingsEditSession edit, String action, ClickKind kind) {
+    EditorTree tree = edit.editorSession().tree();
+    edit.editorSession().saveSnapshot();
 
     switch (action) {
       case "back" -> {
-        if (mainEditor == null) {
-          Messages.send(player, "<error>Error: Main editor not available!");
-          player.closeInventory();
-          return;
-        }
         editSessions.remove(player.getUniqueId());
-        openGuis.remove(player.getUniqueId());
-        player.closeInventory();
-        Bukkit.getScheduler().runTask(plugin, () -> mainEditor.reopenFor(player));
-      }
-
-      case "add_archetype" -> {
-        Messages.send(player, "<accent>Type archetype data as 'ID Name Color' (e.g., 'xp XP Focus green'):");
-        player.closeInventory();
-        chatInputHandlers.put(player.getUniqueId(), input -> {
-          String[] parts = input.split("\\s+", 3);
-          if (parts.length >= 2) {
-            session.saveSnapshot();
-            String id = parts[0];
-            String name = parts[1];
-            String color = parts.length >= 3 ? parts[2] : "white";
-            tree.archetypes().add(new EditorTree.EditorArchetype(id, name, color));
-            Messages.send(player, "<success>Added archetype: <secondary>" + name);
-          } else {
-            Messages.send(player, "<error>Invalid format. Use: ID Name Color");
-          }
-          chatInputHandlers.remove(player.getUniqueId());
-          Bukkit.getScheduler().runTask(plugin, () -> open(player, session));
-        });
-      }
-
-      case "add_policy" -> {
-        Messages.send(player, "<accent>Type perk policy as 'PERK_ID TYPE' (e.g., 'mining_speed MAX'):");
-        Messages.send(player, "<neutral>Types: MAX, ADDITIVE");
-        player.closeInventory();
-        chatInputHandlers.put(player.getUniqueId(), input -> {
-          String[] parts = input.split("\\s+", 2);
-          if (parts.length == 2) {
-            String perkId = parts[0];
-            String type = parts[1].toUpperCase();
-            if (type.equals("MAX") || type.equals("ADDITIVE")) {
-              session.saveSnapshot();
-              tree.perkPolicies().put(perkId, type);
-              Messages.send(player, "<success>Added policy: <secondary>" + perkId + " -> " + type);
-            } else {
-              Messages.send(player, "<error>Invalid type. Use MAX or ADDITIVE");
-            }
-          } else {
-            Messages.send(player, "<error>Invalid format. Use: PERK_ID TYPE");
-          }
-          chatInputHandlers.remove(player.getUniqueId());
-          Bukkit.getScheduler().runTask(plugin, () -> open(player, session));
-        });
-      }
-    }
-
-    event.setCancelled(true);
-  }
-
-  private void handlePropertyClick(InventoryClickEvent event, String action) {
-    if (!(event.getWhoClicked() instanceof Player player)) return;
-
-    SettingsEditSession editSession = editSessions.get(player.getUniqueId());
-    if (editSession == null) return;
-
-    EditorSession session = editSession.editorSession();
-    EditorTree tree = session.tree();
-    ClickType click = event.getClick();
-
-    switch (action) {
-      case "display_name" -> {
-        Messages.send(player, "<accent>Type the new display name in chat (or 'cancel' to abort):");
-        player.closeInventory();
-        chatInputHandlers.put(player.getUniqueId(), input -> {
-          if (!"cancel".equalsIgnoreCase(input)) {
-            session.saveSnapshot();
-            tree.setDisplayName(input);
-            Messages.send(player, "<success>Display name set to: <secondary>" + input);
-          }
-          chatInputHandlers.remove(player.getUniqueId());
-          Bukkit.getScheduler().runTask(plugin, () -> open(player, session));
-        });
-      }
-
-      case "skill_points" -> {
-        int delta = click.isShiftClick() ? 5 : 1;
-        if (click.isRightClick()) delta = -delta;
-
-        session.saveSnapshot();
-        tree.setSkillPointsPerLevel(Math.max(1, tree.skillPointsPerLevel() + delta));
-        refreshGui(player, session);
-        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
-      }
-
-      case "root_node" -> {
-        Messages.send(player, "<info>Current root: <secondary>" + tree.rootNodeId());
-        Messages.send(player, "<neutral>Type new root node ID (or 'cancel' to abort):");
-        player.closeInventory();
-        chatInputHandlers.put(player.getUniqueId(), input -> {
-          if (!"cancel".equalsIgnoreCase(input)) {
-            if (tree.getNode(input).isPresent()) {
-              session.saveSnapshot();
-              tree.setRootNodeId(input);
-              Messages.send(player, "<success>Root node set to: <secondary>" + input);
-            } else {
-              Messages.send(player, "<error>Node not found: " + input);
-            }
-          }
-          chatInputHandlers.remove(player.getUniqueId());
-          Bukkit.getScheduler().runTask(plugin, () -> open(player, session));
-        });
-      }
-    }
-
-    event.setCancelled(true);
-  }
-
-  private void handleArchetypeClick(InventoryClickEvent event, EditorSession session, int index, Player player) {
-    var click = event.getClick();
-    EditorTree tree = session.tree();
-
-    if (index >= tree.archetypes().size()) return;
-
-    if (click.isShiftClick()) {
-      // Remove archetype
-      session.saveSnapshot();
-      EditorTree.EditorArchetype removed = tree.archetypes().remove(index);
-      Messages.send(player, "<accent>Removed archetype: <secondary>" + removed.name());
-      refreshGui(player, session);
-      player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
-    } else {
-      // Cycle color
-      String[] colors = {"white", "red", "green", "blue", "yellow", "gold", "purple", "aqua"};
-      EditorTree.EditorArchetype arch = tree.archetypes().get(index);
-      int colorIdx = -1;
-      for (int i = 0; i < colors.length; i++) {
-        if (colors[i].equals(arch.color())) {
-          colorIdx = i;
-          break;
+        if (mainEditor != null) {
+          mainEditor.reopenFor(player);
         }
       }
-      String newColor = colors[(colorIdx + 1) % colors.length];
-      session.saveSnapshot();
-      tree.archetypes().set(index, new EditorTree.EditorArchetype(arch.id(), arch.name(), newColor));
-      refreshGui(player, session);
-      Messages.send(player, "<success>Color changed to: <secondary>" + newColor);
-      player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
-    }
-
-    event.setCancelled(true);
-  }
-
-  private void handlePolicyClick(InventoryClickEvent event, EditorSession session, String perkId, int index, Player player) {
-    var click = event.getClick();
-    EditorTree tree = session.tree();
-
-    if (click.isShiftClick()) {
-      // Remove policy
-      session.saveSnapshot();
-      tree.perkPolicies().remove(perkId);
-      Messages.send(player, "<accent>Removed policy: <secondary>" + perkId);
-      refreshGui(player, session);
-      player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.5f, 1.0f);
-    } else {
-      // Cycle policy type
-      String current = tree.perkPolicies().get(perkId);
-      String newType = "MAX".equals(current) ? "ADDITIVE" : "MAX";
-      session.saveSnapshot();
-      tree.perkPolicies().put(perkId, newType);
-      refreshGui(player, session);
-      Messages.send(player, "<success>Policy type changed to: <secondary>" + newType);
-      player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
-    }
-
-    event.setCancelled(true);
-  }
-
-  private void refreshGui(Player player, EditorSession session) {
-    Gui gui = openGuis.get(player.getUniqueId());
-    if (gui != null) {
-      renderGui(gui, session, player);
-      gui.update();
+      case "display_name" -> prompt(player, "Enter display name:", input -> {
+        tree.setDisplayName(input);
+        reopen(player, edit);
+      });
+      case "tree_id" -> prompt(player, "Enter tree id:", input -> {
+        tree.setTreeId(input.trim());
+        reopen(player, edit);
+      });
+      case "job_key" -> prompt(player, "Enter job key:", input -> {
+        tree.setJobKey(input.trim());
+        reopen(player, edit);
+      });
+      case "sp_per_level" -> {
+        int delta = kind == ClickKind.RIGHT || kind == ClickKind.SHIFT_RIGHT ? -1 : 1;
+        tree.setSkillPointsPerLevel(Math.max(0, tree.skillPointsPerLevel() + delta));
+        reopen(player, edit);
+      }
+      default -> {
+      }
     }
   }
 
-  private void handleChatEvent(org.bukkit.event.player.AsyncPlayerChatEvent event) {
-    Player player = event.getPlayer();
-    ChatInputHandler handler = chatInputHandlers.get(player.getUniqueId());
-    if (handler != null) {
-      event.setCancelled(true);
-      String message = event.getMessage();
-      Bukkit.getScheduler().runTask(plugin, () -> handler.handle(message));
-    }
+  private void reopen(Player player, SettingsEditSession edit) {
+    inventory.open(player.getUniqueId(), buildView(player, edit.editorSession()));
   }
 
-  private void handleClose(Player player) {
-    UUID playerId = player.getUniqueId();
+  private void prompt(Player player, String message, ChatInputHandler handler) {
+    Messages.send(player, "<accent>" + message);
+    chatInputHandlers.put(player.getUniqueId(), handler);
+    inventory.close(player.getUniqueId());
+  }
 
-    // If there's a chat handler waiting, don't do anything (they closed for input)
-    if (chatInputHandlers.containsKey(playerId)) {
+  private void ensureChatListener() {
+    if (chatListenerRegistered) {
       return;
     }
+    chatListenerRegistered = true;
+    plugin.getServer().getPluginManager().registerEvents(this, plugin);
+  }
 
-    SettingsEditSession session = editSessions.remove(playerId);
-    openGuis.remove(playerId);
-    if (session == null) return;
-
-    // Reopen main tree editor
-    if (mainEditor != null) {
-      Bukkit.getScheduler().runTask(plugin, () -> mainEditor.reopenFor(player));
+  @EventHandler
+  public void onChat(AsyncPlayerChatEvent event) {
+    ChatInputHandler handler = chatInputHandlers.remove(event.getPlayer().getUniqueId());
+    if (handler == null) {
+      return;
     }
+    event.setCancelled(true);
+    String input = event.getMessage();
+    Bukkit.getScheduler().runTask(plugin, () -> handler.handle(input));
+  }
+
+  private static String trim(String title) {
+    return title.length() > 128 ? title.substring(0, 128) : title;
   }
 }
