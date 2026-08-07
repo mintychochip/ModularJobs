@@ -78,50 +78,9 @@ public final class MemoryJobRepositoryImpl {
           }
         }
 
-        // Parse pet-perks map (pet name -> level -> perks) and pet revokes
-        Map<String, Map<Integer, List<String>>> petPerks = new HashMap<>();
-        Map<String, List<String>> petRevokedPerks = new HashMap<>();
-        if (jobConfiguration.contains("pet-perks")) {
-          ConfigurationSection petPerksSection = jobConfiguration.getConfigurationSection("pet-perks");
-          if (petPerksSection != null) {
-            for (String petName : petPerksSection.getKeys(false)) {
-              ConfigurationSection petSection = petPerksSection.getConfigurationSection(petName);
-              if (petSection != null) {
-                // Check for revokes list
-                if (petSection.contains("revokes")) {
-                  List<String> revokes = petSection.getStringList("revokes");
-                  if (revokes != null && !revokes.isEmpty()) {
-                    petRevokedPerks.put(petName, revokes);
-                  }
-                }
-
-                // Parse level -> perks (skip "revokes" key)
-                Map<Integer, List<String>> petLevelPerks = new HashMap<>();
-                for (String levelKey : petSection.getKeys(false)) {
-                  if (levelKey.equals("revokes")) {
-                    continue; // Skip revokes when parsing level -> perks
-                  }
-                  try {
-                    int level = Integer.parseInt(levelKey);
-                    List<String> perks = petSection.getStringList(levelKey);
-                    if (perks != null && !perks.isEmpty()) {
-                      petLevelPerks.put(level, perks);
-                    }
-                  } catch (NumberFormatException e) {
-                    // Skip invalid level keys
-                  }
-                }
-                if (!petLevelPerks.isEmpty()) {
-                  petPerks.put(petName, petLevelPerks);
-                }
-              }
-            }
-          }
-        }
-
         jobs.put("modularjobs:" + jobKey,
             new JobRecord("modularjobs:" + jobKey, displayName, description, maxLevel,
-                levellingCurve, curves, upgradeLevel, perkUnlocks, petPerks, petRevokedPerks));
+                levellingCurve, curves, upgradeLevel, perkUnlocks));
       }
       return jobs;
     }

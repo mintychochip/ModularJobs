@@ -120,8 +120,6 @@ class JobResolverImplTest {
         ExpressionCurves.levelingCurve("level * 100"),
         Map.of(),
         30,
-        Map.of(),
-        Map.of(),
         Map.of()
     );
   }

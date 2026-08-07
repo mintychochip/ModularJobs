@@ -90,7 +90,7 @@ class WriteBackJobProgressionIntegrityTest {
 
   private static JobRecord job(String key) {
     return new JobRecord(
-        key, key, "desc", 100, "x", Map.of(), 0, Map.of(), Map.of(), Map.of());
+        key, key, "desc", 100, "x", Map.of(), 0, Map.of());
   }
 
   private static final class MemoryDelegate implements JobProgressionRepository {

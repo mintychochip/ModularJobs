@@ -57,11 +57,11 @@ class RelationalJobProgressionRepositoryTest {
 
     miner = new JobRecord(
         "modularjobs:miner", "Miner", "Mines", 100, "level * 100",
-        Map.of(), 30, Map.of(), Map.of(), Map.of()
+        Map.of(), 30, Map.of()
     );
     fisher = new JobRecord(
         "modularjobs:fisherman", "Fisher", "Fish", 50, "level * 50",
-        Map.of(), 20, Map.of(), Map.of(), Map.of()
+        Map.of(), 20, Map.of()
     );
 
     Map<String, JobRecord> jobs = new ConcurrentHashMap<>();

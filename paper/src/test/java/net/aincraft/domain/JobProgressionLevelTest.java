@@ -39,8 +39,6 @@ class JobProgressionLevelTest {
         ExpressionCurves.levelingCurve("level * 100"),
         Map.of(),
         30,
-        Map.of(),
-        Map.of(),
         Map.of()
     );
   }
@@ -117,8 +115,6 @@ class JobProgressionLevelTest {
         ExpressionCurves.levelingCurve("level * 100"),
         Map.of(),
         30,
-        Map.of(),
-        Map.of(),
         Map.of()
     );
     JobProgression progression = new JobProgressionImpl(PLAYER_ID, uncapped, new BigDecimal("9999"));

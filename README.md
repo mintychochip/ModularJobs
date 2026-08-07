@@ -110,7 +110,6 @@ economy:
 | `jobs.command.admin.archive` | op | Others' archive |
 | `jobs.command.leaveall` | true | Leave all jobs |
 | `jobs.command.admin.treeeditor` | op | Upgrade tree editor |
-| `modularjobs.specialization.bypass` | op | Re-pick pet specialization |
 
 Admin commands (`/jobs boost`, `/jobs editor`, `/jobs applyedits`) require `modularjobs.admin`.
 
@@ -136,7 +135,7 @@ Set `true` only when integrating consumers that expect `ProfessionService` / rel
 
 ### Soft depends
 
-PlaceholderAPI, Vault, mcMMO, Bolt, LWC, JobPets-Core, Choco — optional.
+PlaceholderAPI, Vault, mcMMO, Bolt, LWC, Choco, Preferences — optional.
 
 ## Version
 

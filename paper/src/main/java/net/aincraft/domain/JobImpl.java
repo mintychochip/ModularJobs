@@ -21,9 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 record JobImpl(Key key, Component displayName, Component description, int maxLevel,
                LevelingCurve levelingCurve, Map<Key, PayableCurve> payableCurves,
-               int upgradeLevel, Map<Integer, List<String>> perkUnlocks,
-               Map<String, Map<Integer, List<String>>> petPerks,
-               Map<String, List<String>> petRevokedPerks) implements Job {
+               int upgradeLevel, Map<Integer, List<String>> perkUnlocks) implements Job {
 
   private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
@@ -41,9 +39,7 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
         levelingCurve.toString(),
         serializePayableCurves(),
         upgradeLevel(),
-        perkUnlocks(),
-        petPerks(),
-        petRevokedPerks()
+        perkUnlocks()
     );
   }
 
@@ -68,9 +64,7 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
         ExpressionCurves.levelingCurve(record.levellingCurve()),
         curves,
         record.upgradeLevel(),
-        record.perkUnlocks(),
-        record.petPerks(),
-        record.petRevokedPerks()
+        record.perkUnlocks()
     );
   }
 
