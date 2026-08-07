@@ -35,9 +35,14 @@ export BIND_ADDR=127.0.0.1:18787          # default: loopback only
 export SESSION_CREATE_SECRET=long-random-value
 # Optional: max session creates per 60s (default 60)
 export SESSION_CREATE_RATE_LIMIT=60
-# CORS: comma-separated origins. Default = localhost Vite/Astro ports.
-# Use * only for local debugging (explicit opt-in; not for production).
-export CORS_ALLOW_ORIGINS=http://127.0.0.1:5173,https://editor.example.com
+# CORS allow-list (comma-separated). Default = localhost Vite/Astro ports.
+# Patterns:
+#   exact:  https://editor.example.com
+#   glob:   https://*.example.com   |  http://localhost:*
+#   host:   *.example.com           (any scheme/port under that host suffix)
+#   regex:  re:^https://dev-.+\.example\.com$
+#   any:    *   (alone; explicit opt-in — not for production)
+export CORS_ALLOW_ORIGINS=https://*.example.com,http://localhost:*,https://app.example.com
 ```
 
 Hardening built in:
@@ -45,7 +50,7 @@ Hardening built in:
 - Server always mints UUID session tokens (client-supplied tokens ignored)
 - Constant-time token comparison
 - Sliding-window create rate limit
-- CORS allowlist (not `*` by default)
+- CORS allowlist with exact / glob / host-suffix / regex patterns (not `*` by default)
 - PUT cannot rewrite `sessionToken` or the stored token column
 
 ## Run
