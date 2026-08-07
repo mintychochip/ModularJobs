@@ -2,16 +2,46 @@ use crate::db::{SessionStore, SessionStoreError};
 use crate::models::{
     CreateSessionBody, CreateSessionResponse, EditorPayload, SessionEnvelope, UpdateSessionBody,
 };
+use crate::security::{tokens_equal, SlidingWindowLimiter};
 use axum::extract::{Path, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use rand::Rng;
+use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct AppState {
     pub store: SessionStore,
+    /// When set, POST /sessions requires matching `X-Create-Secret` (constant-time).
+    pub create_secret: Option<String>,
+    pub create_limiter: Arc<SlidingWindowLimiter>,
+}
+
+impl AppState {
+    pub fn new(store: SessionStore) -> Self {
+        Self {
+            store,
+            create_secret: std::env::var("SESSION_CREATE_SECRET")
+                .ok()
+                .filter(|s| !s.is_empty()),
+            create_limiter: Arc::new(SlidingWindowLimiter::for_session_create()),
+        }
+    }
+
+    /// Test / explicit construction without reading env for secret (secret still optional).
+    pub fn with_create_policy(
+        store: SessionStore,
+        create_secret: Option<String>,
+        create_limiter: SlidingWindowLimiter,
+    ) -> Self {
+        Self {
+            store,
+            create_secret,
+            create_limiter: Arc::new(create_limiter),
+        }
+    }
 }
 
 pub type ApiResult<T> = Result<T, ApiError>;
@@ -33,8 +63,8 @@ impl ApiError {
 impl From<SessionStoreError> for ApiError {
     fn from(value: SessionStoreError) -> Self {
         match value {
-            SessionStoreError::NotFound => ApiError::new(StatusCode::NOT_FOUND, "session not found"),
-            SessionStoreError::Unauthorized => {
+            // NotFound is unused on auth paths after oracle fix; keep mapping defensive.
+            SessionStoreError::NotFound | SessionStoreError::Unauthorized => {
                 ApiError::new(StatusCode::UNAUTHORIZED, "invalid session token")
             }
             SessionStoreError::Expired => {
@@ -99,21 +129,42 @@ fn generate_code() -> String {
         .collect()
 }
 
+fn check_create_secret(state: &AppState, headers: &HeaderMap) -> Result<(), ApiError> {
+    let Some(expected) = state.create_secret.as_deref() else {
+        return Ok(());
+    };
+    let provided = headers
+        .get("x-create-secret")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    if !tokens_equal(provided, expected) {
+        return Err(ApiError::new(
+            StatusCode::UNAUTHORIZED,
+            "invalid or missing create secret",
+        ));
+    }
+    Ok(())
+}
+
 /// POST /api/v1/sessions — create a new editor session.
 pub async fn create_session(
     State(state): State<AppState>,
+    headers: HeaderMap,
     Json(body): Json<CreateSessionBody>,
 ) -> ApiResult<(StatusCode, Json<CreateSessionResponse>)> {
+    check_create_secret(&state, &headers)?;
+    if !state.create_limiter.check_and_record() {
+        return Err(ApiError::new(
+            StatusCode::TOO_MANY_REQUESTS,
+            "create rate limit exceeded; try again later",
+        ));
+    }
+
     let mut payload = body.into_payload();
     let code = generate_code();
-    // Prefer client-supplied sessionToken; otherwise mint one.
-    let token = if payload.metadata.session_token.is_empty() {
-        let t = Uuid::new_v4().to_string();
-        payload.metadata.session_token = t.clone();
-        t
-    } else {
-        payload.metadata.session_token.clone()
-    };
+    // Always mint a high-entropy server token (ignore client-supplied values).
+    let token = Uuid::new_v4().to_string();
+    payload.metadata.session_token = token.clone();
 
     let expires_at = state.store.create(&code, &token, &payload).await?;
     Ok((
@@ -175,7 +226,7 @@ pub async fn update_session(
     };
 
     // Enforce that payload sessionToken matches auth token (cannot steal sessions)
-    if payload.metadata.session_token != token {
+    if !tokens_equal(&payload.metadata.session_token, &token) {
         return Err(ApiError::new(
             StatusCode::FORBIDDEN,
             "payload.metadata.sessionToken must match session token",

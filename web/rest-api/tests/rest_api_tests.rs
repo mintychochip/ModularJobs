@@ -9,9 +9,11 @@ use rest_api::app;
 use rest_api::db::SessionStore;
 use rest_api::handlers::AppState;
 use rest_api::models::{EditorMetadata, EditorPayload, JobData, PayableData, TaskData};
+use rest_api::security::SlidingWindowLimiter;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::env;
+use std::time::Duration;
 use tower::ServiceExt;
 
 fn database_url() -> String {
@@ -20,9 +22,7 @@ fn database_url() -> String {
     })
 }
 
-async fn setup() -> AppState {
-    // Production path is connect-only. Tests provision schema out-of-band from the
-    // shared paper sql/postgres.sql (same file as scripts/apply-postgres-schema.sh).
+async fn setup_store() -> SessionStore {
     let store = SessionStore::connect(&database_url(), 2)
         .await
         .expect("connect to postgres for session API tests");
@@ -37,7 +37,17 @@ async fn setup() -> AppState {
         .execute(store.pool())
         .await
         .expect("truncate editor_sessions");
-    AppState { store }
+    store
+}
+
+/// Default test state: no create secret, high rate limit so tests do not 429.
+async fn setup() -> AppState {
+    let store = setup_store().await;
+    AppState::with_create_policy(
+        store,
+        None,
+        SlidingWindowLimiter::new(10_000, Duration::from_secs(60)),
+    )
 }
 
 #[tokio::test]
@@ -107,11 +117,35 @@ async fn body_json(response: axum::response::Response) -> Value {
     serde_json::from_slice(&bytes).expect("json body")
 }
 
+async fn create_session(
+    router: &axum::Router,
+    payload: &EditorPayload,
+) -> (String, String) {
+    let response = router
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/sessions")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::to_vec(payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::CREATED);
+    let body = body_json(response).await;
+    let code = body["code"].as_str().unwrap().to_string();
+    let token = body["token"].as_str().unwrap().to_string();
+    (code, token)
+}
+
 #[tokio::test]
-async fn create_returns_code_and_token() {
+async fn create_returns_code_and_server_minted_token() {
     let state = setup().await;
     let router = app(state);
-    let payload = sample_payload("");
+    // Client-supplied weak token must be ignored; server mints UUID.
+    let payload = sample_payload("weak-client-token");
 
     let response = router
         .oneshot(
@@ -128,7 +162,11 @@ async fn create_returns_code_and_token() {
     assert_eq!(response.status(), StatusCode::CREATED);
     let body = body_json(response).await;
     assert!(body["code"].as_str().unwrap().len() >= 8);
-    assert!(!body["token"].as_str().unwrap().is_empty());
+    let token = body["token"].as_str().unwrap();
+    assert!(!token.is_empty());
+    assert_ne!(token, "weak-client-token");
+    // UUID v4 shape
+    assert_eq!(token.len(), 36);
     assert!(body["expiresAt"].as_str().is_some());
 }
 
@@ -136,26 +174,8 @@ async fn create_returns_code_and_token() {
 async fn get_with_valid_token_returns_payload() {
     let state = setup().await;
     let router = app(state);
-    let token = "secret-token-abc";
-    let payload = sample_payload(token);
-
-    let create = router
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/v1/sessions")
-                .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(create.status(), StatusCode::CREATED);
-    let created = body_json(create).await;
-    let code = created["code"].as_str().unwrap().to_string();
-    let returned_token = created["token"].as_str().unwrap().to_string();
-    assert_eq!(returned_token, token);
+    let payload = sample_payload("");
+    let (code, token) = create_session(&router, &payload).await;
 
     let get = router
         .oneshot(
@@ -186,21 +206,7 @@ async fn get_with_valid_token_returns_payload() {
 async fn get_without_token_fails() {
     let state = setup().await;
     let router = app(state);
-    let payload = sample_payload("tok");
-
-    let create = router
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/v1/sessions")
-                .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    let code = body_json(create).await["code"].as_str().unwrap().to_string();
+    let (code, _) = create_session(&router, &sample_payload("")).await;
 
     let get = router
         .oneshot(
@@ -219,21 +225,7 @@ async fn get_without_token_fails() {
 async fn get_with_wrong_token_fails() {
     let state = setup().await;
     let router = app(state);
-    let payload = sample_payload("correct-token");
-
-    let create = router
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/v1/sessions")
-                .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    let code = body_json(create).await["code"].as_str().unwrap().to_string();
+    let (code, _) = create_session(&router, &sample_payload("")).await;
 
     let get = router
         .oneshot(
@@ -252,27 +244,32 @@ async fn get_with_wrong_token_fails() {
 }
 
 #[tokio::test]
-async fn update_then_get_preserves_jobs_tasks_payables_and_token() {
+async fn get_unknown_code_does_not_reveal_existence() {
     let state = setup().await;
     let router = app(state);
-    let token = "persist-token-1";
-    let mut payload = sample_payload(token);
 
-    let create = router
-        .clone()
+    let get = router
         .oneshot(
             Request::builder()
-                .method("POST")
-                .uri("/api/v1/sessions")
-                .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                .method("GET")
+                .uri("/api/v1/sessions/nosuchcode1")
+                .header("authorization", "Bearer some-token-value-here")
+                .body(Body::empty())
                 .unwrap(),
         )
         .await
         .unwrap();
-    let code = body_json(create).await["code"].as_str().unwrap().to_string();
+    // 401 not 404 — avoid session-code existence oracle
+    assert_eq!(get.status(), StatusCode::UNAUTHORIZED);
+}
 
-    // Edit amount
+#[tokio::test]
+async fn update_then_get_preserves_jobs_tasks_payables_and_token() {
+    let state = setup().await;
+    let router = app(state);
+    let (code, token) = create_session(&router, &sample_payload("")).await;
+
+    let mut payload = sample_payload(&token);
     payload.jobs.get_mut("modularjobs:miner").unwrap().tasks[0].payables[0].amount =
         "99.125".to_string();
     payload.jobs.get_mut("modularjobs:miner").unwrap().tasks.push(TaskData {
@@ -309,7 +306,7 @@ async fn update_then_get_preserves_jobs_tasks_payables_and_token() {
             Request::builder()
                 .method("GET")
                 .uri(format!("/api/v1/sessions/{code}/payload"))
-                .header("x-session-token", token)
+                .header("x-session-token", token.as_str())
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -333,26 +330,11 @@ async fn update_then_get_preserves_jobs_tasks_payables_and_token() {
 async fn update_without_token_cannot_overwrite() {
     let state = setup().await;
     let router = app(state);
-    let payload = sample_payload("owner-token");
+    let (code, token) = create_session(&router, &sample_payload("")).await;
 
-    let create = router
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/v1/sessions")
-                .header("content-type", "application/json")
-                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    let code = body_json(create).await["code"].as_str().unwrap().to_string();
-
-    let mut evil = payload.clone();
+    let mut evil = sample_payload(&token);
     evil.jobs.get_mut("modularjobs:miner").unwrap().tasks[0].payables[0].amount =
         "0".to_string();
-    evil.metadata.session_token = "owner-token".to_string();
 
     let put = router
         .oneshot(
@@ -366,6 +348,121 @@ async fn update_without_token_cannot_overwrite() {
         .await
         .unwrap();
     assert_eq!(put.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[tokio::test]
+async fn update_rejects_payload_session_token_rewrite() {
+    let state = setup().await;
+    let router = app(state);
+    let (code, token) = create_session(&router, &sample_payload("")).await;
+
+    let mut evil = sample_payload(&token);
+    evil.metadata.session_token = "attacker-new-token".to_string();
+    evil.jobs.get_mut("modularjobs:miner").unwrap().tasks[0].payables[0].amount =
+        "0".to_string();
+
+    let put = router
+        .oneshot(
+            Request::builder()
+                .method("PUT")
+                .uri(format!("/api/v1/sessions/{code}"))
+                .header("content-type", "application/json")
+                .header("authorization", format!("Bearer {token}"))
+                .body(Body::from(serde_json::to_vec(&evil).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(put.status(), StatusCode::FORBIDDEN);
+    let body = body_json(put).await;
+    assert!(
+        body["error"]
+            .as_str()
+            .unwrap()
+            .contains("sessionToken"),
+        "body={body}"
+    );
+}
+
+#[tokio::test]
+async fn create_requires_secret_when_configured() {
+    let store = setup_store().await;
+    let state = AppState::with_create_policy(
+        store,
+        Some("super-secret-create".to_string()),
+        SlidingWindowLimiter::new(10_000, Duration::from_secs(60)),
+    );
+    let router = app(state);
+    let payload = sample_payload("");
+
+    let denied = router
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/sessions")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(denied.status(), StatusCode::UNAUTHORIZED);
+
+    let allowed = router
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/sessions")
+                .header("content-type", "application/json")
+                .header("x-create-secret", "super-secret-create")
+                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(allowed.status(), StatusCode::CREATED);
+}
+
+#[tokio::test]
+async fn create_rate_limit_returns_429() {
+    let store = setup_store().await;
+    let state = AppState::with_create_policy(
+        store,
+        None,
+        SlidingWindowLimiter::new(2, Duration::from_secs(60)),
+    );
+    let router = app(state);
+    let payload = sample_payload("");
+
+    for _ in 0..2 {
+        let r = router
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/v1/sessions")
+                    .header("content-type", "application/json")
+                    .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(r.status(), StatusCode::CREATED);
+    }
+
+    let limited = router
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/sessions")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::to_vec(&payload).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(limited.status(), StatusCode::TOO_MANY_REQUESTS);
 }
 
 #[tokio::test]
