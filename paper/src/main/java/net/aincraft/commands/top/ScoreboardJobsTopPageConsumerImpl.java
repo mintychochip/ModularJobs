@@ -5,7 +5,6 @@ import net.aincraft.JobProgression;
 import net.aincraft.commands.Page;
 import net.aincraft.commands.TextScoreboard;
 import net.aincraft.commands.components.PlayerComponent;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;

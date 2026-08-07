@@ -14,7 +14,6 @@ import net.aincraft.commands.ApplyEditsCommand;
 import net.aincraft.commands.ArchiveCommand;
 import net.aincraft.commands.BoostCommand;
 import net.aincraft.commands.BrowseCommand;
-import net.aincraft.commands.DialogNavigationListener;
 import net.aincraft.commands.EditorCommand;
 import net.aincraft.commands.ExperienceCommand;
 import net.aincraft.commands.InfoCommand;
@@ -25,7 +24,6 @@ import net.aincraft.commands.LeaveCommand;
 import net.aincraft.commands.LevelCommand;
 import net.aincraft.commands.ListCommand;
 import net.aincraft.commands.StatsCommand;
-import net.aincraft.commands.StatsDialog;
 import net.aincraft.commands.TopCommand;
 import net.aincraft.commands.TreeEditorCommand;
 import net.aincraft.commands.UpgradesCommand;
@@ -45,7 +43,11 @@ import net.aincraft.editor.EditorService;
 import net.aincraft.editor.EditorSessionStore;
 import net.aincraft.editor.json.GsonProvider;
 import net.aincraft.gui.JobBrowseGui;
+import net.aincraft.gui.JobInfoGui;
+import net.aincraft.gui.StatsGui;
 import net.aincraft.gui.UpgradeTreeGui;
+import net.aincraft.gui.craftux.CraftuxSurfaces;
+import net.aincraft.gui.craftux.CraftuxUiHost;
 import net.aincraft.payable.PayableWiring;
 import net.aincraft.payment.PaymentWiring;
 import net.aincraft.placeholders.ModularJobsPlaceholderExpansion;
@@ -175,8 +177,12 @@ public final class PluginContext {
         payableTypeRegistry,
         keyResolver);
 
+    // Craftux inventory + text surfaces (scoreboard / boss bar) for all plugin UIs
+    CraftuxUiHost craftuxUi = CraftuxUiHost.create(plugin);
+    CraftuxSurfaces craftuxSurfaces = CraftuxSurfaces.create();
+
     PayableWiring payables =
-        PayableWiring.create(plugin, domain.jobService, payableTypeRegistry);
+        PayableWiring.create(plugin, domain.jobService, payableTypeRegistry, craftuxSurfaces);
 
     RegistryContainerImpl registryContainer = new RegistryContainerImpl();
     registryContainer.addRegistry(RegistryKeys.ACTION_TYPES.key(), actionTypeRegistry);
@@ -227,12 +233,24 @@ public final class PluginContext {
         domain.jobService,
         effectApplier);
 
-    UpgradeTreeGui upgradeTreeGui = new UpgradeTreeGui(plugin, upgradeService);
+    UpgradeTreeGui upgradeTreeGui = new UpgradeTreeGui(plugin, craftuxUi.inventory(), upgradeService);
     TreeEditorExporter treeEditorExporter = new TreeEditorExporter();
-    TreeEditorNodeGui treeEditorNodeGui = new TreeEditorNodeGui(plugin);
-    TreeEditorSettingsGui treeEditorSettingsGui = new TreeEditorSettingsGui(plugin);
+    TreeEditorNodeGui treeEditorNodeGui = new TreeEditorNodeGui(plugin, craftuxUi.inventory());
+    TreeEditorSettingsGui treeEditorSettingsGui = new TreeEditorSettingsGui(plugin, craftuxUi.inventory());
     TreeEditorGui treeEditorGui = new TreeEditorGui(
-        plugin, treeEditorExporter, upgradeTreeLoader, treeEditorNodeGui, treeEditorSettingsGui);
+        plugin, craftuxUi.inventory(), treeEditorExporter, upgradeTreeLoader,
+        treeEditorNodeGui, treeEditorSettingsGui);
+
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_NODE, upgradeTreeGui::onNodeClick);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_SCROLL_UP, upgradeTreeGui::onScrollUp);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_SCROLL_DOWN, upgradeTreeGui::onScrollDown);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_CONFIRM, upgradeTreeGui::onConfirm);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_CANVAS, treeEditorGui::onCanvasClick);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_NODE, treeEditorGui::onNodeClick);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_CONTROL, treeEditorGui::onControlClick);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_NODE_PROP, treeEditorNodeGui::onAction);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_SETTINGS, treeEditorSettingsGui::onAction);
+    craftuxUi.inventory().onSessionClosed(treeEditorGui::onSessionClosed);
 
     Registry<BoostSource> boostSourceRegistry = new SimpleRegistryImpl<>();
     BoostSourceLoader boostSourceLoader = new BoostSourceLoader(
@@ -264,23 +282,30 @@ public final class PluginContext {
         editorConfig,
         gson);
 
-    JobBrowseGui jobBrowseGui = new JobBrowseGui(domain.jobService, upgradeService);
-    StatsDialog statsDialog = new StatsDialog();
+    JobBrowseGui jobBrowseGui = new JobBrowseGui(
+        craftuxUi.inventory(), domain.jobService, upgradeService);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_JOB_JOIN, jobBrowseGui::onJoin);
+    StatsGui statsGui = new StatsGui(craftuxUi.inventory());
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_STATS_PREV, statsGui::onPrev);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_STATS_NEXT, statsGui::onNext);
     JobTopPageProvider topPageProvider = new JobTopPageProvider(domain.jobService);
 
+    JobInfoGui jobInfoGui = new JobInfoGui(craftuxUi.inventory(), preferencesService);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_INFO_PREV, jobInfoGui::onPrev);
+    craftuxUi.actions().register(CraftuxUiHost.ACTION_INFO_NEXT, jobInfoGui::onNext);
     InfoCommand infoCommand = new InfoCommand(
-        domain.jobService, domain.jobResolver, preferencesService);
+        domain.jobService, domain.jobResolver, preferencesService, jobInfoGui);
 
     Set<JobsCommand> commands = new LinkedHashSet<>();
     commands.add(new JoinCommand(domain.jobService, domain.jobResolver));
     commands.add(new ListCommand(domain.jobService));
     commands.add(new BrowseCommand(jobBrowseGui));
-    commands.add(new TopCommand(domain.jobService, topPageProvider, plugin));
+    commands.add(new TopCommand(domain.jobService, topPageProvider, plugin, craftuxSurfaces));
     commands.add(infoCommand);
     commands.add(new LeaveCommand(domain.jobService, domain.jobResolver));
     commands.add(new ApplyEditsCommand(editorService));
     commands.add(new EditorCommand(editorService, domain.jobService, domain.jobResolver));
-    commands.add(new StatsCommand(domain.jobService, statsDialog));
+    commands.add(new StatsCommand(domain.jobService, statsGui));
     commands.add(new ArchiveCommand(domain.jobService));
     commands.add(new BoostCommand(
         boostSourceRegistry,
@@ -298,10 +323,9 @@ public final class PluginContext {
     List<Listener> listenerList = new ArrayList<>();
     listenerList.addAll(payment.listeners);
     listenerList.add(new ConsumableBoostController(itemBoostDataService, timedBoostDataService));
-    listenerList.add(new DialogNavigationListener(
-        domain.jobService, domain.jobResolver, infoCommand, statsDialog, preferencesService));
+    // Info/stats navigation is craftux inventory actions (no Paper Dialog listener)
     listenerList.add(new UpgradeLevelUpListener(upgradeService, skillTreeRegistry));
-    listenerList.add(upgradeTreeGui);
+    // UpgradeTreeGui clicks are host craftux actions (no Bukkit Listener)
     listenerList.add(new UpgradePermissionRestoreListener(
         upgradeService, effectApplier, permissionManager, skillTreeRegistry));
 

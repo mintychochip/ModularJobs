@@ -13,7 +13,14 @@ dependencies {
     implementation(libs.caffeine)
     implementation(libs.gson)
     implementation(libs.configurate.core)
-    implementation(libs.triumph.gui)
+    // craftux multi-surface UI (replaces triumph-gui).
+    // craftux-paper's published JAR already embeds api+common classes; depend only
+    // on paper and exclude its POM transitive to avoid double-shading duplicates.
+    implementation(libs.craftux.paper) {
+        isTransitive = false
+    }
+    // Compile against api/common source jars via the paper artifact coordinates
+    // is enough for the IDE/compiler because paper embeds those types.
 
     compileOnly(libs.placeholderapi)
     compileOnly(libs.jetbrains.annotations)
@@ -25,8 +32,6 @@ dependencies {
     compileOnly(libs.bolt)
     // Preferences public API only (soft-depend; not shaded into the plugin fat jar)
     compileOnly(libs.preferences.api)
-    // JobPets API for pet change events (file dependency from parent workspace)
-    compileOnly(files("../../jobpets-api/build/libs/jobpets-api-1.0.0.jar"))
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -47,7 +52,12 @@ tasks.test {
 tasks {
     shadowJar {
         mergeServiceFiles()
-        relocate("dev.triumphteam.gui", "net.aincraft.libs.triumphgui")
+        // Drop craftux-paper demo plugin/config descriptors (keep ModularJobs ones)
+        exclude { details ->
+            val fromCraftux = details.file.absolutePath.contains("craftux-")
+            fromCraftux && (details.name == "plugin.yml" || details.name == "config.yml")
+        }
+        relocate("dev.craftux", "net.aincraft.libs.craftux")
     }
 
     build {

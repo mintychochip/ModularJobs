@@ -30,7 +30,8 @@ mcmmo = "2.2.004"
 lwc = "2.4.0"
 bolt = "1.1.52"
 placeholderapi = "2.11.6"
-triumph-gui = "3.1.12"
+# Multi-surface UI (inventory/scoreboard/…); local build via ../craftux
+craftux = "1.0.2"
 
 # Test / MockBukkit (Paper 26.2 line; vendored until Central publishes mockbukkit-v26.2)
 mockbukkit = "26.2.0-mj"
@@ -64,7 +65,9 @@ mcmmo = { module = "com.gmail.nossr50.mcMMO:mcMMO", version.ref = "mcmmo" }
 lwc = { module = "com.griefcraft:lwc", version.ref = "lwc" }
 bolt = { module = "org.popcraft:bolt-bukkit", version.ref = "bolt" }
 placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
-triumph-gui = { module = "dev.triumphteam:triumph-gui", version.ref = "triumph-gui" }
+craftux-api = { module = "dev.craftux:craftux-api", version.ref = "craftux" }
+craftux-common = { module = "dev.craftux:craftux-common", version.ref = "craftux" }
+craftux-paper = { module = "dev.craftux:craftux-paper", version.ref = "craftux" }
 # Soft-depend Preferences: compileOnly on API only (not the plugin jar)
 preferences-api = { module = "dev.jlo:preferences-api", version.ref = "preferences-api" }
 

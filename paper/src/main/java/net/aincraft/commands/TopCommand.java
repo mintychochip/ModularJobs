@@ -14,6 +14,7 @@ import java.util.Locale;
 import net.aincraft.JobProgression;
 import net.aincraft.commands.top.ChatJobsTopPageConsumerImpl;
 import net.aincraft.commands.top.ScoreboardJobsTopPageConsumerImpl;
+import net.aincraft.gui.craftux.CraftuxSurfaces;
 import net.aincraft.service.JobService;
 import net.aincraft.util.KeyUtils;
 import net.kyori.adventure.key.Key;
@@ -368,14 +369,16 @@ public final class TopCommand implements JobsCommand {
   private final JobService jobService;
   private final JobTopPageProvider resultProvider;
   private final Plugin plugin;
+  private final CraftuxSurfaces surfaces;
 
   private static final int PAGE_SIZE = 10;
 
   public TopCommand(JobService jobService, JobTopPageProvider resultProvider,
-      Plugin plugin) {
+      Plugin plugin, CraftuxSurfaces surfaces) {
     this.jobService = jobService;
     this.resultProvider = resultProvider;
     this.plugin = plugin;
+    this.surfaces = surfaces;
   }
 
   @Override
@@ -429,7 +432,8 @@ public final class TopCommand implements JobsCommand {
               if (sender instanceof Player player) {
                 String displayMode = getPlayerDisplayMode(player);
                 if ("scoreboard".equalsIgnoreCase(displayMode)) {
-                  TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
+                  TextScoreboard scoreboard = TextScoreboard.create(
+                      surfaces, Component.text("Job Top - " + jobKey));
                   ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
                   int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
                   consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),
@@ -457,7 +461,8 @@ public final class TopCommand implements JobsCommand {
               if (sender instanceof Player player) {
                 String displayMode = getPlayerDisplayMode(player);
                 if ("scoreboard".equalsIgnoreCase(displayMode)) {
-                  TextScoreboard scoreboard = TextScoreboard.create(Component.text("Job Top - " + jobKey));
+                  TextScoreboard scoreboard = TextScoreboard.create(
+                      surfaces, Component.text("Job Top - " + jobKey));
                   ScoreboardJobsTopPageConsumerImpl consumer = new ScoreboardJobsTopPageConsumerImpl(scoreboard);
                   int maxPages = Math.max(1, (ENTRIES_PER_QUERY + PAGE_SIZE - 1) / PAGE_SIZE);
                   consumer.consume(Component.text(jobKey), resultProvider.getPage(key, page, PAGE_SIZE),

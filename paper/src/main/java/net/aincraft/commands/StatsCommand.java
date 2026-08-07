@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import net.aincraft.JobProgression;
+import net.aincraft.gui.StatsGui;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -22,11 +23,11 @@ import net.aincraft.util.Messages;
 public class StatsCommand implements JobsCommand {
 
   private final JobService jobService;
-  private final StatsDialog statsDialog;
+  private final StatsGui statsGui;
 
-  public StatsCommand(JobService jobService, StatsDialog statsDialog) {
+  public StatsCommand(JobService jobService, StatsGui statsGui) {
     this.jobService = jobService;
-    this.statsDialog = statsDialog;
+    this.statsGui = statsGui;
   }
 
   @Override
@@ -111,12 +112,11 @@ public class StatsCommand implements JobsCommand {
   }
 
   /**
-   * Displays stats in a GUI dialog.
+   * Displays stats in a craftux inventory GUI.
    */
   private void displayStatsDialog(Player viewer, OfflinePlayer target) {
     List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
-    io.papermc.paper.dialog.Dialog dialog = statsDialog.buildDialog(target, progressions, 1);
-    viewer.showDialog(dialog);
+    statsGui.open(viewer, target, progressions, 1);
   }
 
   /**
