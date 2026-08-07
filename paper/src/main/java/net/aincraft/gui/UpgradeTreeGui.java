@@ -13,11 +13,16 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.UUID;
 import net.aincraft.Job;
+import net.aincraft.upgrade.NodeEffect;
 import net.aincraft.upgrade.PlayerUpgradeData;
+import net.aincraft.upgrade.SkillNode;
+import net.aincraft.upgrade.SkillTree;
+import net.aincraft.upgrade.SkillTreeState;
 import net.aincraft.upgrade.UpgradeEffect;
 import net.aincraft.upgrade.UpgradeNode;
 import net.aincraft.upgrade.Position;
 import net.aincraft.upgrade.UpgradeService;
+import net.aincraft.upgrade.UpgradeService.PurchaseResult;
 import net.aincraft.upgrade.UpgradeService.UnlockResult;
 import net.aincraft.upgrade.UpgradeTree;
 import net.kyori.adventure.text.Component;
@@ -39,7 +44,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * GUI for displaying and interacting with job upgrade trees.
@@ -50,23 +54,35 @@ public final class UpgradeTreeGui implements Listener {
   private static final int GUI_ROWS = 5; // Rows for node rendering (bottom row reserved for controls)
   private static final int GUI_COLS = 9;
   private static final int CONTROL_ROW_START = 45; // First slot of bottom control row (row 5)
+  private static final int CONFIRM_SLOT = 52; // Major purchase confirmation slot in the control row
 
   private final Plugin plugin;
   private final UpgradeService upgradeService;
   private final NamespacedKey nodeKeyTag;
+  private final NamespacedKey confirmTag;
 
   // Track open GUIs: player UUID -> session data
   private final Map<UUID, GuiSession> openGuis = new HashMap<>();
 
   private static class GuiSession {
     final Job job;
-    final UpgradeTree tree;
+    final UpgradeTree tree;   // legacy tree; null for v2-only jobs
+    final SkillTree skillTree; // v2 tree; null for legacy-only jobs
+    final Inventory gui;      // the inventory this session renders into
+    String pendingMajorKey;   // set when a major awaits confirmation, null otherwise
     int scrollOffset;
 
-    GuiSession(Job job, UpgradeTree tree) {
+    GuiSession(Job job, UpgradeTree tree, SkillTree skillTree, Inventory gui) {
       this.job = job;
       this.tree = tree;
+      this.skillTree = skillTree;
+      this.gui = gui;
+      this.pendingMajorKey = null;
       this.scrollOffset = 0;
+    }
+
+    boolean isV2() {
+      return skillTree != null;
     }
   }
 
@@ -74,14 +90,23 @@ public final class UpgradeTreeGui implements Listener {
     this.plugin = plugin;
     this.upgradeService = upgradeService;
     this.nodeKeyTag = new NamespacedKey(plugin, "upgrade_node");
+    this.confirmTag = new NamespacedKey(plugin, "gui_action");
   }
 
   /**
-   * Open the upgrade tree GUI for a player.
+   * Open the upgrade tree GUI for a player. The v2 tree for the job is
+   * resolved from the service; legacy and v2 render paths share this entry.
+   *
+   * @param tree the legacy tree, or null when the job has a v2 tree only
    */
   public void open(Player player, Job job, UpgradeTree tree) {
-    PlayerUpgradeData data = upgradeService.getPlayerData(
-        player.getUniqueId().toString(), job.key().value());
+    String playerId = player.getUniqueId().toString();
+    String jobKey = job.key().value();
+
+    SkillTree skillTree = upgradeService.getSkillTree(jobKey).orElse(null);
+    if (tree == null && skillTree == null) {
+      return; // No tree of any kind for this job
+    }
 
     Component title = Component.text()
         .append(job.displayName())
@@ -91,18 +116,18 @@ public final class UpgradeTreeGui implements Listener {
     Inventory gui = Bukkit.createInventory(null, GUI_SIZE, title);
 
     // Create and store session
-    UUID playerId = player.getUniqueId();
-    GuiSession session = new GuiSession(job, tree);
-    openGuis.put(playerId, session);
+    UUID playerUuid = player.getUniqueId();
+    GuiSession session = new GuiSession(job, tree, skillTree, gui);
+    openGuis.put(playerUuid, session);
 
     // Fill background with glass panes
     fillBackground(gui);
 
     // Place nodes based on their positions (with scroll offset)
-    renderNodes(gui, session, data);
+    renderNodes(gui, session, loadData(playerId, jobKey, session), loadState(playerId, jobKey, session));
 
     // Add navigation arrows and info book to control row
-    updateNavigationArrows(gui, session, data);
+    updateNavigationArrows(gui, session, loadData(playerId, jobKey, session), loadState(playerId, jobKey, session));
 
     player.openInventory(gui);
   }
@@ -124,22 +149,33 @@ public final class UpgradeTreeGui implements Listener {
       return; // Not our GUI
     }
 
-    // Update player data
-    PlayerUpgradeData data = upgradeService.getPlayerData(
-        player.getUniqueId().toString(), session.job.key().value());
+    String id = player.getUniqueId().toString();
+    String jobKey = session.job.key().value();
 
     // Re-render nodes with current scroll offset
     fillBackground(gui);
-    renderNodes(gui, session, data);
+    renderNodes(gui, session, loadData(id, jobKey, session), loadState(id, jobKey, session));
 
     // Update navigation arrows and info book in control row
-    updateNavigationArrows(gui, session, data);
+    updateNavigationArrows(gui, session, loadData(id, jobKey, session), loadState(id, jobKey, session));
+  }
+
+  private PlayerUpgradeData loadData(String playerId, String jobKey, GuiSession session) {
+    return session.isV2() ? null : upgradeService.getPlayerData(playerId, jobKey);
+  }
+
+  private SkillTreeState loadState(String playerId, String jobKey, GuiSession session) {
+    return session.isV2() ? upgradeService.getSkillTreeState(playerId, jobKey) : null;
   }
 
   /**
    * Render nodes in the GUI with the current scroll offset.
    */
-  private void renderNodes(Inventory gui, GuiSession session, PlayerUpgradeData data) {
+  private void renderNodes(Inventory gui, GuiSession session, PlayerUpgradeData data, SkillTreeState state) {
+    if (session.isV2()) {
+      renderV2Nodes(gui, session, state);
+      return;
+    }
     Set<String> unlocked = data.unlockedNodes();
     Set<UpgradeNode> available = session.tree.getAvailableNodes(unlocked, data);
 
@@ -156,6 +192,30 @@ public final class UpgradeTreeGui implements Listener {
       ItemStack item = createNodeItem(node, status, data, session.tree);
       gui.setItem(slot, item);
     }
+  }
+
+  /** Version-2 render path: nodes iterate the SkillTree, status from node levels. */
+  private void renderV2Nodes(Inventory gui, GuiSession session, SkillTreeState state) {
+    for (SkillNode node : session.skillTree.nodes()) {
+      int slot = calculateSlotWithScroll(node.position(), session.scrollOffset);
+      if (slot < 0 || slot >= GUI_SIZE) {
+        continue; // Outside visible area
+      }
+      NodeStatus status = v2Status(session.skillTree, state, node);
+      gui.setItem(slot, createV2NodeItem(node, status, state, session.skillTree));
+    }
+  }
+
+  private NodeStatus v2Status(SkillTree tree, SkillTreeState state, SkillNode node) {
+    String key = node.key().value();
+    if (state.levelOf(key) > 0) {
+      return NodeStatus.UNLOCKED;
+    }
+    if (tree.canPurchase(state, key)) {
+      return NodeStatus.AVAILABLE;
+    }
+    boolean excluded = tree.symmetricExcludes(key).stream().anyMatch(state::hasUnlocked);
+    return excluded ? NodeStatus.EXCLUDED : NodeStatus.LOCKED;
   }
 
   /**
@@ -450,14 +510,21 @@ public final class UpgradeTreeGui implements Listener {
   /**
    * Update navigation arrows and info book in the GUI bottom control row.
    */
-  private void updateNavigationArrows(Inventory gui, GuiSession session, PlayerUpgradeData data) {
+  private void updateNavigationArrows(Inventory gui, GuiSession session, PlayerUpgradeData data, SkillTreeState state) {
     // Calculate max scroll based on tree bounds
-    int maxY = session.tree.allNodes().stream()
-        .map(UpgradeNode::position)
-        .filter(pos -> pos != null)
-        .mapToInt(Position::y)
-        .max()
-        .orElse(0);
+    int maxY = session.isV2()
+        ? session.skillTree.nodes().stream()
+            .map(SkillNode::position)
+            .filter(pos -> pos != null)
+            .mapToInt(Position::y)
+            .max()
+            .orElse(0)
+        : session.tree.allNodes().stream()
+            .map(UpgradeNode::position)
+            .filter(pos -> pos != null)
+            .mapToInt(Position::y)
+            .max()
+            .orElse(0);
 
     int maxScroll = Math.max(0, maxY - GUI_ROWS + 1);
     boolean canScrollUp = session.scrollOffset > 0;
@@ -509,7 +576,28 @@ public final class UpgradeTreeGui implements Listener {
     gui.setItem(CONTROL_ROW_START + 8, downArrow);
 
     // Info book in control row center slot (GUI slot 49)
-    gui.setItem(CONTROL_ROW_START + 4, createInfoItem(session.job, session.tree, data));
+    gui.setItem(CONTROL_ROW_START + 4, session.isV2()
+        ? createV2InfoItem(session.skillTree, state)
+        : createInfoItem(session.job, session.tree, data));
+
+    // Major confirmation slot (GUI slot 52) only while a major awaits confirmation
+    String pending = session.pendingMajorKey;
+    if (pending != null) {
+      ItemStack confirm = new ItemStack(Material.GOLD_INGOT);
+      ItemMeta confirmMeta = confirm.getItemMeta();
+      String pendingName = session.skillTree.node(pending).map(SkillNode::name).orElse(pending);
+      confirmMeta.displayName(Component.text("\u2753 Confirm Major?", NamedTextColor.GOLD)
+          .decoration(TextDecoration.ITALIC, false));
+      confirmMeta.lore(List.of(
+          Component.text(pendingName, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+          Component.text("Permanent choice - cannot be refunded", NamedTextColor.GRAY)
+              .decoration(TextDecoration.ITALIC, false),
+          Component.text("Click to confirm", NamedTextColor.YELLOW)
+              .decoration(TextDecoration.ITALIC, false)));
+      confirmMeta.getPersistentDataContainer().set(confirmTag, PersistentDataType.STRING, "confirm_major");
+      confirm.setItemMeta(confirmMeta);
+      gui.setItem(CONFIRM_SLOT, confirm);
+    }
   }
 
   private void fillBackground(Inventory gui) {
@@ -583,8 +671,8 @@ public final class UpgradeTreeGui implements Listener {
   private ItemStack createNodeItem(UpgradeNode node, NodeStatus status, PlayerUpgradeData data, UpgradeTree tree) {
     boolean unlocked = status == NodeStatus.UNLOCKED;
     Material material = switch (status) {
-      case UNLOCKED -> resolveMaterial(node.unlockedIcon());
-      case AVAILABLE -> resolveMaterial(node.icon());
+      case UNLOCKED -> materialFromName(node.unlockedIcon());
+      case AVAILABLE -> materialFromName(node.icon());
       case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE; // Lighter gray for locked nodes
       case EXCLUDED -> Material.RED_STAINED_GLASS_PANE; // Red pane instead of barrier for excluded
     };
@@ -709,17 +797,6 @@ public final class UpgradeTreeGui implements Listener {
     return item;
   }
 
-  /**
-   * Resolve a material name string to a Bukkit Material (BARRIER if unknown/null).
-   */
-  private static Material resolveMaterial(@Nullable String name) {
-    if (name == null || name.isBlank()) {
-      return Material.BARRIER;
-    }
-    Material material = Material.matchMaterial(name);
-    return material != null ? material : Material.BARRIER;
-  }
-
   private ItemStack createInfoItem(Job job, UpgradeTree tree, PlayerUpgradeData data) {
     ItemStack item = new ItemStack(Material.BOOK);
     ItemMeta meta = item.getItemMeta();
@@ -753,6 +830,169 @@ public final class UpgradeTreeGui implements Listener {
     meta.lore(lore);
     item.setItemMeta(meta);
     return item;
+  }
+
+  private ItemStack createV2NodeItem(SkillNode node, NodeStatus status, SkillTreeState state, SkillTree tree) {
+    String key = node.key().value();
+    int owned = state.levelOf(key);
+    boolean unlocked = status == NodeStatus.UNLOCKED;
+    Material material = switch (status) {
+      case UNLOCKED -> materialFromName(node.unlockedIcon());
+      case AVAILABLE -> materialFromName(node.lockedIcon());
+      case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE;
+      case EXCLUDED -> Material.RED_STAINED_GLASS_PANE;
+    };
+
+    ItemStack item = new ItemStack(material);
+    ItemMeta meta = item.getItemMeta();
+
+    NamedTextColor nameColor = switch (status) {
+      case UNLOCKED -> NamedTextColor.GREEN;
+      case AVAILABLE -> NamedTextColor.YELLOW;
+      case LOCKED -> NamedTextColor.GRAY;
+      case EXCLUDED -> NamedTextColor.RED;
+    };
+    meta.displayName(Component.text(node.name(), nameColor)
+        .decoration(TextDecoration.ITALIC, false));
+
+    List<Component> lore = new ArrayList<>();
+    if (node.description() != null && !node.description().isEmpty()) {
+      for (String line : node.description().split("\n")) {
+        lore.add(Component.text(line, NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false));
+      }
+      lore.add(Component.empty());
+    }
+
+    if (node.isSkill()) {
+      lore.add(Component.text()
+          .append(Component.text("Level: ", NamedTextColor.GRAY))
+          .append(Component.text(owned + "/" + node.maxLevel(), NamedTextColor.GOLD))
+          .decoration(TextDecoration.ITALIC, false)
+          .build());
+    } else {
+      lore.add(Component.text("Permanent choice", NamedTextColor.LIGHT_PURPLE)
+          .decoration(TextDecoration.ITALIC, false));
+    }
+
+    int cost = node.isSkill() ? node.levelCost(owned + 1) : node.cost();
+    lore.add(Component.text()
+        .append(Component.text("Cost: ", NamedTextColor.GRAY))
+        .append(Component.text(cost + " SP", NamedTextColor.AQUA))
+        .decoration(TextDecoration.ITALIC, false)
+        .build());
+
+    // Effects currently active (level badges for skills)
+    if (status == NodeStatus.UNLOCKED && !node.activeEffects(owned).isEmpty()) {
+      lore.add(Component.empty());
+      lore.add(Component.text("Active Effects:", NamedTextColor.GOLD)
+          .decoration(TextDecoration.ITALIC, false));
+      for (NodeEffect effect : node.activeEffects(owned)) {
+        lore.add(Component.text("  \u2022 " + formatV2Effect(effect), NamedTextColor.WHITE)
+            .decoration(TextDecoration.ITALIC, false));
+      }
+    }
+
+    if (status == NodeStatus.LOCKED && !node.prerequisites().isEmpty()) {
+      lore.add(Component.empty());
+      lore.add(Component.text("Requires:", NamedTextColor.RED)
+          .decoration(TextDecoration.ITALIC, false));
+      for (String prereq : node.prerequisites()) {
+        lore.add(Component.text("  \u2022 " + prereq, NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false));
+      }
+    }
+
+    lore.add(Component.empty());
+
+    Component actionHint;
+    if (status == NodeStatus.UNLOCKED) {
+      actionHint = Component.text("\u2714 Unlocked!", NamedTextColor.GREEN);
+    } else if (status == NodeStatus.AVAILABLE) {
+      if (node.isMajor()) {
+        actionHint = Component.text("\u2753 Click to confirm - permanent choice", NamedTextColor.GOLD);
+      } else if (cost > tree.availablePoints(state)) {
+        actionHint = Component.text("Not enough SP!", NamedTextColor.RED);
+      } else {
+        actionHint = Component.text("Click to unlock", NamedTextColor.YELLOW);
+      }
+    } else if (status == NodeStatus.EXCLUDED) {
+      actionHint = Component.text("\u2718 Path Locked (Exclusive Choice)", NamedTextColor.RED);
+    } else {
+      actionHint = Component.text("Locked", NamedTextColor.DARK_GRAY);
+    }
+    lore.add(actionHint.decoration(TextDecoration.ITALIC, false));
+
+    meta.lore(lore);
+
+    if (status == NodeStatus.UNLOCKED || status == NodeStatus.AVAILABLE) {
+      meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+      meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+    }
+
+    meta.getPersistentDataContainer().set(nodeKeyTag, PersistentDataType.STRING, key);
+    item.setItemMeta(meta);
+    return item;
+  }
+
+  private ItemStack createV2InfoItem(SkillTree tree, SkillTreeState state) {
+    ItemStack item = new ItemStack(Material.BOOK);
+    ItemMeta meta = item.getItemMeta();
+
+    meta.displayName(Component.text("Skill Tree Info", NamedTextColor.GOLD)
+        .decoration(TextDecoration.ITALIC, false));
+
+    long unlockedCount = state.nodeLevels().values().stream().filter(l -> l > 0).count();
+    List<Component> lore = new ArrayList<>();
+    lore.add(Component.text()
+        .append(Component.text("Available SP: ", NamedTextColor.GRAY))
+        .append(Component.text(tree.availablePoints(state), NamedTextColor.GREEN))
+        .decoration(TextDecoration.ITALIC, false)
+        .build());
+    lore.add(Component.text()
+        .append(Component.text("Total SP: ", NamedTextColor.GRAY))
+        .append(Component.text(state.totalSkillPoints(), NamedTextColor.AQUA))
+        .decoration(TextDecoration.ITALIC, false)
+        .build());
+    lore.add(Component.text()
+        .append(Component.text("Unlocked: ", NamedTextColor.GRAY))
+        .append(Component.text(unlockedCount + "/" + tree.nodes().size(), NamedTextColor.YELLOW))
+        .decoration(TextDecoration.ITALIC, false)
+        .build());
+    lore.add(Component.empty());
+    lore.add(Component.text()
+        .append(Component.text("Job Level: ", NamedTextColor.GRAY))
+        .append(Component.text(state.jobLevel(), NamedTextColor.WHITE))
+        .decoration(TextDecoration.ITALIC, false)
+        .build());
+    lore.add(Component.text()
+        .append(Component.text("SP per level: ", NamedTextColor.GRAY))
+        .append(Component.text(tree.skillPointsPerLevel(), NamedTextColor.WHITE))
+        .decoration(TextDecoration.ITALIC, false)
+        .build());
+
+    meta.lore(lore);
+    item.setItemMeta(meta);
+    return item;
+  }
+
+  private String formatV2Effect(NodeEffect effect) {
+    return switch (effect) {
+      case NodeEffect.BoostEffect boost ->
+          String.format("+%.0f%% %s", (boost.multiplier().doubleValue() - 1) * 100, boost.target());
+      case NodeEffect.RuledBoostEffect ruled -> {
+        String desc = ruled.boostSource().description();
+        yield desc != null ? desc : String.format("Conditional %s boost", ruled.target());
+      }
+      case NodeEffect.PermissionEffect perm ->
+          String.format("Permission: %s", String.join(", ", perm.permissions()));
+      case NodeEffect.RecipeUnlockEffect recipe ->
+          String.format("Recipe: %s", recipe.recipeKey().asString());
+      case NodeEffect.StateSetEffect stateSet ->
+          stateSet.remove()
+              ? String.format("Removes %s", stateSet.key().asString())
+              : String.format("Sets %s = %s", stateSet.key().asString(), stateSet.value());
+    };
   }
 
   private String formatEffect(UpgradeEffect effect) {
@@ -805,16 +1045,151 @@ public final class UpgradeTreeGui implements Listener {
       return;
     }
 
+    // Confirm button for a pending major purchase
+    String confirmAction = meta.getPersistentDataContainer().get(confirmTag, PersistentDataType.STRING);
+    if ("confirm_major".equals(confirmAction)) {
+      if (session.pendingMajorKey != null) {
+        purchaseMajor(player, session, session.pendingMajorKey);
+      }
+      return;
+    }
+
     // Check for node click
     String nodeKey = meta.getPersistentDataContainer().get(nodeKeyTag, PersistentDataType.STRING);
     if (nodeKey == null) {
       return; // Clicked on non-node item (background, info)
     }
 
-    // Attempt to unlock
     String playerId = player.getUniqueId().toString();
     String jobKey = session.job.key().value();
 
+    if (session.isV2()) {
+      handleV2NodeClick(player, session, nodeKey, playerId, jobKey);
+      return;
+    }
+
+    handleLegacyUnlock(player, session, nodeKey, playerId, jobKey);
+  }
+
+  /** Version-2 click routing: majors stage a confirmation, skills purchase directly. */
+  private void handleV2NodeClick(Player player, GuiSession session, String nodeKey, String playerId, String jobKey) {
+    SkillNode node = session.skillTree.node(nodeKey).orElse(null);
+    if (node != null && node.isMajor()) {
+      // Any click while a different major is pending cancels that intent.
+      if (session.pendingMajorKey != null && !session.pendingMajorKey.equals(nodeKey)) {
+        session.pendingMajorKey = null;
+        refresh(player);
+      }
+      if (session.pendingMajorKey == null) {
+        SkillTreeState state = upgradeService.getSkillTreeState(playerId, jobKey);
+        if (session.skillTree.canPurchase(state, nodeKey)) {
+          // Stage the confirmation; only the CONFIRM slot invokes the purchase.
+          session.pendingMajorKey = nodeKey;
+          refresh(player);
+        } else if (state.levelOf(nodeKey) > 0) {
+          player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f);
+        } else {
+          player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+        }
+      }
+      return;
+    }
+
+    // Any other node click cancels a pending major confirmation.
+    if (session.pendingMajorKey != null) {
+      session.pendingMajorKey = null;
+      refresh(player);
+    }
+
+    PurchaseResult result = upgradeService.purchaseSkillLevel(playerId, jobKey, nodeKey);
+    handleSkillPurchase(player, session, result);
+  }
+
+  private void purchaseMajor(Player player, GuiSession session, String nodeKey) {
+    String playerId = player.getUniqueId().toString();
+    String jobKey = session.job.key().value();
+    PurchaseResult result = upgradeService.purchaseMajor(playerId, jobKey, nodeKey);
+    session.pendingMajorKey = null;
+
+    switch (result) {
+      case PurchaseResult.Success success -> {
+        Messages.send(player, "<accent>Chosen: <primary>" + success.node().name()
+            + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+        refresh(player);
+      }
+      case PurchaseResult.AlreadyOwned ao ->
+          player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f);
+      case PurchaseResult.ExcludedByChoice ec -> {
+        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.RequirementsNotMet rn -> {
+        Messages.send(player, "<error>Requirements not met.");
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.PrerequisitesNotMet pn -> {
+        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pn.missing()));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.InsufficientPoints ip -> {
+        Messages.send(player, "<error>Not enough SP! Need <secondary>" + ip.required()
+            + "<error>, have <secondary>" + ip.available());
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.NodeNotFound nf -> {
+        Messages.send(player, "<error>Node not found: " + nf.nodeKey());
+        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
+      }
+      case PurchaseResult.TreeNotFound tf -> {
+        Messages.send(player, "<error>No upgrade tree for this job.");
+        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
+      }
+    }
+    if (!(result instanceof PurchaseResult.Success)) {
+      refresh(player); // Drop the confirm slot on any failure
+    }
+  }
+
+  private void handleSkillPurchase(Player player, GuiSession session, PurchaseResult result) {
+    switch (result) {
+      case PurchaseResult.Success success -> {
+        Messages.send(player, "<accent>Unlocked: <primary>" + success.node().name()
+            + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+        refresh(player);
+      }
+      case PurchaseResult.AlreadyOwned ao ->
+          player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f);
+      case PurchaseResult.ExcludedByChoice ec -> {
+        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.RequirementsNotMet rn -> {
+        Messages.send(player, "<error>Requirements not met.");
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.PrerequisitesNotMet pn -> {
+        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pn.missing()));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.InsufficientPoints ip -> {
+        Messages.send(player, "<error>Not enough SP! Need <secondary>" + ip.required()
+            + "<error>, have <secondary>" + ip.available());
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      }
+      case PurchaseResult.NodeNotFound nf -> {
+        Messages.send(player, "<error>Node not found: " + nf.nodeKey());
+        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
+      }
+      case PurchaseResult.TreeNotFound tf -> {
+        Messages.send(player, "<error>No upgrade tree for this job.");
+        player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 0.8f, 1.0f);
+      }
+    }
+  }
+
+  private void handleLegacyUnlock(Player player, GuiSession session, String nodeKey, String playerId, String jobKey) {
     UnlockResult result = upgradeService.unlock(playerId, jobKey, nodeKey);
 
     switch (result) {
@@ -858,12 +1233,19 @@ public final class UpgradeTreeGui implements Listener {
    */
   private void handleScroll(Player player, GuiSession session, String action) {
     // Calculate max scroll
-    int maxY = session.tree.allNodes().stream()
-        .map(UpgradeNode::position)
-        .filter(pos -> pos != null)
-        .mapToInt(Position::y)
-        .max()
-        .orElse(0);
+    int maxY = session.isV2()
+        ? session.skillTree.nodes().stream()
+            .map(SkillNode::position)
+            .filter(pos -> pos != null)
+            .mapToInt(Position::y)
+            .max()
+            .orElse(0)
+        : session.tree.allNodes().stream()
+            .map(UpgradeNode::position)
+            .filter(pos -> pos != null)
+            .mapToInt(Position::y)
+            .max()
+            .orElse(0);
     int maxScroll = Math.max(0, maxY - GUI_ROWS + 1);
 
     // Update scroll offset by full page
@@ -883,11 +1265,29 @@ public final class UpgradeTreeGui implements Listener {
   public void onInventoryClose(InventoryCloseEvent event) {
     if (event.getPlayer() instanceof Player player) {
       UUID playerId = player.getUniqueId();
-      openGuis.remove(playerId);
+      // Re-opening the GUI replaces the session BEFORE the old inventory's
+      // close event fires; only remove the session when the closing inventory
+      // is the one this session renders into.
+      GuiSession session = openGuis.get(playerId);
+      if (session != null && session.gui == event.getInventory()) {
+        openGuis.remove(playerId);
+      }
     }
   }
 
   private enum NodeStatus {
     UNLOCKED, AVAILABLE, LOCKED, EXCLUDED
+  }
+
+  private static Material materialFromName(String name) {
+    if (name == null || name.isBlank()) {
+      return Material.BARRIER;
+    }
+    String bare = name.contains(":") ? name.substring(name.indexOf(':') + 1) : name;
+    try {
+      return Material.valueOf(bare.toUpperCase(java.util.Locale.ROOT));
+    } catch (IllegalArgumentException e) {
+      return Material.BARRIER;
+    }
   }
 }

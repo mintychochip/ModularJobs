@@ -8,13 +8,17 @@ import net.aincraft.domain.JobResolver;
 import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.service.PetUpgradeService;
 import net.aincraft.upgrade.PlayerUpgradeData;
+import net.aincraft.upgrade.PlayerUpgradeDataImpl;
 import net.aincraft.upgrade.UpgradeBoostDataService;
+import net.aincraft.upgrade.UpgradeBoostDataServiceImpl;
 import net.aincraft.upgrade.UpgradeService;
+import net.aincraft.upgrade.UpgradeServiceImpl;
 import org.junit.jupiter.api.Test;
 
 /**
  * Structural proof that single-implementor interface collapses landed on concrete types
- * (no parallel interface + *Impl pair for these removals).
+ * (no parallel interface + *Impl pair for these removals), except upgrade contracts which
+ * intentionally keep an API interface + paper impl for the v2 skill-tree dual path.
  */
 class SingleImplementorCollapseTest {
 
@@ -23,11 +27,18 @@ class SingleImplementorCollapseTest {
     assertConcrete(JobResolver.class);
     assertConcrete(ItemBoostDataService.class);
     assertConcrete(PetUpgradeService.class);
-    assertConcrete(UpgradeService.class);
-    assertConcrete(UpgradeBoostDataService.class);
-    assertConcrete(PlayerUpgradeData.class);
     // package-private payable helper — load by name
     assertConcrete(Class.forName("net.aincraft.payable.ExperienceBarColorProvider"));
+  }
+
+  @Test
+  void upgradeContractsKeepInterfacePlusImpl() {
+    assertTrue(UpgradeService.class.isInterface());
+    assertTrue(UpgradeBoostDataService.class.isInterface());
+    assertTrue(PlayerUpgradeData.class.isInterface());
+    assertConcrete(UpgradeServiceImpl.class);
+    assertConcrete(UpgradeBoostDataServiceImpl.class);
+    assertConcrete(PlayerUpgradeDataImpl.class);
   }
 
   @Test
@@ -40,9 +51,6 @@ class SingleImplementorCollapseTest {
     assertClassMissing("net.aincraft.domain.JobResolverImpl");
     assertClassMissing("net.aincraft.service.ItemBoostDataServiceImpl");
     assertClassMissing("net.aincraft.service.PetUpgradeServiceImpl");
-    assertClassMissing("net.aincraft.upgrade.UpgradeServiceImpl");
-    assertClassMissing("net.aincraft.upgrade.UpgradeBoostDataServiceImpl");
-    assertClassMissing("net.aincraft.upgrade.PlayerUpgradeDataImpl");
   }
 
   @Test

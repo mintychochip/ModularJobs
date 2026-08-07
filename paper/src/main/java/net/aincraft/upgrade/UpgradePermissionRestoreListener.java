@@ -1,5 +1,7 @@
 package net.aincraft.upgrade;
 
+import java.util.Map;
+import net.aincraft.registry.Registry;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,15 +16,18 @@ public final class UpgradePermissionRestoreListener implements Listener {
   private final UpgradeService upgradeService;
   private final UpgradeEffectApplier effectApplier;
   private final UpgradePermissionManager permissionManager;
+  private final Registry<SkillTree> skillTreeRegistry;
 
   public UpgradePermissionRestoreListener(
       UpgradeService upgradeService,
       UpgradeEffectApplier effectApplier,
-      UpgradePermissionManager permissionManager
+      UpgradePermissionManager permissionManager,
+      Registry<SkillTree> skillTreeRegistry
   ) {
     this.upgradeService = upgradeService;
     this.effectApplier = effectApplier;
     this.permissionManager = permissionManager;
+    this.skillTreeRegistry = skillTreeRegistry;
   }
 
   /**
@@ -33,7 +38,17 @@ public final class UpgradePermissionRestoreListener implements Listener {
     Player player = event.getPlayer();
     String playerId = player.getUniqueId().toString();
 
-    // Get all trees and restore effects from unlocked nodes
+    // v2 trees: one union restore across ALL active trees. The applier cleans
+    // up this plugin's attachment exactly once, then grants the union, so a
+    // per-tree restore can never wipe another job's permissions.
+    Map<SkillTree, SkillTreeState> byTree = new java.util.HashMap<>();
+    for (SkillTree tree : skillTreeRegistry) {
+      byTree.put(tree, upgradeService.getSkillTreeState(playerId, tree.jobKey()));
+    }
+    effectApplier.restoreAllForTrees(player, byTree);
+
+    // Legacy trees: restore effects from unlocked nodes on top; the union
+    // restore above already cleared the attachment, so nothing stale survives.
     upgradeService.getAllTrees().forEach(tree -> {
       PlayerUpgradeData data = upgradeService.getPlayerData(playerId, tree.jobKey());
       if (!data.unlockedNodes().isEmpty()) {

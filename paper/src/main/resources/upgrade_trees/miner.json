@@ -1,140 +1,119 @@
 {
-  "_comment": "Example Miner job upgrade tree demonstrating maxedPrerequisites for companion branches",
+  "_comment": "Version-2 example Miner job skill tree: three levelled base perks and four mutually exclusive major companion choices gated on maxed perks.",
+  "version": 2,
+  "job": "miner",
   "skill_points_per_level": 1,
-  "layout": {
-    "type": "wynncraft",
-    "tiers": [
-      {
-        "tier": 1,
-        "archetype": "base",
-        "nodes": [
-          {
-            "id": "nether_lava_immunity",
-            "type": "ability",
-            "meta": {
-              "name": "Nether Lava Immunity",
-              "cost": 3,
-              "description": ["Grants immunity to lava damage"],
-              "prerequisites": [],
-              "max_level": 3,
-              "perk_id": "lava_immunity"
-            },
-            "position": {"x": 2, "y": 0}
-          },
-          {
-            "id": "far_gather",
-            "type": "ability",
-            "meta": {
-              "name": "Far Gather",
-              "cost": 3,
-              "description": ["Increases mining range by 2 blocks"],
-              "prerequisites": [],
-              "max_level": 3,
-              "perk_id": "far_gather"
-            },
-            "position": {"x": 4, "y": 0}
-          },
-          {
-            "id": "explosion_collection",
-            "type": "ability",
-            "meta": {
-              "name": "Explosion Collection",
-              "cost": 3,
-              "description": ["Auto-collects ores broken by explosions"],
-              "prerequisites": [],
-              "max_level": 3,
-              "perk_id": "explosion_collection"
-            },
-            "position": {"x": 6, "y": 0}
-          }
+  "root": "mining_basics",
+  "nodes": {
+    "mining_basics": {
+      "kind": "root",
+      "name": "Mining Basics",
+      "description": "The foundation of every miner's toolkit",
+      "position": { "x": 4, "y": 1 }
+    },
+    "nether_lava_immunity": {
+      "kind": "skill",
+      "name": "Nether Lava Immunity",
+      "description": "Grants immunity to lava damage",
+      "prerequisites": ["mining_basics"],
+      "position": { "x": 2, "y": 0 },
+      "levels": [
+        { "cost": 3 },
+        { "cost": 3 },
+        { "cost": 3 }
+      ]
+    },
+    "far_gather": {
+      "kind": "skill",
+      "name": "Far Gather",
+      "description": "Increases mining range by 2 blocks",
+      "prerequisites": ["mining_basics"],
+      "position": { "x": 4, "y": 0 },
+      "levels": [
+        { "cost": 3 },
+        { "cost": 3 },
+        { "cost": 3 }
+      ]
+    },
+    "explosion_collection": {
+      "kind": "skill",
+      "name": "Explosion Collection",
+      "description": "Auto-collects ores broken by explosions",
+      "prerequisites": ["mining_basics"],
+      "position": { "x": 6, "y": 0 },
+      "levels": [
+        { "cost": 3 },
+        { "cost": 3 },
+        { "cost": 3 }
+      ]
+    },
+    "allay_branch": {
+      "kind": "major",
+      "name": "Allay Companion",
+      "cost": 8,
+      "description": "Summons an Allay companion.\nRequires max level in all prerequisite perks.",
+      "prerequisites": ["mining_basics"],
+      "excludes": ["bat_branch", "goat_branch", "copper_golem_branch"],
+      "requirements": {
+        "type": "all",
+        "requirements": [
+          { "type": "node_level", "node": "nether_lava_immunity", "minimum": 3 },
+          { "type": "node_level", "node": "far_gather", "minimum": 3 },
+          { "type": "node_level", "node": "explosion_collection", "minimum": 3 }
         ]
       },
-      {
-        "tier": 2,
-        "archetype": "companion",
-        "nodes": [
-          {
-            "id": "allay_branch",
-            "type": "ability",
-            "archetype_ref": "allay",
-            "meta": {
-              "name": "Allay Companion",
-              "cost": 8,
-              "description": [
-                "Summons an Allay companion",
-                "Requires MAX level in all prerequisite perks"
-              ],
-              "maxedPrerequisites": [
-                "nether_lava_immunity",
-                "far_gather",
-                "explosion_collection"
-              ],
-              "exclusiveWith": ["bat_branch", "goat_branch", "copper_golem_branch"]
-            },
-            "position": {"x": 0, "y": 2}
-          },
-          {
-            "id": "bat_branch",
-            "type": "ability",
-            "archetype_ref": "bat",
-            "meta": {
-              "name": "Bat Companion",
-              "cost": 8,
-              "description": [
-                "Summons a Bat companion",
-                "Requires MAX level in all prerequisite perks"
-              ],
-              "maxedPrerequisites": [
-                "nether_lava_immunity",
-                "far_gather",
-                "explosion_collection"
-              ],
-              "exclusiveWith": ["allay_branch", "goat_branch", "copper_golem_branch"]
-            },
-            "position": {"x": 3, "y": 2}
-          },
-          {
-            "id": "goat_branch",
-            "type": "ability",
-            "archetype_ref": "goat",
-            "meta": {
-              "name": "Goat Companion",
-              "cost": 8,
-              "description": [
-                "Summons a Goat companion",
-                "Requires MAX level in all prerequisite perks"
-              ],
-              "maxedPrerequisites": [
-                "nether_lava_immunity",
-                "far_gather",
-                "explosion_collection"
-              ],
-              "exclusiveWith": ["allay_branch", "bat_branch", "copper_golem_branch"]
-            },
-            "position": {"x": 5, "y": 2}
-          },
-          {
-            "id": "copper_golem_branch",
-            "type": "ability",
-            "archetype_ref": "copper_golem",
-            "meta": {
-              "name": "Copper Golem Companion",
-              "cost": 8,
-              "description": [
-                "Summons a Copper Golem companion",
-                "Requires MAX level in all prerequisite perks"
-              ],
-              "maxedPrerequisites": [
-                "nether_lava_immunity",
-                "far_gather",
-                "explosion_collection"
-              ],
-              "exclusiveWith": ["allay_branch", "bat_branch", "goat_branch"]
-            },
-            "position": {"x": 8, "y": 2}
-          }
+      "position": { "x": 0, "y": 2 }
+    },
+    "bat_branch": {
+      "kind": "major",
+      "name": "Bat Companion",
+      "cost": 8,
+      "description": "Summons a Bat companion.\nRequires max level in all prerequisite perks.",
+      "prerequisites": ["mining_basics"],
+      "excludes": ["allay_branch", "goat_branch", "copper_golem_branch"],
+      "requirements": {
+        "type": "all",
+        "requirements": [
+          { "type": "node_level", "node": "nether_lava_immunity", "minimum": 3 },
+          { "type": "node_level", "node": "far_gather", "minimum": 3 },
+          { "type": "node_level", "node": "explosion_collection", "minimum": 3 }
         ]
-      }
-    ]
+      },
+      "position": { "x": 3, "y": 2 }
+    },
+    "goat_branch": {
+      "kind": "major",
+      "name": "Goat Companion",
+      "cost": 8,
+      "description": "Summons a Goat companion.\nRequires max level in all prerequisite perks.",
+      "prerequisites": ["mining_basics"],
+      "excludes": ["allay_branch", "bat_branch", "copper_golem_branch"],
+      "requirements": {
+        "type": "all",
+        "requirements": [
+          { "type": "node_level", "node": "nether_lava_immunity", "minimum": 3 },
+          { "type": "node_level", "node": "far_gather", "minimum": 3 },
+          { "type": "node_level", "node": "explosion_collection", "minimum": 3 }
+        ]
+      },
+      "position": { "x": 5, "y": 2 }
+    },
+    "copper_golem_branch": {
+      "kind": "major",
+      "name": "Copper Golem Companion",
+      "cost": 8,
+      "description": "Summons a Copper Golem companion.\nRequires max level in all prerequisite perks.",
+      "prerequisites": ["mining_basics"],
+      "excludes": ["allay_branch", "bat_branch", "goat_branch"],
+      "requirements": {
+        "type": "all",
+        "requirements": [
+          { "type": "node_level", "node": "nether_lava_immunity", "minimum": 3 },
+          { "type": "node_level", "node": "far_gather", "minimum": 3 },
+          { "type": "node_level", "node": "explosion_collection", "minimum": 3 }
+        ]
+      },
+      "position": { "x": 8, "y": 2 }
+    }
   }
 }
