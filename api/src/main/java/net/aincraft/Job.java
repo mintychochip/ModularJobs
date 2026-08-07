@@ -31,10 +31,4 @@ public interface Job extends Keyed {
 
   @NotNull
   Map<Integer, List<String>> perkUnlocks();
-
-  @NotNull
-  Map<String, Map<Integer, List<String>>> petPerks();
-
-  @NotNull
-  Map<String, List<String>> petRevokedPerks();
 }

@@ -42,8 +42,6 @@ class ProgressionServiceArchiveTest {
         "level * 100",
         Map.of("currency", "base"),
         30,
-        Map.of(),
-        Map.of(),
         Map.of()
     );
     progression = new JobProgressionRecord(
@@ -110,7 +108,7 @@ class ProgressionServiceArchiveTest {
   void loadAllForPlayerRespectsLimit() {
     JobRecord fisher = new JobRecord(
         "modularjobs:fisherman", "Fisher", "Fish", 50, "level*10",
-        Map.of(), 20, Map.of(), Map.of(), Map.of()
+        Map.of(), 20, Map.of()
     );
     service.save(progression);
     service.save(new JobProgressionRecord("player-1", fisher, BigDecimal.TEN));

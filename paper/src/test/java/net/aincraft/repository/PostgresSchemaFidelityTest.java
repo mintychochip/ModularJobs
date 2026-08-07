@@ -237,7 +237,6 @@ class PostgresSchemaFidelityTest {
           "time_boosts",
           "time_boost_identity",
           "player_upgrades",
-          "job_pet_selections",
           "editor_sessions")) {
         st.execute("TRUNCATE TABLE " + table + " RESTART IDENTITY CASCADE");
       }

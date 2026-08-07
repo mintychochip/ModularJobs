@@ -169,16 +169,6 @@ class JobsPaymentHandlerReloadTest {
       public @NotNull Map<Integer, List<String>> perkUnlocks() {
         return Map.of();
       }
-
-      @Override
-      public @NotNull Map<String, Map<Integer, List<String>>> petPerks() {
-        return Map.of();
-      }
-
-      @Override
-      public @NotNull Map<String, List<String>> petRevokedPerks() {
-        return Map.of();
-      }
     };
     return new JobProgression() {
       @Override

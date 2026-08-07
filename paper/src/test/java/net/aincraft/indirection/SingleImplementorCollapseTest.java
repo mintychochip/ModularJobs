@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.reflect.Modifier;
 import net.aincraft.domain.JobResolver;
 import net.aincraft.service.ItemBoostDataService;
-import net.aincraft.service.PetUpgradeService;
 import net.aincraft.upgrade.PlayerUpgradeData;
 import net.aincraft.upgrade.PlayerUpgradeDataImpl;
 import net.aincraft.upgrade.UpgradeBoostDataService;
@@ -26,7 +25,6 @@ class SingleImplementorCollapseTest {
   void collapsedTypesAreConcreteClassesNotInterfaces() throws ClassNotFoundException {
     assertConcrete(JobResolver.class);
     assertConcrete(ItemBoostDataService.class);
-    assertConcrete(PetUpgradeService.class);
     // package-private payable helper — load by name
     assertConcrete(Class.forName("net.aincraft.payable.ExperienceBarColorProvider"));
   }
@@ -50,7 +48,11 @@ class SingleImplementorCollapseTest {
     assertClassMissing("net.aincraft.payable.DefaultExperienceBarColorProvider");
     assertClassMissing("net.aincraft.domain.JobResolverImpl");
     assertClassMissing("net.aincraft.service.ItemBoostDataServiceImpl");
+    assertClassMissing("net.aincraft.service.PetUpgradeService");
     assertClassMissing("net.aincraft.service.PetUpgradeServiceImpl");
+    assertClassMissing("net.aincraft.gui.PetSelectionGui");
+    assertClassMissing("net.aincraft.hooks.JobPetsHook");
+    assertClassMissing("net.aincraft.commands.UpgradeCommand");
   }
 
   @Test

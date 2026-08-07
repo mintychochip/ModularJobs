@@ -73,15 +73,6 @@ CREATE TABLE IF NOT EXISTS player_upgrades
     PRIMARY KEY (player_id, job_key)
 );
 
-CREATE TABLE IF NOT EXISTS job_pet_selections
-(
-    player_id       VARCHAR(36)  NOT NULL,
-    job_key         VARCHAR(255) NOT NULL,
-    pet_config_name VARCHAR(255) NOT NULL,
-    selected_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (player_id, job_key)
-);
-
 -- Editor sessions for the secure web session API (shared Postgres store).
 CREATE TABLE IF NOT EXISTS editor_sessions
 (
