@@ -74,9 +74,15 @@ Plugin export (payload JSON)
 ```bash
 export DATABASE_URL=postgres://user:pass@host:5432/modularjobs
 export BIND_ADDR=127.0.0.1:18787
+# optional hardening (see web/rest-api/README.md)
+# export SESSION_CREATE_SECRET=...
+# export CORS_ALLOW_ORIGINS=http://127.0.0.1:5173
 # schema must already exist
 cargo run --release --manifest-path web/rest-api/Cargo.toml
 ```
+
+Session ownership: code (public) + token (secret headers). Create is open unless
+`SESSION_CREATE_SECRET` is set; GET/PUT require Bearer / `X-Session-Token`.
 
 ### Plugin remote DB (`database.yml`)
 
