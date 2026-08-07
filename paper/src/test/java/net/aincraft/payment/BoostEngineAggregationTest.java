@@ -30,7 +30,9 @@ import net.aincraft.repository.DatabaseType;
 import net.aincraft.serialization.KryoCodecRegistry;
 import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
+import net.aincraft.upgrade.SkillTree;
 import net.aincraft.upgrade.UpgradeBoostDataService;
+import net.aincraft.upgrade.UpgradeBoostDataServiceImpl;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
@@ -168,9 +170,10 @@ class BoostEngineAggregationTest {
 
   private static UpgradeBoostDataService unusedUpgradeService() {
     // Connection never used on evaluateSources path
-    return new UpgradeBoostDataService(
+    return new UpgradeBoostDataServiceImpl(
         new PlayerUpgradeRepository(unusedConnectionSource()),
-        new SimpleRegistryImpl<>());
+        new SimpleRegistryImpl<>(),
+        new SimpleRegistryImpl<SkillTree>());
   }
 
   private static ConnectionSource unusedConnectionSource() {

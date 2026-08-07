@@ -68,7 +68,10 @@ import net.aincraft.service.PreferencesIntegration;
 import net.aincraft.service.PreferencesService;
 import net.aincraft.service.TimedBoostDataServiceImpl;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
+import net.aincraft.upgrade.SkillTree;
 import net.aincraft.upgrade.UpgradeBoostDataService;
+import net.aincraft.upgrade.UpgradeBoostDataServiceImpl;
+import net.aincraft.upgrade.UpgradeServiceImpl;
 import net.aincraft.upgrade.UpgradeEffectApplier;
 import net.aincraft.upgrade.UpgradeLevelUpListener;
 import net.aincraft.upgrade.UpgradePermissionManager;
@@ -204,16 +207,25 @@ public final class PluginContext {
         new PlayerUpgradeRepository(upgradeConnection);
 
     Registry<UpgradeTree> upgradeTreeRegistry = new SimpleRegistryImpl<>();
+    Registry<SkillTree> skillTreeRegistry = new SimpleRegistryImpl<>();
     UpgradeTreeLoader upgradeTreeLoader = new UpgradeTreeLoader(
-        plugin, gson, upgradeTreeRegistry, conditionFactory, boostFactory);
+        plugin, gson, upgradeTreeRegistry, skillTreeRegistry, conditionFactory, boostFactory);
     upgradeTreeLoader.load();
 
+    ProfessionWiring professions = ProfessionWiring.create(domain.jobService);
+
     UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
-    UpgradeEffectApplier effectApplier = new UpgradeEffectApplier(permissionManager);
+    UpgradeEffectApplier effectApplier =
+        new UpgradeEffectApplier(permissionManager, professions.recipeService);
     UpgradeBoostDataService upgradeBoostDataService =
-        new UpgradeBoostDataService(playerUpgradeRepository, upgradeTreeRegistry);
-    UpgradeService upgradeService = new UpgradeService(
-        upgradeTreeRegistry, playerUpgradeRepository, domain.jobService, effectApplier);
+        new UpgradeBoostDataServiceImpl(
+            playerUpgradeRepository, upgradeTreeRegistry, skillTreeRegistry);
+    UpgradeService upgradeService = new UpgradeServiceImpl(
+        upgradeTreeRegistry,
+        skillTreeRegistry,
+        playerUpgradeRepository,
+        domain.jobService,
+        effectApplier);
 
     UpgradeTreeGui upgradeTreeGui = new UpgradeTreeGui(plugin, upgradeService);
     TreeEditorExporter treeEditorExporter = new TreeEditorExporter();
@@ -230,8 +242,6 @@ public final class PluginContext {
     BlockProtectionAdapter protectionAdapter = BlockProtectionAdapterProvider.create();
     BlockOwnershipService blockOwnershipService =
         new BlockOwnershipService(protectionAdapter);
-
-    ProfessionWiring professions = ProfessionWiring.create(domain.jobService);
 
     PaymentWiring payment = PaymentWiring.create(
         plugin,
@@ -290,10 +300,10 @@ public final class PluginContext {
     listenerList.add(new ConsumableBoostController(itemBoostDataService, timedBoostDataService));
     listenerList.add(new DialogNavigationListener(
         domain.jobService, domain.jobResolver, infoCommand, statsDialog, preferencesService));
-    listenerList.add(new UpgradeLevelUpListener(upgradeService));
+    listenerList.add(new UpgradeLevelUpListener(upgradeService, skillTreeRegistry));
     listenerList.add(upgradeTreeGui);
     listenerList.add(new UpgradePermissionRestoreListener(
-        upgradeService, effectApplier, permissionManager));
+        upgradeService, effectApplier, permissionManager, skillTreeRegistry));
 
     EventBus eventBus = new EventBus();
     Bridge bridge = new BridgeImpl(
