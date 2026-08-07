@@ -47,12 +47,93 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "25"
           cache: gradle
+
+      - name: Checkout craftux dependency (pinned release)
+        uses: actions/checkout@v4
+        with:
+          repository: aincraft-org/craftux
+          ref: 402bea8ce21847df632a10b00b563665db205de
+          path: craftux
+          fetch-depth: 1
+
+      - name: Link craftux local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/craftux" "$GITHUB_WORKSPACE/../craftux"
+
+      - name: Set up Rust for craftux views
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Publish craftux local Maven artifacts
+        working-directory: craftux
+        run: |
+          chmod +x gradlew
+          ./gradlew \
+            :api:publishMavenPublicationToLocalBuildRepository \
+            :common:publishMavenPublicationToLocalBuildRepository \
+            :paper:publishMavenPublicationToLocalBuildRepository \
+            --console=plain --no-daemon
+      - name: Require mint repository token
+        env:
+          MINT_REPO_TOKEN: ${{ secrets.MINT_REPO_TOKEN }}
+        run: |
+          if [[ -z "$MINT_REPO_TOKEN" ]]; then
+            echo "::error::ModularJobs needs aincraft-org/mint. Add a repo-scope PAT as MINT_REPO_TOKEN."
+            exit 1
+          fi
+
+      - name: Checkout mint dependency (private, pinned source)
+        uses: actions/checkout@v4
+        with:
+          repository: aincraft-org/mint
+          ref: 873fd3e359d3f3ac5b22fc84bc9aaae2a6adabdd
+          path: mint
+          fetch-depth: 1
+          token: ${{ secrets.MINT_REPO_TOKEN }}
+
+      - name: Link mint local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/mint" "$GITHUB_WORKSPACE/../mint"
+
+      - name: Publish mint API to local Maven repository
+        working-directory: mint
+        run: |
+          chmod +x gradlew
+          ./gradlew \
+            :api:publishMavenPublicationToLocalBuildRepository \
+            --console=plain --no-daemon
+
+      - name: Checkout Preferences API dependency
+        uses: actions/checkout@v4
+        with:
+          repository: mintychochip/Preferences
+          ref: c78eac8c81104ba0890fc98d5f49090d90d0dee7
+          path: preferences
+          fetch-depth: 1
+
+      - name: Publish Preferences API to isolated Maven local
+        working-directory: preferences
+        run: |
+          chmod +x gradlew
+          ./gradlew :api:publishToMavenLocal \
+            -Dmaven.repo.local=${{ runner.temp }}/m2 \
+            --console=plain --no-daemon
+
+      - name: Verify required local dependency artifacts
+        run: |
+          test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
+          test -f ../mint/build/maven-repo/dev/jlo/mint/mint-api/1.0.0/mint-api-1.0.0.pom
+          test -f "${{ runner.temp }}/m2/dev/jlo/preferences-api/0.1.0/preferences-api-0.1.0.pom"
+
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -66,10 +147,10 @@ jobs:
 
       - name: Check (compile + Error Prone + unit tests + static analysis)
         # quality.fail not set → Checkstyle/PMD/SpotBugs report-only
-        run: ./gradlew check --console=plain --no-daemon
+        run: ./gradlew check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
 
       - name: Shadow jar
-        run: ./gradlew :paper:shadowJar --console=plain --no-daemon
+        run: ./gradlew :paper:shadowJar -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
 
       - name: Upload paper shadow jar
         uses: actions/upload-artifact@v4
