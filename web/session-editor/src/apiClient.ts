@@ -15,10 +15,22 @@ export class SessionApiClient {
     return this.baseUrl.replace(/\/$/, '');
   }
 
-  async createSession(payload: EditorPayload): Promise<CreateSessionResponse> {
+  /**
+   * Create a session. Server always mints the token.
+   * When the API sets SESSION_CREATE_SECRET, pass the same value as createSecret
+   * (or set VITE_SESSION_CREATE_SECRET for the default client).
+   */
+  async createSession(
+    payload: EditorPayload,
+    createSecret?: string,
+  ): Promise<CreateSessionResponse> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (createSecret) {
+      headers['X-Create-Secret'] = createSecret;
+    }
     const response = await fetch(`${this.base}/api/v1/sessions`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
