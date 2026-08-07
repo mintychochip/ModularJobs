@@ -9,7 +9,12 @@ export const SESSION_API_DEFAULT_BASE =
     (import.meta.env?.PUBLIC_SESSION_API_URL as string | undefined)) ||
   'http://127.0.0.1:18787';
 
+/**
+ * Secure editor URL: public code in query, secret token in hash only
+ * (avoids Referer / access-log leakage of the session secret).
+ */
 export function sessionEditorPath(code: string, token: string): string {
-  const q = new URLSearchParams({ code, token });
-  return `/session-editor/?${q.toString()}`;
+  const q = new URLSearchParams({ code });
+  const h = new URLSearchParams({ token });
+  return `/session-editor/?${q.toString()}#${h.toString()}`;
 }

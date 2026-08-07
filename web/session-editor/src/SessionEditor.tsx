@@ -4,16 +4,12 @@ import {
   createDefaultClient,
   setTaskPayableAmount,
 } from './apiClient';
+import {
+  readSessionCredentials,
+  scrubTokenFromQuery,
+} from './sessionCredentials';
 import type { EditorPayload, TaskData } from './types';
 import './SessionEditor.css';
-
-function readQueryParams(): { code: string; token: string } {
-  const params = new URLSearchParams(window.location.search);
-  return {
-    code: params.get('code') ?? params.get('session') ?? '',
-    token: params.get('token') ?? params.get('sessionToken') ?? '',
-  };
-}
 
 export interface SessionEditorProps {
   client?: SessionApiClient;
@@ -38,7 +34,8 @@ export function SessionEditor({
 
   useEffect(() => {
     if (initialCode != null || initialToken != null) return;
-    const q = readQueryParams();
+    scrubTokenFromQuery();
+    const q = readSessionCredentials();
     if (q.code) setCode(q.code);
     if (q.token) setToken(q.token);
   }, [initialCode, initialToken]);
@@ -71,11 +68,13 @@ export function SessionEditor({
   }, [client, code, token]);
 
   useEffect(() => {
-    if ((initialCode || readQueryParams().code) && (initialToken || readQueryParams().token)) {
+    scrubTokenFromQuery();
+    const q = readSessionCredentials();
+    if ((initialCode || q.code) && (initialToken || q.token)) {
       // Auto-load when code+token present on mount
       void (async () => {
-        const c = initialCode ?? readQueryParams().code;
-        const t = initialToken ?? readQueryParams().token;
+        const c = initialCode ?? q.code;
+        const t = initialToken ?? q.token;
         if (!c || !t) return;
         setLoading(true);
         try {
