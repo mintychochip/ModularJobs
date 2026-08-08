@@ -1,7 +1,7 @@
 # Profession-Gated Fish Catching
 
 **Date:** 2026-08-08
-**Status:** Draft for review
+**Status:** Approved
 
 ## Problem
 
