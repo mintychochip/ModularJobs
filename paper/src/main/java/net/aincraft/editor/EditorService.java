@@ -1,215 +1,214 @@
 package net.aincraft.editor;
 
-import com.google.gson.Gson;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import net.aincraft.Job;
 import net.aincraft.JobTask;
-import net.aincraft.container.ActionType;
-import net.aincraft.container.Payable;
-import net.aincraft.container.PayableType;
 import net.aincraft.common.editor.EditorMetadata;
 import net.aincraft.common.editor.EditorPayload;
 import net.aincraft.common.editor.JobData;
 import net.aincraft.common.editor.PayableData;
 import net.aincraft.common.editor.TaskData;
+import net.aincraft.container.ActionType;
+import net.aincraft.container.Payable;
+import net.aincraft.container.PayableType;
+import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
-import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.registry.RegistryContainer;
 import net.aincraft.registry.RegistryKeys;
 import net.aincraft.registry.RegistryView;
 import net.aincraft.service.JobService;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
-
 public final class EditorService {
 
     private final JobService jobService;
     private final RelationalJobTaskRepositoryImpl jobTaskRepository;
-    private final BytebinClient bytebinClient;
+    private final RestSessionClient restSessionClient;
     private final EditorSessionStore sessionStore;
     private final EditorConfig config;
-    private final Gson gson;
 
     public EditorService(
         JobService jobService,
         RelationalJobTaskRepositoryImpl jobTaskRepository,
-        BytebinClient bytebinClient,
+        RestSessionClient restSessionClient,
         EditorSessionStore sessionStore,
-        EditorConfig config,
-        Gson gson) {
+        EditorConfig config) {
         this.jobService = jobService;
         this.jobTaskRepository = jobTaskRepository;
-        this.bytebinClient = bytebinClient;
+        this.restSessionClient = restSessionClient;
         this.sessionStore = sessionStore;
         this.config = config;
-        this.gson = gson;
+    }
+
+    private record ExportDraft(UUID playerId, EditorPayload payload) {
+    }
+
+    private record CreatedExport(
+        UUID playerId,
+        RestSessionClient.CreatedSession session
+    ) {
     }
 
     public CompletableFuture<ExportResult> exportTasks(@Nullable String jobKey, UUID playerId) {
         return CompletableFuture.supplyAsync(() -> {
-            // Generate session token
             String sessionToken = UUID.randomUUID().toString();
 
-            // Get jobs to export
             List<Job> jobs = jobKey != null
                 ? List.of(getJobOrThrow(jobKey))
                 : jobService.getJobs();
 
-            // Build job data map
             Map<String, JobData> jobDataMap = new LinkedHashMap<>();
             for (Job job : jobs) {
-                String key = job.key().toString();
-                JobData jobData = buildJobData(job);
-                jobDataMap.put(key, jobData);
+                jobDataMap.put(job.key().toString(), buildJobData(job));
             }
 
-            // Get registered types
             List<String> actionTypes = getRegisteredActionTypes();
             List<String> payableTypes = getRegisteredPayableTypes();
-
-            // Build metadata
             EditorMetadata metadata = EditorMetadata.create(
                 Instant.now().toString(),
                 playerId.toString(),
                 sessionToken,
-                getServerName()
-            );
-
-            // Create payload
+                getServerName());
             EditorPayload payload = EditorPayload.create(
                 metadata,
                 jobDataMap,
                 actionTypes,
-                payableTypes
-            );
-
-            // Serialize to JSON
-            String json = gson.toJson(payload);
-
-            // Return data needed for next step
-            return new Object[] { sessionToken, playerId, json };
-        }).thenCompose(data -> {
-            String sessionToken = (String) data[0];
-            UUID pId = (UUID) data[1];
-            String json = (String) data[2];
-
-            // Upload to bytebin
-            return bytebinClient.post(json)
-                .thenApply(bytebinCode -> {
-                    // Create and store session
-                    EditorSession session = new EditorSession(
-                        sessionToken,
-                        pId,
-                        Instant.now(),
-                        bytebinCode
-                    );
-                    sessionStore.store(session);
-
-                    // Build web editor URL
-                    String webEditorUrl = config.webEditorUrl() + "/session?code=" + bytebinCode;
-
-                    return new ExportResult(bytebinCode, webEditorUrl, sessionToken);
-                });
-        }).exceptionally(e -> {
-            throw new EditorException("Failed to export tasks: " + e.getMessage(), e);
-        });
+                payableTypes);
+            return new ExportDraft(playerId, payload);
+        }).thenCompose(draft -> restSessionClient.create(draft.payload())
+            .thenApply(created -> new CreatedExport(draft.playerId(), created)))
+            .thenApply(export -> {
+                RestSessionClient.CreatedSession created = export.session();
+                EditorSession session = new EditorSession(
+                    created.sessionCode(),
+                    created.token(),
+                    export.playerId(),
+                    Instant.now(),
+                    created.expiresAt());
+                sessionStore.store(session);
+                String webEditorUrl = editorUrl(
+                    config.webEditorUrl(),
+                    created.sessionCode(),
+                    created.token());
+                return new ExportResult(created.sessionCode(), webEditorUrl, created.token());
+            })
+            .exceptionally(e -> {
+                throw new EditorException("Failed to export tasks: " + e.getMessage(), e);
+            });
     }
 
-    public CompletableFuture<ImportResult> importTasks(String bytebinCode, UUID playerId) {
+    public CompletableFuture<ImportResult> importTasks(String sessionCode, UUID playerId) {
         return CompletableFuture.supplyAsync(() -> {
             List<String> errors = new ArrayList<>();
             int tasksImported = 0;
             int tasksDeleted = 0;
 
+            EditorSession session = sessionStore.getOwned(sessionCode, playerId).orElse(null);
+            if (session == null) {
+                errors.add(
+                    "Editor session is missing, expired, or belongs to another player; "
+                        + "run /jobs editor again.");
+                return new ImportResult(0, 0, errors);
+            }
+
             try {
-                // Fetch JSON from bytebin
-                String json = bytebinClient.get(bytebinCode).join();
+                EditorPayload payload;
+                try {
+                    payload = restSessionClient
+                        .fetchPayload(session.sessionCode(), session.token())
+                        .join();
+                } catch (CompletionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof RestSessionClient.RestSessionException restException) {
+                        throw restException;
+                    }
+                    throw e;
+                }
 
-                // Deserialize payload
-                EditorPayload payload = gson.fromJson(json, EditorPayload.class);
-
-                // Validate session token
-                String sessionToken = payload.metadata().sessionToken();
-                if (!sessionStore.validate(sessionToken, playerId)) {
-                    errors.add("Invalid session token or session expired");
+                if (!session.token().equals(payload.metadata().sessionToken())) {
+                    errors.add("REST payload session token did not match the authenticated session.");
                     return new ImportResult(0, 0, errors);
                 }
 
-                // Process each job
                 for (Map.Entry<String, JobData> entry : payload.jobs().entrySet()) {
                     String jobKey = entry.getKey();
                     JobData jobData = entry.getValue();
-
-                    // Get existing tasks for this job
                     List<JobTaskRecord> existingTasks = jobTaskRepository.getAllRecords(jobKey);
-                    Set<String> existingKeys = new HashSet<>();
-                    for (JobTaskRecord task : existingTasks) {
-                        existingKeys.add(taskKey(task.jobKey(), task.actionTypeKey(), task.contextKey()));
-                    }
-
-                    // Track incoming task keys
                     Set<String> incomingKeys = new HashSet<>();
 
-                    // Save/update incoming tasks
                     for (TaskData taskData : jobData.tasks()) {
                         String key = taskKey(jobKey, taskData.actionTypeKey(), taskData.contextKey());
                         incomingKeys.add(key);
 
-                        // Convert to record
                         List<PayableRecord> payableRecords = new ArrayList<>();
                         for (PayableData pd : taskData.payables()) {
                             payableRecords.add(new PayableRecord(
                                 pd.type(),
                                 new BigDecimal(pd.amount()),
-                                null
-                            ));
+                                null));
                         }
                         JobTaskRecord record = new JobTaskRecord(
                             jobKey,
                             taskData.actionTypeKey(),
                             taskData.contextKey(),
-                            payableRecords
-                        );
+                            payableRecords);
 
                         if (jobTaskRepository.save(record)) {
                             tasksImported++;
                         }
                     }
 
-                    // Delete tasks that are no longer in the payload
                     for (JobTaskRecord existing : existingTasks) {
-                        String key = taskKey(existing.jobKey(), existing.actionTypeKey(), existing.contextKey());
-                        if (!incomingKeys.contains(key)) {
-                            if (jobTaskRepository.delete(existing.jobKey(), existing.actionTypeKey(), existing.contextKey())) {
-                                tasksDeleted++;
-                            }
+                        String key = taskKey(
+                            existing.jobKey(),
+                            existing.actionTypeKey(),
+                            existing.contextKey());
+                        if (!incomingKeys.contains(key)
+                            && jobTaskRepository.delete(
+                                existing.jobKey(),
+                                existing.actionTypeKey(),
+                                existing.contextKey())) {
+                            tasksDeleted++;
                         }
                     }
                 }
 
-                // Remove session after successful import
-                sessionStore.remove(sessionToken);
-
+                sessionStore.remove(session.sessionCode());
                 return new ImportResult(tasksImported, tasksDeleted, errors);
-            } catch (BytebinClient.BytebinException e) {
-                errors.add(e.getMessage());
+            } catch (RestSessionClient.RestSessionException e) {
+                errors.add(e.expired()
+                    ? "Session expired; run /jobs editor again."
+                    : e.getMessage());
                 return new ImportResult(tasksImported, tasksDeleted, errors);
             } catch (Exception e) {
                 errors.add("Failed to import tasks: " + e.getMessage());
                 return new ImportResult(tasksImported, tasksDeleted, errors);
             }
         });
+    }
+
+
+    static String editorUrl(String base, String code, String token) {
+        String normalized = base.replaceFirst("/+$", "");
+        return normalized + "/session?code=" + encode(code) + "#token=" + encode(token);
+    }
+
+    private static String encode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     private String taskKey(String jobKey, String actionTypeKey, String contextKey) {

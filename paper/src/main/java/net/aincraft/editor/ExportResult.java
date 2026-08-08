@@ -1,14 +1,14 @@
 package net.aincraft.editor;
 
 /**
- * Result of an export operation.
+ * Result of a REST editor export operation.
  *
- * @param bytebinCode the paste code for retrieving data from bytebin
- * @param webEditorUrl the full URL to the web editor with the data loaded
- * @param sessionToken the session token for import verification
+ * @param sessionCode public session code used by {@code /jobs applyedits}
+ * @param webEditorUrl full URL to the web editor with the session loaded
+ * @param sessionToken secret token delivered in the URL fragment
  */
 public record ExportResult(
-    String bytebinCode,
+    String sessionCode,
     String webEditorUrl,
     String sessionToken
 ) {

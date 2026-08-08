@@ -37,7 +37,7 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.domain.DomainWiring;
 import net.aincraft.event.EventBus;
-import net.aincraft.editor.BytebinClient;
+import net.aincraft.editor.RestSessionClient;
 import net.aincraft.editor.EditorConfig;
 import net.aincraft.editor.EditorService;
 import net.aincraft.editor.EditorSessionStore;
@@ -277,16 +277,15 @@ public final class PluginContext {
         professions.recipeService,
         professions.professionService);
 
-    EditorConfig editorConfig = EditorConfig.defaults();
+    EditorConfig editorConfig = EditorConfig.fromPlugin(plugin);
     EditorSessionStore sessionStore = new EditorSessionStore(editorConfig);
-    BytebinClient bytebinClient = new BytebinClient(editorConfig, gson);
+    RestSessionClient restSessionClient = new RestSessionClient(editorConfig, gson);
     EditorService editorService = new EditorService(
         domain.jobService,
         domain.jobTaskRepository,
-        bytebinClient,
+        restSessionClient,
         sessionStore,
-        editorConfig,
-        gson);
+        editorConfig);
 
     JobBrowseGui jobBrowseGui = new JobBrowseGui(
         craftuxUi.inventory(), domain.jobService, upgradeService);
