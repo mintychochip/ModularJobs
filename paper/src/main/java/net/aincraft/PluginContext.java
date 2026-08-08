@@ -149,6 +149,11 @@ public final class PluginContext {
     }
   }
 
+  static FishCatchGateStore loadFishCatchGates(JavaPlugin plugin) {
+    return new FishCatchGateStore(
+        new YamlFishCatchGateLoader(plugin.getLogger()).load(plugin.getConfig()));
+  }
+
   /**
    * Composition body. Sources are tracked on {@code resources} as they open so callers
    * (and {@link #create}) can clean up on failure.
@@ -226,9 +231,8 @@ public final class PluginContext {
     ProfessionWiring professions = ProfessionWiring.create(domain.jobService);
 
     BlockBreakGateStore blockBreakGateStore = new BlockBreakGateStore(
-        new YamlBlockBreakGateLoader(plugin.getLogger()).load(databaseConfig));
-    FishCatchGateStore fishCatchGateStore = new FishCatchGateStore(
-        new YamlFishCatchGateLoader(plugin.getLogger()).load(databaseConfig));
+        new YamlBlockBreakGateLoader(plugin.getLogger()).load(plugin.getConfig()));
+    FishCatchGateStore fishCatchGateStore = loadFishCatchGates(plugin);
 
     UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
     UpgradeEffectApplier effectApplier =

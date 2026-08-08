@@ -1,8 +1,9 @@
 package net.aincraft.profession;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -38,14 +39,22 @@ public final class YamlFishCatchGateLoader {
     if (section == null) {
       return List.of();
     }
-    List<FishCatchGate> gates = new ArrayList<>();
+    Map<String, FishCatchGate> gates = new LinkedHashMap<>();
     for (String materialKey : section.getKeys(false)) {
-      if (section.isConfigurationSection(materialKey)) {
-        parseEntry(section.getConfigurationSection(materialKey), materialKey)
-            .ifPresent(gates::add);
+      if (!section.isConfigurationSection(materialKey)) {
+        logger.warning("fish-catch-gates: '" + materialKey
+            + "' must be a configuration section — skipping");
+        continue;
       }
+      parseEntry(section.getConfigurationSection(materialKey), materialKey)
+          .ifPresent(gate -> {
+            if (gates.putIfAbsent(gate.itemKey(), gate) != null) {
+              logger.warning("fish-catch-gates: duplicate item key '"
+                  + gate.itemKey() + "' — keeping first entry");
+            }
+          });
     }
-    return gates;
+    return List.copyOf(gates.values());
   }
 
   private Optional<FishCatchGate> parseEntry(

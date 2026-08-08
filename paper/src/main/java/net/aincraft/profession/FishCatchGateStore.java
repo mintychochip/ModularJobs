@@ -1,10 +1,10 @@
 package net.aincraft.profession;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import net.aincraft.service.FishCatchGateService;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,9 +16,11 @@ public final class FishCatchGateStore implements FishCatchGateService {
   private final Map<String, FishCatchGate> byItem;
 
   public FishCatchGateStore(@NotNull List<FishCatchGate> gates) {
-    this.byItem = gates.stream()
-        .collect(Collectors.toUnmodifiableMap(
-            gate -> gate.itemKey().toLowerCase(Locale.ROOT), gate -> gate));
+    Map<String, FishCatchGate> map = new LinkedHashMap<>();
+    for (FishCatchGate gate : gates) {
+      map.putIfAbsent(gate.itemKey().toLowerCase(Locale.ROOT), gate);
+    }
+    this.byItem = Map.copyOf(map);
   }
 
   public boolean isEmpty() {
