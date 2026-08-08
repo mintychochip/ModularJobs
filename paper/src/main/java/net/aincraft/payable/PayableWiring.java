@@ -3,7 +3,6 @@ package net.aincraft.payable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
-import java.util.logging.Logger;
 import org.jetbrains.annotations.Nullable;
 import net.aincraft.container.Currency;
 import net.aincraft.container.EconomyProvider;
@@ -30,7 +29,6 @@ public final class PayableWiring {
 
   private static final String ECONOMY_TYPE = "modularjobs:economy";
   private static final String EXPERIENCE_TYPE = "modularjobs:experience";
-  private static final Logger LOGGER = Logger.getLogger(PayableWiring.class.getName());
 
   public final @Nullable EconomyProvider economyProvider;
 
@@ -66,8 +64,8 @@ public final class PayableWiring {
     return context -> {
       if (economyProvider == null) {
         throw new IllegalStateException(
-            "Cannot deposit economy payable: no EconomyProvider (Vault). "
-                + "Install Vault + an economy plugin or set economy.required: false only for "
+            "Cannot deposit economy payable: no EconomyProvider (Mint). "
+                + "Install the Mint plugin or set economy.required: false only for "
                 + "experience-only configs that never pay modularjobs:economy");
       }
       economyProvider.deposit(context.playerId(), context.payable().amount());

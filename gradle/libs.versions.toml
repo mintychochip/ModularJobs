@@ -46,6 +46,9 @@ jetbrains-annotations = "24.1.0"
 # Preferences public hooking API (live 0.1.0 on GH Packages / sibling ../preferences)
 preferences-api = "0.1.0"
 
+# Mint durable ledger API (aincraft-org/mint; published to sibling ../mint/build/maven-repo)
+mint-api = "1.0.0"
+
 [libraries]
 # Infrastructure
 kryo = { module = "com.esotericsoftware:kryo", version.ref = "kryo" }
@@ -70,6 +73,8 @@ craftux-common = { module = "dev.craftux:craftux-common", version.ref = "craftux
 craftux-paper = { module = "dev.craftux:craftux-paper", version.ref = "craftux" }
 # Soft-depend Preferences: compileOnly on API only (not the plugin jar)
 preferences-api = { module = "dev.jlo:preferences-api", version.ref = "preferences-api" }
+# Mint ledger API (compileOnly; Mint ships it at runtime)
+mint-api = { module = "dev.jlo.mint:mint-api", version.ref = "mint-api" }
 
 # Test
 mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v26.2", version.ref = "mockbukkit" }

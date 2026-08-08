@@ -86,15 +86,15 @@ Missing tables → plugin **fails at startup**. See `docs/database-schema.md`.
 
 ### Economy
 
-Money payables use **Vault** + an economy plugin.
+Money payables use the **Mint** ledger plugin (aincraft-org/mint).
 
 ```yaml
 # config.yml
 economy:
-  required: true   # fail enable if Vault economy missing
+  required: true   # fail enable if the Mint economy plugin is missing
 ```
 
-- `required: true` (default): hard-fail enable without Vault economy.
+- `required: true` (default): hard-fail enable without a Mint plugin.
 - `required: false`: experience-only servers; economy deposits throw if a task still pays money.
 
 ### Permissions
@@ -147,7 +147,7 @@ Players below the level cannot break the block; the event is cancelled with a me
 
 ### Soft depends
 
-PlaceholderAPI, Vault, mcMMO, Bolt, LWC, Choco, Preferences — optional.
+Mint, mcMMO, Bolt, LWC, Choco, Preferences — optional (Mint replaces the former Vault soft-depend).
 
 ## Version
 

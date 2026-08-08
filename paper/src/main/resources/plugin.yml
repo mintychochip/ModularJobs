@@ -5,7 +5,7 @@ authors: [ mintychochip ]
 api-version: '1.21'
 softdepend:
   - PlaceholderAPI
-  - Vault
+  - Mint
   - mcMMO
   - Bolt
   - LWC

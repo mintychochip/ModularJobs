@@ -10,7 +10,7 @@ kill-contribution-cutoff: 0.5
 # Max distance (blocks) from furnace for smelt/bake pay attribution
 furnace-max-distance: 25.0
 
-# Economy deposits (Vault). When required=true, plugin enable fails without a Vault economy.
+# Economy deposits (Mint ledger plugin). When required=true, plugin enable fails without a Mint economy.
 economy:
   required: true
 

@@ -34,8 +34,8 @@ class PluginYmlProductionReadinessTest {
       assertFalse("1.13".equals(api), "api-version must be modern (not 1.13), got " + api);
 
       assertTrue(yml.getStringList("softdepend").stream()
-              .anyMatch(s -> s.equalsIgnoreCase("Vault")),
-          "softdepend must list Vault");
+              .anyMatch(s -> s.equalsIgnoreCase("Mint")),
+          "softdepend must list Mint");
       assertTrue(yml.getStringList("softdepend").stream()
               .anyMatch(s -> s.equalsIgnoreCase("PlaceholderAPI")),
           "softdepend must list PlaceholderAPI");

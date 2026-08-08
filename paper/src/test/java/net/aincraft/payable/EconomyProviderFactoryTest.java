@@ -18,7 +18,6 @@ import net.aincraft.container.PayableType;
 import net.aincraft.test.MockBukkitSupport;
 import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +27,7 @@ import org.mockbukkit.mockbukkit.plugin.PluginMock;
 
 /**
  * Drives shipped {@link EconomyProviderFactory} and {@link PayableWiring#economyHandlerFor}
- * selection / null hard-fail behavior without a live Vault server.
+ * selection / null hard-fail behavior without a live Mint server.
  */
 class EconomyProviderFactoryTest {
 
@@ -46,7 +45,7 @@ class EconomyProviderFactoryTest {
   }
 
   @Test
-  void tryCreateReturnsNullWithoutVault() {
+  void tryCreateReturnsNullWithoutMint() {
     assertNull(EconomyProviderFactory.tryCreate(plugin));
   }
 
@@ -57,7 +56,7 @@ class EconomyProviderFactoryTest {
         IllegalStateException.class,
         () -> EconomyProviderFactory.createOrFail(plugin));
     assertTrue(ex.getMessage().toLowerCase().contains("economy")
-        || ex.getMessage().toLowerCase().contains("vault"));
+        || ex.getMessage().toLowerCase().contains("mint"));
   }
 
   @Test
