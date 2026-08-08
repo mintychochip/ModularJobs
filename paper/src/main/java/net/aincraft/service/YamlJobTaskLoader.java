@@ -182,7 +182,8 @@ public final class YamlJobTaskLoader {
           for (PayableEntry payable : task.payables) {
             payableStmt.setInt(1, taskId);
             payableStmt.setString(2, payable.payableType);
-            payableStmt.setString(3, payable.amount.toString());
+            // NUMERIC column — bind as BigDecimal, not string (Postgres rejects varchar)
+            payableStmt.setBigDecimal(3, payable.amount);
             payableStmt.setString(4, payable.currency);
             payableStmt.addBatch();
           }
