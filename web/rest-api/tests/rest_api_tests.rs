@@ -13,7 +13,9 @@ use rest_api::security::SlidingWindowLimiter;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::env;
+use std::sync::LazyLock;
 use std::time::Duration;
+use tokio::sync::{Mutex, MutexGuard};
 use tower::ServiceExt;
 
 fn database_url() -> String {
@@ -22,7 +24,10 @@ fn database_url() -> String {
     })
 }
 
-async fn setup_store() -> SessionStore {
+static DATABASE_TEST_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+async fn setup_store() -> (SessionStore, MutexGuard<'static, ()>) {
+    let guard = DATABASE_TEST_LOCK.lock().await;
     let store = SessionStore::connect(&database_url(), 2)
         .await
         .expect("connect to postgres for session API tests");
@@ -37,16 +42,19 @@ async fn setup_store() -> SessionStore {
         .execute(store.pool())
         .await
         .expect("truncate editor_sessions");
-    store
+    (store, guard)
 }
 
 /// Default test state: no create secret, high rate limit so tests do not 429.
-async fn setup() -> AppState {
-    let store = setup_store().await;
-    AppState::with_create_policy(
-        store,
-        None,
-        SlidingWindowLimiter::new(10_000, Duration::from_secs(60)),
+async fn setup() -> (AppState, MutexGuard<'static, ()>) {
+    let (store, guard) = setup_store().await;
+    (
+        AppState::with_create_policy(
+            store,
+            None,
+            SlidingWindowLimiter::new(10_000, Duration::from_secs(60)),
+        ),
+        guard,
     )
 }
 
@@ -142,7 +150,7 @@ async fn create_session(
 
 #[tokio::test]
 async fn create_returns_code_and_server_minted_token() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     // Client-supplied weak token must be ignored; server mints UUID.
     let payload = sample_payload("weak-client-token");
@@ -172,7 +180,7 @@ async fn create_returns_code_and_server_minted_token() {
 
 #[tokio::test]
 async fn get_with_valid_token_returns_payload() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     let payload = sample_payload("");
     let (code, token) = create_session(&router, &payload).await;
@@ -204,7 +212,7 @@ async fn get_with_valid_token_returns_payload() {
 
 #[tokio::test]
 async fn get_without_token_fails() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     let (code, _) = create_session(&router, &sample_payload("")).await;
 
@@ -223,7 +231,7 @@ async fn get_without_token_fails() {
 
 #[tokio::test]
 async fn get_with_wrong_token_fails() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     let (code, _) = create_session(&router, &sample_payload("")).await;
 
@@ -245,7 +253,7 @@ async fn get_with_wrong_token_fails() {
 
 #[tokio::test]
 async fn get_unknown_code_does_not_reveal_existence() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
 
     let get = router
@@ -265,7 +273,7 @@ async fn get_unknown_code_does_not_reveal_existence() {
 
 #[tokio::test]
 async fn update_then_get_preserves_jobs_tasks_payables_and_token() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     let (code, token) = create_session(&router, &sample_payload("")).await;
 
@@ -328,7 +336,7 @@ async fn update_then_get_preserves_jobs_tasks_payables_and_token() {
 
 #[tokio::test]
 async fn update_without_token_cannot_overwrite() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     let (code, token) = create_session(&router, &sample_payload("")).await;
 
@@ -352,7 +360,7 @@ async fn update_without_token_cannot_overwrite() {
 
 #[tokio::test]
 async fn update_rejects_payload_session_token_rewrite() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     let (code, token) = create_session(&router, &sample_payload("")).await;
 
@@ -386,7 +394,7 @@ async fn update_rejects_payload_session_token_rewrite() {
 
 #[tokio::test]
 async fn create_requires_secret_when_configured() {
-    let store = setup_store().await;
+    let (store, _database_guard) = setup_store().await;
     let state = AppState::with_create_policy(
         store,
         Some("super-secret-create".to_string()),
@@ -426,7 +434,7 @@ async fn create_requires_secret_when_configured() {
 
 #[tokio::test]
 async fn create_rate_limit_returns_429() {
-    let store = setup_store().await;
+    let (store, _database_guard) = setup_store().await;
     let state = AppState::with_create_policy(
         store,
         None,
@@ -467,7 +475,7 @@ async fn create_rate_limit_returns_429() {
 
 #[tokio::test]
 async fn healthz_ok() {
-    let state = setup().await;
+    let (state, _database_guard) = setup().await;
     let router = app(state);
     let response = router
         .oneshot(
