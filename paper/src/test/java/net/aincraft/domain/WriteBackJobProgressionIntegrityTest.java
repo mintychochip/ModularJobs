@@ -64,7 +64,7 @@ class WriteBackJobProgressionIntegrityTest {
   @Test
   void loadAllForJobPendingDeleteMatchesJobKeyNotPlayerId() {
     JobRecord miner = job("modularjobs:miner");
-    JobRecord fisher = job("modularjobs:fisher");
+    JobRecord fisher = job("modularjobs:fisherman");
     // playerId deliberately equals a job key string to catch the old bug
     String playerId = "modularjobs:miner";
     writeBack.save(new JobProgressionRecord(playerId, miner, new BigDecimal("10")));

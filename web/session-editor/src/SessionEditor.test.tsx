@@ -18,8 +18,8 @@ describe('SessionEditor edit pipeline', () => {
         serverName: null,
       },
       jobs: {
-        'modularjobs:fisher': {
-          displayName: 'Fisher',
+        'modularjobs:fisherman': {
+          displayName: 'Fisherman',
           tasks: [
             {
               actionTypeKey: 'modularjobs:fish',
@@ -33,9 +33,9 @@ describe('SessionEditor edit pipeline', () => {
       registeredPayableTypes: ['modularjobs:economy'],
     };
 
-    const edited = setTaskPayableAmount(payload, 'modularjobs:fisher', 0, 0, '12.50');
+    const edited = setTaskPayableAmount(payload, 'modularjobs:fisherman', 0, 0, '12.50');
     expect(edited.metadata.sessionToken).toBe('sec');
-    expect(edited.jobs['modularjobs:fisher'].tasks[0].payables[0].amount).toBe('12.50');
+    expect(edited.jobs['modularjobs:fisherman'].tasks[0].payables[0].amount).toBe('12.50');
   });
 
   it('session editor module exports the React component', async () => {

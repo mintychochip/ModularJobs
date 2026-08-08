@@ -34,7 +34,8 @@ class ProfessionCatalogTest {
     assertEquals("mining", ProfessionCatalog.resolve("miner").orElseThrow().id());
     assertEquals("woodcutting", ProfessionCatalog.resolve("lumberjack").orElseThrow().id());
     assertEquals("farming", ProfessionCatalog.resolve("farmer").orElseThrow().id());
-    assertEquals("fishing", ProfessionCatalog.resolve("fisher").orElseThrow().id());
+    assertEquals("fishing", ProfessionCatalog.resolve("fisherman").orElseThrow().id());
+    assertTrue(ProfessionCatalog.resolve("fisher").isEmpty());
     assertEquals("alchemy", ProfessionCatalog.resolve("alchemist").orElseThrow().id());
     assertEquals("weaponsmithing", ProfessionCatalog.resolve("blacksmith").orElseThrow().id());
   }

@@ -23,7 +23,7 @@ public final class ProfessionCatalog {
       def("woodcutting", "lumberjack", ProfessionCategory.GATHERING, "Woodcutting"),
       def("herbalism", "herbalism", ProfessionCategory.GATHERING, "Herbalism"),
       def("farming", "farmer", ProfessionCategory.GATHERING, "Farming"),
-      def("fishing", "fisher", ProfessionCategory.GATHERING, "Fishing"),
+      def("fishing", "fisherman", ProfessionCategory.GATHERING, "Fishing"),
       // Processing
       def("smelting", "smelting", ProfessionCategory.PROCESSING, "Smelting"),
       def("milling", "milling", ProfessionCategory.PROCESSING, "Milling"),
@@ -43,7 +43,7 @@ public final class ProfessionCatalog {
       "lumberjack", "woodcutting",
       "miner", "mining",
       "farmer", "farming",
-      "fisher", "fishing",
+      "fisherman", "fishing",
       "alchemist", "alchemy",
       "blacksmith", "weaponsmithing"
   );

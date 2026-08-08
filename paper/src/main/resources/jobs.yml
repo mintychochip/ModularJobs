@@ -52,8 +52,8 @@ hunter:
     experience: base + (base * (level - 1) * 0.01)
     economy: base + (base * (level - 1) * 0.01)
 
-fisher:
-  display-name: "<aqua>Fisher"
+fisherman:
+  display-name: "<aqua>Fisherman"
   description: "Fishes in lakes, rivers, and oceans."
   max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
@@ -89,7 +89,7 @@ alchemist:
     economy: base + (base * (level - 1) * 0.01)
 
 # --- AzothMC §8.1 tracks not covered by legacy keys above ---
-# (mining→miner, woodcutting→lumberjack, farming→farmer, fishing→fisher,
+# (mining→miner, woodcutting→lumberjack, farming→farmer, fishing→fisherman,
 #  alchemy→alchemist, weaponsmithing→blacksmith via ProfessionCatalog)
 
 herbalism:
@@ -167,6 +167,16 @@ tailoring:
 engineering:
   display-name: "<dark_purple>Engineering"
   description: "Builds tools, gadgets, and mechanical components."
+  max-level: 100
+  leveling-curve: level + 4 * level + level * level * level * 10
+  payable-curves:
+    experience: base + (base * (level - 1) * 0.01)
+    economy: base + (base * (level - 1) * 0.01)
+
+
+artisan:
+  display-name: "<dark_purple>Artisan"
+  description: "Crafts, bakes, and creates useful goods."
   max-level: 100
   leveling-curve: level + 4 * level + level * level * level * 10
   payable-curves:

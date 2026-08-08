@@ -70,4 +70,17 @@ process.
 2. Verify required tables exist (`job_progression`, `job_tasks`, …).
 3. If any table is missing → **fail enable** with a message pointing at `scripts/apply-postgres-schema.sh`.
 
+## Job and task configuration updates
+
+`YamlJobTaskLoader` imports `job_tasks.csv` only when the `job_tasks` table is
+empty. Once task rows exist, startup deliberately skips the import; changing
+the packaged CSV does not overwrite live task data. Operators must back up and
+apply task changes through the existing editor/repository path or an explicit
+reviewed SQL operation. Do not clear a live task table without a backup and
+reimport plan.
+
+The `fisher` → `fisherman` job-key rename likewise requires an operator-managed
+data update for existing progression, upgrade, task, and payable rows before
+deploying the renamed catalog.
+
 SQLite, MySQL, and MariaDB are **not supported**.

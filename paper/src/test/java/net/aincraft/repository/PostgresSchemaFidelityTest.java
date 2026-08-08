@@ -165,7 +165,7 @@ class PostgresSchemaFidelityTest {
               (job_key, action_type_key, context_key, payable_type_key, amount, currency)
             VALUES (?, ?, ?, ?, ?, ?)
             """)) {
-      ps.setString(1, "modularjobs:fisher");
+      ps.setString(1, "modularjobs:fisherman");
       ps.setString(2, "modularjobs:fish");
       ps.setString(3, "minecraft:cod");
       ps.setString(4, "modularjobs:economy");
@@ -179,7 +179,7 @@ class PostgresSchemaFidelityTest {
             SELECT amount, currency FROM payable_records
             WHERE job_key = ? AND action_type_key = ? AND context_key = ? AND payable_type_key = ?
             """)) {
-      ps.setString(1, "modularjobs:fisher");
+      ps.setString(1, "modularjobs:fisherman");
       ps.setString(2, "modularjobs:fish");
       ps.setString(3, "minecraft:cod");
       ps.setString(4, "modularjobs:economy");
