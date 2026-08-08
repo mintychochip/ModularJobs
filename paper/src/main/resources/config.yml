@@ -19,6 +19,13 @@ economy:
 profession-apis:
   register-bukkit-services: false
 
+# Block breaking gates: minimum profession level required to break a material.
+# Material names are Minecraft keys (diamond_ore, ancient_debris, ...).
+# Professions are §8.1 catalog ids (mining, woodcutting, farming, ...).
+block-break-gates:
+  # diamond_ore: { profession: mining, level: 30 }
+  # deepslate_diamond_ore: { profession: mining, level: 30 }
+
 trackable_entities:
 
 # Color scheme for all command outputs
