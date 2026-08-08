@@ -38,14 +38,17 @@ describe('sessionEditorPath', () => {
     expect(beforeHash).not.toContain('mytoken');
     expect(beforeHash).not.toContain('token=');
   });
+  it('encodes reserved characters without leaking token into query', () => {
+    const path = sessionEditorPath('code/1', 'token?1');
+    const [query, fragment] = path.split('#');
+    expect(query).toContain('code=code%2F1');
+    expect(query).not.toContain('token');
+    expect(fragment).toBe('token=token%3F1');
+  });
+
 });
 
 describe('scrubTokenFromQuery', () => {
-  const original = {
-    search: window.location.search,
-    hash: window.location.hash,
-    pathname: window.location.pathname,
-  };
 
   beforeEach(() => {
     vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});

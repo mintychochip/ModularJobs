@@ -6,9 +6,11 @@ ModularJobs supports **PostgreSQL only**.
 
 | Store | Who creates tables? | Who only connects? |
 |-------|---------------------|--------------------|
-| **PostgreSQL** | Ops / CI / script **once** | Plugin |
+| **PostgreSQL** | Ops / CI / script **once** | Paper plugin and `web/rest-api` |
 
-The **game process never runs DDL**. That is intentional: multi-instance servers, least privilege, and reviewable migrations do not belong in `onEnable`.
+The **game process and REST API never run DDL**. That is intentional: multi-instance
+servers, least privilege, reviewable migrations, backups, and upgrades do not belong
+in `onEnable` or the API request path.
 
 ## Source of truth
 
@@ -50,6 +52,17 @@ upgrades:
 ```
 
 Identical `jdbc-url` + `username` sections share one Hikari pool.
+
+## Shared editor session database
+
+The Paper plugin and `web/rest-api` must point at the same PostgreSQL database. The
+REST API stores editor payloads in `editor_sessions`; Paper fetches those payloads
+through the REST API and applies task changes through its existing repositories.
+
+The plugin does not launch PostgreSQL, manage its process, create a data directory,
+or replace operator backups and upgrades. For local development, run PostgreSQL
+externally (for example, Docker/Podman) and apply the schema before starting either
+process.
 
 ## Startup behavior
 

@@ -5,7 +5,7 @@ import Base from '../../layouts/Base.astro';
 <!--
   Secure session editor is the React app under web/session-editor.
   It talks to web/rest-api (Postgres), not bytebin.lucko.me.
-  Query params: code, token — forwarded into the iframe/embed or open the React build.
+  The public code stays in the query; the secret token stays in the hash fragment.
 -->
 <Base title="Edit Jobs — Secure Session">
   <div class="container mx-auto p-4 space-y-4">
@@ -36,12 +36,24 @@ import Base from '../../layouts/Base.astro';
   </div>
   <script>
     const params = new URLSearchParams(window.location.search);
-    const code = params.get('code') ?? '';
-    const token = params.get('token') ?? params.get('sessionToken') ?? '';
-    const q = new URLSearchParams();
-    if (code) q.set('code', code);
-    if (token) q.set('token', token);
-    const target = `/session-editor/${q.toString() ? `?${q}` : ''}`;
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const code = hashParams.get('code') ?? params.get('code') ?? params.get('session') ?? '';
+    const token =
+      hashParams.get('token') ??
+      hashParams.get('sessionToken') ??
+      params.get('token') ??
+      params.get('sessionToken') ??
+      '';
+
+    const query = new URLSearchParams();
+    if (code) query.set('code', code);
+
+    const fragment = new URLSearchParams();
+    if (token) fragment.set('token', token);
+
+    const target =
+      `/session-editor/${query.toString() ? `?${query}` : ''}` +
+      `${fragment.toString() ? `#${fragment}` : ''}`;
     const link = document.getElementById('open-react-editor');
     if (link instanceof HTMLAnchorElement) link.href = target;
     const frame = document.getElementById('session-editor-frame');

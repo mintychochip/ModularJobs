@@ -4,7 +4,7 @@ Rust REST service for ModularJobs secure editor sessions stored in PostgreSQL.
 
 ## Schema ownership
 
-This process **never creates tables**. Provision once:
+This process **never creates tables**. Provision the shared database once:
 
 ```bash
 ./scripts/apply-postgres-schema.sh
@@ -12,7 +12,26 @@ This process **never creates tables**. Provision once:
 psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
 ```
 
-See `docs/database-schema.md`.
+See `docs/database-schema.md`. Paper and this REST process must use the same
+PostgreSQL database. The Paper plugin only connects through its existing
+`database.yml` Hikari configuration; it never launches PostgreSQL, owns its
+data directory, or runs schema DDL.
+
+## Paper editor configuration
+
+Set the plugin's `config.yml` editor endpoint to this process:
+
+```yaml
+editor:
+  session-api-url: http://127.0.0.1:18787
+  web-editor-url: https://modular-jobs.vercel.app/editor
+  session-create-secret: long-random-value
+  session-ttl-minutes: 1440
+```
+
+When `SESSION_CREATE_SECRET` is set for this API, `editor.session-create-secret`
+must contain the same value. The browser receives the public session code in the
+URL query and the secret token in the URL fragment.
 
 ## Endpoints
 

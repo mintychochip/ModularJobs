@@ -46,3 +46,13 @@ preferences:
   # Default view mode: true = GUI dialog, false = chat output
   # Players can override with /jobs info preference gui/chat
   default-gui-mode: true
+
+# Secure web editor. PostgreSQL and the REST API are external services.
+# The plugin never launches PostgreSQL or provisions schema.
+editor:
+  enabled: true
+  session-api-url: http://127.0.0.1:18787
+  web-editor-url: https://modular-jobs.vercel.app/editor
+  # Must match REST SESSION_CREATE_SECRET when the API requires one.
+  session-create-secret: ""
+  session-ttl-minutes: 1440
