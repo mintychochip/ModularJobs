@@ -145,6 +145,20 @@ block-break-gates:
 
 Players below the level cannot break the block; the event is cancelled with a message. Staff bypass via `modularjobs.bypassblockbreak`.
 
+### Fish catching gates
+
+Restrict a fish item to a minimum profession level (`fish-catch-gates` in `config.yml`):
+
+```yaml
+fish-catch-gates:
+  cod: { profession: fisherman, level: 1 }
+  salmon: { profession: fisherman, level: 10 }
+  tropical_fish: { profession: fisherman, level: 20 }
+  pufferfish: { profession: fisherman, level: 30 }
+```
+
+Below-level or unjoined players do not collect configured fish and receive no fish job payment. Staff bypass via `modularjobs.bypassfishcatch`. Junk and treasure are unaffected.
+
 ### Soft depends
 
 Mint, mcMMO, Bolt, LWC, Choco, Preferences — optional (Mint replaces the former Vault soft-depend).
