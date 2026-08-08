@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::env;
 use std::sync::LazyLock;
 use std::time::Duration;
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::{Mutex, MutexGuard, OnceCell};
 use tower::ServiceExt;
 
 fn database_url() -> String {
@@ -25,6 +25,8 @@ fn database_url() -> String {
 }
 
 static DATABASE_TEST_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+static DATABASE_RESET: OnceCell<()> = OnceCell::const_new();
 
 async fn setup_store() -> (SessionStore, MutexGuard<'static, ()>) {
     let guard = DATABASE_TEST_LOCK.lock().await;
@@ -38,10 +40,14 @@ async fn setup_store() -> (SessionStore, MutexGuard<'static, ()>) {
         .require_schema()
         .await
         .expect("editor_sessions must exist after provision");
-    sqlx::query("TRUNCATE TABLE editor_sessions")
-        .execute(store.pool())
-        .await
-        .expect("truncate editor_sessions");
+    DATABASE_RESET
+        .get_or_init(|| async {
+            sqlx::query("TRUNCATE TABLE editor_sessions")
+                .execute(store.pool())
+                .await
+                .expect("truncate editor_sessions");
+        })
+        .await;
     (store, guard)
 }
 
