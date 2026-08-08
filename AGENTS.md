@@ -94,6 +94,13 @@ payable:
   password: secret
 ```
 
+## Living specs (domain catalogs)
+
+Durable design intent + feature horizons live under `docs/living-specs/`.
+Read the domain catalog before implementing; flip checkboxes when work ships.
+Index: `docs/living-specs/README.md`. One-shot design dumps under
+`docs/superpowers/` are historical — horizons in living specs are authoritative.
+
 ## Architecture notes (core)
 
 - Composition root: `PluginContext` + package `*Wiring` (no Guice)
