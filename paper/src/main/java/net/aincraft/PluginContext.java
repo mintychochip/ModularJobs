@@ -52,8 +52,11 @@ import net.aincraft.payment.PaymentWiring;
 import net.aincraft.placeholders.PlaceholderExpansionHandle;
 import net.aincraft.profession.BlockBreakGateListener;
 import net.aincraft.profession.BlockBreakGateStore;
+import net.aincraft.profession.FishCatchGateListener;
+import net.aincraft.profession.FishCatchGateStore;
 import net.aincraft.profession.ProfessionWiring;
 import net.aincraft.profession.YamlBlockBreakGateLoader;
+import net.aincraft.profession.YamlFishCatchGateLoader;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.protection.BlockProtectionAdapter;
 import net.aincraft.protection.BlockProtectionAdapterProvider;
@@ -224,6 +227,8 @@ public final class PluginContext {
 
     BlockBreakGateStore blockBreakGateStore = new BlockBreakGateStore(
         new YamlBlockBreakGateLoader(plugin.getLogger()).load(databaseConfig));
+    FishCatchGateStore fishCatchGateStore = new FishCatchGateStore(
+        new YamlFishCatchGateLoader(plugin.getLogger()).load(databaseConfig));
 
     UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
     UpgradeEffectApplier effectApplier =
@@ -336,6 +341,8 @@ public final class PluginContext {
         upgradeService, effectApplier, permissionManager, skillTreeRegistry));
     // Profession-gated block breaking (cancel below configured level)
     listenerList.add(new BlockBreakGateListener(blockBreakGateStore, professions.professionService));
+    // Profession-gated fish catches (cancel below configured level)
+    listenerList.add(new FishCatchGateListener(fishCatchGateStore, professions.professionService));
 
     EventBus eventBus = new EventBus();
     Bridge bridge = new BridgeImpl(

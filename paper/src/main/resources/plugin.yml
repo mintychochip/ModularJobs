@@ -52,3 +52,6 @@ permissions:
   modularjobs.bypassblockbreak:
     description: Bypass profession-gated block breaking
     default: op
+  modularjobs.bypassfishcatch:
+    description: Bypass profession-gated fish catching
+    default: op

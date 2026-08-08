@@ -26,6 +26,15 @@ block-break-gates:
   # diamond_ore: { profession: mining, level: 30 }
   # deepslate_diamond_ore: { profession: mining, level: 30 }
 
+# Fish catching gates: minimum profession level required to catch a fish item.
+# Fish keys are cod, salmon, tropical_fish, or pufferfish.
+# Professions are §8.1 catalog ids or aliases (fisherman resolves to fishing).
+fish-catch-gates:
+  # cod: { profession: fisherman, level: 1 }
+  # salmon: { profession: fisherman, level: 10 }
+  # tropical_fish: { profession: fisherman, level: 20 }
+  # pufferfish: { profession: fisherman, level: 30 }
+
 trackable_entities:
 
 # Color scheme for all command outputs
