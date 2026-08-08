@@ -6,8 +6,8 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.sql.SQLException;
 import java.util.List;
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.commands.JobsCommand;
+import net.aincraft.placeholders.PlaceholderExpansionHandle;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
@@ -85,7 +85,7 @@ public final class ModularJobsBootstrap extends JavaPlugin {
       return;
     }
     try {
-      PlaceholderExpansion expansion = ctx.placeholderExpansion;
+      PlaceholderExpansionHandle expansion = ctx.placeholderExpansion;
       if (expansion != null) {
         try {
           expansion.unregister();

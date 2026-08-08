@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.aincraft.boost.BoostFactoryImpl;
 import net.aincraft.boost.ConsumableBoostController;
 import net.aincraft.boost.config.BoostSourceLoader;
@@ -50,7 +49,7 @@ import net.aincraft.gui.craftux.CraftuxSurfaces;
 import net.aincraft.gui.craftux.CraftuxUiHost;
 import net.aincraft.payable.PayableWiring;
 import net.aincraft.payment.PaymentWiring;
-import net.aincraft.placeholders.ModularJobsPlaceholderExpansion;
+import net.aincraft.placeholders.PlaceholderExpansionHandle;
 import net.aincraft.profession.BlockBreakGateListener;
 import net.aincraft.profession.BlockBreakGateStore;
 import net.aincraft.profession.ProfessionWiring;
@@ -110,7 +109,7 @@ public final class PluginContext {
   public final Set<Listener> listeners;
   public final Set<JobsCommand> commands;
   @Nullable
-  public final PlaceholderExpansion placeholderExpansion;
+  public final PlaceholderExpansionHandle placeholderExpansion;
 
   private PluginContext(
       Bridge bridge,
@@ -119,7 +118,7 @@ public final class PluginContext {
       UpgradeTreeLoader upgradeTreeLoader,
       Set<Listener> listeners,
       Set<JobsCommand> commands,
-      @Nullable PlaceholderExpansion placeholderExpansion) {
+      @Nullable PlaceholderExpansionHandle placeholderExpansion) {
     this.bridge = bridge;
     this.connectionSource = connectionSource;
     this.resources = resources;
@@ -353,10 +352,9 @@ public final class PluginContext {
         timedBoostDataService,
         eventBus);
 
-    PlaceholderExpansion placeholderExpansion = null;
-    if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-      placeholderExpansion = new ModularJobsPlaceholderExpansion(domain.jobService);
-    }
+    // Soft-depend: only loads ModularJobsPlaceholderExpansion (and PAPI types) when present
+    PlaceholderExpansionHandle placeholderExpansion =
+        PlaceholderExpansionHandle.tryCreate(domain.jobService);
 
     return new PluginContext(
         bridge,

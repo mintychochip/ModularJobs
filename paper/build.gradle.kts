@@ -78,6 +78,8 @@ tasks {
         downloadPlugins {
             // Bolt 1.2.x lists Paper 26.2 compatibility on Hangar
             hangar("Bolt", "1.2.22")
+            // 2.12.3+ required for Paper 26.2 (2.11.x crashes parsing version "26.2")
+            hangar("PlaceholderAPI", "2.12.3")
         }
     }
 }
