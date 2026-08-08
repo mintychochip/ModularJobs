@@ -308,8 +308,10 @@ public final class PluginContext {
     commands.add(new TopCommand(domain.jobService, topPageProvider, plugin, craftuxSurfaces));
     commands.add(infoCommand);
     commands.add(new LeaveCommand(domain.jobService, domain.jobResolver));
-    commands.add(new ApplyEditsCommand(editorService));
-    commands.add(new EditorCommand(editorService, domain.jobService, domain.jobResolver));
+    if (editorConfig.enabled()) {
+      commands.add(new ApplyEditsCommand(editorService));
+      commands.add(new EditorCommand(editorService, domain.jobService, domain.jobResolver));
+    }
     commands.add(new StatsCommand(domain.jobService, statsGui));
     commands.add(new ArchiveCommand(domain.jobService));
     commands.add(new BoostCommand(

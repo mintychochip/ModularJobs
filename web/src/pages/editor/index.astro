@@ -11,38 +11,57 @@ import Base from '../../layouts/Base.astro';
         <h2 class="card-title">How to use</h2>
         <ol class="list-decimal list-inside space-y-2">
           <li>Run <code class="kbd kbd-sm">/jobs editor</code> in-game</li>
-          <li>Click the link provided or paste the code below</li>
+          <li>Click the link provided or paste the session code and token below</li>
           <li>Edit your job tasks in the table</li>
           <li>Click Save and run <code class="kbd kbd-sm">/jobs applyedits CODE</code></li>
         </ol>
       </div>
     </div>
 
-    <div class="form-control">
-      <label class="label">
-        <span class="label-text">Session Code</span>
-      </label>
-      <div class="join">
-        <input type="text" id="code-input" placeholder="Paste code here..."
-               class="input input-bordered join-item flex-1" />
-        <button id="load-btn" class="btn btn-primary join-item">Load</button>
+    <div class="space-y-4">
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Session Code</span>
+        </label>
+        <div class="join">
+          <input type="text" id="code-input" placeholder="Paste code here..."
+                 class="input input-bordered join-item flex-1" autocomplete="off" />
+        </div>
       </div>
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Session Token</span>
+        </label>
+        <input type="password" id="token-input" placeholder="Paste token here..."
+               class="input input-bordered" autocomplete="off" />
+      </div>
+      <button id="load-btn" class="btn btn-primary">Load Session</button>
     </div>
   </div>
 
   <script>
-    document.getElementById('load-btn')?.addEventListener('click', () => {
-      const code = (document.getElementById('code-input') as HTMLInputElement)?.value?.trim();
-      if (code) {
-        window.location.href = `/editor/session?code=${encodeURIComponent(code)}`;
+    const loadSession = () => {
+      const code = (document.getElementById('code-input') as HTMLInputElement)?.value?.trim() ?? '';
+      const token = (document.getElementById('token-input') as HTMLInputElement)?.value?.trim() ?? '';
+      if (!code || !token) {
+        window.alert('Enter both the session code and token.');
+        return;
       }
-    });
 
-    // Also handle Enter key
-    document.getElementById('code-input')?.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        document.getElementById('load-btn')?.click();
+      const query = new URLSearchParams({code});
+      const fragment = new URLSearchParams({token});
+      window.location.href = `/editor/session?${query}#${fragment}`;
+    };
+
+    document.getElementById('load-btn')?.addEventListener('click', loadSession);
+
+    const handleKeypress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        loadSession();
       }
-    });
+    };
+
+    document.getElementById('code-input')?.addEventListener('keypress', handleKeypress);
+    document.getElementById('token-input')?.addEventListener('keypress', handleKeypress);
   </script>
 </Base>

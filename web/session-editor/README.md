@@ -11,11 +11,14 @@ npm install
 npm run dev
 ```
 
-Open with query params:
+Open with the public code in the query and secret token in the fragment:
 
 ```
-http://localhost:5174/?code=<sessionCode>&token=<sessionToken>
+http://localhost:5174/?code=<sessionCode>#token=<sessionToken>
 ```
+
+Legacy `&token=<sessionToken>` query URLs are accepted for migration only and
+must not be generated.
 
 ## Scripts
 
