@@ -1,19 +1,44 @@
 package net.aincraft.editor;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
+
 /**
- * Configuration for the web editor feature.
+ * Configuration for the REST-backed web editor.
  */
 public record EditorConfig(
     boolean enabled,
-    String bytebinUrl,
+    String sessionApiUrl,
     String webEditorUrl,
+    String sessionCreateSecret,
     int sessionTtlMinutes
 ) {
-    public static final String DEFAULT_BYTEBIN_URL = "https://bytebin.lucko.me";
+    public static final String DEFAULT_SESSION_API_URL = "http://127.0.0.1:18787";
     public static final String DEFAULT_WEB_EDITOR_URL = "https://modular-jobs.vercel.app/editor";
-    public static final int DEFAULT_SESSION_TTL = 60;
+    public static final int DEFAULT_SESSION_TTL = 24 * 60;
 
     public static EditorConfig defaults() {
-        return new EditorConfig(true, DEFAULT_BYTEBIN_URL, DEFAULT_WEB_EDITOR_URL, DEFAULT_SESSION_TTL);
+        return new EditorConfig(
+            true,
+            DEFAULT_SESSION_API_URL,
+            DEFAULT_WEB_EDITOR_URL,
+            "",
+            DEFAULT_SESSION_TTL);
+    }
+
+    public static EditorConfig fromPlugin(JavaPlugin plugin) {
+        FileConfiguration config = plugin.getConfig();
+        EditorConfig defaults = defaults();
+        return new EditorConfig(
+            config.getBoolean("editor.enabled", defaults.enabled()),
+            string(config, "editor.session-api-url", defaults.sessionApiUrl()),
+            string(config, "editor.web-editor-url", defaults.webEditorUrl()),
+            string(config, "editor.session-create-secret", defaults.sessionCreateSecret()),
+            Math.max(1, config.getInt("editor.session-ttl-minutes", defaults.sessionTtlMinutes())));
+    }
+
+    private static String string(FileConfiguration config, String path, String fallback) {
+        String value = config.getString(path);
+        return value == null || value.isBlank() ? fallback : value;
     }
 }

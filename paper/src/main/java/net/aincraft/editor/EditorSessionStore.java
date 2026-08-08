@@ -2,14 +2,13 @@ package net.aincraft.editor;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Manages editor sessions with automatic expiration.
- * Sessions are stored in a Caffeine cache and expire after the configured TTL.
+ * Stores the Paper-local code-to-token handoff for REST editor sessions.
  */
 public final class EditorSessionStore {
 
@@ -21,44 +20,28 @@ public final class EditorSessionStore {
             .build();
     }
 
-    /**
-     * Stores a new editor session.
-     *
-     * @param session The session to store
-     */
     public void store(EditorSession session) {
-        sessionCache.put(session.token(), session);
+        sessionCache.put(session.sessionCode(), session);
     }
 
-    /**
-     * Retrieves a session by its token.
-     *
-     * @param token The session token
-     * @return Optional containing the session if found, empty otherwise
-     */
-    public Optional<EditorSession> get(String token) {
-        return Optional.ofNullable(sessionCache.getIfPresent(token));
+    public Optional<EditorSession> get(String sessionCode) {
+        EditorSession session = sessionCache.getIfPresent(sessionCode);
+        if (session == null) {
+            return Optional.empty();
+        }
+        if (session.isExpired(Instant.now())) {
+            sessionCache.invalidate(sessionCode);
+            return Optional.empty();
+        }
+        return Optional.of(session);
     }
 
-    /**
-     * Validates a session token against a player ID.
-     *
-     * @param token The session token to validate
-     * @param playerId The player ID to check against
-     * @return true if the session exists and belongs to the specified player
-     */
-    public boolean validate(String token, UUID playerId) {
-        return get(token)
-            .map(session -> session.playerId().equals(playerId))
-            .orElse(false);
+    public Optional<EditorSession> getOwned(String sessionCode, UUID playerId) {
+        return get(sessionCode)
+            .filter(session -> session.playerId().equals(playerId));
     }
 
-    /**
-     * Removes a session from the store.
-     *
-     * @param token The session token to remove
-     */
-    public void remove(String token) {
-        sessionCache.invalidate(token);
+    public void remove(String sessionCode) {
+        sessionCache.invalidate(sessionCode);
     }
 }

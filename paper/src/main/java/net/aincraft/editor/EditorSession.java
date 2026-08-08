@@ -4,18 +4,22 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Represents a web editor session.
- * Sessions are temporary and expire after a configured TTL.
+ * Paper-local handoff for a REST editor session.
  *
- * @param token Random UUID token for verification
- * @param playerId The player who created this session
- * @param createdAt When the session was created
- * @param bytebinCode The bytebin paste code containing the job data
+ * @param sessionCode public REST session identifier
+ * @param token secret REST session token
+ * @param playerId player who created and may apply the session
+ * @param createdAt local creation time
+ * @param expiresAt REST session expiry time
  */
 public record EditorSession(
+    String sessionCode,
     String token,
     UUID playerId,
     Instant createdAt,
-    String bytebinCode
+    Instant expiresAt
 ) {
+    public boolean isExpired(Instant now) {
+        return !expiresAt.isAfter(now);
+    }
 }
