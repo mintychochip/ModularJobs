@@ -1,0 +1,3 @@
+[submodule ".agents/skills/living-spec"]
+	path = .agents/skills/living-spec
+	url = https://github.com/aincraft-org/living-spec.git
