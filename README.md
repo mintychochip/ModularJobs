@@ -110,6 +110,7 @@ economy:
 | `jobs.command.admin.archive` | op | Others' archive |
 | `jobs.command.leaveall` | true | Leave all jobs |
 | `jobs.command.admin.treeeditor` | op | Upgrade tree editor |
+| `modularjobs.bypassblockbreak` | op | Bypass profession-gated block breaking |
 
 Admin commands (`/jobs boost`, `/jobs editor`, `/jobs applyedits`) require `modularjobs.admin`.
 
@@ -132,6 +133,17 @@ profession-apis:
 ```
 
 Set `true` only when integrating consumers that expect `ProfessionService` / related APIs. Station/NodeHarvest may still be stubs.
+
+### Block breaking gates
+
+Restrict breaking a material to a minimum profession level (`block-break-gates` in `config.yml`):
+
+```yaml
+block-break-gates:
+  diamond_ore: { profession: mining, level: 30 }
+```
+
+Players below the level cannot break the block; the event is cancelled with a message. Staff bypass via `modularjobs.bypassblockbreak`.
 
 ### Soft depends
 

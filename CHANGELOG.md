@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- **Profession-gated block breaking**: `block-break-gates` in `config.yml` restricts breaking a material to players at/above a configured profession level (bypass: `modularjobs.bypassblockbreak`).
+
 ### Breaking
 
 - **Module layout rename**: Gradle modules and tree paths are now `api` / `common` / `paper` / `web` (was `jobs-api`, `jobs-core`, `jobs-web`, `jobs-session-api`).

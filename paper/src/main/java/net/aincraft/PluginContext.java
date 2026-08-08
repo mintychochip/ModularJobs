@@ -51,7 +51,10 @@ import net.aincraft.gui.craftux.CraftuxUiHost;
 import net.aincraft.payable.PayableWiring;
 import net.aincraft.payment.PaymentWiring;
 import net.aincraft.placeholders.ModularJobsPlaceholderExpansion;
+import net.aincraft.profession.BlockBreakGateListener;
+import net.aincraft.profession.BlockBreakGateStore;
 import net.aincraft.profession.ProfessionWiring;
+import net.aincraft.profession.YamlBlockBreakGateLoader;
 import net.aincraft.protection.BlockOwnershipService;
 import net.aincraft.protection.BlockProtectionAdapter;
 import net.aincraft.protection.BlockProtectionAdapterProvider;
@@ -220,6 +223,9 @@ public final class PluginContext {
 
     ProfessionWiring professions = ProfessionWiring.create(domain.jobService);
 
+    BlockBreakGateStore blockBreakGateStore = new BlockBreakGateStore(
+        new YamlBlockBreakGateLoader(plugin.getLogger()).load(databaseConfig));
+
     UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
     UpgradeEffectApplier effectApplier =
         new UpgradeEffectApplier(permissionManager, professions.recipeService);
@@ -328,6 +334,8 @@ public final class PluginContext {
     // UpgradeTreeGui clicks are host craftux actions (no Bukkit Listener)
     listenerList.add(new UpgradePermissionRestoreListener(
         upgradeService, effectApplier, permissionManager, skillTreeRegistry));
+    // Profession-gated block breaking (cancel below configured level)
+    listenerList.add(new BlockBreakGateListener(blockBreakGateStore, professions.professionService));
 
     EventBus eventBus = new EventBus();
     Bridge bridge = new BridgeImpl(
