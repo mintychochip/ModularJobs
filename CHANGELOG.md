@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+## 1.2.0 — PostgreSQL and gathering gates
+
 ### Added
 
 - **Profession-gated block breaking**: `block-break-gates` in `config.yml` restricts breaking a material to players at/above a configured profession level (bypass: `modularjobs.bypassblockbreak`).
+- **Profession-gated fish catching**: `fish-catch-gates` restricts configured vanilla fish by profession level (bypass: `modularjobs.bypassfishcatch`).
 
 ### Breaking
 

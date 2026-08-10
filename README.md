@@ -15,9 +15,9 @@ Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 
 ```bash
 ./gradlew :paper:build
-# artifact: paper/build/libs/paper-all.jar
+# local artifact: paper/build/libs/paper-all.jar
+# release asset: modularjobs-paper-1.2.0.jar
 ```
-
 Unit tests:
 
 ```bash
@@ -42,7 +42,7 @@ CI: `.github/workflows/ci.yml` — Java 25 + Postgres (`check` + shadow jar), Ru
 
 ## Operator quick start
 
-1. Drop `paper-all.jar` into `plugins/`.
+1. Download `modularjobs-paper-1.2.0.jar` from the GitHub Release and drop it into `plugins/`.
 2. Start once to generate configs under `plugins/ModularJobs/`.
 3. Configure database, economy, and permissions (below).
 4. Restart or reload after config changes.
@@ -145,10 +145,24 @@ block-break-gates:
 
 Players below the level cannot break the block; the event is cancelled with a message. Staff bypass via `modularjobs.bypassblockbreak`.
 
+### Fish catching gates
+
+Restrict a fish item to a minimum profession level (`fish-catch-gates` in `config.yml`):
+
+```yaml
+fish-catch-gates:
+  cod: { profession: fisherman, level: 1 }
+  salmon: { profession: fisherman, level: 10 }
+  tropical_fish: { profession: fisherman, level: 20 }
+  pufferfish: { profession: fisherman, level: 30 }
+```
+
+Below-level or unjoined players do not collect configured fish and receive no fish job payment. Staff bypass via `modularjobs.bypassfishcatch`. Junk and treasure are unaffected.
+
 ### Soft depends
 
 Mint, mcMMO, Bolt, LWC, Choco, Preferences — optional (Mint replaces the former Vault soft-depend).
 
 ## Version
 
-Plugin and project version: **1.1.0** (see `plugin.yml`, root `build.gradle.kts`, `CHANGELOG.md`).
+Plugin and project version: **1.2.0** (see `plugin.yml`, root `build.gradle.kts`, `CHANGELOG.md`).

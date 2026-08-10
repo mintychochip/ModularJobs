@@ -1,5 +1,5 @@
 name: ModularJobs
-version: '1.1.0'
+version: '1.2.0'
 main: net.aincraft.ModularJobsBootstrap
 authors: [ mintychochip ]
 api-version: '1.21'
@@ -51,4 +51,7 @@ permissions:
       modularjobs.admin: true
   modularjobs.bypassblockbreak:
     description: Bypass profession-gated block breaking
+    default: op
+  modularjobs.bypassfishcatch:
+    description: Bypass profession-gated fish catching
     default: op
