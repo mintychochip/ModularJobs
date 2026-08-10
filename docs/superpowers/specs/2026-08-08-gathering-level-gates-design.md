@@ -1,7 +1,10 @@
 # Gathering Profession Level Gates
 
 **Date:** 2026-08-08
-**Status:** Approved for implementation
+**Status:** Superseded by `2026-08-10-modularjobs-azoth-integration-design.md`
+
+The interaction scope remains approved, but Azoth now owns gate configuration,
+predicates, messages, and enforcement; ModularJobs owns progression and payment.
 
 ## Goal
 

@@ -1,7 +1,7 @@
 # Profession-Gated Block Breaking Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
+**Date:** 2026-08-07
+**Status:** Superseded by `2026-08-10-modularjobs-azoth-integration.md`; historical ModularJobs-owned gate plan.
 **Goal:** Block breaking is restricted by profession level via per-material config (`block-break-gates` in `config.yml`): a player below the required profession level cannot break the block (event cancelled + themed message), with an op-default bypass permission.
 
 **Architecture:** A new `api`-level `BlockBreakGate` record (material key as `String`, profession id, min level) + `BlockBreakGateService`. In `paper`, a `YamlBlockBreakGateLoader` parses the config section into a cached `BlockBreakGateStore`, and a `BlockBreakGateListener` at `EventPriority.NORMAL` (before the `MONITOR` pay listener) looks up the gate for the broken material, checks `ProfessionService.level(player, professionId)`, and cancels + messages when below. Wired into `PluginContext` so the listener joins `created.listeners`.

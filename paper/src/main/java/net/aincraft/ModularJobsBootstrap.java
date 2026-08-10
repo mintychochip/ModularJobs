@@ -32,14 +32,17 @@ public final class ModularJobsBootstrap extends JavaPlugin {
       Bukkit.getServicesManager()
           .register(Bridge.class, created.bridge, this, ServicePriority.High);
 
-      // Profession APIs may be stubs — only expose when explicitly enabled.
+      // ProfessionService is the stable integration point for dependent plugins.
+      Bukkit.getServicesManager().register(
+          net.aincraft.service.ProfessionService.class,
+          created.bridge.professionService(), this, ServicePriority.Normal);
+
+      // Auxiliary profession APIs may be stubs — only expose them when explicitly enabled.
       if (getConfig().getBoolean("profession-apis.register-bukkit-services", false)) {
         getSLF4JLogger().info(
-            "Registering profession Bukkit services (profession-apis.register-bukkit-services=true). "
+            "Registering auxiliary profession Bukkit services "
+                + "(profession-apis.register-bukkit-services=true). "
                 + "Station/NodeHarvest may be stubs — see README.");
-        Bukkit.getServicesManager().register(
-            net.aincraft.service.ProfessionService.class,
-            created.bridge.professionService(), this, ServicePriority.Normal);
         Bukkit.getServicesManager().register(
             net.aincraft.service.RecipeService.class,
             created.bridge.recipeService(), this, ServicePriority.Normal);

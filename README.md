@@ -15,8 +15,7 @@ Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 
 ```bash
 ./gradlew :paper:build
-# local artifact: paper/build/libs/paper-all.jar
-# release asset: modularjobs-paper-1.2.0.jar
+# artifact: paper/build/libs/paper-2.0.0-all.jar
 ```
 Unit tests:
 
@@ -42,7 +41,7 @@ CI: `.github/workflows/ci.yml` — Java 25 + Postgres (`check` + shadow jar), Ru
 
 ## Operator quick start
 
-1. Download `modularjobs-paper-1.2.0.jar` from the GitHub Release and drop it into `plugins/`.
+1. Drop `modularjobs-paper-2.0.0.jar` into `plugins/`.
 2. Start once to generate configs under `plugins/ModularJobs/`.
 3. Configure database, economy, and permissions (below).
 4. Restart or reload after config changes.
@@ -110,7 +109,6 @@ economy:
 | `jobs.command.admin.archive` | op | Others' archive |
 | `jobs.command.leaveall` | true | Leave all jobs |
 | `jobs.command.admin.treeeditor` | op | Upgrade tree editor |
-| `modularjobs.bypassblockbreak` | op | Bypass profession-gated block breaking |
 
 Admin commands (`/jobs boost`, `/jobs editor`, `/jobs applyedits`) require `modularjobs.admin`.
 
@@ -123,41 +121,32 @@ disabled-worlds: []
 kill-contribution-cutoff: 0.5
 ```
 
-### Profession APIs (stubs)
+### Profession API
 
-Azoth-style profession Bukkit services are **off by default**:
+ModularJobs always registers its core `ProfessionService` Bukkit service for dependent plugins.
+Optional Recipe/Buff/Station/NodeHarvest services remain behind:
 
 ```yaml
 profession-apis:
   register-bukkit-services: false
 ```
 
-Set `true` only when integrating consumers that expect `ProfessionService` / related APIs. Station/NodeHarvest may still be stubs.
+Azoth declares ModularJobs as a required dependency and uses `ProfessionService` for
+authoritative profession levels. ModularJobs does not shade or embed the API.
 
-### Block breaking gates
+### Gathering interaction gates
 
-Restrict breaking a material to a minimum profession level (`block-break-gates` in `config.yml`):
+Azoth owns gathering enforcement and its gate configuration. Configure
+`block-break-gates`, `fish-catch-gates`, and `interaction-gates` in Azoth's
+`config.yml`; install Azoth when players must be prevented from using
+under-level gathering interactions. ModularJobs continues to own profession
+progression, task data, and payment, and cancelled events receive no payment.
 
-```yaml
-block-break-gates:
-  diamond_ore: { profession: mining, level: 30 }
-```
+Azoth's default bypass permission is `azoth.bypassgathering`.
 
-Players below the level cannot break the block; the event is cancelled with a message. Staff bypass via `modularjobs.bypassblockbreak`.
-
-### Fish catching gates
-
-Restrict a fish item to a minimum profession level (`fish-catch-gates` in `config.yml`):
-
-```yaml
-fish-catch-gates:
-  cod: { profession: fisherman, level: 1 }
-  salmon: { profession: fisherman, level: 10 }
-  tropical_fish: { profession: fisherman, level: 20 }
-  pufferfish: { profession: fisherman, level: 30 }
-```
-
-Below-level or unjoined players do not collect configured fish and receive no fish job payment. Staff bypass via `modularjobs.bypassfishcatch`. Junk and treasure are unaffected.
+Supported gates cover mining, woodcutting, farming, herbalism, fishing, log
+stripping, and mature sweet-berry, cocoa, and cave-vine harvesting. Junk and
+treasure fishing remain ungated.
 
 ### Soft depends
 
@@ -165,4 +154,4 @@ Mint, mcMMO, Bolt, LWC, Choco, Preferences — optional (Mint replaces the forme
 
 ## Version
 
-Plugin and project version: **1.2.0** (see `plugin.yml`, root `build.gradle.kts`, `CHANGELOG.md`).
+Plugin and project version: **2.0.0** (see `plugin.yml`, root `build.gradle.kts`, `CHANGELOG.md`).

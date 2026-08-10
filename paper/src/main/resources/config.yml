@@ -14,26 +14,13 @@ furnace-max-distance: 25.0
 economy:
   required: true
 
-# AzothMC profession service APIs. Default false: stubs are not registered as Bukkit services.
-# Set true only when integrating consumers that expect ProfessionService / RecipeService / etc.
+# Auxiliary profession services. The core ProfessionService is always registered for
+# dependent plugins; this flag exposes the optional Recipe/Buff/Station/NodeHarvest services.
 profession-apis:
   register-bukkit-services: false
 
-# Block breaking gates: minimum profession level required to break a material.
-# Material names are Minecraft keys (diamond_ore, ancient_debris, ...).
-# Professions are §8.1 catalog ids (mining, woodcutting, farming, ...).
-block-break-gates:
-  # diamond_ore: { profession: mining, level: 30 }
-  # deepslate_diamond_ore: { profession: mining, level: 30 }
-
-# Fish catching gates: minimum profession level required to catch a fish item.
-# Fish keys are cod, salmon, tropical_fish, or pufferfish.
-# Professions are §8.1 catalog ids or aliases (fisherman resolves to fishing).
-fish-catch-gates:
-  # cod: { profession: fisherman, level: 1 }
-  # salmon: { profession: fisherman, level: 10 }
-  # tropical_fish: { profession: fisherman, level: 20 }
-  # pufferfish: { profession: fisherman, level: 30 }
+# Gathering interaction gates are owned by Azoth. Configure block-break-gates,
+# fish-catch-gates, and interaction-gates in Azoth's config when enforcement is needed.
 
 trackable_entities:
 

@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Status:** Superseded by `2026-08-10-modularjobs-azoth-integration.md`; historical ModularJobs-owned gate plan.
+
 **Goal:** Add opt-in profession-level gates for vanilla fish catches, preventing configured catches below the required level before ModularJobs pays for them.
 
 **Architecture:** Keep the public gate record and read-only service in the Paper-free `api` module. In `paper`, parse `fish-catch-gates` into an immutable store and enforce it with a `PlayerFishEvent` listener at `NORMAL`, before the existing `MONITOR` payment listener. Use the stable event boundary rather than NMS/datapack loot-pool changes: an ineligible already-generated catch is cancelled, not rerolled, collected, paid, or progressed.
