@@ -2,22 +2,28 @@
 
 ## Unreleased
 
-## 1.2.0 — PostgreSQL and gathering gates
+## 2.0.0 — ModularJobs API and Azoth gathering gates
 
 ### Added
 
-- **Profession-gated block breaking**: `block-break-gates` in `config.yml` restricts breaking a material to players at/above a configured profession level (bypass: `modularjobs.bypassblockbreak`).
-- **Profession-gated fish catching**: `fish-catch-gates` restricts configured vanilla fish by profession level (bypass: `modularjobs.bypassfishcatch`).
+- Publish Java 21-compatible `modularjobs-api` and `modularjobs-common` artifacts.
+- Always register the core `ProfessionService` Bukkit service for dependent plugins.
+- Add Herbalism progression task data and the operator-run data migration.
+- Move gathering gate configuration and enforcement to Azoth for block breaking,
+  fishing, log stripping, and mature plant harvesting.
 
 ### Breaking
 
-- **Module layout rename**: Gradle modules and tree paths are now `api` / `common` / `paper` / `web` (was `jobs-api`, `jobs-core`, `jobs-web`, `jobs-session-api`).
-  - Build: `./gradlew :paper:build` → artifact `paper/build/libs/paper-all.jar` (was `:jobs-core:build` / `jobs-core-all.jar`).
+- Gathering gates are no longer enforced or configured by ModularJobs. Install and
+  configure Azoth for world-interaction enforcement.
+- Gate-only ModularJobs API contracts and bypass permissions were removed in the
+  2.0.0 API cutover.
+- Module layout rename: Gradle modules and tree paths are now `api` / `common` / `paper` / `web` (was `jobs-api`, `jobs-core`, `jobs-web`, `jobs-session-api`).
+  - Build: `./gradlew :paper:build` → artifact `paper/build/libs/paper-2.0.0-all.jar` (release asset: `modularjobs-paper-2.0.0.jar`).
   - Tests: `./gradlew :api:test :common:test :paper:test`.
   - Schema SQL: `paper/src/main/resources/sql/postgres.sql`.
   - Session stack: `web/rest-api` (Rust), `web/session-editor` (React).
-- **`api` is pure**: public contracts have **no Paper/Bukkit dependency**. Paper-only types and wiring live in `paper`; shared editor/session DTOs live in `common`.
-- Downstream consumers of the old Maven/module coordinates (`jobs-api` / `jobs-core`) must switch to the new module paths and jar name.
+  - `api` is pure: public contracts have no Paper/Bukkit dependency.
 
 ### Database
 

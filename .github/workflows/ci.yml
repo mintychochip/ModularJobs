@@ -3,8 +3,7 @@ name: CI
 on:
   push:
     branches: [master, main]
-    tags:
-      - "v*.*.*"
+    tags: ['v*']
   pull_request:
     branches: [master, main]
 
@@ -246,30 +245,32 @@ jobs:
 
 
   release:
-    name: Publish immutable release assets
-    if: github.ref == 'refs/tags/v1.2.0'
+    name: Publish immutable ModularJobs 2.0.0 assets
+    if: github.ref == 'refs/tags/v2.0.0'
     needs: [java, rest-api, session-editor]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: write
+      packages: write
     steps:
       - name: Checkout exact release tag
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
           persist-credentials: false
 
       - name: Download CI shadow JAR
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        uses: actions/download-artifact@v4
         with:
           name: paper-all
           path: release-input
 
       - name: Require exact tag and unused release
         env:
-          EXPECTED_TAG: v1.2.0
+          EXPECTED_TAG: v2.0.0
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           test "$GITHUB_REF_NAME" = "$EXPECTED_TAG"
@@ -280,13 +281,34 @@ jobs:
             exit 1
           fi
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Publish ModularJobs API artifacts
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew \
+            :api:publishMavenPublicationToGitHubPackagesRepository \
+            :common:publishMavenPublicationToGitHubPackagesRepository \
+            --console=plain --no-daemon
+
       - name: Package release assets
         run: |
           set -euo pipefail
-          test -f release-input/paper-all.jar
+          shopt -s nullglob
+          shadow_jars=(release-input/*-all.jar)
+          test "${#shadow_jars[@]}" -eq 1
           ./scripts/package-release-assets.sh \
-            1.2.0 \
-            release-input/paper-all.jar \
+            2.0.0 \
+            "${shadow_jars[0]}" \
             paper/src/main/resources/sql/postgres.sql \
             dist
           (cd dist && sha256sum --check SHA256SUMS)
@@ -297,11 +319,11 @@ jobs:
         run: |
           set -euo pipefail
           gh release create "$GITHUB_REF_NAME" \
-            dist/modularjobs-paper-1.2.0.jar \
-            dist/modularjobs-postgres-1.2.0.sql \
+            dist/modularjobs-paper-2.0.0.jar \
+            dist/modularjobs-postgres-2.0.0.sql \
             dist/SHA256SUMS \
             --verify-tag \
-            --title "ModularJobs 1.2.0" \
+            --title "ModularJobs 2.0.0" \
             --generate-notes
 
       - name: Re-download and verify published bytes

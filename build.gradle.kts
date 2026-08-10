@@ -3,6 +3,8 @@ import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsExtension
 import com.github.spotbugs.snom.SpotBugsTask
 import net.ltgt.gradle.errorprone.errorprone
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
 
 plugins {
     alias(libs.plugins.errorprone) apply false
@@ -10,9 +12,12 @@ plugins {
 }
 
 group = "org.aincraft"
-version = "1.2.0"
+version = "2.0.0"
 
 subprojects {
+    group = rootProject.group
+    version = rootProject.version
+
     apply(plugin = "java")
     apply(plugin = "java-library")
     apply(plugin = "checkstyle")
@@ -20,9 +25,49 @@ subprojects {
     apply(plugin = "com.github.spotbugs")
     apply(plugin = "net.ltgt.errorprone")
 
+    val moduleName = name
+    val javaVersion = if (moduleName == "paper") 25 else 21
     configure<JavaPluginExtension> {
-        // Paper 26.2 / MockBukkit 26.2 require Java 25
-        toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    }
+    tasks.withType<JavaCompile>().configureEach {
+        options.release.set(javaVersion)
+    }
+
+    if (moduleName == "api" || moduleName == "common") {
+        apply(plugin = "maven-publish")
+        configure<JavaPluginExtension> {
+            withSourcesJar()
+            withJavadocJar()
+        }
+        tasks.withType<Javadoc>().configureEach {
+            isFailOnError = false
+        }
+        configure<PublishingExtension> {
+            publications {
+                create<MavenPublication>("maven") {
+                    from(components["java"])
+                    artifactId = "modularjobs-$moduleName"
+                }
+            }
+            repositories {
+                maven {
+                    name = "localBuildRepo"
+                    url = rootProject.layout.buildDirectory.dir("maven-repo").get().asFile.toURI()
+                }
+                val githubToken = providers.environmentVariable("GITHUB_TOKEN")
+                if (githubToken.isPresent) {
+                    maven {
+                        name = "GitHubPackages"
+                        url = uri("https://maven.pkg.github.com/aincraft-org/modularjobs")
+                        credentials {
+                            username = providers.environmentVariable("GITHUB_ACTOR").orNull ?: "github-actions"
+                            password = githubToken.get()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // Quality tools run on `check` and always write reports.
