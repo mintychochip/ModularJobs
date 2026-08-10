@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-10
 
-**Status:** Design approved; written specification pending user review.
+**Status:** Approved by user; implementation planned.
 
 
 ## Goal
