@@ -179,8 +179,10 @@
 - `web/astro.config.mjs`
 - `web/src/components/Body.astro`
 - `web/src/content/docs/wiki/index.mdx`
-- `web/src/content/docs/guides/example.md` (delete)
-- `web/src/content/docs/reference/example.md` (delete)
+- `web/src/content/docs/wiki/guides/example.md` (delete)
+- `web/src/content/docs/wiki/guides/operations.md` (new)
+- `web/src/content/docs/wiki/reference/example.md` (delete)
+- `web/src/content/docs/wiki/reference/configuration.md` (new)
 - `docs/superpowers/plans/2026-08-05-job-skill-tree.md`
 - `docs/superpowers/plans/2026-08-06-module-layout.md`
 - `docs/superpowers/plans/2026-08-10-modularjobs-azoth-integration.md`
@@ -198,7 +200,9 @@
 **Focused verification:**
 
 ```text
-cd web && npm test && npm run build
+(cd web && npm run build)
+(cd web/session-editor && npm test && npm run build)
+(cd web/rest-api && cargo test) # requires the configured PostgreSQL test service
 ```
 
 **Commit:** `docs: refresh ModularJobs web documentation`
@@ -210,7 +214,9 @@ Run from the ModularJobs root after all commits:
 ```text
 ./gradlew :api:test :common:test :paper:test --no-daemon
 ./gradlew :paper:build --no-daemon
-cd web && npm test && npm run build
+(cd web && npm run build)
+(cd web/session-editor && npm test && npm run build)
+(cd web/rest-api && cargo test) # requires the configured PostgreSQL test service
 ```
 
 Then inspect the release artifact and tracked tree:

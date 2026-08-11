@@ -1,6 +1,7 @@
 # Module Layout (`api` / `common` / `paper` / `web`) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Historical note (2026-08-10):** Retained as an implementation record; its paths and dependency assumptions are not current distribution guidance.
 
 **Goal:** Restructure the monorepo to modules `api`, `common`, `paper`, and `web` (with session-api nested under web), and make `paper` the only module that imports Paper/Bukkit while `api` remains the pure public contract.
 

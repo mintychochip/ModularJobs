@@ -2,6 +2,7 @@
 
 **Date:** 2026-08-10  
 **Status:** Approved for implementation  
+**Historical note (2026-08-10):** This approved sibling-integration design is retained for history; it is not current standalone ModularJobs setup guidance.
 **Repositories:** `modularjobs`, sibling `azoth`
 
 ## Goal

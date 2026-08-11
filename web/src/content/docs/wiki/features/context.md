@@ -1,17 +1,22 @@
 ---
-title: Context
-description: Context
+title: Task context keys
+description: How ModularJobs identifies action targets in task definitions.
 ---
 
-A context can represent any form of data, whether it be a vanilla/custom item, entities, dyes, blocks, etc.
+Task contexts identify the Minecraft object or state associated with an action.
+They are serialized as namespaced keys so YAML, JSON, CSV, and editor payloads
+can use the same task contract.
 
-In summary, a context represents the object which a serializer can determine the key associated with a context which is how the plugin infers what action a player did.
+## Examples
 
-# Context Types
+| Context | Example key |
+| --- | --- |
+| Block material | `minecraft:stone` |
+| Entity type | `minecraft:zombie` |
+| Item material | `minecraft:diamond` |
+| World | `minecraft:the_nether` |
+| Biome | `minecraft:plains` |
 
-| Left Align | Center Align | Right Align |
-|:-----------|:------------:|------------:|
-| one        | two          | three       |
-| four       | five         | six         |
-
-Contexts 
+Use the action type and context keys accepted by the current Paper release when
+adding task records. Unknown keys are rejected or ignored according to the
+loader for that action type.

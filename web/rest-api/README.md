@@ -23,8 +23,9 @@ Set the plugin's `config.yml` editor endpoint to this process:
 
 ```yaml
 editor:
+  enabled: true
   session-api-url: http://127.0.0.1:18787
-  web-editor-url: https://modular-jobs.vercel.app/editor
+  web-editor-url: http://localhost:4321/editor
   session-create-secret: long-random-value
   session-ttl-minutes: 1440
 ```

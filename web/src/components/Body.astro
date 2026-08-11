@@ -4,44 +4,22 @@ import Info from '../components/Info.astro'
 <div class="bg-base-100 flex justify-between gap-4 m-10">
   <div class="flex flex-col ">
     <div class="my-4">
-      <h2 class="text-xl font-bold">Why Modular Jobs?</h2>
+      <h2 class="text-xl font-bold">Why ModularJobs?</h2>
     </div>
     <p class="text-xs">
-      ModularJobs is a jobs economy plugin for Minecraft servers. It allows server admins to create
-      job tasks for players to do and earn money.
+      ModularJobs is a Paper plugin for configurable jobs, task progression, payables, boosts, and
+      upgrade trees.
     </p>
     <div class="feature-list my-2">
       <p class="text-md font-bold">Features:</p>
       <ul class="text-xs list-disc list-outside pl-5 space-y-1">
-        <li>Create your own jobs and choose how much they get paid</li>
-        <li>
-          Integrations with many popular plugins such as:
-          <ul class="mt-1 list-[circle] list-outside pl-5 space-y-1 marker:text-slate-500 font-bold">
-            <li>MythicMobs</li>
-            <li>LWC</li>
-            <li>Bolt</li>
-            <li>McMMO</li>
-            <!-- add more here -->
-          </ul>
-        </li>
-
-        <li>Database support for: MySQL, SQLite, Postgres</li>
-        <li>Option to limit income for certain time intervals</li>
-        <li>
-          Support for many popular economy bridges:
-          <ul class="mt-1 list-[circle] list-outside pl-5 space-y-1 marker:text-slate-500 font-bold">
-            <li>Vault</li>
-            <li>Treasury</li>
-            <li>Service-IO</li>
-          </ul>
-        </li>
-        <li>Support for multi-currency payouts</li>
-        <li>
-          <span class="hover:text-primary font-bold">
-            <a href="editor">Web Editor</a>
-          </span> for registering jobs and tasks
-        </li>
-        <li>Support for multiple types of boosts from different sources, such as items, plugins, etc.</li>
+        <li>Define jobs, tasks, experience curves, and optional economy payables</li>
+        <li>Persist progression and editor sessions with operator-managed PostgreSQL</li>
+        <li>Use optional Mint, PlaceholderAPI, mcMMO, Bolt, LWC, and Choco integrations</li>
+        <li>Configure timed, item-based, and context-aware boosts</li>
+        <li>Apply upgrade trees and profession service APIs</li>
+        <li>Enable the secure web editor only when an external REST API is configured</li>
+        <li>Use the Craftux-backed Paper UI included by the current deferred dependency path</li>
       </ul>
     </div>
   </div>

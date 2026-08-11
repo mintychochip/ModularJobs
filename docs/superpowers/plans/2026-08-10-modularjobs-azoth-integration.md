@@ -1,6 +1,7 @@
 # ModularJobs 2.0.0 and Azoth integration implementation plan
 
 > **For agentic workers:** Execute this plan task-by-task in the current session. Preserve unrelated dirty work in both repositories. Run focused checks after each production change and the complete cross-repository checks at the end.
+> **Historical note (2026-08-10):** Retained as an implementation record for the sibling integration; it is not current standalone ModularJobs setup guidance.
 
 **Goal:** Release ModularJobs 2.0.0 as the profession/progression provider and move all gathering level enforcement into Azoth, including block breaking, fishing, log stripping, and mature plant harvesting.
 

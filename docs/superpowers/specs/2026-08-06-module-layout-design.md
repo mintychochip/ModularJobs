@@ -2,6 +2,7 @@
 
 **Date:** 2026-08-06  
 **Status:** Approved for implementation planning  
+**Historical note (2026-08-10):** This approved design is retained for history; use current module documentation for distribution guidance.
 **Branch / isolation:** Separate git worktree; include current master WIP on the restructure branch
 
 ## Problem

@@ -9,23 +9,32 @@ import tailwindcss from '@tailwindcss/vite';
 // https://astro.build/config
 export default defineConfig({
 
-  integrations: [starlight({
-      title: 'Modular Jobs',
-      social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/aincraft-org/modularjobs' }],
-    sidebar: [
-          {
-              label: 'Guides',
-              items: [
-                  // Each item here is one entry in the navigation menu.
-                  { label: 'Example Guide', slug: 'wiki/guides/example' },
-              ],
-          },
-          {
-              label: 'Reference',
-              autogenerate: { directory: 'reference' },
-          },
+  integrations: [
+    starlight({
+      title: 'ModularJobs',
+      social: [
+        {icon: 'github', label: 'GitHub', href: 'https://github.com/aincraft-org/modularjobs'},
       ],
-      }), vue()],
+      sidebar: [
+        {
+          label: 'Overview',
+          items: [{label: 'ModularJobs', slug: 'wiki'}],
+        },
+        {
+          label: 'Operator',
+          items: [
+            {label: 'Configuration', slug: 'wiki/reference/configuration'},
+            {label: 'Operations', slug: 'wiki/guides/operations'},
+          ],
+        },
+        {
+          label: 'Features',
+          autogenerate: {directory: 'features'},
+        },
+      ],
+    }),
+    vue(),
+  ],
 
   vite: {
     plugins: [tailwindcss()],

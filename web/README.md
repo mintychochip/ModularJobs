@@ -1,49 +1,43 @@
-# Starlight Starter Kit: Basics
+# ModularJobs web
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+This workspace contains the ModularJobs documentation site and the secure
+session-editor companion. The site documents the Paper plugin, PostgreSQL
+configuration, optional integrations, and operator-managed editor sessions.
 
-```
-npm create astro@latest -- --template starlight
-```
+## Project structure
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro + Starlight project, you'll see the following folders and files:
-
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+```text
+src/content/docs/   Starlight documentation
+src/components/     Astro landing-page components
+src/pages/          Astro routes, including the editor handoff page
+session-editor/     React secure session editor
+rest-api/           Rust REST API backed by PostgreSQL
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+## Documentation site
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+Run from `web/`:
 
-Static assets, like favicons, can be placed in the `public/` directory.
+```bash
+npm install
+npm run dev       # local site at http://localhost:4321
+npm run build     # production site in dist/
+npm run preview   # preview the production build
+```
 
-## 🧞 Commands
+The site navigation is configured in `astro.config.mjs`. Markdown and MDX
+content lives under `src/content/docs/`.
 
-All commands are run from the root of the project, from a terminal:
+## Secure session stack
 
-| net.aincraft.Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+The editor is opt-in from the Paper plugin. Operators must configure the Rust
+REST API, PostgreSQL schema, web editor URL, and session-create secret
+explicitly; the plugin does not launch either external service.
 
-## 👀 Want to learn more?
+```bash
+cd rest-api && cargo test
+cd ../session-editor && npm install && npm test && npm run build
+```
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+The React editor uses the REST API. The deprecated Vue/Bytebin demo remains
+only for legacy examples and is not the production session path.

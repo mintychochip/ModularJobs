@@ -1,6 +1,7 @@
 # Job Skill Tree Refinement Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Historical note (2026-08-10):** Retained as an implementation record; its schema and setup assumptions are not current distribution guidance.
 
 **Goal:** Refine ModularJobs' upgrade system into a generic JSON-driven skill-node graph with root/skill/major nodes, internal per-level costs, configurable requirement trees, explicit path locks, and derived effect evaluation.
 
