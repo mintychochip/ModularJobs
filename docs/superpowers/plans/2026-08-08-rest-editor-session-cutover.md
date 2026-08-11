@@ -1,6 +1,7 @@
 # REST-backed web editor session cutover Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Historical note (2026-08-10):** Retained as an implementation record; current distribution defaults the external editor to disabled with empty URLs.
 
 **Goal:** Replace Paper's Bytebin editor workflow with the PostgreSQL-backed Rust REST session API while preserving `/jobs editor` and `/jobs applyedits <code>`.
 
@@ -94,7 +95,7 @@ public record EditorConfig(
     int sessionTtlMinutes
 ) {
   public static final String DEFAULT_SESSION_API_URL = "http://127.0.0.1:18787";
-  public static final String DEFAULT_WEB_EDITOR_URL = "https://modular-jobs.vercel.app/editor";
+  public static final String DEFAULT_WEB_EDITOR_URL = "";
   public static final int DEFAULT_SESSION_TTL = 24 * 60;
 
   public static EditorConfig defaults() {
@@ -405,7 +406,7 @@ Append this documented section to `paper/src/main/resources/config.yml`:
 editor:
   enabled: true
   session-api-url: http://127.0.0.1:18787
-  web-editor-url: https://modular-jobs.vercel.app/editor
+  web-editor-url: ""
   # Must match REST SESSION_CREATE_SECRET when the API requires one.
   session-create-secret: ""
   session-ttl-minutes: 1440

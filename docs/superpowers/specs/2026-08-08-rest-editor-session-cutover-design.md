@@ -2,6 +2,7 @@
 
 - **Date:** 2026-08-08
 - **Status:** Approved design
+**Historical note (2026-08-10):** Retained as a design record; current distribution defaults the external editor to disabled with empty URLs.
 - **Scope:** Replace Paper's Bytebin editor-session path with the PostgreSQL-backed `web/rest-api` path.
 
 ## Decision
@@ -73,7 +74,7 @@ Replace Bytebin-specific editor configuration with REST settings:
 editor:
   enabled: true
   session-api-url: http://127.0.0.1:18787
-  web-editor-url: https://modular-jobs.vercel.app/editor
+  web-editor-url: ""
   session-create-secret: change-me
 ```
 
