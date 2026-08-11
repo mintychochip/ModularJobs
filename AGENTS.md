@@ -13,7 +13,7 @@ Postgres-backed REST API (Rust) and React secure session editor.
 | `web` | Docs + session-editor + rest-api |
 | `scripts/` | Out-of-band ops helpers (schema apply) |
 
-Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-all.jar`).  
+Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-2.0.0-all.jar`).
 Unit tests: `./gradlew :api:test :common:test :paper:test`.  
 Static analysis (Error Prone on compile; Checkstyle/PMD/SpotBugs on `check`):  
 `./gradlew check` — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
