@@ -19,9 +19,8 @@ economy:
 # dependent plugins; this flag exposes the optional Recipe/Buff/Station/NodeHarvest services.
 profession-apis:
   register-bukkit-services: false
-
-# Gathering interaction gates are owned by Azoth. Configure block-break-gates,
-# fish-catch-gates, and interaction-gates in Azoth's config when enforcement is needed.
+# Optional external interaction gates can enforce world-level requirements. ModularJobs
+# continues to own profession progression, task data, and payment.
 
 trackable_entities:
 

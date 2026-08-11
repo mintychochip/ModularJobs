@@ -1,7 +1,7 @@
 name: ModularJobs
 version: '2.0.0'
 main: net.aincraft.ModularJobsBootstrap
-authors: [ mintychochip ]
+authors: [ ModularJobs contributors ]
 api-version: '1.21'
 softdepend:
   - PlaceholderAPI
@@ -10,7 +10,6 @@ softdepend:
   - Bolt
   - LWC
   - Choco
-  - Preferences
 permissions:
   modularjobs.admin:
     description: Admin commands for ModularJobs (level, experience, boost, editor, applyedits)

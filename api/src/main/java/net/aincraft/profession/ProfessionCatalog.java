@@ -10,10 +10,10 @@ import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * AzothMC §8.1 profession tracks plus legacy ModularJobs job-key aliases.
+ * Built-in profession tracks plus legacy ModularJobs job-key aliases.
  *
- * <p>Canonical ids match the master design (mining, woodcutting, …). {@link #storageKey}
- * points at the jobs.yml / progression key ModularJobs actually uses today.
+ * <p>Canonical ids use stable profession names; {@link #storageKey} points at the
+ * jobs.yml / progression key ModularJobs actually uses today.
  */
 public final class ProfessionCatalog {
 

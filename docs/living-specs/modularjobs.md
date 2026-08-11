@@ -1,7 +1,7 @@
 # ModularJobs — Living Spec (product / platform)
 
 > Status: active  
-> Last updated: 2026-08-08  
+> Last updated: 2026-08-10
 > Owners: modularjobs maintainers
 
 ## Intent
@@ -49,7 +49,7 @@ process running DDL.
 |--------|------|----------------|
 | `api` | Public contracts for integrators | JDK + `common`; no Paper |
 | `common` | Shared DTOs (editor payload, …) | JDK only |
-| `paper` | Plugin impl + shadow jar | api, common, Paper, soft-depends |
+| `paper` | Plugin impl + shadow jar | api, common, Paper, Craftux, optional soft-depends |
 | `web/*` | Docs, React editor, Rust REST | Node / Rust / Postgres client |
 
 ### How to build here
@@ -81,17 +81,17 @@ Shipped platform surface still “active capability” for agents:
 
 ### Current notes
 
-Uncommitted WIP on master: **Vault → Mint economy provider** (see
-[payables-economy.md](./payables-economy.md)). REST editor cutover is largely
-landed on master; polish any remaining docs/tests under secure-sessions.
+The general Paper distribution hardening is landed: Mint is an optional
+reflective economy adapter with a blackhole default, Preferences is local-only,
+the editor is opt-in, and Craftux remains the explicitly deferred UI dependency.
 
 Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.md`.
 
 ## Next
 
-- [ ] Finish and land Mint economy cutover (tests green, README/plugin soft-depend)
 - [ ] Keep living-spec horizons in sync when domain work ships
-- [ ] Align any remaining operator docs with Postgres-only + Mint + REST editor
+- [ ] Align any remaining operator docs with Postgres-only persistence, optional
+  Mint economy, opt-in editor, and the deferred Craftux dependency
 
 ## Future
 
@@ -107,7 +107,7 @@ Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.m
 | 2026-08 | Postgres only, connect-only schema | Multi-instance, least privilege, reviewable migrations |
 | 2026-08 | Rename modules to `api`/`common`/`paper`/`web` | Clear boundaries; pure api |
 | 2026-08 | Secure editor via REST + Postgres, not Bytebin | Token ownership, shared durable store |
-| 2026-08-08 | Economy soft-depend = Mint (not Vault) | ain craft ledger stack |
+| 2026-08-10 | Optional reflective Mint adapter + blackhole default | Base Paper builds stay independent of Mint while currency-required servers can fail fast |
 
 ## Open questions
 

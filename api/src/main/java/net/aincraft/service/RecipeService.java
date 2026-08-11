@@ -8,7 +8,7 @@ import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * AzothMC P6 learned-recipe API (§8.3 / P6 recipe learning).
+ * Learned-recipe API for profession progression.
  */
 public interface RecipeService {
 

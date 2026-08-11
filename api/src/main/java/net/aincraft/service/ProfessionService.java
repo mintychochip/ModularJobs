@@ -9,11 +9,11 @@ import net.aincraft.profession.ProfessionDefinition;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * AzothMC P6 public profession API (facade over job progression + catalog).
+ * Public profession API over job progression and catalog.
  */
 public interface ProfessionService {
 
-  /** §8.1 tracks in catalog order. */
+  /** Built-in tracks in catalog order. */
   @NotNull
   List<ProfessionDefinition> tracks();
 

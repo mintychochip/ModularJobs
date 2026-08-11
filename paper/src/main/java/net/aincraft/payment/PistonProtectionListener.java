@@ -12,8 +12,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 
 /**
- * Jobs Reborn {@code PistonProtectionListener}: move PLACED (and other block) protection timers
- * with piston-pushed blocks so farms cannot clear timers by sliding blocks.
+ * Moves protection timers with piston-pushed blocks so farms cannot clear timers by sliding blocks.
  */
 final class PistonProtectionListener implements Listener {
 
@@ -43,7 +42,7 @@ final class PistonProtectionListener implements Listener {
   }
 
   private void moveBlocks(List<Block> blocks, BlockFace dir) {
-    // reverse order like Jobs Reborn so multi-block chains do not overwrite
+    // Reverse order prevents multi-block chains from overwriting each other.
     for (int i = blocks.size() - 1; i >= 0; i--) {
       Block from = blocks.get(i);
       Location toLoc = from.getLocation().clone().add(dir.getModX(), dir.getModY(), dir.getModZ());

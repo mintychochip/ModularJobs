@@ -175,7 +175,7 @@ final class JobPaymentListener implements Listener {
     }
     Material material = block.getType();
     String materialName = material.toString();
-    // Jobs Reborn STRIPLOGS: logs, stems, wood, hyphae (not already stripped)
+    // Ignore already-stripped logs to avoid duplicate payment.
     if (materialName.startsWith("STRIPPED_")) {
       return;
     }
@@ -271,13 +271,13 @@ final class JobPaymentListener implements Listener {
     ItemStack mainHand = inventory.getItemInMainHand();
     int silkTouch = mainHand.getEnchantmentLevel(Enchantment.SILK_TOUCH);
 
-    // Jobs Reborn place→break: deny ALL pay while location is still protected (not silk-only).
+    // Placed blocks remain protected until the configured timer expires.
     if (exploitService.canProtect(ExploitProtectionType.PLACED, block)
         && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
       return;
     }
 
-    // Jobs Reborn SilkTouchProtection (optional): no pay for protectable materials with silk-touch.
+    // Optional silk-touch protection.
     if (exploitService.settings().silkTouchDeny()
         && silkTouch > 0
         && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
@@ -287,7 +287,7 @@ final class JobPaymentListener implements Listener {
     paymentHandler.pay(player, ActionTypes.BLOCK_BREAK, BukkitContexts.block(block));
     breakCache.put(LocationKey.create(block.getLocation()), player);
 
-    // Jobs Reborn global break timer: re-arm protection after a paid break so re-place/break farms fail.
+    // Re-arm protection after a paid break.
     if (exploitService.settings().rearmAfterBreak()
         && exploitService.canProtect(ExploitProtectionType.PLACED, block)) {
       exploitService.addProtection(ExploitProtectionType.PLACED, block);
@@ -329,7 +329,7 @@ final class JobPaymentListener implements Listener {
     }
     breakCache.invalidate(sourceKey);
     breakCache.put(LocationKey.create(block.getLocation()), player);
-    // Jobs Reborn: physics cascade still respects place→break protection on the cascading block
+    // Physics cascades respect placed-block protection.
     if (exploitService.canProtect(ExploitProtectionType.PLACED, block)
         && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
       return;
@@ -361,7 +361,7 @@ final class JobPaymentListener implements Listener {
         (type == Material.BOWL && !(entity instanceof MushroomCow))) {
       return;
     }
-    // Jobs Reborn CowMilkingTimer: entity on milk protect list must wait out timer
+    // Apply the milk cooldown.
     if (exploitService.canProtect(ExploitProtectionType.MILK, entity)) {
       if (exploitService.isProtected(ExploitProtectionType.MILK, entity)) {
         return;
@@ -428,7 +428,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
 
-    // Jobs Reborn MonsterDamage + multi-contributor: use tracked player damage when present
+    // Use tracked damage contributions when available.
     if (mobDamageTracker.isTracking(victim)) {
       DamageContribution contribution = mobDamageTracker.endTracking(victim);
       if (exploitService.settings().monsterDamageRequired() && !isMonsterDamageBossExempt(victim)) {
@@ -589,7 +589,7 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
-    // Jobs Reborn PreventHopperFillUps
+    // Hopper-filled containers do not pay smelt rewards.
     if (hopperPayDisableStore.isDisabled(block)) {
       return;
     }
@@ -617,7 +617,7 @@ final class JobPaymentListener implements Listener {
     if (eligibility.blocksPay(player)) {
       return;
     }
-    // Jobs Reborn PreventBrewingStandFillUps
+    // Hopper-filled containers do not pay brew rewards.
     if (hopperPayDisableStore.isDisabled(block)) {
       return;
     }
@@ -700,7 +700,7 @@ final class JobPaymentListener implements Listener {
       return;
     }
     for (Block block : event.blockList()) {
-      // Jobs Reborn: place→break protection applies to TNTBREAK as well
+      // TNT cascades respect placed-block protection.
       if (exploitService.canProtect(ExploitProtectionType.PLACED, block)
           && exploitService.isProtected(ExploitProtectionType.PLACED, block)) {
         continue;

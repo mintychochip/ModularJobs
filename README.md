@@ -46,6 +46,13 @@ CI: `.github/workflows/ci.yml` — Java 25 + Postgres (`check` + shadow jar), Ru
 3. Configure database, economy, and permissions (below).
 4. Restart or reload after config changes.
 
+### Starter content
+
+The bundled `jobs.yml`, `job_tasks.yml`, `job_tasks.csv`, `fisherman.yml`,
+`boost_sources_default.json`, and `upgrade_trees/*.json` files form a generic
+starter pack. Replace or extend these examples for each server; their values are
+not a fixed progression contract.
+
 ### Database (PostgreSQL only)
 
 ModularJobs uses **PostgreSQL only** (no SQLite/MySQL/MariaDB).
@@ -85,16 +92,23 @@ Missing tables → plugin **fails at startup**. See `docs/database-schema.md`.
 
 ### Economy
 
-Money payables use the **Mint** ledger plugin (aincraft-org/mint).
+Money payables are optional. When the Mint plugin and service are available,
+ModularJobs uses its reflective ledger bridge. Without a provider, the default
+blackhole policy accepts positive economy payables but discards the currency.
+Install Mint or select the fail policy when real currency rewards are mandatory.
 
 ```yaml
 # config.yml
 economy:
-  required: true   # fail enable if the Mint economy plugin is missing
+  required: false
+  missing-provider: blackhole # blackhole | fail
 ```
 
-- `required: true` (default): hard-fail enable without a Mint plugin.
-- `required: false`: experience-only servers; economy deposits throw if a task still pays money.
+- `missing-provider: blackhole` (default): keep the server running and discard
+  positive money payables when no provider is available.
+- `missing-provider: fail`: fail enable when Mint is unavailable.
+- `required: true` remains a compatibility shorthand for `fail` when no explicit
+  `missing-provider` is set.
 
 ### Permissions
 
@@ -123,34 +137,31 @@ kill-contribution-cutoff: 0.5
 
 ### Profession API
 
-ModularJobs always registers its core `ProfessionService` Bukkit service for dependent plugins.
-Optional Recipe/Buff/Station/NodeHarvest services remain behind:
+ModularJobs always registers its core `ProfessionService` Bukkit service for
+dependent plugins. Optional Recipe/Buff/Station/NodeHarvest services remain behind:
 
 ```yaml
 profession-apis:
   register-bukkit-services: false
 ```
 
-Azoth declares ModularJobs as a required dependency and uses `ProfessionService` for
-authoritative profession levels. ModularJobs does not shade or embed the API.
+The public API exposes profession catalog, progression, recipes, buffs, stations,
+and resource-node hooks without requiring a separate server-specific progression
+pack.
 
 ### Gathering interaction gates
 
-Azoth owns gathering enforcement and its gate configuration. Configure
-`block-break-gates`, `fish-catch-gates`, and `interaction-gates` in Azoth's
-`config.yml`; install Azoth when players must be prevented from using
-under-level gathering interactions. ModularJobs continues to own profession
-progression, task data, and payment, and cancelled events receive no payment.
+ModularJobs owns profession progression, task data, and payment. Server operators
+may use their own protection or interaction-gating plugins; cancelled events
+receive no payment.
 
-Azoth's default bypass permission is `azoth.bypassgathering`.
+### Integrations and deferred dependency
 
-Supported gates cover mining, woodcutting, farming, herbalism, fishing, log
-stripping, and mature sweet-berry, cocoa, and cave-vine harvesting. Junk and
-treasure fishing remain ungated.
+Mint, mcMMO, Bolt, LWC, Choco, and PlaceholderAPI are optional integrations.
+The Craftux-backed UI is the current mandatory UI dependency and remains an
+explicit deferred distribution task; the release is not yet a fully standalone
+Paper artifact. The external Preferences plugin is not required.
 
-### Soft depends
-
-Mint, mcMMO, Bolt, LWC, Choco, Preferences — optional (Mint replaces the former Vault soft-depend).
 
 ## Version
 

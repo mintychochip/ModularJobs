@@ -14,7 +14,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.inventory.InventoryHolder;
 
 /**
- * Jobs Reborn hopper fill-up: mark furnace/brewer destinations so smelt/brew pay is skipped.
+ * Marks hopper-filled containers so smelt and brew rewards can be skipped.
  */
 final class HopperPayListener implements Listener {
 
@@ -61,7 +61,7 @@ final class HopperPayListener implements Listener {
     }
   }
 
-  /** Player opening a machine re-enables pay (Jobs Reborn reassign-by-interact spirit). */
+  /** Opening a machine re-enables payment attribution. */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onInteract(final PlayerInteractEvent event) {
     if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {

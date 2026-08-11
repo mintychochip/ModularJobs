@@ -8,9 +8,9 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * AzothMC P6 consumable buff application rules (food / potion / coating slots).
+ * Consumable combat buff application rules (food / potion / coating slots).
  *
- * <p>Combat formulas live in {@code azoth}; this service only tracks active buff ids and slots.
+ * <p>This service tracks active buff ids and slots.
  */
 public interface BuffService {
 

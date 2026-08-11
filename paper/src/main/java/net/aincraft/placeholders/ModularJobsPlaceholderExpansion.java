@@ -24,7 +24,7 @@ public final class ModularJobsPlaceholderExpansion extends PlaceholderExpansion 
 
   @Override
   public @NotNull String getAuthor() {
-    return "mintychochip";
+    return "ModularJobs contributors";
   }
 
   @Override

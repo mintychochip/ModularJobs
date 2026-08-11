@@ -8,7 +8,7 @@ import net.aincraft.service.RecipeService;
 import net.aincraft.service.StationService;
 
 /**
- * Manual composition for AzothMC P6 profession APIs.
+ * Manual composition for the profession service surfaces.
  */
 public final class ProfessionWiring {
 

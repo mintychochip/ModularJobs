@@ -6,7 +6,7 @@ import net.kyori.adventure.key.Key;
 
 /**
  * Resolves entity payment context keys from pure entity-type keys.
- * MythicMobs live-entity resolution is disabled (entity instance no longer on Context).
+ * External live-entity resolution is disabled because contexts carry stable keys, not instances.
  */
 public class EntityResolvingStrategyImpl implements KeyResolvingStrategy<EntityContext> {
 

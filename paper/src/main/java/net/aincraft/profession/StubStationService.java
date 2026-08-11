@@ -7,8 +7,7 @@ import net.aincraft.service.StationService;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * P6 station tier stub. Defaults to tier {@link #DEFAULT_TIER} for all station types
- * until territory P8 supplies real tiers.
+ * In-memory station tier defaults for configured station types.
  */
 public final class StubStationService implements StationService {
 

@@ -23,7 +23,7 @@ final class MobDamageTrackerController implements Listener {
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onDamageTrackedEntity(final EntityDamageByEntityEvent event) {
     Entity victim = event.getEntity();
-    // Jobs Reborn MonsterDamage / multi-contrib: start tracking on first player damage
+    // Start tracking on the first player damage event.
     DamageSource damageSource = event.getDamageSource();
     Entity damager = damageSource.getCausingEntity();
 
@@ -34,7 +34,7 @@ final class MobDamageTrackerController implements Listener {
       }
       damager = entity;
     }
-    // Attribute pet damage to owner (Jobs Reborn TameablesPayout spirit)
+    // Attribute tameable damage to its owner.
     if (damager instanceof org.bukkit.entity.Tameable tameable
         && tameable.getOwner() instanceof org.bukkit.entity.Player owner) {
       damager = owner;

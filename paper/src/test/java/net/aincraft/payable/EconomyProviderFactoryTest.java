@@ -91,7 +91,7 @@ class EconomyProviderFactoryTest {
 
   @Test
   void unknownMissingProviderPolicyFailsConfiguration() {
-    plugin.getConfig().set("economy.missing-provider", "vault");
+    plugin.getConfig().set("economy.missing-provider", "unknown");
 
     IllegalArgumentException ex = assertThrows(
         IllegalArgumentException.class,

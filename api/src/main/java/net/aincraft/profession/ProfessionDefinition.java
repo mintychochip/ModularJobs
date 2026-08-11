@@ -3,7 +3,7 @@ package net.aincraft.profession;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * One profession track from AzothMC §8.1.
+ * One built-in profession track.
  *
  * @param id          canonical id (e.g. {@code mining})
  * @param storageKey  ModularJobs job key used for progression/tasks (e.g. {@code miner})

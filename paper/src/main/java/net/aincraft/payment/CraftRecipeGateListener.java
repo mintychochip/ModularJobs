@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 
 /**
- * Blocks crafting of registered unknown recipes (AzothMC §8.3 / P6).
+ * Blocks crafting of registered unknown recipes according to configured profession rules.
  * Unregistered recipes remain allowed for vanilla BC.
  */
 public final class CraftRecipeGateListener implements Listener {

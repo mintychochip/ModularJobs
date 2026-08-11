@@ -9,7 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFromToEvent;
 
 /**
- * Jobs Reborn {@code onBlockFromToEvent} ore-generator protection.
+ * Generator-formed stone, cobblestone, and obsidian follow the configured protection policy.
  * When {@link ExploitProtectionSettings#protectOreGenerators()} is true, stone/cobble/obsidian
  * formed by generators keep PLACED protection (no quick re-break pay). When false, protection is
  * cleared so generator breaks can pay.

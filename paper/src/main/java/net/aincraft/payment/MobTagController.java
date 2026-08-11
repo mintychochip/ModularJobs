@@ -16,7 +16,7 @@ import org.bukkit.event.entity.EntityTransformEvent;
  * It tags these entities using the {@link EntityValidationService}, so that future plugin logic can
  * identify them as "spawner" entities — useful for applying special behavior or filtering.
  * </p>
- * @author mintychochip
+ * @author ModularJobs contributors
  */
 final class MobTagController implements Listener {
 

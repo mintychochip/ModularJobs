@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * World gather hook (P6 stub or real {@code world} implementation at P11).
+ * World gather hook for resource nodes.
  */
 public interface NodeHarvestService {
 

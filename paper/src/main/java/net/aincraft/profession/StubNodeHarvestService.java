@@ -9,7 +9,7 @@ import net.aincraft.service.NodeHarvestService;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * P6 gather stub: fixed test nodes keyed by block location until world P11.
+ * In-memory gather stub keyed by resource location.
  *
  * <p>Register nodes via {@link #registerNode}; unregistered locations return empty.
  */

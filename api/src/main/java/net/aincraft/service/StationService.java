@@ -4,7 +4,7 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Station tier gate for craft/gather (P6 hook; P8 territory supplies real tiers).
+ * Station tier gate for crafting and gathering.
  */
 public interface StationService {
 

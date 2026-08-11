@@ -4,7 +4,7 @@ import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Metadata for a learnable profession recipe (AzothMC §8.3).
+ * Metadata for a learnable profession recipe.
  *
  * @param id               recipe key
  * @param professionId     canonical profession id (e.g. {@code weaponsmithing})

@@ -1,3 +1,4 @@
+# Starter content: replace these example jobs and values with your server's progression design.
 builder:
   display-name: "<blue>Builder"
   description: "Builds structures and earns from placing blocks."
@@ -88,9 +89,8 @@ alchemist:
     experience: base + (base * (level - 1) * 0.01)
     economy: base + (base * (level - 1) * 0.01)
 
-# --- AzothMC §8.1 tracks not covered by legacy keys above ---
-# (mining→miner, woodcutting→lumberjack, farming→farmer, fishing→fisherman,
-#  alchemy→alchemist, weaponsmithing→blacksmith via ProfessionCatalog)
+# Built-in tracks not covered by the legacy job keys above.
+# Stable aliases are maintained by ProfessionCatalog (for example mining→miner).
 
 herbalism:
   display-name: "<dark_green>Herbalism"

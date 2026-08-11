@@ -11,7 +11,7 @@ import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * In-memory learned-recipe store (P6). Persist later via crafting DB if needed.
+ * In-memory learned-recipe store.
  */
 public final class MemoryRecipeService implements RecipeService {
 

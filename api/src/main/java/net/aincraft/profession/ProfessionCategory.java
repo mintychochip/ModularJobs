@@ -1,7 +1,7 @@
 package net.aincraft.profession;
 
 /**
- * AzothMC master design §8.1 profession groups.
+ * Built-in profession groups.
  */
 public enum ProfessionCategory {
   GATHERING,

@@ -170,7 +170,7 @@ class PostgresSchemaFidelityTest {
       ps.setString(3, "minecraft:cod");
       ps.setString(4, "modularjobs:economy");
       ps.setBigDecimal(5, amount);
-      ps.setString(6, "vault:default");
+      ps.setString(6, "test:default");
       assertEquals(1, ps.executeUpdate());
     }
 
@@ -186,7 +186,7 @@ class PostgresSchemaFidelityTest {
       try (ResultSet rs = ps.executeQuery()) {
         assertTrue(rs.next());
         assertEquals(0, amount.compareTo(rs.getBigDecimal("amount")));
-        assertEquals("vault:default", rs.getString("currency"));
+        assertEquals("test:default", rs.getString("currency"));
       }
     }
   }

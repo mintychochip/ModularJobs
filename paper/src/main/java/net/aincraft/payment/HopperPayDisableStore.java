@@ -7,8 +7,8 @@ import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Jobs Reborn hopper fill-up protection: blocks that received items via hopper lose job pay
- * attribution until cleared (player re-opens / ownership reassert — we clear on player interact).
+ * Blocks that received items via hopper lose job pay attribution until a player reopens the
+ * container and ownership is reasserted.
  */
 final class HopperPayDisableStore {
 

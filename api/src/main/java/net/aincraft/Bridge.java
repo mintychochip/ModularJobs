@@ -45,19 +45,19 @@ public interface Bridge {
 
   JobService jobService();
 
-  /** AzothMC P6 profession facade (catalog + progression). */
+  /** Profession catalog and progression facade. */
   ProfessionService professionService();
 
-  /** Learned recipes (P6). */
+  /** Learned profession recipes. */
   RecipeService recipeService();
 
-  /** Consumable combat buff slots (P6); formulas in azoth. */
+  /** Consumable combat buff slots and effects. */
   BuffService buffService();
 
-  /** Station tier gate (stub until territory P8). */
+  /** Station tier gate for crafting and gathering. */
   StationService stationService();
 
-  /** Gather hook (stub until world P11). */
+  /** World-gather integration hook. */
   NodeHarvestService nodeHarvestService();
 
   /** Shared pure domain event bus. */

@@ -1,5 +1,5 @@
 {
-  "_comment": "Version-2 example Miner job skill tree: three levelled base perks and four mutually exclusive major companion choices gated on maxed perks.",
+  "_comment": "Starter Miner skill-tree example; replace or extend it for your progression design.",
   "version": 2,
   "job": "miner",
   "skill_points_per_level": 1,
