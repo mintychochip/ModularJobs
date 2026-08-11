@@ -13,13 +13,13 @@ public record EditorConfig(
     String sessionCreateSecret,
     int sessionTtlMinutes
 ) {
-    public static final String DEFAULT_SESSION_API_URL = "http://127.0.0.1:18787";
-    public static final String DEFAULT_WEB_EDITOR_URL = "https://modular-jobs.vercel.app/editor";
+    public static final String DEFAULT_SESSION_API_URL = "";
+    public static final String DEFAULT_WEB_EDITOR_URL = "";
     public static final int DEFAULT_SESSION_TTL = 24 * 60;
 
     public static EditorConfig defaults() {
         return new EditorConfig(
-            true,
+            false,
             DEFAULT_SESSION_API_URL,
             DEFAULT_WEB_EDITOR_URL,
             "",

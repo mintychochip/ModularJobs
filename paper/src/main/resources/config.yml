@@ -43,12 +43,12 @@ preferences:
   # Players can override with /jobs info preference gui/chat
   default-gui-mode: true
 
-# Secure web editor. PostgreSQL and the REST API are external services.
-# The plugin never launches PostgreSQL or provisions schema.
+# Secure web editor. Disabled until an operator configures external services.
+# PostgreSQL and the REST API remain external; the plugin never provisions either.
 editor:
-  enabled: true
-  session-api-url: http://127.0.0.1:18787
-  web-editor-url: https://modular-jobs.vercel.app/editor
+  enabled: false
+  session-api-url: ""
+  web-editor-url: ""
   # Must match REST SESSION_CREATE_SECRET when the API requires one.
   session-create-secret: ""
   session-ttl-minutes: 1440
