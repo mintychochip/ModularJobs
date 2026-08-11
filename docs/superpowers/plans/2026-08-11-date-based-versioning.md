@@ -328,14 +328,39 @@ release:
 Keep the workflow's existing `tags: ['v*']` push trigger and all job
  dependencies unchanged.
 
-- [ ] **Step 2: Validate and export the tag-derived version**
+- [ ] **Step 2: Validate the tag and the checked-out canonical version before publication**
+
+Move the existing `Set up JDK 21` step so it appears immediately before the
+`Require exact tag and unused release` step. Keep its current contents:
+
+```yaml
+- name: Set up JDK 21
+  uses: actions/setup-java@v4
+  with:
+    distribution: temurin
+    java-version: "21"
+```
 
 Replace `EXPECTED_TAG` in the `Require exact tag and unused release` step with
-this shell block before the existing commit checks:
+this shell block before any API publication:
 
 ```bash
 VERSION="${GITHUB_REF_NAME#v}"
 ./scripts/validate-release-version.sh "$VERSION"
+
+PROJECT_VERSION="$(./gradlew -q properties --console=plain | sed -n 's/^version: //p')"
+if [[ "$PROJECT_VERSION" != "$VERSION" ]]; then
+    echo "::error::Gradle project version $PROJECT_VERSION does not match tag version $VERSION"
+    exit 1
+fi
+
+./gradlew :paper:processResources --console=plain --no-daemon
+PLUGIN_VERSION="$(sed -n "s/^version: '\\(.*\\)'$/\\1/p" paper/build/resources/main/plugin.yml)"
+if [[ "$PLUGIN_VERSION" != "$VERSION" ]]; then
+    echo "::error::plugin.yml version $PLUGIN_VERSION does not match tag version $VERSION"
+    exit 1
+fi
+
 echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 ```
 
@@ -350,8 +375,10 @@ if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
 fi
 ```
 
-The validator runs before API publication and package creation, so invalid tags
-cannot publish partial release artifacts.
+The validator, Gradle project-version check, and generated plugin descriptor
+check all run before `Publish ModularJobs API artifacts`. A mismatched tag
+therefore cannot publish API coordinates for the wrong version before the
+release package is built.
 
 - [ ] **Step 3: Replace every release-job `2.0.0` literal**
 
