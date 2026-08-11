@@ -267,14 +267,6 @@ public final class PluginContext {
         professions.professionService);
 
     EditorConfig editorConfig = EditorConfig.fromPlugin(plugin);
-    EditorSessionStore sessionStore = new EditorSessionStore(editorConfig);
-    RestSessionClient restSessionClient = new RestSessionClient(editorConfig, gson);
-    EditorService editorService = new EditorService(
-        domain.jobService,
-        domain.jobTaskRepository,
-        restSessionClient,
-        sessionStore,
-        editorConfig);
 
     JobBrowseGui jobBrowseGui = new JobBrowseGui(
         craftuxUi.inventory(), domain.jobService, upgradeService);
@@ -298,6 +290,14 @@ public final class PluginContext {
     commands.add(infoCommand);
     commands.add(new LeaveCommand(domain.jobService, domain.jobResolver));
     if (editorConfig.enabled()) {
+      EditorSessionStore sessionStore = new EditorSessionStore(editorConfig);
+      RestSessionClient restSessionClient = new RestSessionClient(editorConfig, gson);
+      EditorService editorService = new EditorService(
+          domain.jobService,
+          domain.jobTaskRepository,
+          restSessionClient,
+          sessionStore,
+          editorConfig);
       commands.add(new ApplyEditsCommand(editorService));
       commands.add(new EditorCommand(editorService, domain.jobService, domain.jobResolver));
     }

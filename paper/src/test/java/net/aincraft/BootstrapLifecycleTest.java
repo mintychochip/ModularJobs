@@ -1,11 +1,13 @@
 package net.aincraft;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.aincraft.editor.EditorConfig;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -50,6 +52,22 @@ class BootstrapLifecycleTest {
     assertFalse(
         text.contains("ExternalBackedPreferencesService"),
         "PluginContext must not depend on the removed external facade");
+  }
+
+  @Test
+  void disabledEditorDefaultsGateRestClientConstruction() throws Exception {
+    EditorConfig defaults = EditorConfig.defaults();
+    assertFalse(defaults.enabled());
+    assertEquals("", defaults.sessionApiUrl());
+    assertEquals("", defaults.webEditorUrl());
+
+    String text = Files.readString(locate("PluginContext.java"), StandardCharsets.UTF_8);
+    int commandGate = text.indexOf("if (editorConfig.enabled())");
+    int clientConstruction = text.indexOf("new RestSessionClient(editorConfig, gson)");
+    assertTrue(commandGate >= 0, "editor commands must be gated by enabled configuration");
+    assertTrue(
+        clientConstruction > commandGate,
+        "disabled editor defaults must not construct RestSessionClient before the gate");
   }
 
   @Test
