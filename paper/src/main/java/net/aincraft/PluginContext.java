@@ -65,7 +65,7 @@ import net.aincraft.repository.PluginResources;
 import net.aincraft.repository.SharedConnectionSources;
 import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
 import net.aincraft.serialization.KryoCodecRegistry;
-import net.aincraft.service.PreferencesIntegration;
+import net.aincraft.service.PreferencesServiceImpl;
 import net.aincraft.service.PreferencesService;
 import net.aincraft.service.TimedBoostDataServiceImpl;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
@@ -198,13 +198,7 @@ public final class PluginContext {
         new TimedBoostDataServiceImpl(timedBoostRepository);
     ItemBoostDataService itemBoostDataService = new ItemBoostDataService(codecRegistry);
 
-    // Soft-depend Preferences: register entries-per-page + gui-mode when the service is live;
-    // otherwise keep local config defaults (PreferencesServiceImpl).
-    PreferencesIntegration.Wiring preferencesWiring = PreferencesIntegration.wire(plugin);
-    PreferencesService preferencesService = preferencesWiring.service();
-    if (preferencesWiring.onDisable() != null) {
-      resources.onFlush(preferencesWiring.onDisable());
-    }
+    PreferencesService preferencesService = new PreferencesServiceImpl(plugin);
 
     ConfigurationSection upgradesSection = DatabaseConfigSections.sectionOrFallback(
         databaseConfig, "upgrades", payableSection);

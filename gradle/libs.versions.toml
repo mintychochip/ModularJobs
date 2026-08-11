@@ -43,10 +43,6 @@ adventure = "4.21.0"
 # Development tools
 jetbrains-annotations = "24.1.0"
 
-# Preferences public hooking API (live 0.1.0 on GH Packages / sibling ../preferences)
-preferences-api = "0.1.0"
-
-
 [libraries]
 # Infrastructure
 kryo = { module = "com.esotericsoftware:kryo", version.ref = "kryo" }
@@ -69,8 +65,6 @@ placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholder
 craftux-api = { module = "dev.craftux:craftux-api", version.ref = "craftux" }
 craftux-common = { module = "dev.craftux:craftux-common", version.ref = "craftux" }
 craftux-paper = { module = "dev.craftux:craftux-paper", version.ref = "craftux" }
-# Soft-depend Preferences: compileOnly on API only (not the plugin jar)
-preferences-api = { module = "dev.jlo:preferences-api", version.ref = "preferences-api" }
 
 # Test
 mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v26.2", version.ref = "mockbukkit" }

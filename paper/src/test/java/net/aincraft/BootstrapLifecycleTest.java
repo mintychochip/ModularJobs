@@ -38,30 +38,18 @@ class BootstrapLifecycleTest {
   }
 
   @Test
-  void preferencesIntegrationLoadsExternalServiceFromPublicApiPackage() throws Exception {
-    Path integration = locate("service/PreferencesIntegration.java");
-    String text = Files.readString(integration, StandardCharsets.UTF_8);
-    assertTrue(
-        text.contains("dev.jlo.preferences.api.PreferencesService"),
-        "must load external PreferencesService from dev.jlo.preferences.api");
-    assertTrue(
-        text.contains("Bukkit.getServicesManager().load"),
-        "must resolve Preferences via Bukkit services manager");
-    assertTrue(
-        text.contains("PreferencesServiceImpl"),
-        "must fall back to local PreferencesServiceImpl when service missing");
-  }
-
-  @Test
-  void pluginContextWiresPreferencesIntegration() throws Exception {
+  void pluginContextWiresLocalPreferencesService() throws Exception {
     Path context = locate("PluginContext.java");
     String text = Files.readString(context, StandardCharsets.UTF_8);
     assertTrue(
-        text.contains("PreferencesIntegration.wire"),
-        "PluginContext must wire preferences through PreferencesIntegration");
-    assertFalse(
         text.contains("new PreferencesServiceImpl(plugin)"),
-        "PluginContext must not construct local prefs blindly without integration");
+        "PluginContext must construct the always-available local preference service");
+    assertFalse(
+        text.contains("PreferencesIntegration"),
+        "PluginContext must not depend on the removed external Preferences adapter");
+    assertFalse(
+        text.contains("ExternalBackedPreferencesService"),
+        "PluginContext must not depend on the removed external facade");
   }
 
   @Test

@@ -30,16 +30,12 @@ dependencies {
     }
     compileOnly(libs.lwc)
     compileOnly(libs.bolt)
-    // Preferences public API only (soft-depend; not shaded into the plugin fat jar)
-    compileOnly(libs.preferences.api)
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // MockBukkit for Paper 26.2 — mock server for OfflinePlayer / Material runtime
     testImplementation(libs.mockbukkit)
     testImplementation(libs.paper.api)
-    // Preferences API for unit tests of the bridge (still not packaged into shadowJar)
-    testImplementation(libs.preferences.api)
     // PostgreSQL only — driver ships in the plugin artifact
     implementation(libs.postgresql)
     testImplementation(libs.postgresql)
