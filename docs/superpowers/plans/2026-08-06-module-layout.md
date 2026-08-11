@@ -83,7 +83,7 @@ paper   (api + common + paper-api compileOnly + existing plugin deps)
 - [ ] **Step 1: Confirm isolation baseline**
 
 ```bash
-cd /home/jlo/dev/modularjobs
+cd <modularjobs-root>
 GIT_DIR=$(cd "$(git rev-parse --git-dir)" && pwd -P)
 GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)
 echo "GIT_DIR=$GIT_DIR"
@@ -153,7 +153,7 @@ No extra commit required if Step 2 already captured WIP. Proceed to Task 2.
 - [ ] **Step 1: git mv modules**
 
 ```bash
-cd /home/jlo/dev/modularjobs/.worktrees/module-layout
+cd <modularjobs-worktree>
 git mv jobs-api api
 git mv jobs-core paper
 git mv jobs-web web
