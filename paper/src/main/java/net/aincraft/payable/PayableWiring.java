@@ -3,9 +3,9 @@ package net.aincraft.payable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
-import org.jetbrains.annotations.Nullable;
 import net.aincraft.container.Currency;
 import net.aincraft.container.EconomyProvider;
+import org.jetbrains.annotations.NotNull;
 import net.aincraft.container.ExperiencePayableHandler.ExperienceBarController;
 import net.aincraft.container.ExperiencePayableHandler.ExperienceBarFormatter;
 import net.aincraft.container.PayableAmount;
@@ -30,9 +30,9 @@ public final class PayableWiring {
   private static final String ECONOMY_TYPE = "modularjobs:economy";
   private static final String EXPERIENCE_TYPE = "modularjobs:experience";
 
-  public final @Nullable EconomyProvider economyProvider;
+  public final @NotNull EconomyProvider economyProvider;
 
-  private PayableWiring(@Nullable EconomyProvider economyProvider) {
+  private PayableWiring(@NotNull EconomyProvider economyProvider) {
     this.economyProvider = economyProvider;
   }
 
@@ -56,20 +56,10 @@ public final class PayableWiring {
     return new PayableWiring(economyProvider);
   }
 
-  /**
-   * Economy deposit handler. Never silently no-ops: missing provider throws so misconfiguration is
-   * loud at pay time (enable-time hard-fail is handled by {@link EconomyProviderFactory}).
-   */
-  static PayableHandler economyHandlerFor(@Nullable EconomyProvider economyProvider) {
-    return context -> {
-      if (economyProvider == null) {
-        throw new IllegalStateException(
-            "Cannot deposit economy payable: no EconomyProvider (Mint). "
-                + "Install the Mint plugin or set economy.required: false only for "
-                + "experience-only configs that never pay modularjobs:economy");
-      }
-      economyProvider.deposit(context.playerId(), context.payable().amount());
-    };
+  /** Delegates economy payables to the selected provider, including the blackhole fallback. */
+  static PayableHandler economyHandlerFor(@NotNull EconomyProvider economyProvider) {
+    return context -> economyProvider.deposit(
+        context.playerId(), context.payable().amount());
   }
 
   private static PayableType economyType(PayableHandler handler) {

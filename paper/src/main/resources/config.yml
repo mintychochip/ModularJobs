@@ -10,10 +10,11 @@ kill-contribution-cutoff: 0.5
 # Max distance (blocks) from furnace for smelt/bake pay attribution
 furnace-max-distance: 25.0
 
-# Economy deposits (Mint ledger plugin). When required=true, plugin enable fails without a Mint economy.
+# Economy deposits. Mint is optional; without it, positive currency rewards use the configured
+# missing-provider policy. Use fail when a real currency provider is mandatory.
 economy:
-  required: true
-
+  required: false
+  missing-provider: blackhole # blackhole | fail
 # Auxiliary profession services. The core ProfessionService is always registered for
 # dependent plugins; this flag exposes the optional Recipe/Buff/Station/NodeHarvest services.
 profession-apis:

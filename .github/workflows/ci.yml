@@ -113,7 +113,6 @@ jobs:
           ./gradlew \
             :api:publishMavenPublicationToLocalBuildRepository \
             --console=plain --no-daemon
-
       - name: Checkout Preferences API dependency
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -133,7 +132,6 @@ jobs:
       - name: Verify required local dependency artifacts
         run: |
           test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
-          test -f ../mint/build/maven-repo/dev/jlo/mint/mint-api/1.0.0/mint-api-1.0.0.pom
           test -f "${{ runner.temp }}/m2/dev/jlo/preferences-api/0.1.0/preferences-api-0.1.0.pom"
 
 

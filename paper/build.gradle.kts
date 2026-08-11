@@ -25,8 +25,6 @@ dependencies {
     compileOnly(libs.placeholderapi)
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.paper.api)
-    // Mint ledger API (soft-depend; Mint plugin ships it at runtime)
-    compileOnly(libs.mint.api)
     compileOnly(libs.mcmmo) {
         exclude(group = "com.sk89q.worldguard")
     }
