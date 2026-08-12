@@ -17,7 +17,6 @@ concurrency:
 jobs:
   check:
     name: Credential-free checks
-    if: github.run_attempt == 1
     runs-on: ubuntu-latest
     timeout-minutes: 60
     services:
@@ -125,19 +124,24 @@ jobs:
 
   publish:
     name: Publish :api and :common to Central Portal
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && github.run_attempt == 1
+    needs: check
+    if: needs.check.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     environment: maven-central
     permissions:
       contents: read
-      actions: write
     env:
-      ORG_GRADLE_PROJECT_centralPortalUsername: ${{ secrets.centralPortalUsername }}
-      ORG_GRADLE_PROJECT_centralPortalPassword: ${{ secrets.centralPortalPassword }}
+      ORG_GRADLE_PROJECT_centralPortalUsername: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
+      ORG_GRADLE_PROJECT_centralPortalPassword: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
       ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
       ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
     steps:
+      - name: Reject workflow reruns
+        if: github.run_attempt != 1
+        run: |
+          echo 'This release run was retried. Start a new workflow-dispatch run instead of reusing an immutable version.'
+          exit 1
       - name: Checkout
         uses: actions/checkout@v4
       - name: Compute release version
@@ -161,14 +165,21 @@ jobs:
         id: publish
         shell: bash
         run: |
+          set -euo pipefail
+          publish_log="$RUNNER_TEMP/nmcp-publish.log"
+          trap 'rm -f "$publish_log"' EXIT
           set +e
           ./gradlew publishAggregationToCentralPortal \
             -PreleaseVersion="$VERSION" \
-            --console=plain --no-daemon > nmcp-publish.log 2>&1
+            --console=plain --no-daemon >"$publish_log" 2>&1
           gradle_status=$?
           set -e
+          if [[ "$gradle_status" -ne 0 ]]; then
+            echo "::error::Central Portal upload failed with exit status $gradle_status."
+            exit "$gradle_status"
+          fi
           deployment_ids="$(
-            sed -nE "s/.*Nmcp: deployment bundle '([^']+)' uploaded\..*/\1/p" nmcp-publish.log |
+            sed -nE "s/.*Nmcp: deployment bundle '([^']+)' uploaded\..*/\1/p" "$publish_log" |
               sort -u |
               sed '/^$/d'
           )"
@@ -182,78 +193,32 @@ jobs:
             exit 1
           fi
           echo "deployment_id=$deployment_ids" >> "$GITHUB_OUTPUT"
-          echo "gradle_status=$gradle_status" >> "$GITHUB_OUTPUT"
-      - name: Await AUTOMATIC publication (FAILED only)
+      - name: Report Central upload status
         id: status
         shell: bash
         env:
           DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
-          GRADLE_STATUS: ${{ steps.publish.outputs.gradle_status }}
         run: |
           set -euo pipefail
-          if [[ "$GRADLE_STATUS" != "0" ]]; then
-            echo "::error::Gradle Central Portal upload failed with exit status $GRADLE_STATUS."
-            exit "$GRADLE_STATUS"
-          fi
           token="$(
             printf '%s:%s' \
               "$ORG_GRADLE_PROJECT_centralPortalUsername" \
               "$ORG_GRADLE_PROJECT_centralPortalPassword" |
               base64 -w0
           )"
-          base_url="https://central.sonatype.com/"
-          deadline=$(( $(date +%s) + 1500 ))
-          state="UNKNOWN"
-          while :; do
-            response_file="$(mktemp)"
-            http_code="$(
-              curl --silent --show-error \
-                --output "$response_file" \
-                --write-out '%{http_code}' \
-                --request POST \
-                --header "Authorization: Bearer $token" \
-                "${base_url}api/v1/publisher/status?id=${DEPLOYMENT_ID}" ||
-                printf '000'
-            )"
-            if [[ "$http_code" == "404" ]]; then
-              echo "::error::Central Portal does not know deployment ID '$DEPLOYMENT_ID'."
-              rm -f "$response_file"
-              exit 1
-            fi
-            if [[ "$http_code" != "200" ]]; then
-              echo "::warning::Central Portal status request returned HTTP $http_code; retrying."
-              rm -f "$response_file"
-            else
-              state="$(jq -r '.deploymentState // "UNKNOWN"' "$response_file")"
-              case "$state" in
-                FAILED)
-                  echo "::error::Central Portal deployment '$DEPLOYMENT_ID' is FAILED."
-                  rm -f "$response_file"
-                  exit 1
-                  ;;
-                PUBLISHED)
-                  echo "Central Portal deployment '$DEPLOYMENT_ID' is PUBLISHED."
-                  rm -f "$response_file"
-                  echo "deployment_state=$state" >> "$GITHUB_OUTPUT"
-                  exit 0
-                  ;;
-                PENDING|VALIDATING|VALIDATED|PUBLISHING|UNKNOWN)
-                  echo "Central Portal deployment '$DEPLOYMENT_ID' is $state; only FAILED is fatal."
-                  rm -f "$response_file"
-                  ;;
-                *)
-                  echo "::warning::Unexpected Central Portal state '$state'; only FAILED is fatal."
-                  rm -f "$response_file"
-                  ;;
-              esac
-            fi
-            if (( $(date +%s) >= deadline )); then
-              echo "::warning::Timed out waiting for '$DEPLOYMENT_ID' to reach PUBLISHED; last state was $state."
-              echo "deployment_state=$state" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            sleep 5
-          done
+          response="$(
+            curl --fail --silent --show-error --request POST \
+              --header "Authorization: Bearer $token" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}"
+          )"
+          status="$(printf '%s' "$response" | jq -r '.deploymentState // "UNKNOWN"')"
+          test "$status" != "UNKNOWN"
+          printf 'Central deployment %s status: %s. This workflow records upload/status only; verify PUBLISHED and public artifacts before claiming a release.\n' \
+            "$DEPLOYMENT_ID" "$status"
+          echo "deployment_state=$status" >> "$GITHUB_OUTPUT"
+          if [[ "$status" == "FAILED" ]]; then
+            exit 1
+          fi
       - name: Record deployment result
         env:
           DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
@@ -265,11 +230,3 @@ jobs:
             echo "- deployment id: \`$DEPLOYMENT_ID\`"
             echo "- status: \`${STATUS:-UNKNOWN}\`"
           } >> "$GITHUB_STEP_SUMMARY"
-      - name: Upload private NMCP log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonatype-publish-log
-          path: nmcp-publish.log
-          if-no-files-found: error
-          retention-days: 14
