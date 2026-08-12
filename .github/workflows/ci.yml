@@ -242,14 +242,13 @@ jobs:
 
 
   release:
-    name: Publish immutable ModularJobs 2.0.0 assets
+    name: Package immutable ModularJobs 2.0.0 assets
     if: github.ref == 'refs/tags/v2.0.0'
     needs: [java, rest-api, session-editor]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: write
-      packages: write
     steps:
       - name: Checkout exact release tag
         uses: actions/checkout@v4
@@ -287,15 +286,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Publish ModularJobs API artifacts
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew \
-            :api:publishMavenPublicationToGitHubPackagesRepository \
-            :common:publishMavenPublicationToGitHubPackagesRepository \
-            --console=plain --no-daemon
+
 
       - name: Package release assets
         run: |

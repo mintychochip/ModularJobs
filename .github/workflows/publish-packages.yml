@@ -1,4 +1,4 @@
-name: Sonatype Central Portal
+name: Publish GitHub Packages
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sonatype-${{ github.workflow }}-${{ github.ref }}
+  group: packages-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -123,24 +123,22 @@ jobs:
         run: npm run build
 
   publish:
-    name: Publish :api and :common to Central Portal
+    name: Publish API and common to GitHub Packages
     needs: check
     if: needs.check.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    environment: maven-central
+    timeout-minutes: 30
     permissions:
       contents: read
+      packages: write
     env:
-      ORG_GRADLE_PROJECT_centralPortalUsername: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
-      ORG_GRADLE_PROJECT_centralPortalPassword: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
-      ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
-      ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Reject workflow reruns
         if: github.run_attempt != 1
         run: |
-          echo 'This release run was retried. Start a new workflow-dispatch run instead of reusing an immutable version.'
+          echo 'This package run was retried. Start a new workflow-dispatch run instead of reusing an immutable version.'
           exit 1
       - name: Checkout
         uses: actions/checkout@v4
@@ -161,72 +159,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Publish Central Portal aggregation
-        id: publish
-        shell: bash
+      - name: Publish Maven packages
         run: |
-          set -euo pipefail
-          publish_log="$RUNNER_TEMP/nmcp-publish.log"
-          trap 'rm -f "$publish_log"' EXIT
-          set +e
-          ./gradlew publishAggregationToCentralPortal \
+          ./gradlew \
             -PreleaseVersion="$VERSION" \
-            --console=plain --no-daemon >"$publish_log" 2>&1
-          gradle_status=$?
-          set -e
-          if [[ "$gradle_status" -ne 0 ]]; then
-            echo "::error::Central Portal upload failed with exit status $gradle_status."
-            exit "$gradle_status"
-          fi
-          deployment_ids="$(
-            sed -nE "s/.*Nmcp: deployment bundle '([^']+)' uploaded\..*/\1/p" "$publish_log" |
-              sort -u |
-              sed '/^$/d'
-          )"
-          if [[ -z "$deployment_ids" ]]; then
-            echo "::error::No Central Portal deployment ID was found in the private NMCP log."
-            exit 1
-          fi
-          deployment_count="$(grep -c . <<<"$deployment_ids")"
-          if [[ "$deployment_count" -ne 1 ]]; then
-            echo "::error::Expected exactly one Central Portal deployment ID, found $deployment_count."
-            exit 1
-          fi
-          echo "deployment_id=$deployment_ids" >> "$GITHUB_OUTPUT"
-      - name: Report Central upload status
-        id: status
-        shell: bash
-        env:
-          DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
-        run: |
-          set -euo pipefail
-          token="$(
-            printf '%s:%s' \
-              "$ORG_GRADLE_PROJECT_centralPortalUsername" \
-              "$ORG_GRADLE_PROJECT_centralPortalPassword" |
-              base64 -w0
-          )"
-          response="$(
-            curl --fail --silent --show-error --request POST \
-              --header "Authorization: Bearer $token" \
-              "https://central.sonatype.com/api/v1/publisher/status?id=${DEPLOYMENT_ID}"
-          )"
-          status="$(printf '%s' "$response" | jq -r '.deploymentState // "UNKNOWN"')"
-          test "$status" != "UNKNOWN"
-          printf 'Central deployment %s status: %s. This workflow records upload/status only; verify PUBLISHED and public artifacts before claiming a release.\n' \
-            "$DEPLOYMENT_ID" "$status"
-          echo "deployment_state=$status" >> "$GITHUB_OUTPUT"
-          if [[ "$status" == "FAILED" ]]; then
-            exit 1
-          fi
-      - name: Record deployment result
-        env:
-          DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
-          STATUS: ${{ steps.status.outputs.deployment_state }}
-        run: |
-          {
-            echo "### Maven Central deployment"
-            echo
-            echo "- deployment id: \`$DEPLOYMENT_ID\`"
-            echo "- status: \`${STATUS:-UNKNOWN}\`"
-          } >> "$GITHUB_STEP_SUMMARY"
+            :api:publishMavenPublicationToGitHubPackagesRepository \
+            :common:publishMavenPublicationToGitHubPackagesRepository \
+            --console=plain --no-daemon
