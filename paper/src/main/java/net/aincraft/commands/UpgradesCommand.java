@@ -94,17 +94,23 @@ public class UpgradesCommand implements JobsCommand {
       return 0;
     }
 
-    Optional<UpgradeTree> treeOpt = upgradeService.getTree(job.key().value());
-    if (treeOpt.isEmpty()) {
+    if (!hasTreeForJob(upgradeService, job.key().value())) {
       Messages.send(sender, "<neutral>This job has no upgrade tree.");
       return 0;
     }
 
-    UpgradeTree tree = treeOpt.get();
+    Optional<UpgradeTree> treeOpt = upgradeService.getTree(job.key().value());
+    UpgradeTree tree = treeOpt.orElse(null);
     upgradeTreeGui.open(player, job, tree);
+
     player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1.0f, 1.0f);
 
     return Command.SINGLE_SUCCESS;
+  }
+
+  static boolean hasTreeForJob(UpgradeService upgradeService, String jobKey) {
+    return upgradeService.getTree(jobKey).isPresent()
+        || upgradeService.getSkillTree(jobKey).isPresent();
   }
 
   private int executeUnlock(CommandSourceStack source, String jobName, String nodeKey) {

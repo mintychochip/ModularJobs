@@ -1,0 +1,275 @@
+name: Sonatype Central Portal
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonatype-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Credential-free checks
+    if: github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: modularjobs
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d modularjobs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MODULARJOBS_TEST_PG_URL: jdbc:postgresql://localhost:55432/modularjobs
+      MODULARJOBS_TEST_PG_USER: test
+      MODULARJOBS_TEST_PG_PASSWORD: test
+      DATABASE_URL: postgres://test:test@127.0.0.1:55432/modularjobs
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Compute release version
+        run: echo "VERSION=$(date -u +'%y.%-m.%-d').${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Checkout craftux dependency (pinned release)
+        uses: actions/checkout@v4
+        with:
+          repository: aincraft-org/craftux
+          ref: 402bea8ce21847df632a10b00b563665db205de
+          path: craftux
+          fetch-depth: 1
+      - name: Link craftux local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/craftux" "$GITHUB_WORKSPACE/../craftux"
+      - name: Set up Rust for craftux views
+        uses: dtolnay/rust-toolchain@stable
+      - name: Publish craftux local Maven artifacts
+        working-directory: craftux
+        run: |
+          chmod +x gradlew
+          ./gradlew \
+            :api:publishMavenPublicationToLocalBuildRepository \
+            :common:publishMavenPublicationToLocalBuildRepository \
+            :paper:publishMavenPublicationToLocalBuildRepository \
+            --console=plain --no-daemon
+      - name: Verify required local dependency artifacts
+        run: test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Apply Postgres schema
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+          ./scripts/apply-postgres-schema.sh \
+            "postgres://test:test@127.0.0.1:55432/modularjobs"
+      - name: Java checks
+        run: ./gradlew -PreleaseVersion="$VERSION" check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
+      - name: Validate release POMs
+        run: |
+          ./gradlew -PreleaseVersion="$VERSION" \
+            :api:generatePomFileForMavenPublication \
+            :common:generatePomFileForMavenPublication \
+            --console=plain --no-daemon
+          grep -q "<version>$VERSION</version>" api/build/publications/maven/pom-default.xml
+          grep -q "<version>$VERSION</version>" common/build/publications/maven/pom-default.xml
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: web/rest-api -> target
+      - name: rest-api checks
+        working-directory: web/rest-api
+        run: cargo test --all-targets
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/session-editor/package-lock.json
+      - name: Install session-editor dependencies
+        working-directory: web/session-editor
+        run: npm ci
+      - name: Test session-editor
+        working-directory: web/session-editor
+        run: npm test
+      - name: Build session-editor
+        working-directory: web/session-editor
+        run: npm run build
+
+  publish:
+    name: Publish :api and :common to Central Portal
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: maven-central
+    permissions:
+      contents: read
+      actions: write
+    env:
+      ORG_GRADLE_PROJECT_centralPortalUsername: ${{ secrets.centralPortalUsername }}
+      ORG_GRADLE_PROJECT_centralPortalPassword: ${{ secrets.centralPortalPassword }}
+      ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+      ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Compute release version
+        run: echo "VERSION=$(date -u +'%y.%-m.%-d').${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Publish Central Portal aggregation
+        id: publish
+        shell: bash
+        run: |
+          set +e
+          ./gradlew publishAggregationToCentralPortal \
+            -PreleaseVersion="$VERSION" \
+            --console=plain --no-daemon > nmcp-publish.log 2>&1
+          gradle_status=$?
+          set -e
+          deployment_ids="$(
+            sed -nE "s/.*Nmcp: deployment bundle '([^']+)' uploaded\..*/\1/p" nmcp-publish.log |
+              sort -u |
+              sed '/^$/d'
+          )"
+          if [[ -z "$deployment_ids" ]]; then
+            echo "::error::No Central Portal deployment ID was found in the private NMCP log."
+            exit 1
+          fi
+          deployment_count="$(grep -c . <<<"$deployment_ids")"
+          if [[ "$deployment_count" -ne 1 ]]; then
+            echo "::error::Expected exactly one Central Portal deployment ID, found $deployment_count."
+            exit 1
+          fi
+          echo "deployment_id=$deployment_ids" >> "$GITHUB_OUTPUT"
+          echo "gradle_status=$gradle_status" >> "$GITHUB_OUTPUT"
+      - name: Await AUTOMATIC publication (FAILED only)
+        id: status
+        shell: bash
+        env:
+          DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
+          GRADLE_STATUS: ${{ steps.publish.outputs.gradle_status }}
+        run: |
+          set -euo pipefail
+          if [[ "$GRADLE_STATUS" != "0" ]]; then
+            echo "::error::Gradle Central Portal upload failed with exit status $GRADLE_STATUS."
+            exit "$GRADLE_STATUS"
+          fi
+          token="$(
+            printf '%s:%s' \
+              "$ORG_GRADLE_PROJECT_centralPortalUsername" \
+              "$ORG_GRADLE_PROJECT_centralPortalPassword" |
+              base64 -w0
+          )"
+          base_url="https://central.sonatype.com/"
+          deadline=$(( $(date +%s) + 1500 ))
+          state="UNKNOWN"
+          while :; do
+            response_file="$(mktemp)"
+            http_code="$(
+              curl --silent --show-error \
+                --output "$response_file" \
+                --write-out '%{http_code}' \
+                --request POST \
+                --header "Authorization: Bearer $token" \
+                "${base_url}api/v1/publisher/status?id=${DEPLOYMENT_ID}" ||
+                printf '000'
+            )"
+            if [[ "$http_code" == "404" ]]; then
+              echo "::error::Central Portal does not know deployment ID '$DEPLOYMENT_ID'."
+              rm -f "$response_file"
+              exit 1
+            fi
+            if [[ "$http_code" != "200" ]]; then
+              echo "::warning::Central Portal status request returned HTTP $http_code; retrying."
+              rm -f "$response_file"
+            else
+              state="$(jq -r '.deploymentState // "UNKNOWN"' "$response_file")"
+              case "$state" in
+                FAILED)
+                  echo "::error::Central Portal deployment '$DEPLOYMENT_ID' is FAILED."
+                  rm -f "$response_file"
+                  exit 1
+                  ;;
+                PUBLISHED)
+                  echo "Central Portal deployment '$DEPLOYMENT_ID' is PUBLISHED."
+                  rm -f "$response_file"
+                  echo "deployment_state=$state" >> "$GITHUB_OUTPUT"
+                  exit 0
+                  ;;
+                PENDING|VALIDATING|VALIDATED|PUBLISHING|UNKNOWN)
+                  echo "Central Portal deployment '$DEPLOYMENT_ID' is $state; only FAILED is fatal."
+                  rm -f "$response_file"
+                  ;;
+                *)
+                  echo "::warning::Unexpected Central Portal state '$state'; only FAILED is fatal."
+                  rm -f "$response_file"
+                  ;;
+              esac
+            fi
+            if (( $(date +%s) >= deadline )); then
+              echo "::warning::Timed out waiting for '$DEPLOYMENT_ID' to reach PUBLISHED; last state was $state."
+              echo "deployment_state=$state" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 5
+          done
+      - name: Record deployment result
+        env:
+          DEPLOYMENT_ID: ${{ steps.publish.outputs.deployment_id }}
+          STATUS: ${{ steps.status.outputs.deployment_state }}
+        run: |
+          {
+            echo "### Maven Central deployment"
+            echo
+            echo "- deployment id: \`$DEPLOYMENT_ID\`"
+            echo "- status: \`${STATUS:-UNKNOWN}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload private NMCP log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonatype-publish-log
+          path: nmcp-publish.log
+          if-no-files-found: error
+          retention-days: 14

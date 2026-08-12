@@ -1,5 +1,5 @@
 name: ModularJobs
-version: '2.0.0'
+version: '${version}'
 main: net.aincraft.ModularJobsBootstrap
 authors: [ ModularJobs contributors ]
 api-version: '1.21'

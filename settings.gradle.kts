@@ -1,6 +1,25 @@
+plugins {
+    // GradleUp NMCP — Central Portal publishing (POM + publication set per project,
+    // aggregation task on the root). Version pinned per the Central publication contract.
+    id("com.gradleup.nmcp.settings") version "1.6.1"
+}
+
 rootProject.name = "jobs2"
 
 include("api", "common", "paper")
+
+// The root build consumes -PreleaseVersion for project versions. The settings
+// plugin supplies Central Portal credentials and aggregation support below.
+// NMCP settings: Central Portal credentials + AUTOMATIC publishing.
+nmcpSettings {
+    centralPortal {
+        username = providers.gradleProperty("centralPortalUsername")
+        password = providers.gradleProperty("centralPortalPassword")
+        // After Central validation succeeds the deployment is published
+        // automatically; deployments end in VALIDATED or PUBLISHING states.
+        publishingType = "AUTOMATIC"
+    }
+}
 
 
 dependencyResolutionManagement {

@@ -3,8 +3,13 @@ import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsExtension
 import com.github.spotbugs.snom.SpotBugsTask
 import net.ltgt.gradle.errorprone.errorprone
+import nmcp.CentralPortalOptions
+import nmcp.NmcpAggregationExtension
+import org.gradle.api.Action
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.plugins.signing.Sign
+import org.gradle.plugins.signing.SigningExtension
 
 plugins {
     alias(libs.plugins.errorprone) apply false
@@ -12,7 +17,34 @@ plugins {
 }
 
 group = "org.aincraft"
-version = "2.0.0"
+// All Maven publication/plugin versions consume -PreleaseVersion (release builds
+// in CI always pass it). The fallback is a clearly non-release development marker.
+version = providers.gradleProperty("releaseVersion").orElse("0.0.0-SNAPSHOT").get()
+
+// NMCP's settings plugin adds this aggregation extension to the root project.
+// It collects only the Maven publications supplied by api and common.
+configure<NmcpAggregationExtension> {
+    centralPortal(object : Action<CentralPortalOptions> {
+        override fun execute(options: CentralPortalOptions) {
+            options.username.set(providers.gradleProperty("centralPortalUsername"))
+            options.password.set(providers.gradleProperty("centralPortalPassword"))
+            options.publishingType.set("AUTOMATIC")
+        }
+    })
+    publishAllChecksums.set(true)
+}
+
+val releaseVersion = providers.gradleProperty("releaseVersion")
+tasks.configureEach {
+    if (name.contains("CentralPortal")) {
+        inputs.property("releaseVersion", releaseVersion).optional(true)
+        doFirst {
+            check(inputs.properties["releaseVersion"] != null) {
+                "Central Portal publication requires -PreleaseVersion (for example, -PreleaseVersion=26.8.11.1)"
+            }
+        }
+    }
+}
 
 subprojects {
     group = rootProject.group
@@ -36,6 +68,7 @@ subprojects {
 
     if (moduleName == "api" || moduleName == "common") {
         apply(plugin = "maven-publish")
+        apply(plugin = "signing")
         configure<JavaPluginExtension> {
             withSourcesJar()
             withJavadocJar()
@@ -43,11 +76,51 @@ subprojects {
         tasks.withType<Javadoc>().configureEach {
             isFailOnError = false
         }
+        tasks.configureEach {
+            if (name.contains("CentralPortal")) {
+                inputs.property("releaseVersion", releaseVersion).optional(true)
+                doFirst {
+                    check(inputs.properties["releaseVersion"] != null) {
+                        "Central Portal publication requires -PreleaseVersion (for example, -PreleaseVersion=26.8.11.1)"
+                    }
+                }
+            }
+        }
         configure<PublishingExtension> {
             publications {
                 create<MavenPublication>("maven") {
                     from(components["java"])
                     artifactId = "modularjobs-$moduleName"
+                    pom {
+                        name.set("ModularJobs ${moduleName.replaceFirstChar(Char::uppercase)}")
+                        description.set(
+                            if (moduleName == "api") {
+                                "Public Java contracts for the ModularJobs Paper plugin."
+                            } else {
+                                "Shared Java DTOs and value types for ModularJobs integrations."
+                            },
+                        )
+                        url.set("https://github.com/aincraft-org/modularjobs")
+                        licenses {
+                            license {
+                                name.set("MIT License")
+                                url.set("https://opensource.org/licenses/MIT")
+                                distribution.set("repo")
+                            }
+                        }
+                        developers {
+                            developer {
+                                id.set("aincraft")
+                                name.set("ModularJobs contributors")
+                                url.set("https://github.com/aincraft-org")
+                            }
+                        }
+                        scm {
+                            connection.set("scm:git:git://github.com/aincraft-org/modularjobs.git")
+                            developerConnection.set("scm:git:ssh://git@github.com/aincraft-org/modularjobs.git")
+                            url.set("https://github.com/aincraft-org/modularjobs")
+                        }
+                    }
                 }
             }
             repositories {
@@ -68,6 +141,29 @@ subprojects {
                 }
             }
         }
+        // In-memory signing is REQUIRED for Central publications. Keys are read
+        // only from Gradle project properties (ORG_GRADLE_PROJECT_signingKey and
+        // ORG_GRADLE_PROJECT_signingPassword environment mappings in CI), never
+        // from -P arguments that could leak onto a shared command line.
+        val signingKey = providers.gradleProperty("signingKey")
+        val signingPassword = providers.gradleProperty("signingPassword")
+        val signingConfigured = signingKey.zip(signingPassword) { _, _ -> true }.orElse(false)
+        configure<SigningExtension> {
+            if (signingKey.isPresent && signingPassword.isPresent) {
+                useInMemoryPgpKeys(signingKey.get(), signingPassword.get())
+            }
+            sign(extensions.getByType<PublishingExtension>().publications)
+        }
+        tasks.withType<Sign>().configureEach {
+            inputs.property("signingConfigured", signingConfigured)
+            doFirst {
+                check(inputs.properties["signingConfigured"] == true) {
+                    "Central publication signing is required: pass -PsigningKey/-PsigningPassword (or set ORG_GRADLE_PROJECT_signingKey / ORG_GRADLE_PROJECT_signingPassword)"
+                }
+            }
+        }
+
+
     }
 
     // Quality tools run on `check` and always write reports.

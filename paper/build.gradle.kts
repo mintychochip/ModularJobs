@@ -21,7 +21,7 @@ dependencies {
     }
     // Compile against api/common source jars via the paper artifact coordinates
     // is enough for the IDE/compiler because paper embeds those types.
-
+    compileOnly("io.github.flog99:mapgui-api:1.0.0")
     compileOnly(libs.placeholderapi)
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.paper.api)
@@ -39,6 +39,12 @@ dependencies {
     // PostgreSQL only — driver ships in the plugin artifact
     implementation(libs.postgresql)
     testImplementation(libs.postgresql)
+}
+val descriptorVersion = project.version.toString()
+tasks.processResources {
+    filesMatching("plugin.yml") {
+        expand("version" to descriptorVersion)
+    }
 }
 
 tasks.test {
