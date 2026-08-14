@@ -561,6 +561,8 @@ public final class UpgradeTreeGui {
           String.format("Permission: %s", String.join(", ", perm.permissions()));
       case NodeEffect.RecipeUnlockEffect recipe ->
           String.format("Recipe: %s", recipe.recipeKey().asString());
+      case NodeEffect.CapabilityEffect capability ->
+          String.format("Capability: %s (schema %d)", capability.key().asString(), capability.schema());
       case NodeEffect.StateSetEffect stateSet ->
           stateSet.remove()
               ? String.format("Removes %s", stateSet.key().asString())

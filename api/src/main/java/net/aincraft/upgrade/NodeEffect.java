@@ -2,10 +2,10 @@ package net.aincraft.upgrade;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import net.aincraft.container.BoostSource;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Effect granted by a skill level or major node. Sealed vocabulary; unknown
@@ -15,6 +15,7 @@ public sealed interface NodeEffect permits
     NodeEffect.BoostEffect,
     NodeEffect.RuledBoostEffect,
     NodeEffect.PermissionEffect,
+    NodeEffect.CapabilityEffect,
     NodeEffect.RecipeUnlockEffect,
     NodeEffect.StateSetEffect {
 
@@ -42,6 +43,17 @@ public sealed interface NodeEffect permits
 
   /** Unlocks a namespaced crafting/smelting recipe. */
   record RecipeUnlockEffect(@NotNull Key recipeKey) implements NodeEffect {
+  }
+
+  /** Grants a versioned capability payload for later handler dispatch. */
+  record CapabilityEffect(@NotNull Key key, int schema, @NotNull Map<String, String> payload)
+      implements NodeEffect {
+    public CapabilityEffect {
+      if (schema <= 0) {
+        throw new IllegalArgumentException("Capability schema must be positive: " + schema);
+      }
+      payload = Map.copyOf(payload);
+    }
   }
 
   /** Sets or removes a namespaced tree-state key. */

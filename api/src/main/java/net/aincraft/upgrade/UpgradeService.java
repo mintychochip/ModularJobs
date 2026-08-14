@@ -87,26 +87,24 @@ public interface UpgradeService {
   /**
    * Purchase the next level of a skill node.
    */
-  @NotNull PurchaseResult purchaseSkillLevel(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey);
+  @NotNull PurchaseResult purchaseSkillLevel(
+      @NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey);
 
   /**
-   * Purchase (permanently choose) a major node. Requires confirmation UI-side.
+   * Purchase (permanently choose) a major node.
    */
-  @NotNull PurchaseResult purchaseMajor(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey);
+  @NotNull PurchaseResult purchaseMajor(
+      @NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey);
 
   /**
-   * Reset all skill levels, refunding their spent points. Major nodes and
-   * their state writes are permanent and preserved.
+   * Reset all skill levels for a player in a job.
+   *
+   * @return true if reset was successful
    */
   boolean resetTree(@NotNull String playerId, @NotNull String jobKey);
 
   /**
-   * Hard-clear a player's tree state (on leaving the job). Deletes persisted data.
-   */
-  void clearTreeState(@NotNull String playerId, @NotNull String jobKey);
-
-  /**
-   * Result of a v2 purchase attempt.
+   * Result of a skill-node purchase attempt.
    */
   sealed interface PurchaseResult permits
       PurchaseResult.Success,
@@ -176,4 +174,9 @@ public interface UpgradeService {
     record TreeNotFound(@NotNull String jobKey) implements UnlockResult {
     }
   }
+
+  /**
+   * Remove persisted state for a player leaving a job and revoke its effects.
+   */
+  void clearTreeState(@NotNull String playerId, @NotNull String jobKey);
 }

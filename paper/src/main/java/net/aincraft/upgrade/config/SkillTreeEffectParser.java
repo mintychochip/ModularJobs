@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import net.aincraft.boost.config.BoostSourceConfig;
 import net.aincraft.boost.config.BoostSourceConfigParser;
 import net.aincraft.container.boost.factories.BoostFactory;
@@ -24,7 +26,6 @@ public final class SkillTreeEffectParser {
     this.boostSourceParser = new BoostSourceConfigParser(conditionFactory, boostFactory);
   }
 
-  @NotNull
   public NodeEffect parse(@NotNull JsonElement element) {
     JsonObject obj = element.getAsJsonObject();
     String type = obj.get("type").getAsString();
@@ -35,7 +36,9 @@ public final class SkillTreeEffectParser {
           obj.has("amount") ? BigDecimal.valueOf(obj.get("amount").getAsDouble()) : BigDecimal.ONE);
       case "ruled_boost" -> parseRuledBoost(obj);
       case "permission" -> new NodeEffect.PermissionEffect(obj.get("key").getAsString());
-      case "recipe_unlock" -> new NodeEffect.RecipeUnlockEffect(Key.key(obj.get("recipe").getAsString()));
+      case "recipe_unlock" ->
+          new NodeEffect.RecipeUnlockEffect(Key.key(obj.get("recipe").getAsString()));
+      case "capability" -> parseCapability(obj);
       case "state_set" -> new NodeEffect.StateSetEffect(
           parseKey(obj.get("key").getAsString()),
           obj.get("value").getAsString(),
@@ -48,19 +51,28 @@ public final class SkillTreeEffectParser {
     String target = obj.has("target")
         ? obj.get("target").getAsString()
         : NodeEffect.BoostEffect.TARGET_ALL;
-    JsonObject sourceJson = obj.deepCopy();
-    sourceJson.remove("type");
-    sourceJson.remove("target");
-    if (!sourceJson.has("key")) {
-      sourceJson.addProperty("key", "modularjobs:upgrade_tree/ruled_boost");
-    }
-    if (!sourceJson.has("description")) {
-      sourceJson.addProperty("description", "Skill-tree ruled boost");
-    }
-    BoostSourceConfig sourceConfig =
-        new Gson().fromJson(sourceJson, BoostSourceConfig.class);
-    return new NodeEffect.RuledBoostEffect(target, boostSourceParser.parse(sourceConfig));
+    BoostSourceConfig config = new Gson().fromJson(obj, BoostSourceConfig.class);
+    return new NodeEffect.RuledBoostEffect(target, boostSourceParser.parse(config));
   }
+
+  private NodeEffect parseCapability(JsonObject obj) {
+    String rawCapability = obj.get("capability").getAsString();
+    int schemaVersion = obj.get("schema").getAsInt();
+    if (schemaVersion <= 0 || !rawCapability.contains(":")) {
+      throw new IllegalArgumentException("Capability requires namespaced key and positive schema");
+    }
+    JsonObject payloadObject = obj.get("payload").getAsJsonObject();
+    Map<String, String> payload = new HashMap<>();
+    for (Map.Entry<String, JsonElement> entry : payloadObject.entrySet()) {
+      if (!entry.getValue().isJsonPrimitive()
+          || !entry.getValue().getAsJsonPrimitive().isString()) {
+        throw new IllegalArgumentException("Capability payload values must be strings");
+      }
+      payload.put(entry.getKey(), entry.getValue().getAsString());
+    }
+    return new NodeEffect.CapabilityEffect(parseKey(rawCapability), schemaVersion, payload);
+  }
+
   private Key parseKey(String raw) {
     int separator = raw.indexOf(':');
     if (separator > 0) {
@@ -70,7 +82,7 @@ public final class SkillTreeEffectParser {
     if (dot > 0) {
       return Key.key(raw.substring(0, dot), raw.substring(dot + 1));
     }
-    throw new IllegalArgumentException("Namespaced key must use namespace.key or namespace:key: " + raw);
+    throw new IllegalArgumentException(
+        "Namespaced key must use namespace.key or namespace:key: " + raw);
   }
-
 }
