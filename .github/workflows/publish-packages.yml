@@ -20,24 +20,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     services:
-      postgres:
-        image: postgres:16-alpine
+      mysql:
+        image: mysql:8.4
         env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: modularjobs
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: modularjobs
         ports:
-          - 55432:5432
+          - 13306:3306
         options: >-
-          --health-cmd "pg_isready -U test -d modularjobs"
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u root -proot"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      MODULARJOBS_TEST_PG_URL: jdbc:postgresql://localhost:55432/modularjobs
-      MODULARJOBS_TEST_PG_USER: test
-      MODULARJOBS_TEST_PG_PASSWORD: test
-      DATABASE_URL: postgres://test:test@127.0.0.1:55432/modularjobs
+      MODULARJOBS_TEST_MYSQL_URL: jdbc:mysql://localhost:13306/modularjobs
+      MODULARJOBS_TEST_MYSQL_USER: test
+      MODULARJOBS_TEST_MYSQL_PASSWORD: test
+      DATABASE_URL: mysql://test:test@127.0.0.1:13306/modularjobs
       CARGO_TERM_COLOR: always
     steps:
       - name: Checkout
@@ -81,12 +82,10 @@ jobs:
         run: test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Apply Postgres schema
+      - name: Apply MySQL schema
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client
-          ./scripts/apply-postgres-schema.sh \
-            "postgres://test:test@127.0.0.1:55432/modularjobs"
+          ./scripts/apply-mysql-schema.sh \
+            "mysql://test:test@127.0.0.1:13306/modularjobs"
       - name: Java checks
         run: ./gradlew -PreleaseVersion="$VERSION" check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
       - name: Validate release POMs
@@ -125,7 +124,7 @@ jobs:
   publish:
     name: Publish API and common to GitHub Packages
     needs: check
-    if: needs.check.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    if: needs.check.result == 'success' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
