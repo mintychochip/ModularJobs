@@ -8,7 +8,7 @@ trap 'rm -rf -- "$WORK_DIR"' EXIT
 
 VALID_JAR="$WORK_DIR/valid.jar"
 BAD_JAR="$WORK_DIR/bad-version.jar"
-SQL="$WORK_DIR/postgres.sql"
+SQL="$WORK_DIR/mysql.sql"
 VALID_OUTPUT="$WORK_DIR/valid-output"
 NONEMPTY_OUTPUT="$WORK_DIR/nonempty-output"
 
@@ -34,13 +34,13 @@ import sys
 output, source_jar, source_sql = map(Path, sys.argv[1:])
 expected = {
     "modularjobs-paper-2.0.0.jar",
-    "modularjobs-postgres-2.0.0.sql",
+    "modularjobs-mysql-2.0.0.sql",
     "SHA256SUMS",
 }
 actual = {path.name for path in output.iterdir() if path.is_file()}
 assert actual == expected, actual
 assert (output / "modularjobs-paper-2.0.0.jar").read_bytes() == source_jar.read_bytes()
-assert (output / "modularjobs-postgres-2.0.0.sql").read_bytes() == source_sql.read_bytes()
+assert (output / "modularjobs-mysql-2.0.0.sql").read_bytes() == source_sql.read_bytes()
 assert all(not line.split()[-1].startswith("/") for line in (output / "SHA256SUMS").read_text().splitlines())
 PY
 (cd "$VALID_OUTPUT" && sha256sum --check SHA256SUMS)

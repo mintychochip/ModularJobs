@@ -13,14 +13,21 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.CommandSender;
 
+/** {@code /jobs list} command: prints the available jobs with hover/click details. */
 public class ListCommand implements JobsCommand {
 
   private final JobService jobService;
 
+  /** Creates the list command with the job service that enumerates available jobs. */
   public ListCommand(JobService jobService) {
     this.jobService = jobService;
   }
 
+  /**
+   * Builds the {@code /jobs list} command (permission-gated) that renders the available jobs.
+   *
+   * @return the Brigadier command tree for listing jobs
+   */
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("list")
@@ -34,6 +41,7 @@ public class ListCommand implements JobsCommand {
         });
   }
 
+  /** Sends the sender the list of available jobs with header, entries, and usage footer. */
   private void displayJobsList(CommandSender sender) {
     List<Job> jobs = jobService.getJobs();
 
@@ -61,6 +69,7 @@ public class ListCommand implements JobsCommand {
     Messages.send(sender, "");
   }
 
+  /** Sends one job entry line (with hover details and click-to-view) plus its description. */
   private void displayJobEntry(CommandSender sender, Job job, PlainTextComponentSerializer serializer) {
     Component jobName = job.displayName();
     Component description = job.description();

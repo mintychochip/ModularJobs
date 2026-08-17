@@ -5,6 +5,13 @@ import com.zaxxer.hikari.HikariConfig;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Builds a {@link HikariConfig} from the plugin's database configuration section.
+ *
+ * <p>Requires the {@code jdbc-url}, {@code username}, and {@code password} fields and applies
+ * optional pool sizing and timeout settings ({@code maximum-pool-size}, {@code minimum-idle},
+ * {@code connection-timeout}, {@code idle-timeout}, {@code max-lifetime}) when present.
+ */
 final class HikariConfigProvider {
 
   @NotNull
@@ -18,6 +25,13 @@ final class HikariConfigProvider {
     this.databaseType = databaseType;
   }
 
+  /**
+   * Creates a Hikari configuration from the configured database settings.
+   *
+   * @return populated {@link HikariConfig}
+   * @throws IllegalStateException if a required connection field ({@code jdbc-url},
+   *         {@code username}, {@code password}) is missing
+   */
   @NotNull
   public HikariConfig create()
       throws IllegalStateException {

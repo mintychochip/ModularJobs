@@ -16,10 +16,14 @@ public final class PaymentEligibility {
 
   private final PaymentSettings settings;
 
+  /**
+   * Creates the gate backed by the given settings snapshot.
+   */
   public PaymentEligibility(@NotNull PaymentSettings settings) {
     this.settings = Objects.requireNonNull(settings, "settings");
   }
 
+  /** @return the settings driving this payment gate */
   public PaymentSettings settings() {
     return settings;
   }

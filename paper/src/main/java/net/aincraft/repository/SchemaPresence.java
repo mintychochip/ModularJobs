@@ -23,7 +23,7 @@ public final class SchemaPresence {
       "player_upgrades"
   );
 
-  /** Session API table (same Postgres store). Optional for pure game-only pools. */
+  /** Session API table (same MySQL store). Optional for pure game-only pools. */
   public static final String EDITOR_SESSIONS = "editor_sessions";
 
   private SchemaPresence() {}
@@ -52,17 +52,13 @@ public final class SchemaPresence {
   public static boolean tableExists(
       @NotNull Connection connection, @NotNull DatabaseType type, @NotNull String table)
       throws SQLException {
-    if (type != DatabaseType.POSTGRES) {
-      throw new IllegalArgumentException("Only PostgreSQL is supported, got " + type);
+    if (type != DatabaseType.MYSQL) {
+      throw new IllegalArgumentException("Only MySQL is supported, got " + type);
     }
-    return existsPostgres(connection, table);
-  }
-
-  private static boolean existsPostgres(Connection connection, String table) throws SQLException {
     try (PreparedStatement ps = connection.prepareStatement(
         """
             SELECT 1 FROM information_schema.tables
-            WHERE table_schema = current_schema()
+            WHERE table_schema = DATABASE()
               AND table_name = ?
             """)) {
       ps.setString(1, table);
@@ -94,10 +90,10 @@ public final class SchemaPresence {
     }
 
     private static String buildMessage(DatabaseType type, List<String> missing) {
-      return "Database schema not provisioned for PostgreSQL. Missing tables: " + missing
+      return "Database schema not provisioned for MySQL. Missing tables: " + missing
           + ". The plugin does not create tables. Apply "
-          + "paper/src/main/resources/sql/postgres.sql out-of-band "
-          + "(see scripts/apply-postgres-schema.sh).";
+          + "paper/src/main/resources/sql/mysql.sql out-of-band "
+          + "(see scripts/apply-mysql-schema.sh).";
     }
   }
 }

@@ -9,8 +9,8 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Builds a PostgreSQL {@link ConnectionSource} (HikariCP). Schema is never applied here —
- * ops must run {@code scripts/apply-postgres-schema.sh} first.
+ * Builds a MySQL {@link ConnectionSource} (HikariCP). Schema is never applied here —
+ * ops must run {@code scripts/apply-mysql-schema.sh} first.
  */
 public final class ConnectionSourceFactory {
 
@@ -30,18 +30,15 @@ public final class ConnectionSourceFactory {
   public ConnectionSource create() throws IllegalStateException {
     Preconditions.checkState(
         configuration.contains("type"),
-        "database section missing type (must be postgres)");
+        "database section missing type (must be mysql)");
     DatabaseType type = DatabaseType.fromIdentifier(configuration.getString("type"));
-    if (type != DatabaseType.POSTGRES) {
-      throw new IllegalStateException("Unsupported database type: " + type);
-    }
 
     Logger log = plugin.getLogger();
     if (SchemaPolicy.hasIgnoredRemoteAutoSchema(type, configuration)) {
       log.warning(
           "database.yml sets auto-schema but ModularJobs never runs DDL in-process. "
-              + "Ignore this key and provision with scripts/apply-postgres-schema.sh "
-              + "(sql/postgres.sql).");
+              + "Ignore this key and provision with scripts/apply-mysql-schema.sh "
+              + "(sql/mysql.sql).");
     }
 
     ConnectionSource source =
@@ -52,7 +49,7 @@ public final class ConnectionSourceFactory {
         SchemaPresence.requireTables(connection, type, SchemaPresence.REQUIRED_TABLES);
       } catch (SQLException e) {
         throw new RuntimeException(
-            "Failed to verify PostgreSQL schema (is the database up and schema applied?)", e);
+            "Failed to verify MySQL schema (is the database up and schema applied?)", e);
       }
     }
 

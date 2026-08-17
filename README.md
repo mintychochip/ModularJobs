@@ -37,7 +37,7 @@ Git hooks (once per clone):
 # SKIP_PRECOMMIT=1 git commit ...  # emergency bypass
 ```
 
-CI: `.github/workflows/ci.yml` — Java 25 + Postgres (`check` + shadow jar), Rust rest-api, React session-editor.
+CI: `.github/workflows/ci.yml` — Java 25 + MySQL 8 (`check` + shadow jar), Rust rest-api, React session-editor.
 
 ## Operator quick start
 
@@ -53,37 +53,37 @@ The bundled `jobs.yml`, `job_tasks.yml`, `job_tasks.csv`, `fisherman.yml`,
 starter pack. Replace or extend these examples for each server; their values are
 not a fixed progression contract.
 
-### Database (PostgreSQL only)
+### Database (MySQL only)
 
-ModularJobs uses **PostgreSQL only** (no SQLite/MySQL/MariaDB).
+ModularJobs uses **MySQL 8 only** (no SQLite/PostgreSQL/MariaDB).
 
 1. Provision schema out-of-band (plugin never runs DDL):
 
 ```bash
-export DATABASE_URL=postgres://user:pass@host:5432/modularjobs
-./scripts/apply-postgres-schema.sh
-# or: psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
+export DATABASE_URL=mysql://user:pass@host:3306/modularjobs
+./scripts/apply-mysql-schema.sh
+# or: mysql "$DATABASE_URL" < paper/src/main/resources/sql/mysql.sql
 ```
 
 2. Configure `database.yml` (sections with the same jdbc-url + username share one pool):
 
 ```yaml
 payable:
-  type: postgres
-  jdbc-url: jdbc:postgresql://host:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
   username: modularjobs
   password: secret
   maximum-pool-size: 10
 
 timed-boost:
-  type: postgres
-  jdbc-url: jdbc:postgresql://host:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
   username: modularjobs
   password: secret
 
 upgrades:
-  type: postgres
-  jdbc-url: jdbc:postgresql://host:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
   username: modularjobs
   password: secret
 ```

@@ -79,7 +79,7 @@ impl From<SessionStoreError> for ApiError {
             }
             SessionStoreError::SchemaMissing => ApiError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
-                "schema not provisioned; apply sql/postgres.sql out-of-band",
+                "schema not provisioned; apply sql/mysql.sql out-of-band",
             ),
         }
     }

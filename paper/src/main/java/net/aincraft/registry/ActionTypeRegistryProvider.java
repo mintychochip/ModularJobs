@@ -6,14 +6,17 @@ import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 
+/** Builds the built-in action-type registry for the plugin namespace. */
 public final class ActionTypeRegistryProvider {
 
   private final Plugin plugin;
 
+  /** Creates a provider bound to the plugin namespace used for action keys. */
   public ActionTypeRegistryProvider(Plugin plugin) {
     this.plugin = plugin;
   }
 
+  /** Creates and populates the built-in action-type registry. */
   public static Registry<ActionType> create(Plugin plugin) {
     return new ActionTypeRegistryProvider(plugin).get();
   }

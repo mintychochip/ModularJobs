@@ -1,4 +1,4 @@
-//! Integration tests against the shipped session REST handlers and real Postgres.
+//! Integration tests against the shipped session REST handlers and real MySQL.
 
 mod common;
 
@@ -20,7 +20,7 @@ use tower::ServiceExt;
 
 fn database_url() -> String {
     env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "postgres://test:test@127.0.0.1:55432/modularjobs".to_string()
+        "mysql://test:test@127.0.0.1:3306/modularjobs".to_string()
     })
 }
 
@@ -32,10 +32,10 @@ async fn setup_store() -> (SessionStore, MutexGuard<'static, ()>) {
     let guard = DATABASE_TEST_LOCK.lock().await;
     let store = SessionStore::connect(&database_url(), 2)
         .await
-        .expect("connect to postgres for session API tests");
-    common::apply_shipped_postgres_schema(store.pool())
+        .expect("connect to mysql for session API tests");
+    common::apply_shipped_mysql_schema(store.pool())
         .await
-        .expect("apply shared postgres schema for tests");
+        .expect("apply shared mysql schema for tests");
     store
         .require_schema()
         .await
@@ -85,7 +85,7 @@ async fn require_table_fails_without_creating_missing_table() {
         r#"
         SELECT EXISTS (
           SELECT 1 FROM information_schema.tables
-          WHERE table_schema = current_schema() AND table_name = $1
+          WHERE table_schema = DATABASE() AND table_name = ?
         )
         "#,
     )

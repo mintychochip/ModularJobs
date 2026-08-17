@@ -45,9 +45,9 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    net.aincraft.test.TestPostgres.assumeAvailable();
+    net.aincraft.test.TestMysql.assumeAvailable();
     // Wrap so try-with-resources in RelationalRepositoryImpl does not close the shared connection
-    Connection raw = net.aincraft.test.TestPostgres.open();
+    Connection raw = net.aincraft.test.TestMysql.open();
     connection = NonClosableConnection.create(raw);
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS time_boosts");
@@ -216,7 +216,7 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
     @Override
     public DatabaseType getType() {
-      return DatabaseType.POSTGRES;
+      return DatabaseType.MYSQL;
     }
 
     @Override

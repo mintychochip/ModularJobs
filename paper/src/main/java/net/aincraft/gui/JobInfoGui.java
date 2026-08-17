@@ -48,11 +48,13 @@ public final class JobInfoGui {
       int page,
       int entriesPerPage) {}
 
+  /** Builds the job-info presenter over the shared craftux runtime. */
   public JobInfoGui(InventoryRuntime inventory, PreferencesService preferencesService) {
     this.inventory = inventory;
     this.preferencesService = preferencesService;
   }
 
+  /** Calculates the number of pages required for the supplied task groups. */
   public int calculateTotalPages(Map<ActionType, List<JobTask>> tasks, int entriesPerPage) {
     return Math.max(1, (int) Math.ceil((double) tasks.size() / Math.max(1, entriesPerPage)));
   }
@@ -74,6 +76,7 @@ public final class JobInfoGui {
     return true;
   }
 
+  /** Host action handler for {@link CraftuxUiHost#ACTION_INFO_PREV}: open previous page. */
   public void onPrev(UUID audience, InventoryClick click) {
     Session session = sessions.get(audience);
     Player player = Bukkit.getPlayer(audience);
@@ -83,6 +86,7 @@ public final class JobInfoGui {
     reopen(player, session.page() - 1);
   }
 
+  /** Host action handler for {@link CraftuxUiHost#ACTION_INFO_NEXT}: open next page. */
   public void onNext(UUID audience, InventoryClick click) {
     Session session = sessions.get(audience);
     Player player = Bukkit.getPlayer(audience);

@@ -23,6 +23,10 @@ public record PaymentSettings(
   public static final double DEFAULT_KILL_CONTRIBUTION_CUTOFF = 0.5;
   public static final double DEFAULT_FURNACE_MAX_DISTANCE = 25.0;
 
+  /**
+   * Default settings: creative pay enabled, riding pay disabled, no disabled worlds, and default
+   * kill-contribution cutoff / furnace distance.
+   */
   public static PaymentSettings defaults() {
     return new PaymentSettings(
         true,
@@ -33,6 +37,10 @@ public record PaymentSettings(
     );
   }
 
+  /**
+   * Loads payment settings from {@code config.yml}, validating ranges and normalizing disabled
+   * world names to lowercase.
+   */
   public static PaymentSettings fromPlugin(@NotNull Plugin plugin) {
     FileConfiguration config = plugin.getConfig();
     boolean payInCreative = config.getBoolean("pay-in-creative", true);
@@ -73,6 +81,7 @@ public record PaymentSettings(
     );
   }
 
+  /** @return true when {@code worldName} (case-insensitive) is in the disabled-worlds set */
   public boolean isWorldDisabled(@NotNull String worldName) {
     return disabledWorlds.contains(worldName.toLowerCase(Locale.ROOT));
   }

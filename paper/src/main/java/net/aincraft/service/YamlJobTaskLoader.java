@@ -21,18 +21,36 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Seeds the {@code job_tasks} and {@code job_task_payables} tables from packaged data on first
+ * start.
+ *
+ * <p>{@link #loadIfEmpty()} runs only when the tables are empty. It prefers the shipped
+ * {@code job_tasks.csv}, falling back to {@code job_tasks.yml}. CSV rows group per task
+ * (job/action/context) with one payable each; YAML nests job -&gt; action -&gt; context -&gt; payable
+ * amounts. Keys lacking a namespace gain one ({@code modularjobs} for actions and payables,
+ * {@code minecraft} for context keys). Imports run as a single transaction.
+ */
 public final class YamlJobTaskLoader {
 
   private final Plugin plugin;
   private final ConnectionSource connectionSource;
   private final Logger logger;
 
+  /**
+   * @param plugin owner providing data-folder resources and a logger
+   * @param connectionSource source of connections for the import transaction
+   */
   public YamlJobTaskLoader(@NotNull Plugin plugin, @NotNull ConnectionSource connectionSource) {
     this.plugin = plugin;
     this.connectionSource = connectionSource;
     this.logger = plugin.getLogger();
   }
 
+  /**
+   * Imports job tasks if the {@code job_tasks} table is empty: CSV first, then YAML. No-op if the
+   * table already contains rows.
+   */
   public void loadIfEmpty() {
     if (!isTableEmpty()) {
       logger.info("Job tasks already exist in database, skipping import");
@@ -63,6 +81,7 @@ public final class YamlJobTaskLoader {
     logger.info("Successfully imported " + imported + " job tasks from job_tasks.yml");
   }
 
+  /** Returns whether the {@code job_tasks} table contains no rows. */
   private boolean isTableEmpty() {
     try (Connection connection = connectionSource.getConnection();
          Statement stmt = connection.createStatement();
@@ -73,6 +92,11 @@ public final class YamlJobTaskLoader {
     }
   }
 
+  /**
+   * Parses job tasks from the nested YAML hierarchy and imports them.
+   *
+   * @return number of tasks imported
+   */
   private int importTasks(FileConfiguration config) {
     Set<String> jobKeys = config.getKeys(false);
     List<TaskEntry> tasks = new ArrayList<>();
@@ -114,6 +138,12 @@ public final class YamlJobTaskLoader {
     return tasks.size();
   }
 
+  /**
+   * Parses job tasks from the CSV file, grouping consecutive payable rows by task, and imports
+   * them.
+   *
+   * @return number of tasks imported
+   */
   private int importFromCsv(File csvFile) {
     Map<String, TaskEntry> taskMap = new LinkedHashMap<>();
 
@@ -150,10 +180,12 @@ public final class YamlJobTaskLoader {
     return tasks.size();
   }
 
+  /** Ensures {@code key} carries a namespace, prepending {@code defaultNamespace} when absent. */
   private String ensureNamespace(String key, String defaultNamespace) {
     return key.contains(":") ? key : defaultNamespace + ":" + key;
   }
 
+  /** Inserts all tasks and their payables in a single transaction; rolls back on failure. */
   private void batchInsert(List<TaskEntry> tasks) {
     String insertTask = "INSERT INTO job_tasks (job_key, action_type_key, context_key) VALUES (?, ?, ?)";
     String insertPayable = "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount, currency_identifier) VALUES (?, ?, ?, ?)";
@@ -182,7 +214,7 @@ public final class YamlJobTaskLoader {
           for (PayableEntry payable : task.payables) {
             payableStmt.setInt(1, taskId);
             payableStmt.setString(2, payable.payableType);
-            // NUMERIC column — bind as BigDecimal, not string (Postgres rejects varchar)
+            // DECIMAL column — bind as BigDecimal, not string.
             payableStmt.setBigDecimal(3, payable.amount);
             payableStmt.setString(4, payable.currency);
             payableStmt.addBatch();
@@ -202,7 +234,9 @@ public final class YamlJobTaskLoader {
     }
   }
 
+  /** A job task to insert, with its associated payable entries. */
   private record TaskEntry(String jobKey, String actionType, String contextKey, List<PayableEntry> payables) {}
 
+  /** A reward payable to attach to a task (type, amount, optional currency). */
   private record PayableEntry(String payableType, BigDecimal amount, String currency) {}
 }

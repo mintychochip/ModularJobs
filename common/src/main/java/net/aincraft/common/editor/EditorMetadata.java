@@ -7,6 +7,11 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Metadata about the editor export operation.
  * Includes timestamp, player info, and session verification data.
+ *
+ * @param exportedAt   ISO 8601 timestamp
+ * @param exportedBy   player UUID as string
+ * @param sessionToken session verification token
+ * @param serverName   optional server identifier
  */
 public record EditorMetadata(
     @SerializedName("exportedAt")

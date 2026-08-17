@@ -9,6 +9,10 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Renders a player's level as a component whose hover text details the current
+ * level, experience, and progress toward (or cap at) the job's max level.
+ */
 final class LevelComponent implements ComponentLike {
 
   private final JobProgression progression;
@@ -21,6 +25,12 @@ final class LevelComponent implements ComponentLike {
     return new LevelComponent(progression);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Computes {@code XP / next-level XP} progress, marking the level as
+   * {@code MAX} when the progression has reached the job's maximum level.</p>
+   */
   @Override
   public @NotNull Component asComponent() {
     int level = progression.level();

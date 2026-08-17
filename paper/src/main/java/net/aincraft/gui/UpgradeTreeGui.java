@@ -83,12 +83,17 @@ public final class UpgradeTreeGui {
     }
   }
 
+  /** Builds the tree presenter over the shared craftux runtime. */
   public UpgradeTreeGui(Plugin plugin, InventoryRuntime inventory, UpgradeService upgradeService) {
     this.plugin = plugin;
     this.inventory = inventory;
     this.upgradeService = upgradeService;
   }
 
+  /**
+   * Opens (or replaces) the upgrade-tree view for {@code player}, resolving the
+   * active skill tree and resetting scroll/pending state. Bukkit thread.
+   */
   public void open(Player player, Job job, UpgradeTree tree) {
     String jobKey = job.key().value();
     SkillTree skillTree = upgradeService.getSkillTree(jobKey).orElse(null);
@@ -102,6 +107,7 @@ public final class UpgradeTreeGui {
     inventory.open(playerUuid, buildView(player, session));
   }
 
+  /** Re-renders the caller's open tree view in place (Bukkit thread). */
   public void refresh(Player player) {
     UUID playerId = player.getUniqueId();
     GuiSession session = openGuis.get(playerId);
@@ -111,6 +117,11 @@ public final class UpgradeTreeGui {
     inventory.refresh(playerId, buildView(player, session));
   }
 
+  /**
+   * Host action handler for {@link CraftuxUiHost#ACTION_UPGRADE_NODE}: unlocks/
+   * purchases the clicked node, staging permanent "major" choices for confirm.
+   * Runs on the Bukkit thread via the craftux runtime.
+   */
   public void onNodeClick(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     GuiSession session = openGuis.get(audience);
@@ -130,6 +141,7 @@ public final class UpgradeTreeGui {
     }
   }
 
+  /** Host action handler for {@link CraftuxUiHost#ACTION_UPGRADE_SCROLL_UP}. */
   public void onScrollUp(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     GuiSession session = openGuis.get(audience);
@@ -139,6 +151,7 @@ public final class UpgradeTreeGui {
     handleScroll(player, session, "up");
   }
 
+  /** Host action handler for {@link CraftuxUiHost#ACTION_UPGRADE_SCROLL_DOWN}. */
   public void onScrollDown(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     GuiSession session = openGuis.get(audience);
@@ -148,6 +161,7 @@ public final class UpgradeTreeGui {
     handleScroll(player, session, "down");
   }
 
+  /** Host action handler for {@link CraftuxUiHost#ACTION_UPGRADE_CONFIRM}. */
   public void onConfirm(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     GuiSession session = openGuis.get(audience);

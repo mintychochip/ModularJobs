@@ -122,6 +122,9 @@ public final class PlacedProtectionMaterials {
     return Collections.unmodifiableMap(map);
   }
 
+  /**
+   * Default map: all protectable blocks with the default duration ({@code *} semantics).
+   */
   public static Map<Material, Duration> defaults() {
     return allBlocks(Duration.ofSeconds(DEFAULT_DURATION_SECONDS));
   }

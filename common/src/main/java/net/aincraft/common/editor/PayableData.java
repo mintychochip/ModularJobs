@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Payable (reward) data for editor operations.
  * Represents a single reward with type and amount.
+ *
+ * @param type   namespaced key for payable type (e.g. {@code modularjobs:experience})
+ * @param amount BigDecimal value as string for precision
  */
 public record PayableData(
     @SerializedName("type")

@@ -16,6 +16,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class BlackholeEconomyProvider implements EconomyProvider {
 
+  /**
+   * Creates the fallback provider, logging one warning that positive currency rewards will be
+   * discarded.
+   */
   public BlackholeEconomyProvider(@NotNull Plugin plugin) {
     plugin.getLogger().warning(
         "No economy provider is available; positive modularjobs:economy rewards will be "

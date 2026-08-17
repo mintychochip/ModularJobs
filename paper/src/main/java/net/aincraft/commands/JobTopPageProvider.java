@@ -19,10 +19,22 @@ public final class JobTopPageProvider {
   private final Cache<Key, List<JobProgression>> readCache = Caffeine.newBuilder()
       .expireAfterWrite(Duration.ofMinutes(10)).build();
 
+  /**
+   * @param jobService service used to load progressions for a job key
+   */
   public JobTopPageProvider(JobService jobService) {
     this.jobService = jobService;
   }
 
+  /**
+   * Returns the requested page of a job's leaderboard, backed by a short-lived
+   * cache of the most recent {@value ENTRIES_PER_QUERY} progressions.
+   *
+   * @param jobKey     job whose leaderboard is requested
+   * @param pageNumber 1-based requested page, clamped to the available range
+   * @param pageSize   maximum entries per page
+   * @return the page; an empty first page if the job has no progressions
+   */
   public Page<JobProgression> getPage(Key jobKey, int pageNumber, int pageSize) {
     List<JobProgression> progressions = readCache.get(jobKey,
         __ -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
@@ -42,6 +54,12 @@ public final class JobTopPageProvider {
     return new Page<>(slice, clamped, pageSize);
   }
 
+  /**
+   * Returns all cached leaderboard entries for the given job.
+   *
+   * @param jobKey job whose progressions are requested
+   * @return the cached progressions, or an empty list if none are available
+   */
   public List<JobProgression> getAllEntries(Key jobKey) {
     List<JobProgression> progressions = readCache.get(jobKey,
         __ -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));

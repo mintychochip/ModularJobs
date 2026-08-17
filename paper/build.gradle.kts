@@ -36,9 +36,9 @@ dependencies {
     // MockBukkit for Paper 26.2 — mock server for OfflinePlayer / Material runtime
     testImplementation(libs.mockbukkit)
     testImplementation(libs.paper.api)
-    // PostgreSQL only — driver ships in the plugin artifact
-    implementation(libs.postgresql)
-    testImplementation(libs.postgresql)
+    // MySQL only — driver ships in the plugin artifact
+    implementation(libs.mysql)
+    testImplementation(libs.mysql)
 }
 val descriptorVersion = project.version.toString()
 tasks.processResources {

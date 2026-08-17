@@ -12,11 +12,20 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import java.time.Duration;
 
+/**
+ * Listens for job level-up events and plays celebratory feedback (sound,
+ * title, and chat message) to the leveled player.
+ */
 final class JobLevelUpListener implements Listener {
 
+  /** Creates the level-up listener with no dependencies. */
   JobLevelUpListener() {
   }
 
+  /**
+   * On MONITOR priority, plays the level-up and firework sounds, shows a
+   * title, and sends a chat message when a player levels up in a job.
+   */
   @EventHandler(priority = EventPriority.MONITOR)
   public void onJobLevelUp(BukkitJobLevelEvent event) {
     Player player = event.getPlayer();

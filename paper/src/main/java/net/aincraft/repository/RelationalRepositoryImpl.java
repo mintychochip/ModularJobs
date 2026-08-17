@@ -9,6 +9,14 @@ import java.sql.SQLException;
 import java.time.Duration;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Temporary relational repository over a {@link ConnectionSource} driven by a
+ * {@link RelationalRepositoryContext}.
+ *
+ * <p>Loads are cached in a short-lived Caffeine cache (entries expire after 5 minutes of access,
+ * bounded to 1_000 entries): {@link #load} reads through the cache, {@link #save} writes through to
+ * both cache and database, and {@link #delete} invalidates the cache only when the row is removed.
+ */
 public final class RelationalRepositoryImpl<K, V> {
 
   private final ConnectionSource connectionSource;
@@ -24,6 +32,10 @@ public final class RelationalRepositoryImpl<K, V> {
     this.context = context;
   }
 
+  /**
+   * Loads the value for {@code key}, returning {@code null} if no row exists. Results are cached
+   * and served from cache on subsequent calls.
+   */
   @Nullable
   public V load(K key) {
     return readCache.get(key, ignored -> {
@@ -39,6 +51,11 @@ public final class RelationalRepositoryImpl<K, V> {
     });
   }
 
+  /**
+   * Persists {@code value} for {@code key} and updates the cache.
+   *
+   * @return whether a row was updated (row count greater than zero)
+   */
   public boolean save(K key, V value) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(context.getSaveQuery())) {
@@ -50,6 +67,7 @@ public final class RelationalRepositoryImpl<K, V> {
     }
   }
 
+  /** Removes the row for {@code key} and invalidates it from the cache if the row existed. */
   public void delete(K key) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(context.getDeleteQuery())) {

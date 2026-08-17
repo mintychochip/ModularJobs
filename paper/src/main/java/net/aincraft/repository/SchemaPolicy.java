@@ -5,10 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Schema ownership for ModularJobs (PostgreSQL only).
+ * Schema ownership for ModularJobs (MySQL only).
  *
  * <p>The plugin process never runs DDL. Ops provision tables from
- * {@code sql/postgres.sql} via {@code scripts/apply-postgres-schema.sh} (or equivalent).
+ * {@code sql/mysql.sql} via {@code scripts/apply-mysql-schema.sh} (or equivalent).
  * On connect the plugin only verifies required tables exist.
  *
  * <p>Config key {@code auto-schema} is ignored (logged as a misconfiguration if present).
@@ -26,10 +26,10 @@ public final class SchemaPolicy {
   }
 
   /**
-   * @return true — fail fast when ops has not applied {@code sql/postgres.sql}
+   * @return true — fail fast when ops has not applied {@code sql/mysql.sql}
    */
   public static boolean shouldVerifySchemaPresent(@NotNull DatabaseType type) {
-    return type == DatabaseType.POSTGRES;
+    return type == DatabaseType.MYSQL;
   }
 
   /**

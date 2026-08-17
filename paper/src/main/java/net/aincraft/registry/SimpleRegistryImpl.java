@@ -12,16 +12,19 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
+/** Thread-safe keyed registry backed by an in-memory map. */
 public final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
 
   private final Map<Key, T> registry = new HashMap<>();
   private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
+  /** Looks up an object without throwing when the key is absent. */
   @Override
   public @NotNull Optional<T> get(Key key) {
     return Optional.ofNullable(registry.get(key));
   }
 
+  /** Looks up an object and rejects keys that are not registered. */
   @Override
   public @NotNull T getOrThrow(Key key) throws IllegalArgumentException {
     Preconditions.checkArgument(isRegistered(key));
@@ -33,6 +36,7 @@ public final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
     }
   }
 
+  /** Returns whether an object is registered under the key. */
   @Override
   public boolean isRegistered(Key key) {
     readWriteLock.readLock().lock();
@@ -43,11 +47,13 @@ public final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
     }
   }
 
+  /** Streams the currently registered objects. */
   @Override
   public Stream<T> stream() {
     return registry.values().stream();
   }
 
+  /** Registers or replaces an object using its key. */
   @Override
   public void register(@NotNull T object) {
     readWriteLock.writeLock().lock();

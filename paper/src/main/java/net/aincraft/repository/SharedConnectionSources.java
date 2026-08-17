@@ -9,7 +9,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Deduplicates {@link ConnectionSource} instances for the same PostgreSQL jdbc-url + credentials
+ * Deduplicates {@link ConnectionSource} instances for the same MySQL jdbc-url + credentials
  * so payable / timed-boost / upgrades sections sharing one database do not open multiple pools.
  */
 public final class SharedConnectionSources {

@@ -19,17 +19,39 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Immutable job definition backed by a persistence record.
+ *
+ * @param key namespaced job identifier
+ * @param displayName user-facing display name
+ * @param description user-facing description
+ * @param maxLevel highest attainable level
+ * @param levelingCurve experience curve used to calculate levels
+ * @param payableCurves reward curves keyed by payable type
+ * @param upgradeLevel level at which upgrades become available
+ * @param perkUnlocks perk permissions grouped by unlock level
+ */
 record JobImpl(Key key, Component displayName, Component description, int maxLevel,
                LevelingCurve levelingCurve, Map<Key, PayableCurve> payableCurves,
                int upgradeLevel, Map<Integer, List<String>> perkUnlocks) implements Job {
 
   private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
+  /**
+   * Returns the display name without Adventure formatting.
+   *
+   * @return plain-text display name
+   */
   @Override
   public String getPlainName() {
     return PlainTextComponentSerializer.plainText().serialize(displayName);
   }
 
+  /**
+   * Converts this job to the serialized record used by persistence.
+   *
+   * @return record containing MiniMessage text and curve expressions
+   */
   public JobRecord toRecord() {
     return new JobRecord(
         key.toString(),
@@ -43,6 +65,17 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
     );
   }
 
+  /**
+   * Reconstructs a job from persisted text and curve expressions.
+   *
+   * <p>Payable curves whose types are no longer registered are ignored.
+   *
+   * @param record persisted job data
+   * @param plugin plugin supplying the default namespace for unqualified keys
+   * @param payableTypeRegistry registry used to filter known payable types
+   * @return reconstructed job
+   * @throws IllegalArgumentException if a key or curve expression is invalid
+   */
   public static JobImpl fromRecord(
       JobRecord record,
       Plugin plugin,

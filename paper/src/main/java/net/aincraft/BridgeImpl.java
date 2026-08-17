@@ -15,6 +15,9 @@ import net.aincraft.service.ProfessionService;
 import net.aincraft.service.RecipeService;
 import net.aincraft.service.StationService;
 
+/**
+ * Immutable bridge assembled by the composition root for public plugin integrations.
+ */
 record BridgeImpl(
     RegistryContainer registryContainer,
     JobService jobService,
@@ -29,6 +32,7 @@ record BridgeImpl(
     TimedBoostDataService timedBoostDataService,
     EventBus eventBus) implements Bridge {
 
+  /** Returns the configured economy provider, when an economy integration is available. */
   @Override
   public Optional<EconomyProvider> economy() {
     return Optional.ofNullable(economyProvider);

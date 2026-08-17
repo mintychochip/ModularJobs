@@ -22,7 +22,7 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - 40+ action types (block placement/breaking, crafting, killing entities, etc.)
 - Configurable reward system (Payables)
 - Timed & item-based boost system
-- PostgreSQL only (connect-only schema ownership)
+  - MySQL 8 only (connect-only schema ownership)
 - PlaceholderAPI integration
 - Job upgrade system
 - Third-party plugin hooks (McMMO, Vault, LWC, Bolt)
@@ -31,7 +31,7 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - **Framework**: PaperMC API, Adventure/Kyori text components
 - **Wiring**: Manual composition root (`PluginContext`) — no DI framework
 - **Serialization**: Kryo 5.6.2
-- **Database**: HikariCP (connection pooling), PostgreSQL only
+ - **Database**: HikariCP (connection pooling), MySQL 8 only
 - **Caching**: Caffeine
 - **Math**: exp4j
 - **Documentation**: Astro + Starlight (`web/`)
@@ -66,21 +66,21 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 ### web
 - Astro + Starlight docs site
 - `web/session-editor` — React secure session editor
-- `web/rest-api` — Rust REST API for editor sessions on Postgres
+ - **web/rest-api** — Rust REST API for editor sessions on MySQL
 
 ## Design Patterns
 - **Composition root**: `PluginContext` + package `*Wiring` classes construct the object graph
-- **Repository Pattern**: Abstraction over PostgreSQL
+ - **Repository Pattern**: Abstraction over MySQL
 - **Domain Mapping**: DomainMapper<Domain, Record> for model conversion
 - **Sealed Types**: Type-safe variants (e.g., `Target` for boost targets)
 - **Service Layer**: Business logic separation
 
 ## Database Configuration
 - Configured in `database.yml` (plugin data folder; template under `paper/src/main/resources/`)
-- **PostgreSQL only** — connection pooling with HikariCP
-- **Schema ownership:** Postgres is **connect-only** — apply
-  `paper/src/main/resources/sql/postgres.sql` via `scripts/apply-postgres-schema.sh`
-  (never CREATE from the game/API process). See `docs/database-schema.md` and root `AGENTS.md`.
+ - **MySQL 8 only** — connection pooling with HikariCP
+ - **Schema ownership:** MySQL is **connect-only** — apply
+   `paper/src/main/resources/sql/mysql.sql` via `scripts/apply-mysql-schema.sh`
+   (never CREATE from the game/API process). See `docs/database-schema.md` and root `AGENTS.md`.
 - Also: `web/rest-api` (Rust) + `web/session-editor` (React) for secure editor sessions
 
 ## Development

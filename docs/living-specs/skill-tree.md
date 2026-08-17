@@ -45,7 +45,7 @@ Weaponsmith” is content, not special-cased Java.
 
 - Packages: `api/.../upgrade`, `paper/.../upgrade` (+ config, editor).
 - Prefer `SkillTreeConfigParser` path for new trees; keep Wynncraft deserializers only as compatibility if still needed.
-- Persist via `player_upgrades` (Postgres); connect-only schema.
+- Persist via `player_upgrades` (MySQL); connect-only schema.
 - Tests: `SkillTreeTest` and service tests for excludes/requirements/points.
 
 ### Explicit do-nots

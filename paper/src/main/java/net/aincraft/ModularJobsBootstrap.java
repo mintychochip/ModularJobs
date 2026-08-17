@@ -15,12 +15,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * Paper plugin entry point that creates, registers, and tears down the
+ * {@link PluginContext} composition root.
+ */
 @NullMarked
 public final class ModularJobsBootstrap extends JavaPlugin {
 
   @Nullable
   private PluginContext context = null;
 
+  /** Starts the plugin services, listeners, integrations, and command tree. */
   @Override
   public void onEnable() {
     try {
@@ -80,6 +85,7 @@ public final class ModularJobsBootstrap extends JavaPlugin {
     }
   }
 
+  /** Unregisters integrations and closes resources created during startup. */
   @Override
   public void onDisable() {
     PluginContext ctx = this.context;

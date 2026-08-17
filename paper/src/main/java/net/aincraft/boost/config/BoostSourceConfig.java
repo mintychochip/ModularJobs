@@ -20,6 +20,10 @@ public record BoostSourceConfig(
   ) {
   }
 
+  /**
+   * A single conditional boost rule: when {@code conditions} hold, {@code boost} applies;
+   * higher {@code priority} wins among matching rules in the same source.
+   */
   public record RuleConfig(
       int priority,
       @NotNull ConditionConfig conditions,
@@ -27,12 +31,18 @@ public record BoostSourceConfig(
   ) {
   }
 
+  /** Type-tagged boost ({@code additive}/{@code multiplicative}) with a fixed amount. */
   public record BoostConfig(
       @NotNull String type,
       double amount
   ) {
   }
 
+  /**
+   * Union-shaped condition descriptor: {@code type} selects the condition kind, and the
+   * remaining fields carry that kind's parameters (operator, value(s), nested conditions,
+   * resource/effect, amplifiers, min/max, touching, etc.).
+   */
   public record ConditionConfig(
       @NotNull String type,
       @Nullable String operator,

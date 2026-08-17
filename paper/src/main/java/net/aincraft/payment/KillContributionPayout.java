@@ -38,6 +38,10 @@ public final class KillContributionPayout {
     return payees;
   }
 
+  /**
+   * Pays every qualifying kill contributor (normalized contribution above {@code cutoff} and not
+   * blocked by {@code eligibility}) via {@code paymentHandler} using the KILL action.
+   */
   public static void payContributors(
       @NotNull DamageContribution damageContribution,
       double cutoff,

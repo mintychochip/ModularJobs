@@ -33,7 +33,8 @@ class ArchitectureIsolationTest {
             String text = Files.readString(p);
             if (text.contains("import org.bukkit")
                 || text.contains("import io.papermc")
-                || text.contains("import org.spigotmc")) {
+                || text.contains("import org.spigotmc")
+                || text.contains("import de.flog99.mapgui")) {
               offenders.add(p.toString());
             }
           } catch (IOException e) {

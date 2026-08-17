@@ -1,7 +1,7 @@
 # ModularJobs — agent notes
 
 PaperMC job progression plugin (Java 21 / 25 toolchain, Gradle multi-module) plus
-Postgres-backed REST API (Rust) and React secure session editor.
+MySQL-backed REST API (Rust) and React secure session editor.
 
 ## Modules
 
@@ -29,26 +29,24 @@ React editor: `cd web/session-editor && npm test && npm run build`.
   `cargo check` for `web/rest-api`, `npm test` for `web/session-editor`.  
   Skip once: `SKIP_PRECOMMIT=1 git commit ...`
 - **GitHub Actions**: `.github/workflows/ci.yml`  
-  - `java` — JDK 25, Postgres service, `./gradlew check`, shadow jar + report artifacts  
-  - `rest-api` — Rust stable + Postgres, `cargo test`  
-  - `session-editor` — Node 22, `npm ci && npm test && npm run build`
+  - `java` — JDK 25, MySQL 8 service, `./gradlew check`, shadow jar + report artifacts
+  - `rest-api` — Rust stable + MySQL 8, `cargo test`
 
 ## Database schema ownership (important)
 
-**PostgreSQL only. The Java plugin and Rust API never create tables.**
+**MySQL 8 only. The Java plugin and Rust API never create tables.**
 
 | Store | Who applies DDL | Runtime process |
 |-------|-----------------|-----------------|
-| Postgres | Ops / CI / script **once** | Connect + verify only |
+| MySQL | Ops / CI / script **once** | Connect + verify only |
 
-- Source of truth: `paper/src/main/resources/sql/postgres.sql`
-- Apply: `./scripts/apply-postgres-schema.sh` or  
-  `psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql`
+- Source of truth: `paper/src/main/resources/sql/mysql.sql`
+- Apply: `./scripts/apply-mysql-schema.sh`
 - Policy: `SchemaPolicy` — never runs DDL in-process (`auto-schema` is ignored)
 - Fail-fast: `SchemaPresence` on connect; missing tables → hard error, no CREATE
 - Details: `docs/database-schema.md`
 
-Do **not** reintroduce boot-time `CREATE TABLE` or SQLite/MySQL/MariaDB support.
+Do **not** reintroduce boot-time `CREATE TABLE` or SQLite/PostgreSQL/MariaDB support.
 Lab tests may apply the shared SQL file explicitly; production paths must stay connect-only.
 
 ## Secure session stack
@@ -56,8 +54,7 @@ Lab tests may apply the shared SQL file explicitly; production paths must stay c
 ```
 Plugin export (payload JSON)
     → POST web/rest-api /api/v1/sessions  (or create via API)
-    → Postgres table editor_sessions
-    → React session-editor loads by ?code=&token=
+    → MySQL table editor_sessions
     → PUT save with Bearer / X-Session-Token
 ```
 
@@ -72,7 +69,7 @@ Plugin export (payload JSON)
 ### API env
 
 ```bash
-export DATABASE_URL=postgres://user:pass@host:5432/modularjobs
+export DATABASE_URL=mysql://user:pass@host:3306/modularjobs
 export BIND_ADDR=127.0.0.1:18787
 # optional hardening (see web/rest-api/README.md)
 # export SESSION_CREATE_SECRET=...
@@ -88,8 +85,8 @@ Session ownership: code (public) + token (secret headers). Create is open unless
 
 ```yaml
 payable:
-  type: postgres
-  jdbc-url: jdbc:postgresql://host:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
   username: modularjobs
   password: secret
 ```
@@ -104,10 +101,10 @@ Index: `docs/living-specs/README.md`. One-shot design dumps under
 ## Architecture notes (core)
 
 - Composition root: `PluginContext` + package `*Wiring` (no Guice)
-- Repository pattern + HikariCP against PostgreSQL only
+- Repository pattern + HikariCP against MySQL only
 - Commands: Paper Brigadier; themed text via `net.aincraft.util.Messages` (not Mint)
-- Tests: JUnit 5; MockBukkit for Bukkit-touching tests; repository SQL tests need a live PG  
-  (`MODULARJOBS_TEST_PG_*` or default `localhost:55432`; skipped when unavailable)
+- Tests: JUnit 5; MockBukkit for Bukkit-touching tests; repository SQL tests need a live MySQL
+  (`MODULARJOBS_TEST_MYSQL_*` or default `localhost:13306`; skipped when unavailable)
 
 ## Agent rules
 
@@ -121,6 +118,5 @@ Index: `docs/living-specs/README.md`. One-shot design dumps under
 
 - Guice removed (2026-08): manual wiring
 - MockBukkit 26.2 / Paper 26.2 / Java toolchain 25
-- Postgres DDL + fidelity tests; connect-only remote schema ownership
-- Module layout rename: `jobs-api`→`api`, `jobs-core`→`paper`, `jobs-web`/`jobs-session-api`→`web/*`
+- MySQL DDL + fidelity tests; connect-only remote schema ownership
 - `web/rest-api` (Rust) + React `web/session-editor` for secure sessions

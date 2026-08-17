@@ -41,6 +41,7 @@ public final class BoostSourceConfigSerializer {
 
   private BoostSourceConfigSerializer() {}
 
+  /** Serializes a whole boost source into its JSON configuration model. */
   public static BoostSourceConfig serialize(@NotNull BoostSource source) {
     String key = source.key() != null ? source.key().asString() : "modularjobs:unknown";
     String description = source.description();
@@ -69,6 +70,7 @@ public final class BoostSourceConfigSerializer {
     return List.of();
   }
 
+  /** Serializes a single boost rule into its JSON configuration model. */
   public static RuleConfig serializeRule(@NotNull Rule rule) {
     return new RuleConfig(
         rule.priority(),
@@ -77,6 +79,11 @@ public final class BoostSourceConfigSerializer {
     );
   }
 
+  /**
+   * Serializes a boost into its type/amount model.
+   *
+   * @throws IllegalArgumentException for unsupported boost implementations
+   */
   public static BoostConfig serializeBoost(@NotNull Boost boost) {
     return switch (boost) {
       case MultiplicativeBoostImpl mult ->
@@ -88,6 +95,11 @@ public final class BoostSourceConfigSerializer {
     };
   }
 
+  /**
+   * Serializes a runtime condition into its JSON configuration model.
+   *
+   * @throws IllegalArgumentException for unsupported condition implementations
+   */
   public static ConditionConfig serializeCondition(@NotNull Condition condition) {
     return switch (condition) {
       case AlwaysTrueConditionImpl ignored -> always();

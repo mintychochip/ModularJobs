@@ -1,0 +1,61 @@
+# ModularJobs
+
+## Intent
+
+ModularJobs is a modular PaperMC job progression plugin with a secure web editor.
+The monorepo keeps `api` pure, `paper` owns Bukkit integration, and the secure web
+editor stack shares one operator-provisioned MySQL 8 database without either process
+running DDL.
+
+## Boundaries
+
+- `api` — pure public contracts
+- `common` — shared editor/session DTOs
+- `paper` — Paper plugin, repositories, services, commands, and wiring
+- `web/session-editor` — React editor
+- `web/rest-api` — Rust secure session API
+- Operator docs / Astro wiki under `web/`
+- Out-of-band schema apply (`scripts/apply-mysql-schema.sh`, `paper/.../sql/mysql.sql`)
+
+### Out of scope / non-goals
+
+- Plugin-owned database process or boot-time `CREATE TABLE`
+- SQLite / PostgreSQL / MariaDB support
+- Guice or other DI frameworks (manual composition root only)
+- Using `bytebin.lucko.me` for the production secure editor path
+- Cross-language OpenAPI codegen for TS/Rust (unless promoted later)
+
+## Invariants
+
+- **MySQL 8 only.** Runtime processes connect and verify; ops apply DDL.
+- **`api` has zero Paper/Bukkit dependencies.** Paper-only types stay in `paper`.
+- **Composition root:** `PluginContext` + package `*Wiring` — no Guice.
+- **Atomic commits:** one logical change per commit when landing work.
+
+## Module map
+
+| Module | Responsibility | Dependencies |
+|--------|----------------|--------------|
+| `api` | Public contracts | Java standard library, Adventure |
+| `common` | Shared DTOs | `api`, Gson |
+| `paper` | Plugin impl + shadow jar | api, common, Paper, Craftux, optional soft-depends |
+| `web/*` | Docs, React editor, Rust REST | Node / Rust / MySQL client |
+
+## Current
+
+- [x] Manual composition root with no Guice
+- [x] MySQL connect-only schema and shared editor database
+- [x] Secure editor session code/token flow
+- [x] Optional economy and supported plugin integrations
+
+## Next
+
+- [ ] Keep living-spec horizons in sync when domain work ships
+
+## Decisions log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-08 | Manual wiring, no Guice | Simpler graph, fewer transitive deps |
+| 2026-08 | MySQL 8 only, connect-only schema | Multi-instance, least privilege, reviewable migrations |
+| 2026-08 | Secure editor via REST + MySQL | Token ownership, shared durable store |

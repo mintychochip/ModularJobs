@@ -17,6 +17,8 @@ public interface ConditionFactory {
   }
 
   /**
+   * Creates a biome condition.
+   *
    * @param biomeKey biome id or namespaced key (resolved at evaluation)
    */
   Condition biome(String biomeKey);

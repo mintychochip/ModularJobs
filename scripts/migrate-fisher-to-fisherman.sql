@@ -1,8 +1,7 @@
 \set ON_ERROR_STOP on
 
 BEGIN;
-
--- Data-only migration. Table creation remains owned by postgres.sql and the
+-- Data-only migration. Table creation remains owned by mysql.sql and the
 -- operator-run schema script.
 DO $$
 DECLARE

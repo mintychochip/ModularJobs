@@ -18,10 +18,18 @@ public final class ConditionConfigParser {
 
   private final ConditionFactory conditionFactory;
 
+  /**
+   * Creates a parser delegating condition construction to {@code conditionFactory}.
+   */
   public ConditionConfigParser(ConditionFactory conditionFactory) {
     this.conditionFactory = conditionFactory;
   }
 
+  /**
+   * Parses a {@link ConditionConfig} descriptor into a runtime {@link Condition}.
+   *
+   * @throws IllegalArgumentException when the condition type is unknown or misconfigured
+   */
   public Condition parse(ConditionConfig config) {
     return switch (config.type().toLowerCase()) {
       case "always" -> new AlwaysTrueCondition();

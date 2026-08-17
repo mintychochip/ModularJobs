@@ -184,7 +184,7 @@ class BoostEngineAggregationTest {
 
       @Override
       public DatabaseType getType() {
-        return DatabaseType.POSTGRES;
+        return DatabaseType.MYSQL;
       }
 
       @Override

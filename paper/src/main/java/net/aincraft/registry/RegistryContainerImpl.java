@@ -8,6 +8,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
+/** Registry container used by the bridge to expose plugin registries. */
 public final class RegistryContainerImpl implements RegistryContainer {
 
   private final Map<Key, Registry<?>> registrar = new HashMap<>();
@@ -34,6 +35,7 @@ public final class RegistryContainerImpl implements RegistryContainer {
     registryConsumer.accept(registry);
   }
 
+  /** Adds a registry under the supplied key. */
   public <T extends Keyed> void addRegistry(Key key, Registry<T> registry) {
     registrar.put(key, registry);
   }

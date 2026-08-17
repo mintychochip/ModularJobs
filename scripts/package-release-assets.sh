@@ -2,13 +2,13 @@
 set -euo pipefail
 
 if [[ $# -ne 4 ]]; then
-    echo "usage: $0 VERSION SHADOW_JAR POSTGRES_SQL OUTPUT_DIR" >&2
+    echo "usage: $0 VERSION SHADOW_JAR MYSQL_SQL OUTPUT_DIR" >&2
     exit 2
 fi
 
 VERSION=$1
 SHADOW_JAR=$2
-POSTGRES_SQL=$3
+MYSQL_SQL=$3
 OUTPUT_DIR=$4
 
 if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -16,7 +16,7 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 2
 fi
 
-for input in "$SHADOW_JAR" "$POSTGRES_SQL"; do
+for input in "$SHADOW_JAR" "$MYSQL_SQL"; do
     if [[ ! -f "$input" ]]; then
         echo "input must be a regular file: $input" >&2
         exit 2
@@ -44,9 +44,9 @@ if [[ "$(printf '%s\n' "$EMBEDDED_DESCRIPTOR" | grep -Fxc -- "$EXPECTED_VERSION"
 fi
 
 JAR_NAME="modularjobs-paper-$VERSION.jar"
-SQL_NAME="modularjobs-postgres-$VERSION.sql"
+SQL_NAME="modularjobs-mysql-$VERSION.sql"
 install -m 0644 -- "$SHADOW_JAR" "$OUTPUT_DIR/$JAR_NAME"
-install -m 0644 -- "$POSTGRES_SQL" "$OUTPUT_DIR/$SQL_NAME"
+install -m 0644 -- "$MYSQL_SQL" "$OUTPUT_DIR/$SQL_NAME"
 (
     cd -- "$OUTPUT_DIR"
     sha256sum "$JAR_NAME" "$SQL_NAME" | sort -k2 > SHA256SUMS

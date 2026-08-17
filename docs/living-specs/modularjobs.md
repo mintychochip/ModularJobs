@@ -1,7 +1,7 @@
 # ModularJobs — Living Spec (product / platform)
 
 > Status: active  
-> Last updated: 2026-08-10
+> Last updated: 2026-08-14
 > Owners: modularjobs maintainers
 
 ## Intent
@@ -10,7 +10,7 @@ Extensible job progression for PaperMC servers: players join jobs, perform
 actions, earn experience and payables, unlock skill trees, and (optionally)
 face profession-gated world interactions. Success looks like a maintainable
 monorepo where `api` stays pure, `paper` owns Bukkit, and the secure web editor
-stack shares one operator-provisioned PostgreSQL database without either
+stack shares one operator-provisioned MySQL 8 database without either
 process running DDL.
 
 ## Boundaries
@@ -21,19 +21,19 @@ process running DDL.
 - Pure public contracts (`api`) and shared editor DTOs (`common`)
 - Secure session editor (`web/session-editor` + `web/rest-api`)
 - Operator docs / Astro wiki under `web/`
-- Out-of-band schema apply (`scripts/`, `paper/.../sql/postgres.sql`)
+- Out-of-band schema apply (`scripts/apply-mysql-schema.sh`, `paper/.../sql/mysql.sql`)
 
 ### Out of scope / non-goals
 
 - Plugin-owned database process or boot-time `CREATE TABLE`
-- SQLite / MySQL / MariaDB support (removed; do not reintroduce)
+- SQLite / PostgreSQL / MariaDB support
 - Guice or other DI frameworks (manual composition root only)
 - Using `bytebin.lucko.me` for the production secure editor path
 - Cross-language OpenAPI codegen for TS/Rust (unless promoted later)
 
 ## Invariants
 
-- **PostgreSQL only.** Runtime processes connect and verify; ops apply DDL.
+- **MySQL 8 only.** Runtime processes connect and verify; ops apply DDL.
 - **`api` has zero Paper/Bukkit dependencies.** Paper-only types stay in `paper`.
 - **Composition root:** `PluginContext` + package `*Wiring` — no Guice.
 - **Atomic commits:** one logical change per commit when landing work.
@@ -50,14 +50,14 @@ process running DDL.
 | `api` | Public contracts for integrators | JDK + `common`; no Paper |
 | `common` | Shared DTOs (editor payload, …) | JDK only |
 | `paper` | Plugin impl + shadow jar | api, common, Paper, Craftux, optional soft-depends |
-| `web/*` | Docs, React editor, Rust REST | Node / Rust / Postgres client |
+| `web/*` | Docs, React editor, Rust REST | Node / Rust / MySQL client |
 
 ### How to build here
 
 - Prefer existing patterns (repository + domain mapper, wiring classes, Messages).
 - Commands: Paper Brigadier; themed text via `net.aincraft.util.Messages` (not Mint).
-- Tests: JUnit 5; MockBukkit for Bukkit-touching tests; live PG for SQL repo tests
-  (`MODULARJOBS_TEST_PG_*` or `localhost:55432`; skip when unavailable).
+- Tests: JUnit 5; MockBukkit for Bukkit-touching tests; live MySQL for SQL repo tests
+  (`MODULARJOBS_TEST_MYSQL_*` or `localhost:13306`; skip when unavailable).
 - Static analysis: `./gradlew check`; fail-on-findings with `-Pquality.fail=true`.
 - Do not invent parallel TODO markdown that diverges from living-spec horizons.
 
@@ -90,8 +90,7 @@ Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.m
 ## Next
 
 - [ ] Keep living-spec horizons in sync when domain work ships
-- [ ] Align any remaining operator docs with Postgres-only persistence, optional
-  Mint economy, opt-in editor, and the deferred Craftux dependency
+- [ ] Align any remaining operator docs with MySQL-only persistence, optional
 
 ## Future
 
@@ -104,9 +103,8 @@ Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.m
 | Date | Decision | Why |
 |------|----------|-----|
 | 2026-08 | Manual wiring, no Guice | Simpler graph, fewer transitive deps |
-| 2026-08 | Postgres only, connect-only schema | Multi-instance, least privilege, reviewable migrations |
-| 2026-08 | Rename modules to `api`/`common`/`paper`/`web` | Clear boundaries; pure api |
-| 2026-08 | Secure editor via REST + Postgres, not Bytebin | Token ownership, shared durable store |
+| 2026-08 | MySQL 8 only, connect-only schema | Multi-instance, least privilege, reviewable migrations |
+| 2026-08 | Secure editor via REST + MySQL, not Bytebin | Token ownership, shared durable store |
 | 2026-08-10 | Optional reflective Mint adapter + blackhole default | Base Paper builds stay independent of Mint while currency-required servers can fail fast |
 
 ## Open questions

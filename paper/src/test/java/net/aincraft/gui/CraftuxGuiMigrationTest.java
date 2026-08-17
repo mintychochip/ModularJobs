@@ -152,7 +152,7 @@ class CraftuxGuiMigrationTest {
     assertFalse(Files.exists(Path.of("src/main/java/net/aincraft/commands/UpgradeCommand.java")));
 
     String sql = Files.readString(
-        Path.of("src/main/resources/sql/postgres.sql"), StandardCharsets.UTF_8);
+        Path.of("src/main/resources/sql/mysql.sql"), StandardCharsets.UTF_8);
     assertFalse(sql.contains("job_pet_selections"), "DDL must not create job_pet_selections");
 
     String pluginYml = Files.readString(

@@ -7,12 +7,23 @@ import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * PlaceholderAPI expansion exposing the player's ModularJobs progression.
+ *
+ * <p>Loaded only when PlaceholderAPI is available; requests read the backing
+ * {@link JobService} and return an empty value when no progression exists.
+ */
 public final class ModularJobsPlaceholderExpansion extends PlaceholderExpansion {
 
   //TODO: set version dynamically
   private final JobService jobService;
   private final String version = "1.1";
 
+  /**
+   * Creates an expansion backed by the supplied job service.
+   *
+   * @param jobService service used to resolve placeholder progression values
+   */
   public ModularJobsPlaceholderExpansion(JobService jobService) {
     this.jobService = jobService;
   }

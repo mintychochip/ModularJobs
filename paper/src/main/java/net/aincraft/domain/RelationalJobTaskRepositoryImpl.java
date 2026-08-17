@@ -18,12 +18,20 @@ import net.aincraft.domain.model.PayableRecord;
 import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.repository.ConnectionSource;
 
+/**
+ * SQL-backed repository for job task records, keyed by the tuple
+ * {@code (jobKey, actionTypeKey, contextKey)}. Reads are serviced through an LRU-style
+ * Caffeine cache (10-minute TTL, 10k entry cap) that is invalidated on deletion and
+ * refreshed on successful saves; writes run in transactions against the shared
+ * {@link ConnectionSource}.
+ */
 public final class RelationalJobTaskRepositoryImpl {
 
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
   private static final int CACHE_MAXIMUM_SIZE = 10_000;
   private final ConnectionSource connectionSource;
 
+  /** Read-through cache keyed by (jobKey, actionTypeKey, contextKey). */
   private final Cache<String, JobTaskRecord> readCache = Caffeine.newBuilder()
       .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE).build();
 
@@ -36,10 +44,21 @@ public final class RelationalJobTaskRepositoryImpl {
       ORDER BY t.action_type_key, t.task_id
       """;
 
+  /**
+   * @param connectionSource the source of database connections for all operations
+   */
   public RelationalJobTaskRepositoryImpl(ConnectionSource connectionSource) {
     this.connectionSource = connectionSource;
   }
 
+  /**
+   * Loads the task record for the given key tuple, consulting the cache first and
+   * populating it on a cache miss. An absent task row yields a record with no payables.
+   * @param jobKey the job key
+   * @param actionTypeKey the action type key
+   * @param contextKey the context key
+   * @return the matching task record (never {@code null})
+   */
   public JobTaskRecord load(String jobKey, String actionTypeKey, String contextKey) {
     String cacheKey = jobKey + actionTypeKey + contextKey;
     JobTaskRecord taskRecord = readCache.getIfPresent(cacheKey);
@@ -70,6 +89,12 @@ public final class RelationalJobTaskRepositoryImpl {
     }
   }
 
+  /**
+   * Persists a task record transactionally: inserts the task row when absent, otherwise
+   * replaces its payables, then refreshes the cache with the stored record.
+   * @param record the record to store
+   * @return {@code true} if the record was persisted
+   */
   public boolean save(JobTaskRecord record) {
     String cacheKey = createCacheKey(record.jobKey(), record.actionTypeKey(), record.contextKey());
     try (Connection connection = connectionSource.getConnection()) {
@@ -140,6 +165,14 @@ public final class RelationalJobTaskRepositoryImpl {
     }
   }
 
+  /**
+   * Deletes the task and its payables (children first to satisfy the foreign key)
+   * in a transaction, invalidating the cache entry.
+   * @param jobKey the job key
+   * @param actionTypeKey the action type key
+   * @param contextKey the context key
+   * @return {@code true} if a task row was deleted, {@code false} if none matched
+   */
   public boolean delete(String jobKey, String actionTypeKey, String contextKey) {
     String cacheKey = createCacheKey(jobKey, actionTypeKey, contextKey);
     try (Connection connection = connectionSource.getConnection()) {
@@ -189,6 +222,12 @@ public final class RelationalJobTaskRepositoryImpl {
     }
   }
 
+  /**
+   * Loads all task records for a job, grouped by action type key (map order follows
+   * action type ordering).
+   * @param jobKey the job key to match
+   * @return a map of action type key to its task records
+   */
   public Map<String, List<JobTaskRecord>> getRecords(String jobKey) {
     Map<String, Map<Integer, TaskRecordAccumulator>> actionTypeTaskMap = new LinkedHashMap<>();
     try (Connection connection = connectionSource.getConnection();
@@ -227,6 +266,7 @@ public final class RelationalJobTaskRepositoryImpl {
     return records;
   }
 
+  /** Builds a {@link JobTaskRecord} while accumulating its payable rows across result rows. */
   private static final class TaskRecordAccumulator {
 
     private final String contextKey;
@@ -237,6 +277,12 @@ public final class RelationalJobTaskRepositoryImpl {
     }
   }
 
+  /**
+   * Loads all task records for a single action type of a job.
+   * @param jobKey the job key
+   * @param actionTypeKey the action type key
+   * @return the matching task records
+   */
   public List<JobTaskRecord> getRecords(String jobKey, String actionTypeKey) {
     List<JobTaskRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
@@ -257,6 +303,11 @@ public final class RelationalJobTaskRepositoryImpl {
     }
   }
 
+  /**
+   * Loads every task record for a job across all action types.
+   * @param jobKey the job key to match
+   * @return all task records for the job
+   */
   public List<JobTaskRecord> getAllRecords(String jobKey) {
     Map<String, List<JobTaskRecord>> grouped = getRecords(jobKey);
     List<JobTaskRecord> all = new ArrayList<>();
@@ -266,6 +317,7 @@ public final class RelationalJobTaskRepositoryImpl {
     return all;
   }
 
+  /** Builds the cache key for a task's key tuple. */
   private static String createCacheKey(String jobKey, String actionTypeKey, String contextKey) {
     return jobKey + actionTypeKey + contextKey;
   }

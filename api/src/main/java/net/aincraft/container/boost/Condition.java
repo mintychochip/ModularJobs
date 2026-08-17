@@ -4,8 +4,17 @@ import net.aincraft.Bridge;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.factories.ConditionFactory;
 
+/**
+ * Predicate evaluated against a {@link BoostContext}.
+ */
 public interface Condition {
 
+  /**
+   * Tests whether this condition applies to the supplied context.
+   *
+   * @param context context to evaluate
+   * @return {@code true} when the condition applies
+   */
   boolean applies(BoostContext context);
 
   /**
@@ -17,6 +26,8 @@ public interface Condition {
   }
 
   /**
+   * Creates a biome condition.
+   *
    * @param biomeKey biome id or namespaced key (e.g. {@code plains}, {@code minecraft:desert})
    */
   static Condition biome(String biomeKey) {
@@ -24,7 +35,10 @@ public interface Condition {
   }
 
   /**
-   * @param worldName world name or namespaced key (e.g. {@code world_nether}, {@code minecraft:the_end})
+   * Creates a world condition.
+   *
+   * @param worldName world name or namespaced key
+   * @return a condition matching the world
    */
   static Condition world(String worldName) {
     return factory().world(worldName);

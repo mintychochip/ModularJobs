@@ -19,6 +19,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+/**
+ * Renders leaderboard entries as chat messages, including the viewer's rank,
+ * highlighted rows for the viewer, and clickable previous/next navigation.
+ */
 public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
 
   private static final String ENTRY_FORMAT = "<rank>. <player>: <level>";
@@ -81,6 +85,10 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     Messages.send(sender, "");
   }
 
+  /**
+   * Builds the previous/next navigation footer with clickable {@code /jobs top}
+   * commands, disabling the button at the movement boundary.
+   */
   private Component buildNavigation(String jobName, int currentPage, int maxPages) {
     Component nav = Component.empty();
 
@@ -115,6 +123,11 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     return nav;
   }
 
+  /**
+   * Finds the 1-indexed rank of a player within the leaderboard.
+   *
+   * @return the player's rank, or {@code -1} if not present
+   */
   private int findPlayerRank(Player player, List<JobProgression> allEntries) {
     for (int i = 0; i < allEntries.size(); i++) {
       JobProgression progression = allEntries.get(i);

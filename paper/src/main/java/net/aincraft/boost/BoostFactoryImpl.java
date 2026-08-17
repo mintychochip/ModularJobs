@@ -13,10 +13,18 @@ import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.kyori.adventure.key.Key;
 
+/**
+ * Single instance of {@link BoostFactory} and {@link ConditionFactory} that delegates to
+ * {@link net.aincraft.boost.conditions.Conditions} and the record boost implementations.
+ * <p>
+ * String keys without a namespace are normalized to {@code minecraft:} before being turned
+ * into {@link Key} values.
+ */
 public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
 
   public static final BoostFactoryImpl INSTANCE = new BoostFactoryImpl();
 
+  /** Singleton instance; construction is private to this class. */
   private BoostFactoryImpl() {}
 
   @Override
@@ -96,6 +104,14 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
     return Conditions.jobAny(jobKeys);
   }
 
+  /**
+   * Normalizes a raw key string into a {@link Key}: trims and lowercases it, prepending
+   * the {@code minecraft:} namespace when no namespace separator is present.
+   *
+   * @param raw the raw key string
+   * @return the normalized {@link Key}
+   * @throws IllegalArgumentException if {@code raw} is null or blank
+   */
   private static Key toKey(String raw) {
     if (raw == null || raw.isBlank()) {
       throw new IllegalArgumentException("key must be non-blank");

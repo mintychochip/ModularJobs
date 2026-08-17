@@ -21,6 +21,7 @@ public final class DurationParser {
       Pattern.CASE_INSENSITIVE
   );
 
+  /** Prevents instantiation of this static utility class. */
   private DurationParser() {
   }
 

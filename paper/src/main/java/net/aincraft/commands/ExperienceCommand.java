@@ -19,16 +19,27 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+/**
+ * {@code /jobs experience} admin command: sets, adds, or subtracts experience for a player
+ * in a job (requiring the {@code modularjobs.admin} permission).
+ */
 public final class ExperienceCommand implements JobsCommand {
 
   private final JobService jobService;
   private final ProgressionService progressionService;
 
+  /** Creates the experience command with the services that resolve jobs and persist progression. */
   public ExperienceCommand(JobService jobService, ProgressionService progressionService) {
     this.jobService = jobService;
     this.progressionService = progressionService;
   }
 
+  /**
+   * Builds the administrator-only {@code /jobs experience} command with the set, add, and subtract
+   * subcommands.
+   *
+   * @return the Brigadier command tree for experience administration
+   */
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("experience")
@@ -80,6 +91,7 @@ public final class ExperienceCommand implements JobsCommand {
                             context.getArgument("amount", Double.class)))))));
   }
 
+  /** Sets the selected player's experience in the given job to the supplied amount. */
   private int executeSet(CommandSourceStack source, PlayerSelectorArgumentResolver playerResolver,
       String jobKeyValue, double amount) throws CommandSyntaxException {
     CommandSender sender = source.getSender();
@@ -124,6 +136,7 @@ public final class ExperienceCommand implements JobsCommand {
     }
   }
 
+  /** Adds the supplied experience amount to the selected player's job progression. */
   private int executeAdd(CommandSourceStack source, PlayerSelectorArgumentResolver playerResolver,
       String jobKeyValue, double amount) throws CommandSyntaxException {
     CommandSender sender = source.getSender();
@@ -168,6 +181,7 @@ public final class ExperienceCommand implements JobsCommand {
     }
   }
 
+  /** Subtracts the supplied experience amount from the selected player's job progression (floor at zero). */
   private int executeSubtract(CommandSourceStack source, PlayerSelectorArgumentResolver playerResolver,
       String jobKeyValue, double amount) throws CommandSyntaxException {
     CommandSender sender = source.getSender();

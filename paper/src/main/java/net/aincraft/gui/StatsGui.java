@@ -37,13 +37,21 @@ public final class StatsGui {
 
   private record Session(OfflinePlayer target, List<JobProgression> progressions, int page) {}
 
+  /** Creates a statistics view renderer backed by the shared inventory runtime. */
   public StatsGui(InventoryRuntime inventory) {
     this.inventory = inventory;
   }
 
+  /** Calculates the number of pages required for the supplied progression list. */
   public static int calculateTotalPages(List<JobProgression> progressions) {
     return Math.max(1, (int) Math.ceil((double) progressions.size() / JOBS_PER_PAGE));
   }
+
+  /**
+   * Stores the viewer's current target and page, then opens the corresponding view.
+   *
+   * <p>This method is expected on the Bukkit thread because it opens a player inventory.
+   */
 
   public void open(Player viewer, OfflinePlayer target, List<JobProgression> progressions, int page) {
     int totalPages = calculateTotalPages(progressions);
@@ -52,6 +60,7 @@ public final class StatsGui {
     inventory.open(viewer.getUniqueId(), buildView(viewer.getUniqueId()));
   }
 
+  /** Host action handler for {@link CraftuxUiHost#ACTION_STATS_PREV}: open previous page. */
   public void onPrev(UUID audience, InventoryClick click) {
     Session session = sessions.get(audience);
     Player player = Bukkit.getPlayer(audience);

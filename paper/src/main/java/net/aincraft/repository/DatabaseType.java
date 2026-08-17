@@ -11,11 +11,11 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Supported store for ModularJobs. PostgreSQL only — schema is applied out-of-band
- * ({@code sql/postgres.sql} / {@code scripts/apply-postgres-schema.sh}).
+ * Supported store for ModularJobs. MySQL only — schema is applied out-of-band
+ * ({@code sql/mysql.sql} / {@code scripts/apply-mysql-schema.sh}).
  */
 public enum DatabaseType {
-  POSTGRES("postgres", "org.postgresql.Driver");
+  MYSQL("mysql", "com.mysql.cj.jdbc.Driver");
 
   @NotNull
   private final String identifier;
@@ -51,23 +51,23 @@ public enum DatabaseType {
   }
 
   /**
-   * @throws IllegalArgumentException if identifier is not {@code postgres}
+   * @throws IllegalArgumentException if identifier is not {@code mysql}
    */
   public static DatabaseType fromIdentifier(String identifier) {
     if (identifier == null || identifier.isBlank()) {
       return getDefault();
     }
     String id = identifier.trim().toLowerCase();
-    if (POSTGRES.identifier.equals(id) || "postgresql".equals(id)) {
-      return POSTGRES;
+    if (MYSQL.identifier.equals(id)) {
+      return MYSQL;
     }
     throw new IllegalArgumentException(
         "Unsupported database type '" + identifier
-            + "'. ModularJobs supports PostgreSQL only (type: postgres). "
-            + "Provision schema with scripts/apply-postgres-schema.sh");
+            + "'. ModularJobs supports MySQL only (type: mysql). "
+            + "Provision schema with scripts/apply-mysql-schema.sh");
   }
 
   public static DatabaseType getDefault() {
-    return POSTGRES;
+    return MYSQL;
   }
 }

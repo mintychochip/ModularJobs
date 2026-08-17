@@ -14,12 +14,20 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+/**
+ * Renders leaderboard entries onto a player's side scoreboard. Only renders
+ * when the sender is a player; other senders (console, command blocks) are
+ * silently ignored.
+ */
 public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsumer {
 
   private static final String ENTRY_FORMAT = "<rank>. <player>: <level>";
 
   private final TextScoreboard scoreBoard;
 
+  /**
+   * @param scoreBoard scoreboard surface the rows are written to
+   */
   public ScoreboardJobsTopPageConsumerImpl(TextScoreboard scoreBoard) {
     this.scoreBoard = scoreBoard;
   }

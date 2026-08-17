@@ -39,6 +39,10 @@ public final class BoostEngine {
   private final TimedBoostDataService timedBoostDataService;
   private final UpgradeBoostDataService upgradeBoostDataService;
 
+  /**
+   * Composes the three boost-data services (item, timed, upgrade-tree) into the aggregation
+   * engine.
+   */
   public BoostEngine(ItemBoostDataService boostDataService,
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService) {
@@ -47,6 +51,13 @@ public final class BoostEngine {
     this.upgradeBoostDataService = upgradeBoostDataService;
   }
 
+  /**
+   * Evaluates the full boost set for a player's action: aggregates the player's item-sourced,
+   * timed, and upgrade-tree boost sources, then applies them for {@code type} against
+   * {@code progression} and {@code payable}.
+   *
+   * @return one boost per source key; empty when the player is offline
+   */
   public Map<Key, Boost> evaluate(OfflinePlayer player, ActionType type, Context context,
       JobProgression progression, Payable payable) {
     if (!player.isOnline()) {

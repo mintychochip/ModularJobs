@@ -1,8 +1,8 @@
 use crate::models::EditorPayload;
 use crate::security::tokens_equal;
 use chrono::{DateTime, Duration, Utc};
-use sqlx::postgres::PgPoolOptions;
-use sqlx::{PgPool, Row};
+use sqlx::mysql::MySqlPoolOptions;
+use sqlx::{MySqlPool, Row};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -17,42 +17,41 @@ pub enum SessionStoreError {
     Database(#[from] sqlx::Error),
     #[error("payload serialization: {0}")]
     Serde(#[from] serde_json::Error),
-    #[error("schema not provisioned: missing table(s) — apply paper sql/postgres.sql out-of-band (scripts/apply-postgres-schema.sh)")]
+    #[error("schema not provisioned: missing table(s) — apply paper sql/mysql.sql out-of-band (scripts/apply-mysql-schema.sh)")]
     SchemaMissing,
 }
 
 #[derive(Clone)]
 pub struct SessionStore {
-    pool: PgPool,
+    pool: MySqlPool,
     session_ttl: Duration,
 }
 
 impl SessionStore {
-    /// Connect only. Tables must already exist (provision via sql/postgres.sql).
+    /// Connect only. Tables must already exist (provision via sql/mysql.sql).
     /// Does not run DDL.
     pub async fn connect(database_url: &str, max_connections: u32) -> Result<Self, sqlx::Error> {
-        let pool = PgPoolOptions::new()
+        let pool = MySqlPoolOptions::new()
             .max_connections(max_connections)
             .connect(database_url)
             .await?;
         Ok(Self::from_pool(pool))
     }
 
-    pub async fn connect_with_pool(pool: PgPool) -> Result<Self, sqlx::Error> {
+    pub async fn connect_with_pool(pool: MySqlPool) -> Result<Self, sqlx::Error> {
         Ok(Self::from_pool(pool))
     }
 
-    fn from_pool(pool: PgPool) -> Self {
+    fn from_pool(pool: MySqlPool) -> Self {
         Self {
             pool,
             session_ttl: Duration::hours(24),
         }
     }
 
-    pub fn pool(&self) -> &PgPool {
+    pub fn pool(&self) -> &MySqlPool {
         &self.pool
     }
-
     /// Fail-fast: editor_sessions must exist. Never creates it.
     pub async fn require_schema(&self) -> Result<(), SessionStoreError> {
         self.require_table("editor_sessions").await
@@ -64,8 +63,8 @@ impl SessionStore {
             r#"
             SELECT EXISTS (
               SELECT 1 FROM information_schema.tables
-              WHERE table_schema = current_schema()
-                AND table_name = $1
+              WHERE table_schema = DATABASE()
+                AND table_name = ?
             )
             "#,
         )
@@ -90,12 +89,13 @@ impl SessionStore {
         sqlx::query(
             r#"
             INSERT INTO editor_sessions (session_code, session_token, payload, created_at, updated_at, expires_at)
-            VALUES ($1, $2, $3, $4, $4, $5)
+            VALUES (?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(code)
         .bind(token)
         .bind(json)
+        .bind(now)
         .bind(now)
         .bind(expires_at)
         .execute(&self.pool)
@@ -112,7 +112,7 @@ impl SessionStore {
             r#"
             SELECT session_token, payload, expires_at
             FROM editor_sessions
-            WHERE session_code = $1
+            WHERE session_code = ?
             "#,
         )
         .bind(code)
@@ -146,24 +146,35 @@ impl SessionStore {
         let result = sqlx::query(
             r#"
             UPDATE editor_sessions
-            SET payload = $1, updated_at = $2
-            WHERE session_code = $3 AND session_token = $4 AND expires_at > $2
-            RETURNING expires_at
+            SET payload = ?, updated_at = ?
+            WHERE session_code = ? AND session_token = ? AND expires_at > ?
             "#,
         )
         .bind(json)
         .bind(now)
         .bind(code)
         .bind(token)
+        .bind(now)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() != 1 {
+            return Err(SessionStoreError::Unauthorized);
+        }
+
+        let row = sqlx::query(
+            "SELECT expires_at FROM editor_sessions WHERE session_code = ? AND session_token = ?",
+        )
+        .bind(code)
+        .bind(token)
         .fetch_optional(&self.pool)
         .await?;
 
-        match result {
+        match row {
             Some(row) => {
                 let expires_at: DateTime<Utc> = row.try_get("expires_at")?;
                 Ok(expires_at)
             }
-            // Auth already succeeded via get; treat lost race / expiry as unauthorized-ish 401.
             None => Err(SessionStoreError::Unauthorized),
         }
     }

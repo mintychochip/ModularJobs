@@ -22,11 +22,18 @@ public final class CraftRecipeGateListener implements Listener {
   private final RecipeService recipeService;
   private final ProfessionService professionService;
 
+  /**
+   * Creates the gate with the recipe and profession services used to resolve craftability.
+   */
   public CraftRecipeGateListener(RecipeService recipeService, ProfessionService professionService) {
     this.recipeService = recipeService;
     this.professionService = professionService;
   }
 
+  /**
+   * Cancels crafting when the recipe is registered and the player's profession level does not
+   * permit it. Unregistered recipes are always allowed.
+   */
   @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
   public void onCraft(CraftItemEvent event) {
     ItemStack result = event.getCurrentItem();

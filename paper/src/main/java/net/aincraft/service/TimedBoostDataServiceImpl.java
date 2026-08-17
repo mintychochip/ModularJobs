@@ -13,6 +13,13 @@ import net.aincraft.container.boost.TimedBoostDataService.Target.GlobalTarget;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
 import net.aincraft.repository.TimedBoostRepository;
 
+/**
+ * {@link TimedBoostDataService} backed by a {@link TimedBoostRepository}.
+ *
+ * <p>Player-targeted boosts are stored under the player {@code UUID} string; global boosts use the
+ * fixed identifier {@code "global"}. Queries for a player also surface global boosts and prune
+ * expired entries from storage as a side effect.
+ */
 public class TimedBoostDataServiceImpl implements TimedBoostDataService {
 
   private static final String GLOBAL_IDENTIFIER = "global";
@@ -23,6 +30,10 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
     this.timedBoostRepository = timedBoostRepository;
   }
 
+  /**
+   * Returns non-expired boosts applying to {@code target}; for player targets, this includes the
+   * global boosts. Expired boosts encountered are removed from storage.
+   */
   @Override
   public List<ActiveBoostData> findApplicableBoosts(Target target) {
     List<ActiveBoostData> allBoosts = new ArrayList<>(loadBoosts(target));
@@ -44,11 +55,13 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
     return applicable;
   }
 
+  /** Returns all boosts targeting {@code target} without pruning expired entries. */
   @Override
   public List<ActiveBoostData> findBoosts(Target target) {
     return List.copyOf(loadBoosts(target));
   }
 
+  /** Persists a new time-based boost for {@code target}. */
   @Override
   public <T extends TimedBoostData & SerializableBoostData> void addData(T data, Target target) {
     String targetIdentifier =
@@ -62,6 +75,11 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
             data.boostSource()));
   }
 
+  /**
+   * Removes the boost for {@code target} with the given source identifier.
+   *
+   * @return whether a matching boost existed and was removed
+   */
   @Override
   public boolean removeBoost(Target target, String sourceIdentifier) {
     String targetIdentifier = target instanceof PlayerTarget playerTarget
@@ -77,6 +95,7 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
     return true;
   }
 
+  /** Loads stored boosts for {@code target}, mapping global targets to the global identifier. */
   private List<ActiveBoostData> loadBoosts(Target target) {
     if (target instanceof GlobalTarget) {
       return timedBoostRepository.findAllBoosts(GLOBAL_IDENTIFIER);

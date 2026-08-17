@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+/** Internal file-backed implementation behind the public YAML configuration proxy. */
 final class YamlFileBackedConfigurationImpl {
 
   private final Plugin plugin;
@@ -30,6 +31,7 @@ final class YamlFileBackedConfigurationImpl {
     plugin.getSLF4JLogger().info("Loaded config with keys: {}", config.getKeys(false));
   }
 
+  /** Creates a proxy exposing Bukkit configuration access plus reload/save operations. */
   static net.aincraft.config.YamlConfiguration create(Plugin plugin, String path) {
     String[] split = path.split("\\.");
     Preconditions.checkArgument(split.length >= 2);
@@ -55,11 +57,13 @@ final class YamlFileBackedConfigurationImpl {
         });
   }
 
+  /** Returns the plugin that owns this configuration file. */
   @NotNull
   Plugin getPlugin() {
     return plugin;
   }
 
+  /** Reloads the current YAML file from the plugin data folder. */
   void reload() {
     try {
       configFile = new File(plugin.getDataFolder(), path);
@@ -69,6 +73,7 @@ final class YamlFileBackedConfigurationImpl {
     }
   }
 
+  /** Persists the current configuration to its YAML file. */
   void save() {
     try {
       config.save(configFile);

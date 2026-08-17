@@ -33,6 +33,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Default {@link JobService} implementation wiring job definitions, tasks, and
+ * player progression together.
+ *
+ * <p>Job definitions are served from the in-memory {@link MemoryJobRepositoryImpl}
+ * (loaded once at composition from {@code jobs.yml}); tasks come from the relational
+ * {@link RelationalJobTaskRepositoryImpl}; progression operations are delegated to
+ * {@link ProgressionService} which fronts the write-back relational progression
+ * stores (live + archive).
+ *
+ * <p>This class is stateless and safe to share; it does not own connections or
+ * background tasks (those live in the repositories it is given).
+ *
+ * <p>Failure semantics: callers that look up jobs by key might throw unchecked
+ * {@link IllegalArgumentException}/{@link IllegalStateException} rather than return
+ * a sentinel—see individual methods, and {@link #getProgression(String, String)}
+ * returns {@code null} when the player has no progression for that job.
+ */
 final class JobServiceImpl implements JobService {
 
   private final Registry<ActionType> actionTypeRegistry;
@@ -43,6 +61,15 @@ final class JobServiceImpl implements JobService {
   private final ProgressionService progressionService;
   private final Plugin plugin;
 
+  /**
+   * @param actionTypeRegistry     registry of known action types
+   * @param payableTypeRegistry    registry of known payable types
+   * @param jobTaskRepository      relational task store
+   * @param keyResolver            resolves {@link Context} to keys for task lookup
+   * @param jobRepository          in-memory job definitions
+   * @param progressionService     live/archive progression store facade
+   * @param plugin                 plugin for key namespaces and events
+   */
   public JobServiceImpl(
       Registry<ActionType> actionTypeRegistry,
       Registry<PayableType> payableTypeRegistry,

@@ -11,14 +11,26 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
+/**
+ * Records damage contributions onto a {@link MobDamageTrackerStore} as entities
+ * are damaged. Tracking starts automatically on the first player-inflicted
+ * damage and only updates already-tracked entities for non-player damage.
+ */
 final class MobDamageTrackerController implements Listener {
 
   private final MobDamageTrackerStore store;
 
+  /** Creates the damage-tracking listener backed by the supplied store. */
   MobDamageTrackerController(MobDamageTrackerStore store) {
     this.store = store;
   }
 
+  /**
+   * On MONITOR priority, attributes {@code EntityDamageByEntityEvent} damage to
+   * an entity: projectile damage is attributed to its shooter, and tameable
+   * damage to its owning player. Non-player damage only affects entities that
+   * are already being tracked.
+   */
   @SuppressWarnings("UnstableApiUsage")
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   private void onDamageTrackedEntity(final EntityDamageByEntityEvent event) {

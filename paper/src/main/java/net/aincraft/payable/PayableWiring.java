@@ -36,6 +36,11 @@ public final class PayableWiring {
     this.economyProvider = economyProvider;
   }
 
+  /**
+   * Composes the experience and economy payable handlers, registers the corresponding
+   * {@link PayableType}s in {@code payableTypeRegistry}, and resolves the economy provider via
+   * {@link EconomyProviderFactory#createOrFail}. Returns the wiring exposing the chosen provider.
+   */
   public static PayableWiring create(
       Plugin plugin,
       JobService jobService,

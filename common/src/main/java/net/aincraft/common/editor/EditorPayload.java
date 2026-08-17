@@ -7,7 +7,12 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Root payload for web editor export/import operations.
- * Contains all data needed to edit and restore job configurations.
+ *
+ * @param version schema version
+ * @param metadata export metadata
+ * @param jobs job key to job data mapping
+ * @param registeredActionTypes available action type keys
+ * @param registeredPayableTypes available payable type keys
  */
 public record EditorPayload(
     @SerializedName("version")

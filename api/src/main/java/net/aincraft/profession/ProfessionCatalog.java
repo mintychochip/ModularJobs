@@ -12,7 +12,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Built-in profession tracks plus legacy ModularJobs job-key aliases.
  *
- * <p>Canonical ids use stable profession names; {@link #storageKey} points at the
+ * <p>Canonical ids use stable profession names; each
+ * {@link ProfessionDefinition#storageKey()} points at the
  * jobs.yml / progression key ModularJobs actually uses today.
  */
 public final class ProfessionCatalog {

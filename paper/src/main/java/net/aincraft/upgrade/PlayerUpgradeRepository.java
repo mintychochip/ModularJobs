@@ -27,11 +27,11 @@ public final class PlayerUpgradeRepository {
       "SELECT total_skill_points, unlocked_nodes FROM player_upgrades WHERE player_id = ? AND job_key = ?";
 
   private static final String UPSERT_QUERY =
-      "INSERT INTO player_upgrades (player_id, job_key, total_skill_points, unlocked_nodes) " +
-          "VALUES (?, ?, ?, ?) " +
-          "ON CONFLICT(player_id, job_key) DO UPDATE SET " +
-          "total_skill_points = excluded.total_skill_points, " +
-          "unlocked_nodes = excluded.unlocked_nodes";
+      "INSERT INTO player_upgrades (player_id, job_key, total_skill_points, unlocked_nodes) "
+          + "VALUES (?, ?, ?, ?) "
+          + "ON DUPLICATE KEY UPDATE "
+          + "total_skill_points = VALUES(total_skill_points), "
+          + "unlocked_nodes = VALUES(unlocked_nodes)";
 
   private static final String DELETE_QUERY =
       "DELETE FROM player_upgrades WHERE player_id = ? AND job_key = ?";
@@ -40,24 +40,20 @@ public final class PlayerUpgradeRepository {
       "SELECT total_skill_points, unlocked_nodes, node_levels FROM player_upgrades WHERE player_id = ? AND job_key = ?";
 
   private String stateUpsertQuery() {
-    if (connectionSource.getType() != DatabaseType.POSTGRES) {
-      throw new IllegalStateException(
-          "Skill tree state persistence requires PostgreSQL, got " + connectionSource.getType());
-    }
     return "INSERT INTO player_upgrades "
         + "(player_id, job_key, total_skill_points, unlocked_nodes, node_levels) "
         + "VALUES (?, ?, ?, '', ?) "
-        + "ON CONFLICT(player_id, job_key) DO UPDATE SET "
-        + "total_skill_points = excluded.total_skill_points, "
-        + "unlocked_nodes = excluded.unlocked_nodes, "
-        + "node_levels = excluded.node_levels";
+        + "ON DUPLICATE KEY UPDATE "
+        + "total_skill_points = VALUES(total_skill_points), "
+        + "unlocked_nodes = VALUES(unlocked_nodes), "
+        + "node_levels = VALUES(node_levels)";
   }
 
   private final ConnectionSource connectionSource;
 
   public PlayerUpgradeRepository(ConnectionSource connectionSource) {
     this.connectionSource = connectionSource;
-    // Schema is connect-only: node_levels must exist via sql/postgres.sql (ops apply).
+    // Schema is connect-only: node_levels must exist via sql/mysql.sql (ops apply).
   }
 
   public @Nullable PlayerUpgradeDataImpl loadPlayerData(@NotNull String playerId, @NotNull String jobKey) {

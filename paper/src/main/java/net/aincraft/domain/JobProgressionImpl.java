@@ -11,6 +11,16 @@ import net.aincraft.domain.model.JobRecord;
 import net.aincraft.registry.Registry;
 import org.bukkit.plugin.Plugin;
 
+/**
+ * Immutable snapshot of a player's progression within a single job.
+ *
+ * <p>The current {@code level} is derived from the player's {@code experience}
+ * against the job's {@link LevelingCurve} at construction time. Mutations such as
+ * {@link #setExperience(BigDecimal)} return a new instance; nothing is persisted
+ * here (persistence is handled by {@link ProgressionService}).
+ *
+ * <p>Persistence-through-failure: not applicable; this is a passive value object.
+ */
 final class JobProgressionImpl implements JobProgression {
 
   private final Job job;
@@ -18,6 +28,12 @@ final class JobProgressionImpl implements JobProgression {
   private final BigDecimal experience;
   private final int level;
 
+  /**
+   * @param playerId   owning player (not validated here; must be non-null)
+   * @param job        job this progression tracks
+   * @param experience total accrued experience
+   * @throws IllegalStateException if the level cannot be derived from the curve
+   */
   JobProgressionImpl(UUID playerId, Job job, BigDecimal experience) {
     this.playerId = playerId;
     this.job = job;
@@ -26,6 +42,7 @@ final class JobProgressionImpl implements JobProgression {
   }
 
   @Override
+  /** Returns a new progression with the given experience; returns {@code this} if unchanged. */
   public JobProgression setExperience(BigDecimal experience) {
     if (this.experience.equals(experience)) {
       return this;
@@ -58,6 +75,12 @@ final class JobProgressionImpl implements JobProgression {
     return level;
   }
 
+  /**
+   * Binary-searches the level whose experience threshold is met by {@link #experience}.
+   *
+   * @return the derived current level, clamped to {@code [1, maxLevel]}
+   * @throws IllegalStateException if no level can be derived
+   */
   private int calculateCurrentLevel() throws IllegalStateException {
     int maxLevel = job.maxLevel();
     if (maxLevel <= 0) {
@@ -89,6 +112,12 @@ final class JobProgressionImpl implements JobProgression {
         "]";
   }
 
+  /**
+   * Converts this progression to its persisted record, embedding a serialized
+   * job snapshot.
+   *
+   * @return record for persistence
+   */
   public JobProgressionRecord toRecord() {
     JobRecord jobRecord = ((JobImpl) job).toRecord();
     return new JobProgressionRecord(
@@ -98,6 +127,15 @@ final class JobProgressionImpl implements JobProgression {
     );
   }
 
+  /**
+   * Reconstructs a progression from a persisted record.
+   *
+   * @param record               persisted progression data
+   * @param plugin               plugin for key namespaces
+   * @param payableTypeRegistry  registry for filtering payable curves
+   * @return reconstructed progression
+   * @throws IllegalArgumentException if the player id, job, or curve is invalid
+   */
   public static JobProgressionImpl fromRecord(
       JobProgressionRecord record,
       Plugin plugin,

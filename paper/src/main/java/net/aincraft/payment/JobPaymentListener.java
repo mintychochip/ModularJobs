@@ -81,6 +81,16 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Central Bukkit listener that turns gameplay events into job payments.
+ * <p>
+ * Every handler applies {@link PaymentEligibility} to gate pay, and most also apply exploit/
+ * protection checks (placed-block timers, milk/wax/dye/strip cooldowns, silk-touch, generator
+ * re-arm, hopper-disable, and furnace distance). Kill rewards consult {@link MobDamageTracker}
+ * and {@link KillContributionPayout} so every qualifying damage contributor is paid. Crafting,
+ * enchant, and furnace flow are additionally guarded against duplicate or farmed awards. All
+ * handlers run at {@link EventPriority#MONITOR} and pay-through {@link JobsPaymentHandler}.
+ */
 final class JobPaymentListener implements Listener {
 
   private final BlockOwnershipService blockOwnershipService;

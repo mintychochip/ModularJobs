@@ -1,4 +1,4 @@
-# Database is configured in database.yml (PostgreSQL only).
+# Database is configured in database.yml (MySQL only).
 
 # Payment eligibility (honored by JobPaymentListener via PaymentSettings)
 pay-in-creative: true
@@ -44,7 +44,7 @@ preferences:
   default-gui-mode: true
 
 # Secure web editor. Disabled until an operator configures external services.
-# PostgreSQL and the REST API remain external; the plugin never provisions either.
+# MySQL and the REST API remain external; the plugin never provisions either.
 editor:
   enabled: false
   session-api-url: ""

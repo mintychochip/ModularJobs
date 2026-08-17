@@ -8,8 +8,7 @@
 
 Operators export job/task configuration from the Paper plugin, edit it in a
 browser, and apply changes back. Sessions are **code (public) + token (secret)**
-stored in PostgreSQL via `web/rest-api`; the React editor never uses Bytebin for
-the production path. Success: no token in command args or normal access logs;
+stored in MySQL via `web/rest-api`; the React editor never uses Bytebin for
 wrong token cannot overwrite another session; Paper applies through existing
 task repositories (cache-correct).
 
@@ -28,7 +27,7 @@ task repositories (cache-correct).
 ### Out of scope / non-goals
 
 - Bytebin (`bytebin.lucko.me`) for production secure editor
-- Plugin launching Postgres or REST process
+- Plugin launching MySQL or REST process
 - REST writing `job_tasks` directly (Paper apply owns task mutations)
 - Token as a Minecraft command argument
 
@@ -40,7 +39,7 @@ task repositories (cache-correct).
 - Apply requires mapping **owned by** the executing player; success removes mapping; failure retains for retry.
 - GET/PUT require Bearer / `X-Session-Token`; wrong/missing → 401.
 - Create may require `X-Create-Secret` when configured.
-- Shared Postgres; schema out-of-band; REST never DDL.
+- Shared MySQL; schema out-of-band; REST never DDL.
 
 ## Implementation guidance
 
@@ -59,12 +58,12 @@ task repositories (cache-correct).
 
 ## Current
 
-- [x] Rust REST API on Postgres `editor_sessions` (create/get/payload/save)
+- [x] Rust REST API on MySQL `editor_sessions` (create/get/payload/save)
 - [x] React session-editor + token auth headers
 - [x] Paper REST client + EditorConfig REST settings
 - [x] Local code→token handoff store with ownership/expiry
 - [x] Wire export/apply through REST (Bytebin path removed from Paper)
-- [x] Config/docs: external REST + Postgres dependency
+- [x] Config/docs: external REST + MySQL dependency
 - [ ] Final polish: any remaining operator docs / wiki pages still mentioning Bytebin for this path
 
 ### Current notes
@@ -89,7 +88,7 @@ plan steps as verification/docs unless tests fail.
 
 | Date | Decision | Why |
 |------|----------|-----|
-| 2026-08 | Postgres editor_sessions + Rust API | Durable, auditable, no Bytebin trust |
+| 2026-08 | MySQL editor_sessions + Rust API | Durable, auditable, no Bytebin trust |
 | 2026-08-08 | Token in URL fragment; code in query | Reduce token in server access logs |
 | 2026-08-08 | Paper local handoff, not second payload cache | Restart-safe semantics without dual authority |
 | 2026-08-08 | Apply via job task repository | Correct cache invalidation |

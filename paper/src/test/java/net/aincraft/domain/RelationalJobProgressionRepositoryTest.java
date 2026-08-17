@@ -26,8 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link RelationalJobProgressionRepositoryImpl} save/load/delete against
- * PostgreSQL (real SQL path, fake job catalog only). Requires live Postgres (see {@link net.aincraft.test.TestPostgres}).
+ * MySQL (real SQL path, fake job catalog only). Requires live MySQL (see {@link net.aincraft.test.TestMysql}).
  */
 class RelationalJobProgressionRepositoryTest {
 
@@ -40,8 +39,8 @@ class RelationalJobProgressionRepositoryTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    net.aincraft.test.TestPostgres.assumeAvailable();
-    Connection raw = net.aincraft.test.TestPostgres.open();
+    net.aincraft.test.TestMysql.assumeAvailable();
+    Connection raw = net.aincraft.test.TestMysql.open();
     connection = NonClosableConnection.create(raw);
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS " + TABLE);
@@ -183,7 +182,7 @@ class RelationalJobProgressionRepositoryTest {
 
     @Override
     public DatabaseType getType() {
-      return DatabaseType.POSTGRES;
+      return DatabaseType.MYSQL;
     }
 
     @Override

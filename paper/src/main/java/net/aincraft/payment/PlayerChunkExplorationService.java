@@ -13,21 +13,29 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Tracks which players have explored which chunks, persisted as JSON in each chunk's
+ * {@link PersistentDataContainer}. The empty set is represented by deleting the tag, so
+ * unexplored chunks carry no data.
+ */
 public final class PlayerChunkExplorationService {
 
   private static final NamespacedKey CHUNK_KEY = new NamespacedKey("jobs", "chunk");
 
   private static final PersistentDataType<String, PersistentChunkData> DATA_TYPE = new PersistentChunkDataType();
 
+  /** @return true when this player's UUID is recorded as having explored {@code chunk} */
   public boolean hasExplored(OfflinePlayer player, Chunk chunk) {
     PersistentChunkData data = chunk.getPersistentDataContainer().get(CHUNK_KEY, DATA_TYPE);
     return data != null && data.getPlayers().contains(player.getUniqueId());
   }
 
+  /** Records that {@code player} explored {@code chunk}. */
   public void addExploration(OfflinePlayer player, Chunk chunk) {
     updateData(chunk, data -> data.getPlayers().add(player.getUniqueId()));
   }
 
+  /** Forgets that {@code player} explored {@code chunk}, removing the tag when no one remains. */
   public void removeExploration(OfflinePlayer player, Chunk chunk) {
     updateData(chunk, data -> data.getPlayers().remove(player.getUniqueId()));
   }

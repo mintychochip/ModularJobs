@@ -17,6 +17,28 @@ import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.repository.ConnectionSource;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * MySQL-backed {@link JobProgressionRepository} for active progression records.
+ *
+ * <p>Owns no connection pool itself; it draws connections on demand from the
+ * provided shared {@link ConnectionSource} (composition-owned). Each operation
+ * checks out one connection and closes it via try-with-resources.
+ *
+ * <p>Reads are cached in a Caffeine cache (10-minute write expiry, 10k entries)
+ * to reduce DB load; {@code loadAll*}-style bulk reads prefer cached entries and
+ * only fall back to fresh rows for uncached keys. {@link #save} and {@link #delete}
+ * refresh or invalidate the cache accordingly, keeping single-key reads consistent
+ * with writes through this instance.
+ *
+ * <p>Failure semantics: unchecked {@link RuntimeException} wrapping the underlying
+ * {@link SQLException} is thrown on any connection or SQL failure; callers must
+ * treat a throw as "operation not performed". Nullability: {@link #load(String, String)}
+ * returns {@code null} when the player/job pair has no persisted row, when the job
+ * is unknown to the in-memory job repository, or when the row is absent.
+ *
+ * <p>Table naming is parameterized; writes use MySQL {@code ON DUPLICATE KEY UPDATE}
+ * semantics, so {@link #save} is an upsert keyed by (player_id, job_key).
+ */
 final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepository {
 
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
@@ -32,8 +54,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   private static final String SAVE_QUERY = """
       INSERT INTO %s (player_id, job_key, experience)
       VALUES (?,?,?)
-      ON CONFLICT (player_id, job_key)
-      DO UPDATE SET experience = excluded.experience;
+      ON DUPLICATE KEY UPDATE experience = VALUES(experience);
       """;
 
   private static final String LOAD_QUERY = """
@@ -43,7 +64,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
 
   private static final String LOAD_ALL_BY_JOB_QUERY = """
       SELECT player_id,experience FROM %s WHERE job_key = ?
-      ORDER BY (experience IS NULL), CAST(experience AS REAL)
+      ORDER BY (experience IS NULL), CAST(experience AS DECIMAL(38,10))
       DESC LIMIT %d;
       """;
 

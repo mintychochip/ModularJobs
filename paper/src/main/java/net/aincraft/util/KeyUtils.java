@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public final class KeyUtils {
 
+  /** Prevents instantiation of this static utility class. */
   private KeyUtils() {
     throw new UnsupportedOperationException("Utility class");
   }

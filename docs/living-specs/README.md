@@ -8,7 +8,7 @@ intent or progress changes. Checkboxes in these files are the persistence layer.
 | Domain | File | Owns |
 |--------|------|------|
 | **Product / platform** | [modularjobs.md](./modularjobs.md) | Module seams, wiring, quality bar, cross-cutting roadmap |
-| **Persistence** | [persistence.md](./persistence.md) | PostgreSQL-only, connect-only schema, repositories |
+| **Persistence** | [persistence.md](./persistence.md) | MySQL 8-only, connect-only schema, repositories |
 | **Jobs progression** | [jobs-progression.md](./jobs-progression.md) | Jobs, tasks, actions, payment eligibility, XP |
 | **Payables & economy** | [payables-economy.md](./payables-economy.md) | Payable awards, Mint ledger bridge |
 | **Boosts** | [boosts.md](./boosts.md) | Timed/item boosts, boost engine |

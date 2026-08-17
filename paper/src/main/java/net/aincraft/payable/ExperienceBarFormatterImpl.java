@@ -15,6 +15,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Default {@link ExperienceBarFormatter} that composes an existing boss bar's name (via
+ * {@link NameFormatter}), progress fraction, color (from {@link ExperienceBarColorProvider}),
+ * and the configured overlay. Formatting never mutates the passed bar; it returns a new
+ * configured boss bar.
+ */
 final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
   private final ExperienceBarColorProvider colorProvider;
@@ -23,6 +29,7 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
   private final NameFormatter formatter = new NameFormatter();
 
+  /** Creates a formatter using the supplied color provider for player-specific bar colors. */
   ExperienceBarFormatterImpl(ExperienceBarColorProvider colorProvider) {
     this.colorProvider = colorProvider;
   }
@@ -45,6 +52,13 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
     this.overlay = overlay;
   }
 
+  /**
+   * Computes the bar progress fraction as the position of the progression's current
+   * experience within its current level band, clamped to {@code 0..1}.
+   *
+   * @param progression the progression view to measure
+   * @return a float in {@code [0,1]} representing progress toward the next level
+   */
   @Internal
   private static float progress(JobProgressionView progression) {
     int level = progression.level();
@@ -66,11 +80,13 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
     return Math.min((float) ratio, 1.0f);
   }
 
+  /** Renders the boss bar name from a progression context using {@link MiniMessage}. */
   private static final class NameFormatter {
 
     private static final String FORMAT = "Lvl. <level> <job-name>: <xp>/<total-xp> xp (<payable>)";
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
+    /** Deserializes the level/job/xp/payable name template against the given context. */
     public @NotNull Component format(
         @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
       JobProgressionView progression = context.progression();
@@ -87,6 +103,7 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
           .build());
     }
 
+    /** Formats a payable amount as a signed text component (e.g. {@code +12.5}). */
     private static Component payableComponent(BigDecimal amount) {
       double value = amount.doubleValue();
       Component component = Component.empty();

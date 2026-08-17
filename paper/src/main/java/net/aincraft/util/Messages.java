@@ -32,6 +32,7 @@ public final class Messages {
           .build())
       .build();
 
+  /** Prevents instantiation of this static utility class. */
   private Messages() {
   }
 

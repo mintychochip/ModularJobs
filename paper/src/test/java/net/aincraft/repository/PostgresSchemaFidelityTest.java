@@ -21,47 +21,47 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Applies the shipped {@code sql/postgres.sql} DDL and verifies write→read fidelity for
- * job-task / payable / progression fields against a real PostgreSQL instance.
+ * Applies the shipped {@code sql/mysql.sql} DDL and verifies write→read fidelity for
+ * job-task / payable / progression fields against a real MySQL instance.
  *
- * <p>Connection defaults to {@code jdbc:postgresql://localhost:55432/modularjobs} (user/password
- * {@code test}). Override with env {@code MODULARJOBS_TEST_PG_URL},
- * {@code MODULARJOBS_TEST_PG_USER}, {@code MODULARJOBS_TEST_PG_PASSWORD}.
+ * <p>Connection defaults to {@code jdbc:mysql://localhost:13306/modularjobs} (user/password
+ * {@code test}). Override with env {@code MODULARJOBS_TEST_MYSQL_URL},
+ * {@code MODULARJOBS_TEST_MYSQL_USER}, {@code MODULARJOBS_TEST_MYSQL_PASSWORD}.
  */
-class PostgresSchemaFidelityTest {
+class MysqlSchemaFidelityTest {
 
-  private static final String DEFAULT_URL = "jdbc:postgresql://localhost:55432/modularjobs";
+  private static final String DEFAULT_URL = "jdbc:mysql://localhost:13306/modularjobs";
   private static final String DEFAULT_USER = "test";
   private static final String DEFAULT_PASSWORD = "test";
 
   private static String jdbcUrl;
   private static String user;
   private static String password;
-  private static boolean postgresAvailable;
+  private static boolean mysqlAvailable;
 
   private Connection connection;
 
   @BeforeAll
-  static void detectPostgres() {
-    jdbcUrl = envOr("MODULARJOBS_TEST_PG_URL", DEFAULT_URL);
-    user = envOr("MODULARJOBS_TEST_PG_USER", DEFAULT_USER);
-    password = envOr("MODULARJOBS_TEST_PG_PASSWORD", DEFAULT_PASSWORD);
+  static void detectMysql() {
+    jdbcUrl = envOr("MODULARJOBS_TEST_MYSQL_URL", DEFAULT_URL);
+    user = envOr("MODULARJOBS_TEST_MYSQL_USER", DEFAULT_USER);
+    password = envOr("MODULARJOBS_TEST_MYSQL_PASSWORD", DEFAULT_PASSWORD);
     try {
-      Class.forName(DatabaseType.POSTGRES.getClassName());
+      Class.forName(DatabaseType.MYSQL.getClassName());
       try (Connection c = DriverManager.getConnection(jdbcUrl, user, password);
            Statement st = c.createStatement()) {
         st.execute("SELECT 1");
-        postgresAvailable = true;
+        mysqlAvailable = true;
       }
     } catch (Exception e) {
-      postgresAvailable = false;
-      System.err.println("Postgres not available for fidelity tests: " + e.getMessage());
+      mysqlAvailable = false;
+      System.err.println("MySQL not available for fidelity tests: " + e.getMessage());
     }
   }
 
   @BeforeEach
   void setUp() throws SQLException {
-    // Connection opened only for live round-trip tests (see requirePostgres()).
+    // Connection opened only for live round-trip tests (see requireMysql()).
   }
 
   @AfterEach
@@ -71,9 +71,8 @@ class PostgresSchemaFidelityTest {
       connection.close();
     }
   }
-
-  private void requirePostgres() throws SQLException {
-    assumeTrue(postgresAvailable, "PostgreSQL must be reachable at " + jdbcUrl);
+  private void requireMysql() throws SQLException {
+    assumeTrue(mysqlAvailable, "MySQL must be reachable at " + jdbcUrl);
     if (connection == null || connection.isClosed()) {
       connection = DriverManager.getConnection(jdbcUrl, user, password);
       connection.setAutoCommit(true);
@@ -83,26 +82,26 @@ class PostgresSchemaFidelityTest {
   }
 
   @Test
-  void postgresDriverClassIsConfigured() {
-    assertEquals("org.postgresql.Driver", DatabaseType.POSTGRES.getClassName());
-    assertEquals("postgres", DatabaseType.POSTGRES.getIdentifier());
-    assertEquals(DatabaseType.POSTGRES, DatabaseType.fromIdentifier("postgres"));
+  void mysqlDriverClassIsConfigured() {
+    assertEquals("com.mysql.cj.jdbc.Driver", DatabaseType.MYSQL.getClassName());
+    assertEquals("mysql", DatabaseType.MYSQL.getIdentifier());
+    assertEquals(DatabaseType.MYSQL, DatabaseType.fromIdentifier("mysql"));
   }
 
   @Test
-  void shippedPostgresDdlHasNoSqliteOnlyConstructs() {
-    String[] statements = DatabaseType.POSTGRES.getSQLTables();
-    assertTrue(statements.length > 0, "postgres.sql must produce statements");
+  void shippedMysqlDdlUsesMysqlTypes() {
+    String[] statements = DatabaseType.MYSQL.getSQLTables();
+    assertTrue(statements.length > 0, "mysql.sql must produce statements");
     String joined = String.join("\n", statements).toUpperCase();
-    assertFalse(joined.contains("AUTOINCREMENT"), "Postgres DDL must not use AUTOINCREMENT");
-    assertTrue(joined.contains("SERIAL") || joined.contains("GENERATED"),
-        "task_id must use SERIAL or identity");
-    assertTrue(joined.contains("NUMERIC"), "amounts/experience must use NUMERIC");
+    assertFalse(joined.contains("SERIAL"), "MySQL DDL must not use SERIAL");
+    assertTrue(joined.contains("AUTO_INCREMENT"), "task_id must use AUTO_INCREMENT");
+    assertTrue(joined.contains("DECIMAL"), "amounts/experience must use DECIMAL");
+    assertTrue(joined.contains("ENGINE=INNODB"), "tables must use InnoDB");
   }
 
   @Test
   void jobTaskPayableRoundTripPreservesKeysAndPreciseAmount() throws SQLException {
-    requirePostgres();
+    requireMysql();
     // Insert task
     int taskId;
     try (PreparedStatement ps = connection.prepareStatement(
@@ -157,7 +156,7 @@ class PostgresSchemaFidelityTest {
 
   @Test
   void payableRecordsCompositeKeyAndCurrencyRoundTrip() throws SQLException {
-    requirePostgres();
+    requireMysql();
     BigDecimal amount = new BigDecimal("99.1250000000");
     try (PreparedStatement ps = connection.prepareStatement(
         """
@@ -193,7 +192,7 @@ class PostgresSchemaFidelityTest {
 
   @Test
   void progressionExperienceRoundTrip() throws SQLException {
-    requirePostgres();
+    requireMysql();
     BigDecimal exp = new BigDecimal("5000.2500000000");
     try (PreparedStatement ps = connection.prepareStatement(
         "INSERT INTO job_progression (player_id, job_key, experience) VALUES (?, ?, ?)")) {
@@ -215,7 +214,7 @@ class PostgresSchemaFidelityTest {
   }
 
   private static void applyShippedSchema(Connection connection) throws SQLException {
-    String[] tables = DatabaseType.POSTGRES.getSQLTables();
+    String[] tables = DatabaseType.MYSQL.getSQLTables();
     assertNotNull(tables);
     assertTrue(tables.length > 0);
     try (Statement st = connection.createStatement()) {

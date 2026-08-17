@@ -49,6 +49,11 @@ import org.bukkit.Registry;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Thread-local Kryo codec registry for the persisted boost and condition model.
+ *
+ * <p>Each codec instance uses stable class registrations and a short-lived decode cache.
+ */
 public final class KryoCodecRegistry {
 
   private static final int BUFFER_SIZE = 256;
@@ -56,6 +61,7 @@ public final class KryoCodecRegistry {
   private final ThreadLocal<Kryo> kryoThreadLocal;
   private final Cache<ByteBuffer, Object> decodeCache;
 
+  /** Creates a registry with per-thread Kryo state and bounded decode caching. */
   public KryoCodecRegistry() {
     this.kryoThreadLocal = ThreadLocal.withInitial(this::createKryo);
     this.decodeCache = Caffeine.newBuilder()
@@ -124,6 +130,7 @@ public final class KryoCodecRegistry {
     return kryo;
   }
 
+  /** Encodes an object using the registered class and serializer set. */
   public byte @NotNull [] encode(Object object) {
     Kryo kryo = kryoThreadLocal.get();
     try (Output output = new Output(BUFFER_SIZE, -1)) {
@@ -132,6 +139,7 @@ public final class KryoCodecRegistry {
     }
   }
 
+  /** Decodes bytes, reusing recently decoded values where possible. */
   public Object decode(byte[] bytes) {
     return decodeCache.get(ByteBuffer.wrap(bytes), ignored -> {
       Kryo kryo = kryoThreadLocal.get();
@@ -141,6 +149,7 @@ public final class KryoCodecRegistry {
     });
   }
 
+  /** Decodes bytes and exposes the result as the requested type. */
   @SuppressWarnings("unchecked")
   public <T> T decode(byte[] bytes, Class<T> clazz) {
     return (T) decode(bytes);

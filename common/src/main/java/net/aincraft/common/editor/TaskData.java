@@ -7,6 +7,10 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Task data for editor operations.
  * Represents a single action within a job with associated rewards.
+ *
+ * @param actionTypeKey namespaced key for action type (e.g. {@code modularjobs:block_break})
+ * @param contextKey    namespaced key for context (e.g. {@code minecraft:stone})
+ * @param payables      list of rewards for this task
  */
 public record TaskData(
     @SerializedName("actionTypeKey")

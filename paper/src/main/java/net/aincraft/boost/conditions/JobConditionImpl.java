@@ -13,10 +13,12 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 @Internal
 public record JobConditionImpl(Set<String> jobKeys) implements Condition {
 
+  /** Creates a single-job condition. */
   public JobConditionImpl(String jobKey) {
     this(Set.of(jobKey));
   }
 
+  /** Creates a condition matching any of the given job keys. */
   public JobConditionImpl(String... jobKeys) {
     this(Set.of(jobKeys));
   }

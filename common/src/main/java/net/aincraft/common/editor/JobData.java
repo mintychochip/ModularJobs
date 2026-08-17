@@ -7,6 +7,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Job data for editor operations.
  * Contains display name and all tasks associated with the job.
+ *
+ * @param displayName human-readable job name
+ * @param tasks        list of tasks for this job
  */
 public record JobData(
     @SerializedName("displayName")

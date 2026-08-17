@@ -1,34 +1,34 @@
-# ModularJobs — PostgreSQL only
+# ModularJobs — MySQL only
 # Schema is NOT created by the plugin. Provision first:
-#   ./scripts/apply-postgres-schema.sh
-#   # or: psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
+#   ./scripts/apply-mysql-schema.sh
+#   # or: mysql "$DATABASE_URL" < paper/src/main/resources/sql/mysql.sql
 # Missing tables → plugin fails at startup. See docs/database-schema.md
 
 payable:
-  type: postgres
-  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://127.0.0.1:3306/modularjobs
   username: modularjobs
   password: change-me
   maximum-pool-size: 10
 
 # Same database is fine — pools with identical jdbc-url+username are shared.
 timed-boost:
-  type: postgres
-  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://127.0.0.1:3306/modularjobs
   username: modularjobs
   password: change-me
   maximum-pool-size: 10
 
 progression:
-  type: postgres
-  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://127.0.0.1:3306/modularjobs
   username: modularjobs
   password: change-me
   maximum-pool-size: 10
 
 upgrades:
-  type: postgres
-  jdbc-url: jdbc:postgresql://127.0.0.1:5432/modularjobs
+  type: mysql
+  jdbc-url: jdbc:mysql://127.0.0.1:3306/modularjobs
   username: modularjobs
   password: change-me
   maximum-pool-size: 10

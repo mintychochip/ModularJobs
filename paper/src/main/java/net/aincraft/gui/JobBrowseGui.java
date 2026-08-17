@@ -52,6 +52,7 @@ public final class JobBrowseGui {
   /** Per-audience session: slot index → job key for join dispatch. */
   private final Map<UUID, Map<Integer, String>> sessions = new HashMap<>();
 
+  /** Builds the job-browse presenter over the shared craftux runtime. */
   public JobBrowseGui(
       InventoryRuntime inventory,
       JobService jobService,

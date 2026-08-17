@@ -2,8 +2,7 @@ package net.aincraft.domain;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.math.BigDecimal;
-import java.time.Duration;
+import java.math.BigDecimal;import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,6 +23,30 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Write-back caching {@link JobProgressionRepository} decorating a relational delegate.
+ *
+ * <p>All mutations are staged in memory ({@link #save} / {@link #delete}) and applied
+ * to the delegate in batches by a scheduled flush, either a Bukkit async fixed-rate
+ * task ({@link #create}) or manual {@link #flushPending()}. Reads serve from staged
+ * state first, then a read cache, then the delegate, so a just-saved value is visible
+ * to subsequent reads before it reaches the database.
+ *
+ * <p>Lifecycle: {@link #create} registers a recurring flush task; {@link #flushPending()}
+ * must be invoked before the underlying {@link ConnectionSource} shuts down (wired via
+ * {@code PluginResources.onFlush}) so all staged writes drain. It synchronously waits
+ * (up to {@value #FLUSH_LOCK_WAIT_MS} ms) for any in-flight flush and rethrows delegate
+ * failures so shutdown can fail loudly rather than silently dropping data.
+ *
+ * <p>Failure semantics: during a normal flush a delegate failure is logged and the
+ * failed batch is re-queued (with a monotonic max-experience merge so a newer staged
+ * value is not clobbered); during {@link #flushPending()} the failure is propagated.
+ * Staged writes therefore survive transient DB failures unless the plugin stops
+ * without a successful flush.
+ *
+ * <p>Nullability: {@link #load(String, String)} returns {@code null} when the key is
+ * staged for delete or absent from pending state and the delegate returns {@code null}.
+ */
 final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepository {
 
   private static final Logger LOGGER =
@@ -56,6 +79,17 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
     this.deleteBatchSize = deleteBatchSize;
   }
 
+  /**
+   * Creates a write-back repository and schedules a recurring Bukkit async flush task.
+   *
+   * @param plugin          plugin owning the scheduled task (also its lifecycle)
+   * @param delegate        underlying relational repository to flush to
+   * @param upsertBatchSize max upserts drained per flush cycle
+   * @param deleteBatchSize max deletes drained per flush cycle
+   * @param rate            flush period magnitude
+   * @param rateUnit        flush period unit
+   * @return a repository with a scheduled flush started
+   */
   public static WriteBackJobProgressionRepositoryImpl create(
       Plugin plugin,
       JobProgressionRepository delegate,

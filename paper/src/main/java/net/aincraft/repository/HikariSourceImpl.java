@@ -5,6 +5,12 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * {@link ConnectionSource} backed by a HikariCP {@link HikariDataSource}.
+ *
+ * <p>Owns the {@link HikariDataSource} lifecycle: {@link #shutdown()} closes the pool (idempotent),
+ * and {@link #getConnection()} delegates to the pool to borrow a connection the caller must close.
+ */
 final class HikariSourceImpl implements ConnectionSource {
 
   private final HikariDataSource source;

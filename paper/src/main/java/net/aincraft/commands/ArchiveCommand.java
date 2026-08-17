@@ -17,10 +17,17 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+/**
+ * Lists a player's archived (previously left) jobs. Supports an admin variant
+ * {@code /jobs archive <player>} and a self-variant for players.
+ */
 public class ArchiveCommand implements JobsCommand {
 
   private final JobService jobService;
 
+  /**
+   * @param jobService service used to load archived progressions
+   */
   public ArchiveCommand(JobService jobService) {
     this.jobService = jobService;
   }
@@ -62,6 +69,9 @@ public class ArchiveCommand implements JobsCommand {
         });
   }
 
+  /**
+   * Prints the header and the target player's archived jobs to the viewer.
+   */
   private void displayArchive(CommandSender viewer, OfflinePlayer target) {
     List<JobProgression> archivedProgressions = jobService.getArchivedProgressions(target.getUniqueId());
 

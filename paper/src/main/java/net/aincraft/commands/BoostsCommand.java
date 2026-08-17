@@ -31,6 +31,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+/**
+ * {@code /jobs boosts} command: displays the invoking player's active timed boosts,
+ * passive item-slot boosts, and upgrade-tree boost sources, formatting each effect
+ * for chat output.
+ */
 public class BoostsCommand implements JobsCommand {
 
   private final ItemBoostDataService itemBoostDataService;
@@ -38,6 +43,10 @@ public class BoostsCommand implements JobsCommand {
   private final UpgradeBoostDataService upgradeBoostDataService;
   private final JobService jobService;
 
+  /**
+   * Creates the boosts command with the services that supply timed, item-passive, upgrade,
+   * and job-progression data.
+   */
   public BoostsCommand(ItemBoostDataService itemBoostDataService,
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService,
@@ -131,6 +140,10 @@ public class BoostsCommand implements JobsCommand {
         });
   }
 
+  /**
+   * Formats the remaining lifetime of an active timed boost into a compact human-readable
+   * duration, or {@code "Permanent"}/{@code "Expired"} when applicable.
+   */
   private String getTimeRemaining(ActiveBoostData boost) {
     if (boost.duration() == null) {
       return "Permanent";
@@ -156,6 +169,13 @@ public class BoostsCommand implements JobsCommand {
     }
   }
 
+  /**
+   * Collects the passive boost sources bound to the player's inventory slots, deduplicated
+   * by boost-source key.
+   *
+   * @param player the player whose inventory is scanned
+   * @return the distinct passive boosts with their originating slot
+   */
   private List<PassiveBoostInfo> getPassiveBoosts(Player player) {
     List<PassiveBoostInfo> passiveBoosts = new ArrayList<>();
     Set<String> seenBoostKeys = new HashSet<>();
@@ -190,9 +210,11 @@ public class BoostsCommand implements JobsCommand {
     return passiveBoosts;
   }
 
+  /** A passive boost source together with the inventory slot it is bound to. */
   private record PassiveBoostInfo(BoostSource boostSource, int slot) {
   }
 
+  /** Renders the effects of a boost source as a comma-joined string for chat display. */
   private String formatBoostEffects(BoostSource source) {
     if (source instanceof RuledBoostSource ruledSource) {
       List<Rule> rules = ruledSource.rules();
@@ -218,6 +240,10 @@ public class BoostsCommand implements JobsCommand {
     return desc != null && !desc.isEmpty() ? desc : "Active";
   }
 
+  /**
+   * Formats a single boost as its multiplicative ({@code x…}) or additive ({@code +…})
+   * shorthand, falling back to the simple class name for unknown boost types.
+   */
   private String formatBoost(Boost boost) {
     if (boost instanceof MultiplicativeBoostImpl multi) {
       return "x" + multi.amount().stripTrailingZeros().toPlainString();

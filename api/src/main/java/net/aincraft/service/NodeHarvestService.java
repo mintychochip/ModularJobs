@@ -10,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 public interface NodeHarvestService {
 
   /**
+   * Describes the result of harvesting a resource node.
+   *
    * @param materialTags tags for materials awarded (items plugin / inventory later)
    * @param xpTier       resource tier tag (1–5) for callers / content
    * @param nodeId       stable node identity for cooldowns

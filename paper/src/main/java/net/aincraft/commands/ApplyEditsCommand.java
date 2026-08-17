@@ -13,10 +13,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+/**
+ * Imports web-editor payloads (task edits) into live job definitions.
+ * Admin-only; requires a player sender and applies the imported tasks
+ * asynchronously, reporting results back on the main thread.
+ */
 public final class ApplyEditsCommand implements JobsCommand {
 
   private final EditorService editorService;
 
+  /**
+   * @param editorService service used to import web-editor task payloads
+   */
   public ApplyEditsCommand(EditorService editorService) {
     this.editorService = editorService;
   }

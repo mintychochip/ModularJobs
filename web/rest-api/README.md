@@ -1,3 +1,14 @@
+# REST API database
+
+The session API uses MySQL 8 only. Set `DATABASE_URL` to the same database used by
+the Paper plugin, for example:
+
+```bash
+DATABASE_URL=mysql://user:pass@127.0.0.1:3306/modularjobs cargo run
+```
+
+The API is connect-only. Apply `paper/src/main/resources/sql/mysql.sql` with
+`scripts/apply-mysql-schema.sh` before startup; the API never creates tables.
 # rest-api (`web/rest-api`)
 
 Rust REST service for ModularJobs secure editor sessions stored in PostgreSQL.

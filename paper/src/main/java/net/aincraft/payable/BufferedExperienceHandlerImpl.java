@@ -16,6 +16,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+/**
+ * Experience payable handler that buffers the award through the shared job {@link JobService}.
+ * Fires a cancelable {@link JobExperienceGainEvent} before the award (allowing the amount to be
+ * modified), skips already-capped progressions, persists the accumulated experience, fires a
+ * {@link JobLevelEvent} on level-up, and updates the on-screen experience bar only for online
+ * players whose update was persisted.
+ */
 final class BufferedExperienceHandlerImpl implements
     ExperiencePayableHandler {
 
@@ -23,6 +30,10 @@ final class BufferedExperienceHandlerImpl implements
   private final ExperienceBarFormatter formatter;
   private final JobService jobService;
 
+  /**
+   * Creates the buffered experience handler wired to the given bar controller, formatter,
+   * and job service.
+   */
   BufferedExperienceHandlerImpl(ExperienceBarController controller,
       ExperienceBarFormatter formatter, JobService jobService) {
     this.controller = controller;

@@ -24,6 +24,9 @@ public final class BoostSourceConfigParser {
   private final BoostFactory boostFactory;
   private final ConditionConfigParser conditionParser;
 
+  /**
+   * Creates a parser with the factories used to build boosts and conditions.
+   */
   public BoostSourceConfigParser(
       ConditionFactory conditionFactory,
       BoostFactory boostFactory

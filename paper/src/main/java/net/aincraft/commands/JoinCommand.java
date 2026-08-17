@@ -14,17 +14,25 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+/** {@code /jobs join <job>} command: adds the invoking player to the named job. */
 public final class JoinCommand implements JobsCommand {
 
   private final JobService jobService;
   private final JobResolver jobResolver;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
+  /** Creates the join command with the job service and resolver used to look up jobs. */
   public JoinCommand(JobService jobService, JobResolver jobResolver) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
   }
 
+  /**
+   * Builds the {@code /jobs join} command with a job argument validated against the resolver and,
+   * when the job is unknown, offered as fuzzy "did you mean" suggestions.
+   *
+   * @return the Brigadier command tree for joining a job
+   */
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("join")

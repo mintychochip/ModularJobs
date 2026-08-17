@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
-        "postgres://test:test@127.0.0.1:55432/modularjobs".to_string()
+        "mysql://test:test@127.0.0.1:3306/modularjobs".to_string()
     });
     let bind = env::var("BIND_ADDR").unwrap_or_else(|_| "127.0.0.1:18787".to_string());
 
@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!(%database_url, %bind, "starting rest-api (connect-only, no DDL)");
 
-    // Connect only — schema must already exist (scripts/apply-postgres-schema.sh).
+    // Connect only — schema must already exist (scripts/apply-mysql-schema.sh).
     let store = SessionStore::connect(&database_url, 5).await?;
     store.require_schema().await.map_err(|e| anyhow::anyhow!("{e}"))?;
 

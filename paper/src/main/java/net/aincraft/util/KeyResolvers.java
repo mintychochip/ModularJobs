@@ -19,8 +19,17 @@ import org.bukkit.World;
  */
 public final class KeyResolvers {
 
+  /** Prevents instantiation of this static factory class. */
   private KeyResolvers() {}
 
+  /**
+   * Creates a resolver with strategies for all built-in context types.
+   *
+   * <p>Chunk contexts use a loaded world's key when possible and otherwise
+   * normalize the configured world name into a key.
+   *
+   * @return configured resolver
+   */
   public static KeyResolver create() {
     KeyResolver resolver = new KeyResolver();
     resolver.addStrategy(BlockContext.class, context -> Key.key(context.materialKey()));

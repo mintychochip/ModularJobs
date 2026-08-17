@@ -8,7 +8,7 @@
 
 Multiply job rewards via timed and item/context boosts with a clear evaluation
 engine (targets, conditions, policies). Success: admin-granted timed boosts
-persist in Postgres; evaluation is deterministic; boost admin commands stay
+persist in MySQL; evaluation is deterministic; boost admin commands stay
 permission-gated.
 
 ## Boundaries
@@ -28,7 +28,7 @@ permission-gated.
 
 ## Invariants
 
-- Timed boost store is Postgres connect-only like all remote stores.
+- Timed boost store is MySQL connect-only like all remote stores.
 - Boost admin is not available to normal players.
 - Evaluation must not double-apply the same source incorrectly (identity keyed by target+source).
 
@@ -47,7 +47,7 @@ permission-gated.
 ## Current
 
 - [x] Boost engine + condition/policy factories
-- [x] Timed boost repository (Postgres)
+- [x] Timed boost repository (MySQL)
 - [x] Admin boost command permission-gated
 - [x] Integration into payment calculation path
 

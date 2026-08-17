@@ -29,6 +29,10 @@ public final class BoostSourceLoader {
   private final BoostSourceConfigParser parser;
   private final Registry<BoostSource> registry;
 
+  /**
+   * Creates a loader that reads from {@code boost_sources.json} (writing the bundled default on
+   * first load) and registers parsed sources into {@code registry}.
+   */
   public BoostSourceLoader(
       Plugin plugin,
       Gson gson,

@@ -49,6 +49,10 @@ public final class PaymentWiring {
     this.listeners = listeners;
   }
 
+  /**
+   * Composes the payment object graph (settings, boost engine, damage tracking, exploit
+   * protections, and all payment listeners) without optional recipe/profession gating.
+   */
   public static PaymentWiring create(
       Plugin plugin,
       JobService jobService,
@@ -67,6 +71,11 @@ public final class PaymentWiring {
         null);
   }
 
+  /**
+   * Composes the payment object graph (settings, boost engine, damage tracking, exploit
+   * protections, and all payment listeners). When both recipe and profession services are
+   * supplied, a {@link CraftRecipeGateListener} is also wired in.
+   */
   public static PaymentWiring create(
       Plugin plugin,
       JobService jobService,

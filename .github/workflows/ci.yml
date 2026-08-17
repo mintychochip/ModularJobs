@@ -22,16 +22,17 @@ jobs:
     timeout-minutes: 45
 
     services:
-      postgres:
-        image: postgres:16-alpine
+      mysql:
+        image: mysql:8.4
         env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: modularjobs
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: modularjobs
         ports:
-          - 55432:5432
+          - 13306:3306
         options: >-
-          --health-cmd "pg_isready -U test -d modularjobs"
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u root -proot"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -39,10 +40,10 @@ jobs:
     env:
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Live PG for repository / schema tests (skipped when unreachable)
-      MODULARJOBS_TEST_PG_URL: jdbc:postgresql://localhost:55432/modularjobs
-      MODULARJOBS_TEST_PG_USER: test
-      MODULARJOBS_TEST_PG_PASSWORD: test
+      # Live MySQL for repository / schema tests (skipped when unreachable)
+      MODULARJOBS_TEST_MYSQL_URL: jdbc:mysql://localhost:13306/modularjobs
+      MODULARJOBS_TEST_MYSQL_USER: test
+      MODULARJOBS_TEST_MYSQL_PASSWORD: test
 
     steps:
       - name: Checkout
@@ -137,12 +138,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Apply Postgres schema (for PG-backed unit tests)
+      - name: Apply MySQL schema (for MySQL-backed unit tests)
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client
-          ./scripts/apply-postgres-schema.sh \
-            "postgres://test:test@127.0.0.1:55432/modularjobs"
+          ./scripts/apply-mysql-schema.sh \
+            "mysql://test:test@127.0.0.1:13306/modularjobs"
 
       - name: Check (compile + Error Prone + unit tests + static analysis)
         # quality.fail not set → Checkstyle/PMD/SpotBugs report-only
@@ -179,24 +178,23 @@ jobs:
         working-directory: web/rest-api
 
     services:
-      postgres:
-        image: postgres:16-alpine
+      mysql:
+        image: mysql:8.4
         env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: modularjobs
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: modularjobs
         ports:
-          - 55432:5432
+          - 13306:3306
         options: >-
-          --health-cmd "pg_isready -U test -d modularjobs"
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u root -proot"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-
     env:
-      DATABASE_URL: postgres://test:test@127.0.0.1:55432/modularjobs
+      DATABASE_URL: mysql://test:test@127.0.0.1:13306/modularjobs
       CARGO_TERM_COLOR: always
-
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -297,7 +295,7 @@ jobs:
           ./scripts/package-release-assets.sh \
             2.0.0 \
             "${shadow_jars[0]}" \
-            paper/src/main/resources/sql/postgres.sql \
+            paper/src/main/resources/sql/mysql.sql \
             dist
           (cd dist && sha256sum --check SHA256SUMS)
 
@@ -305,10 +303,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
           gh release create "$GITHUB_REF_NAME" \
             dist/modularjobs-paper-2.0.0.jar \
-            dist/modularjobs-postgres-2.0.0.sql \
+            dist/modularjobs-mysql-2.0.0.sql \
             dist/SHA256SUMS \
             --verify-tag \
             --title "ModularJobs 2.0.0" \

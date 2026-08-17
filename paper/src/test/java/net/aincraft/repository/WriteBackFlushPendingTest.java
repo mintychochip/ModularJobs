@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import net.aincraft.test.TestPostgres;
+import net.aincraft.test.TestMysql;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Proves shipped {@link WriteBackRepositoryImpl#flushPending()} drains pending state
- * before ConnectionSource shutdown (disable path). Requires live PostgreSQL.
+ * before ConnectionSource shutdown (disable path). Requires live MySQL.
  */
 class WriteBackFlushPendingTest {
 
@@ -27,8 +27,8 @@ class WriteBackFlushPendingTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    TestPostgres.assumeAvailable();
-    Connection raw = TestPostgres.open();
+    TestMysql.assumeAvailable();
+    Connection raw = TestMysql.open();
     connection = NonClosableConnection.create(raw);
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS kv_writeback_test");
@@ -177,7 +177,7 @@ class WriteBackFlushPendingTest {
 
     @Override
     public DatabaseType getType() {
-      return DatabaseType.POSTGRES;
+      return DatabaseType.MYSQL;
     }
 
     @Override

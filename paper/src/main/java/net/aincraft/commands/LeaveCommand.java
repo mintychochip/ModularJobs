@@ -15,17 +15,25 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+/** {@code /jobs leave} command: removes the invoking player from a single job or all jobs. */
 public class LeaveCommand implements JobsCommand {
 
   private final JobService jobService;
   private final JobResolver jobResolver;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
+  /** Creates the leave command with the job service and resolver used to look up jobs. */
   public LeaveCommand(JobService jobService, JobResolver jobResolver) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
   }
 
+  /**
+   * Builds the {@code /jobs leave} command with both an {@code all} subcommand (permission-gated)
+   * and a single-job variant with resolver-based validation and fuzzy suggestions.
+   *
+   * @return the Brigadier command tree for leaving jobs
+   */
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("leave")
