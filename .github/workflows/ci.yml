@@ -3,19 +3,26 @@ name: CI
 on:
   push:
     branches: [master, main]
-    tags: ['v*']
   pull_request:
     branches: [master, main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
-  contents: read
-  packages: read
+  contents: write
+  packages: write
 
 jobs:
+  paper:
+    uses: aincraft-org/ci-template/.github/workflows/paper.yml@main
+    with:
+      gradle-tasks: :api:test :api:build
+      release-files: |
+        api/build/libs/*.jar
+
   java:
     name: Java (Error Prone + tests + quality + shadow)
     runs-on: ubuntu-latest
@@ -237,112 +244,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-
-  release:
-    name: Publish immutable ModularJobs date-version assets
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [java, rest-api, session-editor]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout exact release tag
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Download CI shadow JAR
-        uses: actions/download-artifact@v4
-        with:
-          name: paper-all
-          path: release-input
-
-      - name: Validate tag, canonical version, and unused release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          ./scripts/validate-release-version.sh "$VERSION"
-
-          PROJECT_VERSION="$(./gradlew -q properties --console=plain | sed -n 's/^version: //p')"
-          if [[ "$PROJECT_VERSION" != "$VERSION" ]]; then
-            echo "::error::Gradle project version $PROJECT_VERSION does not match tag version $VERSION"
-            exit 1
-          fi
-
-          ./gradlew :paper:processResources --console=plain --no-daemon
-          PLUGIN_VERSION="$(sed -n "s/^version: '\(.*\)'$/\1/p" paper/build/resources/main/plugin.yml)"
-          if [[ "$PLUGIN_VERSION" != "$VERSION" ]]; then
-            echo "::error::plugin.yml version $PLUGIN_VERSION does not match tag version $VERSION"
-            exit 1
-          fi
-
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(git rev-list -n 1 "$GITHUB_REF_NAME")" = "$GITHUB_SHA"
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "::error::release already exists for $GITHUB_REF_NAME"
-            exit 1
-          fi
-
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-
-      - name: Package release assets
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          shadow_jars=(release-input/*-all.jar)
-          test "${#shadow_jars[@]}" -eq 1
-          ./scripts/package-release-assets.sh \
-            "$VERSION" \
-            "${shadow_jars[0]}" \
-            paper/src/main/resources/sql/mysql.sql \
-            dist
-          (cd dist && sha256sum --check SHA256SUMS)
-
-      - name: Publish GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "dist/modularjobs-paper-$VERSION.jar" \
-            "dist/modularjobs-mysql-$VERSION.sql" \
-            dist/SHA256SUMS \
-            --verify-tag \
-            --title "ModularJobs $VERSION" \
-            --generate-notes
-
-      - name: Re-download and verify published bytes
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          mkdir -p release-verify
-          gh release download "$GITHUB_REF_NAME" --dir release-verify
-          (cd release-verify && sha256sum --check SHA256SUMS)
-          {
-            echo "### ModularJobs release"
-            echo
-            echo "- tag: \`$GITHUB_REF_NAME\`"
-            echo "- commit: \`$GITHUB_SHA\`"
-            echo
-            echo '```'
-            cat release-verify/SHA256SUMS
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"

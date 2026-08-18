@@ -14,8 +14,8 @@ plugins {
 }
 
 group = "org.aincraft"
-// Canonical date-based release version; source is the single source of truth.
-version = "26.8.11.1"
+// Canonical date-based release version; -PreleaseVersion= overrides for paper.yml publish.
+version = providers.gradleProperty("releaseVersion").orElse("26.8.11.1").get()
 
 
 
