@@ -16,5 +16,5 @@ export const SESSION_API_DEFAULT_BASE =
 export function sessionEditorPath(code: string, token: string): string {
   const q = new URLSearchParams({ code });
   const h = new URLSearchParams({ token });
-  return `/session-editor/?${q.toString()}#${h.toString()}`;
+  return `/editor/?${q.toString()}#${h.toString()}`;
 }

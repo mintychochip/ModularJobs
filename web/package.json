@@ -2,12 +2,16 @@
   "name": "modularjobs-web",
   "type": "module",
   "version": "2.0.0",
+  "engines": {
+    "node": "20.x || 22.x"
+  },
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
+    "dev": "npm run build:editor && astro dev",
+    "start": "npm run build:editor && astro dev",
+    "build": "npm run build:editor && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "build:editor": "cd session-editor && npm ci --include=dev && npm run build && cd .. && rm -rf public/editor && mkdir -p public/editor && cp -r session-editor/dist/. public/editor/"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.35.2",
