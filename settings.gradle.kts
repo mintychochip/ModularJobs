@@ -19,6 +19,11 @@ dependencyResolutionManagement {
             name = "craftuxLocal"
             url = uri(rootDir.resolve("../craftux/build/maven-repo"))
         }
+        // Mint durable ledger API from sibling checkout (./gradlew -p ../mint publish)
+        maven {
+            name = "mintLocal"
+            url = uri(rootDir.resolve("../mint/build/maven-repo"))
+        }
         mavenLocal()
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
