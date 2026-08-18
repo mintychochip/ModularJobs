@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: aincraft-org/craftux
-          ref: 402bea8ce21847df632a10b00b563665db205de
+          ref: 402bea8ce21847df632a10b00b563665db205de9
           path: craftux
           fetch-depth: 1
       - name: Link craftux local Maven repository
@@ -78,8 +78,49 @@ jobs:
             :common:publishMavenPublicationToLocalBuildRepository \
             :paper:publishMavenPublicationToLocalBuildRepository \
             --console=plain --no-daemon
+      - name: Require Mint read-only deploy key
+        env:
+          MINT_DEPLOY_KEY: ${{ secrets.MINT_DEPLOY_KEY }}
+        run: |
+          if [[ -z "$MINT_DEPLOY_KEY" ]]; then
+            echo "::error::ModularJobs needs the repository-scoped read-only MINT_DEPLOY_KEY for aincraft-org/mint."
+            exit 1
+          fi
+      - name: Checkout mint dependency (private, pinned source)
+        uses: actions/checkout@v4
+        with:
+          repository: aincraft-org/mint
+          ref: 873fd3e359d3f3ac5b22fc84bc9aaae2a6adabdd
+          path: mint
+          fetch-depth: 1
+          ssh-key: ${{ secrets.MINT_DEPLOY_KEY }}
+          persist-credentials: false
+      - name: Link mint local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/mint" "$GITHUB_WORKSPACE/../mint"
+      - name: Publish mint API to local Maven repository
+        working-directory: mint
+        run: |
+          chmod +x gradlew
+          ./gradlew \
+            :api:publishMavenPublicationToLocalBuildRepository \
+            --console=plain --no-daemon
+      - name: Checkout Preferences API dependency
+        uses: actions/checkout@v4
+        with:
+          repository: mintychochip/Preferences
+          ref: c78eac8c81104ba0890fc98d5f49090d90d0dee7
+          path: preferences
+          fetch-depth: 1
+      - name: Publish Preferences API to isolated Maven local
+        working-directory: preferences
+        run: |
+          chmod +x gradlew
+          ./gradlew :api:publishToMavenLocal \
+            -Dmaven.repo.local=${{ runner.temp }}/m2 \
+            --console=plain --no-daemon
       - name: Verify required local dependency artifacts
-        run: test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
+        run: |
+          test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Apply MySQL schema
