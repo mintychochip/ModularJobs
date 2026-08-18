@@ -11,10 +11,9 @@ SHADOW_JAR=$2
 MYSQL_SQL=$3
 OUTPUT_DIR=$4
 
-if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "version must be semantic x.y.z: $VERSION" >&2
-    exit 2
-fi
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+
+"$ROOT/scripts/validate-release-version.sh" "$VERSION"
 
 for input in "$SHADOW_JAR" "$MYSQL_SQL"; do
     if [[ ! -f "$input" ]]; then
