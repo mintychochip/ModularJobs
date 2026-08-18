@@ -1,5 +1,4 @@
 dependencies {
-    api(project(":common"))
     api(libs.adventure.api)
     api(libs.jetbrains.annotations)
 
