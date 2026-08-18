@@ -1,22 +1,51 @@
 ---
-import '../styles/global.css'
+import '@fontsource/geist-sans/400.css'
+import '@fontsource/geist-sans/500.css'
+import '@fontsource/geist-sans/600.css'
+import '@fontsource/geist-mono/400.css'
+import '../styles/site.css'
+import { SITE_DESCRIPTION, SITE_NAME } from '../lib/site'
 
 interface Props {
-  title?: string;
-  lang?: string;
-  theme?: string;
+  title?: string
+  description?: string
+  lang?: string
 }
 
-const {title = 'ModularJobs', lang = 'en', theme = 'dark'} = Astro.props;
+const {
+  title = SITE_NAME,
+  description = SITE_DESCRIPTION,
+  lang = 'en',
+} = Astro.props
 ---
 
-<html lang={lang} data-theme={theme}>
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{title}</title>
-</head>
-<body>
-<slot />
-</body>
+<!doctype html>
+<html lang={lang} data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f7f7f5" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      // Runs before first paint so a stored preference never flashes the wrong theme.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('theme-preference')
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.dataset.theme = stored
+          }
+        } catch (error) {
+          /* preference unavailable; fall back to the system theme */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div class="page">
+      <slot />
+    </div>
+  </body>
 </html>

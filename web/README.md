@@ -32,6 +32,17 @@ domain.
 The site navigation is configured in `astro.config.mjs`. Markdown and MDX
 content lives under `src/content/docs/`.
 
+## Landing page
+
+`src/pages/index.astro` renders the marketing page from the design tokens in
+`src/styles/site.css` — Geist Sans/Mono with light and dark palettes selected by
+`data-theme` on `<html>` and remembered in `localStorage`.
+
+The download section reads GitHub releases through `src/lib/releases.ts`. The
+build bakes in the release known at deploy time, then the page re-checks the API
+on load, on tab focus, and every five minutes, so a newly published jar shows up
+without a redeploy. If GitHub is unreachable the last known build stays visible.
+
 ## Secure session stack
 
 The editor is opt-in from the Paper plugin. Operators must configure the Rust

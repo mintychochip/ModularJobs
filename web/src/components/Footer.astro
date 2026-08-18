@@ -1,0 +1,15 @@
+---
+import { GITHUB_URL } from '../lib/releases'
+import { DISCORD_URL, DOCS_URL } from '../lib/site'
+
+const year = new Date().getFullYear()
+---
+
+<footer class="footer">
+  <span>© {year} Aincraft — ModularJobs</span>
+  <div class="footer-links">
+    <a class="footer-link" href={DOCS_URL}>Docs</a>
+    <a class="footer-link" href={DISCORD_URL} target="_blank" rel="noopener">Discord</a>
+    <a class="footer-link" href={GITHUB_URL} target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>

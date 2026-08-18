@@ -1,0 +1,239 @@
+---
+import {
+  formatAssetDetail,
+  formatDate,
+  LATEST_RELEASE_URL,
+  RELEASES_URL,
+  type Release,
+} from '../lib/releases'
+
+interface Props {
+  release: Release | null
+}
+
+// Rendered from the release known at build time; the client script below re-checks
+// GitHub so the page keeps up with releases cut after the last deploy.
+const { release } = Astro.props
+const primaryUrl = release?.primary?.url ?? LATEST_RELEASE_URL
+const primaryLabel = release ? `Download ${release.tag}` : 'Download latest build'
+---
+
+<section class="section" id="download">
+  <h2 class="section-title">Download</h2>
+  <p class="section-intro">
+    Builds are published straight from GitHub releases, so this page tracks the newest
+    jar without waiting on a redeploy.
+  </p>
+
+  <div class="release-card" data-release-card>
+    <div class="release-banner">
+      <div class="release-heading">
+        <h3 class="release-title" data-release-title>
+          {release ? release.name : 'Latest build'}
+        </h3>
+        <p class="release-meta" data-release-meta>
+          {
+            release ? (
+              <Fragment>
+                <span class="release-tag">{release.tag}</span>
+                {release.publishedAt && ` · published ${formatDate(release.publishedAt)}`}
+              </Fragment>
+            ) : (
+              'Checking GitHub for the latest release…'
+            )
+          }
+        </p>
+      </div>
+      <div class="release-actions">
+        <a class="button button-primary" href={primaryUrl} data-release-primary>
+          {primaryLabel}
+        </a>
+        <a
+          class="button"
+          href={release?.url ?? RELEASES_URL}
+          target="_blank"
+          rel="noopener"
+          data-release-page
+        >
+          All releases
+        </a>
+      </div>
+    </div>
+
+    <div class="release-body">
+      <h4 class="release-assets-title">Assets</h4>
+      <ul class="asset-list" data-release-assets>
+        {
+          release ? (
+            release.assets.map((asset) => (
+              <li class="asset-item">
+                <a class="asset-link" href={asset.url}>
+                  <span class="asset-name">{asset.name}</span>
+                  <span class="asset-detail">{formatAssetDetail(asset)}</span>
+                </a>
+              </li>
+            ))
+          ) : (
+            <li class="asset-item">
+              <a class="asset-link" href={RELEASES_URL} target="_blank" rel="noopener">
+                <span class="asset-name">Browse assets on GitHub</span>
+              </a>
+            </li>
+          )
+        }
+      </ul>
+
+      <div class="release-notes" data-release-notes hidden={!release?.notes}>
+        <h4 class="release-notes-title">Release notes</h4>
+        <p class="release-notes-body" data-release-notes-body>{release?.notes}</p>
+      </div>
+
+      <p class="release-status" data-release-status data-state="idle">
+        <span data-release-status-text>Synced with GitHub releases.</span>
+        <button type="button" class="release-refresh" data-release-retry>Refresh</button>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    fetchLatestRelease,
+    formatAssetDetail,
+    formatDate,
+    formatRelativeTime,
+    REFRESH_INTERVAL_MS,
+    type Release,
+  } from '../lib/releases'
+
+  const card = document.querySelector<HTMLElement>('[data-release-card]')
+
+  if (card) {
+    const title = card.querySelector<HTMLElement>('[data-release-title]')
+    const meta = card.querySelector<HTMLElement>('[data-release-meta]')
+    const primary = card.querySelector<HTMLAnchorElement>('[data-release-primary]')
+    const page = card.querySelector<HTMLAnchorElement>('[data-release-page]')
+    const assets = card.querySelector<HTMLElement>('[data-release-assets]')
+    const notes = card.querySelector<HTMLElement>('[data-release-notes]')
+    const notesBody = card.querySelector<HTMLElement>('[data-release-notes-body]')
+    const status = card.querySelector<HTMLElement>('[data-release-status]')
+    const statusText = card.querySelector<HTMLElement>('[data-release-status-text]')
+    const retry = card.querySelector<HTMLButtonElement>('[data-release-retry]')
+
+    let lastSynced = Date.now()
+    let inFlight = false
+
+    const setStatus = (state: 'loading' | 'idle' | 'error', text: string) => {
+      if (status) status.dataset.state = state
+      if (statusText) statusText.textContent = text
+    }
+
+    const showSynced = () => {
+      setStatus(
+        'idle',
+        `Synced with GitHub releases · updated ${formatRelativeTime(lastSynced)}`,
+      )
+    }
+
+    const renderAssets = (release: Release) => {
+      if (!assets) return
+
+      assets.replaceChildren(
+        ...release.assets.map((asset) => {
+          const item = document.createElement('li')
+          item.className = 'asset-item'
+
+          const link = document.createElement('a')
+          link.className = 'asset-link'
+          link.href = asset.url
+
+          const name = document.createElement('span')
+          name.className = 'asset-name'
+          name.textContent = asset.name
+
+          const detail = document.createElement('span')
+          detail.className = 'asset-detail'
+          detail.textContent = formatAssetDetail(asset)
+
+          link.append(name, detail)
+          item.append(link)
+          return item
+        }),
+      )
+    }
+
+    const render = (release: Release) => {
+      if (title) title.textContent = release.name
+
+      if (meta) {
+        const tag = document.createElement('span')
+        tag.className = 'release-tag'
+        tag.textContent = release.tag
+
+        const published = release.publishedAt
+          ? ` · published ${formatDate(release.publishedAt)}`
+          : ''
+        meta.replaceChildren(tag, document.createTextNode(published))
+      }
+
+      if (primary) {
+        primary.href = release.primary?.url ?? release.url
+        primary.textContent = `Download ${release.tag}`
+      }
+
+      if (page) page.href = release.url
+
+      renderAssets(release)
+
+      if (notes && notesBody) {
+        notesBody.textContent = release.notes
+        notes.hidden = !release.notes
+      }
+
+      document
+        .querySelectorAll<HTMLElement>('[data-release-version]')
+        .forEach((node) => {
+          node.textContent = release.version
+        })
+      document
+        .querySelectorAll<HTMLElement>('[data-release-version-line]')
+        .forEach((node) => {
+          node.hidden = false
+        })
+    }
+
+    const refresh = async () => {
+      if (inFlight) return
+      inFlight = true
+      setStatus('loading', 'Checking GitHub for the latest build…')
+
+      const release = await fetchLatestRelease({ cache: 'no-store' })
+      inFlight = false
+
+      if (!release) {
+        setStatus('error', 'Could not reach GitHub — showing the last known build.')
+        return
+      }
+
+      render(release)
+      lastSynced = Date.now()
+      showSynced()
+    }
+
+    const refreshIfStale = () => {
+      if (document.visibilityState !== 'visible') return
+      if (Date.now() - lastSynced < REFRESH_INTERVAL_MS) return
+      void refresh()
+    }
+
+    retry?.addEventListener('click', () => void refresh())
+    document.addEventListener('visibilitychange', refreshIfStale)
+    window.addEventListener('focus', refreshIfStale)
+    window.setInterval(refreshIfStale, 60 * 1000)
+    window.setInterval(() => {
+      if (lastSynced && status?.dataset.state === 'idle') showSynced()
+    }, 30 * 1000)
+
+    void refresh()
+  }
+</script>
