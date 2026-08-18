@@ -44,7 +44,7 @@ subprojects {
         options.release.set(javaVersion)
     }
 
-    if (moduleName == "api" || moduleName == "common") {
+    if (moduleName == "api") {
         apply(plugin = "maven-publish")
         configure<JavaPluginExtension> {
             withSourcesJar()
@@ -60,13 +60,7 @@ subprojects {
                     artifactId = "modularjobs-$moduleName"
                     pom {
                         name.set("ModularJobs ${moduleName.replaceFirstChar(Char::uppercase)}")
-                        description.set(
-                            if (moduleName == "api") {
-                                "Public Java contracts for the ModularJobs Paper plugin."
-                            } else {
-                                "Shared Java DTOs and value types for ModularJobs integrations."
-                            },
-                        )
+                        description.set("Public Java contracts for the ModularJobs Paper plugin.")
                         url.set("https://github.com/aincraft-org/modularjobs")
                         licenses {
                             license {
