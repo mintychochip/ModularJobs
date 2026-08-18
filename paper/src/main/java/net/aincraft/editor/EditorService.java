@@ -33,6 +33,7 @@ import net.aincraft.registry.RegistryView;
 import net.aincraft.service.JobService;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
+
 public final class EditorService {
 
     private final JobService jobService;
@@ -102,6 +103,7 @@ public final class EditorService {
                 sessionStore.store(session);
                 String webEditorUrl = editorUrl(
                     config.webEditorUrl(),
+                    config.sessionApiUrl(),
                     created.sessionCode(),
                     created.token());
                 return new ExportResult(created.sessionCode(), webEditorUrl, created.token());
@@ -202,9 +204,10 @@ public final class EditorService {
     }
 
 
-    static String editorUrl(String base, String code, String token) {
-        String normalized = base.replaceFirst("/+$", "");
-        return normalized + "/session?code=" + encode(code) + "#token=" + encode(token);
+    static String editorUrl(String base, String apiBase, String code, String token) {
+        String normalized = base.replaceFirst("/+$", "") + "/";
+        String encodedApi = encode(apiBase);
+        return normalized + "?api=" + encodedApi + "&code=" + encode(code) + "#token=" + encode(token);
     }
 
     private static String encode(String value) {
