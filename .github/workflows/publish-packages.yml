@@ -220,8 +220,6 @@ jobs:
             fi
           fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
       - name: Publish Maven package
         run: |
           ./gradlew \
