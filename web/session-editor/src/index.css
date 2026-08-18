@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: dark --default, light;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-base-100 text-base-content;
+}
