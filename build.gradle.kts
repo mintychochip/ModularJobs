@@ -6,7 +6,7 @@ import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+
 
 plugins {
     alias(libs.plugins.errorprone) apply false
@@ -14,25 +14,13 @@ plugins {
 }
 
 group = "org.aincraft"
-// CI passes -PreleaseVersion for package publication; local builds use a snapshot fallback.
-version = providers.gradleProperty("releaseVersion").orElse("0.0.0-SNAPSHOT").get()
-val releaseVersion = providers.gradleProperty("releaseVersion")
+// Canonical date-based release version; source is the single source of truth.
+version = "26.8.11.1"
 
-fun Task.requireReleaseVersion() {
-    doFirst {
-        require(releaseVersion.isPresent) {
-            "Repository publication '$name' requires -PreleaseVersion=<version>"
-        }
-    }
-}
 
-subprojects {
-    tasks.withType<PublishToMavenRepository>().configureEach {
-        if (!name.endsWith("MavenLocal")) {
-            requireReleaseVersion()
-        }
-    }
-}
+
+
+
 
 
 
