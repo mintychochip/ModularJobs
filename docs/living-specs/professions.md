@@ -62,7 +62,7 @@ levels with Azoth combat levels.
 
 - [x] Profession catalog, level, and experience API
 - [x] Always-registered core `ProfessionService`
-- [x] Java 21 API/common publication at version 2.0.0
+- [x] Java 21 API/common publication at version 26.8.11.1
 - [x] Herbalism task data and operator-run migration
 - [x] Azoth-owned block, fish, log-strip, and plant-harvest gate design
 
