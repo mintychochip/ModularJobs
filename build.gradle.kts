@@ -89,15 +89,12 @@ subprojects {
                     name = "localBuildRepo"
                     url = rootProject.layout.buildDirectory.dir("maven-repo").get().asFile.toURI()
                 }
-                val githubToken = providers.environmentVariable("GITHUB_TOKEN")
-                if (githubToken.isPresent) {
-                    maven {
-                        name = "GitHubPackages"
-                        url = uri("https://maven.pkg.github.com/aincraft-org/modularjobs")
-                        credentials {
-                            username = providers.environmentVariable("GITHUB_ACTOR").orNull ?: "github-actions"
-                            password = githubToken.get()
-                        }
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/aincraft-org/modularjobs")
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR") ?: ""
+                        password = System.getenv("GITHUB_TOKEN") ?: ""
                     }
                 }
             }
