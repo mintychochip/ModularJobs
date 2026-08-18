@@ -42,8 +42,11 @@ dependencies {
     implementation(libs.mysql)
     testImplementation(libs.mysql)
 }
-val descriptorVersion = project.version.toString()
+
 tasks.processResources {
+    // Compute the version inside the task block so the configuration cache does not
+    // capture a reference to the build script object.
+    val descriptorVersion = project.version.toString()
     filesMatching("plugin.yml") {
         expand("version" to descriptorVersion)
     }
