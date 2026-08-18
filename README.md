@@ -15,7 +15,7 @@ Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 
 ```bash
 ./gradlew :paper:build
-# artifact: paper/build/libs/paper-2.0.0-all.jar
+# artifact: paper/build/libs/paper-26.8.11.1-all.jar
 ```
 Unit tests:
 
@@ -41,7 +41,7 @@ CI: `.github/workflows/ci.yml` — Java 25 + MySQL 8 (`check` + shadow jar), Rus
 
 ## Operator quick start
 
-1. Drop `modularjobs-paper-2.0.0.jar` into `plugins/`.
+1. Drop `modularjobs-paper-26.8.11.1.jar` into `plugins/`.
 2. Start once to generate configs under `plugins/ModularJobs/`.
 3. Configure database, economy, and permissions (below).
 4. Restart or reload after config changes.
@@ -165,4 +165,6 @@ Paper artifact. The external Preferences plugin is not required.
 
 ## Version
 
-Plugin and project version: **2.0.0** (see `plugin.yml`, root `build.gradle.kts`, `CHANGELOG.md`).
+Plugin and project version: **26.8.11.1** (see `plugin.yml`, root `build.gradle.kts`, `CHANGELOG.md`).
+
+Future releases use `YY.M.D.REVISION` tags, for example `v26.8.11.1`; the final component resets daily and increments for same-day releases.

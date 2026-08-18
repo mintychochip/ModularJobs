@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 2.0.0 — ModularJobs API and Azoth gathering gates
+## 26.8.11.1 — ModularJobs API and Azoth gathering gates
 
 ### Added
 
@@ -17,18 +17,18 @@
 - Gathering gates are no longer enforced or configured by ModularJobs. Install and
   configure Azoth for world-interaction enforcement.
 - Gate-only ModularJobs API contracts and bypass permissions were removed in the
-  2.0.0 API cutover.
+  date-versioned API cutover.
 - Module layout rename: Gradle modules and tree paths are now `api` / `common` / `paper` / `web` (was `jobs-api`, `jobs-core`, `jobs-web`, `jobs-session-api`).
-  - Build: `./gradlew :paper:build` → artifact `paper/build/libs/paper-2.0.0-all.jar` (release asset: `modularjobs-paper-2.0.0.jar`).
+  - Build: `./gradlew :paper:build` → artifact `paper/build/libs/paper-26.8.11.1-all.jar` (release asset: `modularjobs-paper-26.8.11.1.jar`).
   - Tests: `./gradlew :api:test :common:test :paper:test`.
-  - Schema SQL: `paper/src/main/resources/sql/postgres.sql`.
+  - Schema SQL: `paper/src/main/resources/sql/mysql.sql`.
   - Session stack: `web/rest-api` (Rust), `web/session-editor` (React).
   - `api` is pure: public contracts have no Paper/Bukkit dependency.
 
 ### Database
 
-- **PostgreSQL only**: removed SQLite, MySQL, MariaDB, and Mongo providers.
-- Default `database.yml` is Postgres (Hikari). Schema still applied out-of-band via `scripts/apply-postgres-schema.sh`.
+- **MySQL 8 only**: removed SQLite, PostgreSQL, MariaDB, and Mongo providers.
+- Default `database.yml` is MySQL (Hikari). Schema still applied out-of-band via `scripts/apply-mysql-schema.sh`.
 - Shared connection pools keyed by `jdbc-url` + `username` (not SQLite file path).
 
 ## 1.1.0 — Production-readiness cut
