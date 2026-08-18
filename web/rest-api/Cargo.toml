@@ -21,6 +21,7 @@ thiserror = "2"
 anyhow = "1"
 subtle = "2"
 regex = "1"
+url = "2"
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

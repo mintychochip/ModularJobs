@@ -7,25 +7,23 @@ the Paper plugin, for example:
 DATABASE_URL=mysql://user:pass@127.0.0.1:3306/modularjobs cargo run
 ```
 
-The API is connect-only. Apply `paper/src/main/resources/sql/mysql.sql` with
-`scripts/apply-mysql-schema.sh` before startup; the API never creates tables.
 # rest-api (`web/rest-api`)
 
-Rust REST service for ModularJobs secure editor sessions stored in PostgreSQL.
+Rust REST service for ModularJobs secure editor sessions stored in MySQL.
 
 ## Schema ownership
 
 This process **never creates tables**. Provision the shared database once:
 
 ```bash
-./scripts/apply-postgres-schema.sh
+./scripts/apply-mysql-schema.sh
 # or
-psql "$DATABASE_URL" -f paper/src/main/resources/sql/postgres.sql
+mysql "$DATABASE_URL" < paper/src/main/resources/sql/mysql.sql
 ```
 
 See `docs/database-schema.md`. Paper and this REST process must use the same
-PostgreSQL database. The Paper plugin only connects through its existing
-`database.yml` Hikari configuration; it never launches PostgreSQL, owns its
+MySQL database. The Paper plugin only connects through its existing
+`database.yml` Hikari configuration; it never launches MySQL, owns its
 data directory, or runs schema DDL.
 
 ## Paper editor configuration
@@ -43,7 +41,7 @@ editor:
 
 When `SESSION_CREATE_SECRET` is set for this API, `editor.session-create-secret`
 must contain the same value. The browser receives the public session code in the
-URL query and the secret token in the URL fragment.
+URL query, the per-server API base in `?api=`, and the secret token in the URL fragment.
 
 ## Endpoints
 
@@ -60,9 +58,10 @@ URL query and the secret token in the URL fragment.
 ## Security / env
 
 ```bash
-export DATABASE_URL=postgres://test:test@127.0.0.1:55432/modularjobs
+export DATABASE_URL=mysql://test:test@127.0.0.1:3306/modularjobs
 export BIND_ADDR=127.0.0.1:18787          # default: loopback only
-# Optional: require shared secret on create (recommended if not loopback-only)
+export MODULARJOBS_PRODUCTION=1           # require DATABASE_URL and SESSION_CREATE_SECRET
+# Optional: require shared secret on create (strongly recommended in production)
 export SESSION_CREATE_SECRET=long-random-value
 # Optional: max session creates per 60s (default 60)
 export SESSION_CREATE_RATE_LIMIT=60
@@ -83,11 +82,13 @@ Hardening built in:
 - Sliding-window create rate limit
 - CORS allowlist with exact / glob / host-suffix / regex patterns (not `*` by default)
 - PUT cannot rewrite `sessionToken` or the stored token column
+- Boot is fail-closed when `MODULARJOBS_PRODUCTION=1` or bound to a non-loopback address
+- `DATABASE_URL` is redacted before logging (password never printed)
 
 ## Run
 
 ```bash
-export DATABASE_URL=postgres://test:test@127.0.0.1:55432/modularjobs
+export DATABASE_URL=mysql://test:test@127.0.0.1:3306/modularjobs
 export BIND_ADDR=127.0.0.1:18787
 # schema must already exist
 cargo run --release
@@ -98,6 +99,6 @@ On boot the API only **checks** that `editor_sessions` exists; missing schema â†
 ## Tests
 
 ```bash
-# tests apply shared paper sql/postgres.sql themselves (not production boot)
-DATABASE_URL=postgres://test:test@127.0.0.1:55432/modularjobs cargo test
+# tests apply shared paper sql/mysql.sql themselves (not production boot)
+DATABASE_URL=mysql://test:test@127.0.0.1:3306/modularjobs cargo test
 ```
