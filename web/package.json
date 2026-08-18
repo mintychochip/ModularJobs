@@ -8,13 +8,13 @@
   "scripts": {
     "dev": "npm run build:editor && astro dev",
     "start": "npm run build:editor && astro dev",
-    "build": "npm run build:editor && astro build",
+    "build": "npm run build:editor && npm run build:docs && astro build && rm -rf dist/docs && cp -r fumadocs/out dist/docs",
     "preview": "astro preview",
     "astro": "astro",
-    "build:editor": "cd session-editor && npm ci --include=dev && npm run build && cd .. && rm -rf public/editor && mkdir -p public/editor && cp -r session-editor/dist/. public/editor/"
+    "build:editor": "cd session-editor && npm ci --include=dev && npm run build && cd .. && rm -rf public/editor && mkdir -p public/editor && cp -r session-editor/dist/. public/editor/",
+    "build:docs": "cd fumadocs && npm ci --include=dev && npm run build"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.35.2",
     "@astrojs/vue": "^5.1.0",
     "@tailwindcss/vite": "^4.1.11",
     "astro": "^5.6.1",
