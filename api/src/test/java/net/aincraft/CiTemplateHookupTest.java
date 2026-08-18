@@ -23,6 +23,22 @@ class CiTemplateHookupTest {
   }
 
   @Test
+  void leftoverLocalJobsDoNotPublishOnPushPrOrTag() throws IOException {
+    Path dir = Path.of(requiredProperty("project.root")).resolve(".github/workflows");
+    try (var stream = Files.list(dir)) {
+      for (Path file : stream.filter(path -> path.toString().endsWith(".yml")).toList()) {
+        String text = Files.readString(file);
+        if (!publishesPackagesOrRelease(text)) {
+          continue;
+        }
+        assertTrue(
+            isScheduleOrManualOnly(text),
+            "leftover Packages/Release on push/PR/tag in " + file);
+      }
+    }
+  }
+
+  @Test
   void releaseVersionBecomesPublishedPomVersion() throws Exception {
     Path root = Path.of(requiredProperty("project.root"));
     ProcessBuilder builder =
@@ -44,6 +60,18 @@ class CiTemplateHookupTest {
     assertTrue(build.contains("https://maven.pkg.github.com/aincraft-org/modularjobs"), build);
     assertTrue(build.contains("GITHUB_ACTOR"), build);
     assertTrue(build.contains("GITHUB_TOKEN"), build);
+  }
+
+  private static boolean publishesPackagesOrRelease(String text) {
+    return text.contains("ToGitHubPackages")
+        || text.contains("softprops/action-gh-release")
+        || text.contains("gh release create");
+  }
+
+  private static boolean isScheduleOrManualOnly(String text) {
+    return !text.contains("\n  push:")
+        && !text.contains("\n  pull_request:")
+        && !text.contains("\n  tags:");
   }
 
   private static String requiredProperty(String name) {
