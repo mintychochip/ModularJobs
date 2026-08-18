@@ -3,6 +3,7 @@ name: Publish GitHub Packages
 on:
   push:
     branches: [master]
+    tags: ['v*']
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -43,8 +44,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Compute release version
-        run: echo "VERSION=$(date -u +'%y.%-m.%-d').${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -58,6 +57,21 @@ jobs:
           cache: gradle
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Resolve release version
+        run: |
+          set -euo pipefail
+          VERSION="$(./gradlew -q properties --console=plain | sed -n 's/^version: //p')"
+          ./scripts/validate-release-version.sh "$VERSION"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+            if [[ "$VERSION" != "$TAG_VERSION" ]]; then
+              echo "::error::Gradle version $VERSION does not match tag $TAG_VERSION"
+              exit 1
+            fi
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Checkout craftux dependency (pinned release)
         uses: actions/checkout@v4
         with:
@@ -121,17 +135,15 @@ jobs:
       - name: Verify required local dependency artifacts
         run: |
           test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
       - name: Apply MySQL schema
         run: |
           ./scripts/apply-mysql-schema.sh \
             "mysql://test:test@127.0.0.1:13306/modularjobs"
       - name: Java checks
-        run: ./gradlew -PreleaseVersion="$VERSION" check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
+        run: ./gradlew check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
       - name: Validate release POMs
         run: |
-          ./gradlew -PreleaseVersion="$VERSION" \
+          ./gradlew \
             :api:generatePomFileForMavenPublication \
             :common:generatePomFileForMavenPublication \
             --console=plain --no-daemon
@@ -165,7 +177,7 @@ jobs:
   publish:
     name: Publish API and common to GitHub Packages
     needs: check
-    if: needs.check.result == 'success' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master'))
+    if: needs.check.result == 'success' && (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -182,8 +194,6 @@ jobs:
           exit 1
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Compute release version
-        run: echo "VERSION=$(date -u +'%y.%-m.%-d').${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -199,10 +209,24 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Resolve release version
+        run: |
+          set -euo pipefail
+          VERSION="$(./gradlew -q properties --console=plain | sed -n 's/^version: //p')"
+          ./scripts/validate-release-version.sh "$VERSION"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+            if [[ "$VERSION" != "$TAG_VERSION" ]]; then
+              echo "::error::Gradle version $VERSION does not match tag $TAG_VERSION"
+              exit 1
+            fi
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
       - name: Publish Maven packages
         run: |
           ./gradlew \
-            -PreleaseVersion="$VERSION" \
             :api:publishMavenPublicationToGitHubPackagesRepository \
             :common:publishMavenPublicationToGitHubPackagesRepository \
             --console=plain --no-daemon
