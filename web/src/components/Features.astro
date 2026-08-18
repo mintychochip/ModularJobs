@@ -1,0 +1,48 @@
+---
+const features = [
+  {
+    title: 'Jobs & Tasks',
+    description: 'Model jobs with configurable tasks, experience curves, and per-action progression across 40+ action types.',
+  },
+  {
+    title: 'Payables',
+    description: 'Attach optional economy rewards and custom payables to levels, tasks, and progression milestones.',
+  },
+  {
+    title: 'Boosts',
+    description: 'Configure timed, item-based, and context-aware boosts to accelerate earning and progression.',
+  },
+  {
+    title: 'Upgrade Trees',
+    description: 'Apply profession services and upgrade trees that grow alongside your players.',
+  },
+  {
+    title: 'MySQL 8',
+    description: 'Persist progression and editor sessions with operator-managed, schema-owned MySQL 8.',
+  },
+  {
+    title: 'Secure Editor',
+    description: 'Manage jobs from a secure web editor backed by a dedicated REST API, enabled only when configured.',
+  },
+]
+---
+<section class="bg-base-100 py-16">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="mb-10 text-center">
+      <h2 class="text-3xl font-bold">Why ModularJobs?</h2>
+      <p class="mt-2 opacity-70">Everything you need to run a configurable job progression system.</p>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        features.map(({ title, description }) => (
+          <div class="card bg-base-300 shadow-md transition-colors hover:bg-base-200">
+            <div class="card-body">
+              <h3 class="card-title">{title}</h3>
+              <p class="text-sm opacity-80">{description}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

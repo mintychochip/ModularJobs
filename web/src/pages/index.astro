@@ -1,13 +1,17 @@
 ---
 import '../styles/global.css'
+import Base from '../layouts/Base.astro'
 import NavBar from '../components/NavBar.astro'
-import Base from "../layouts/Base.astro";
-import Hero from '../components/Hero.astro';
-import Body from '../components/Body.astro';
+import Hero from '../components/Hero.astro'
+import Features from '../components/Features.astro'
+import QuickStart from '../components/QuickStart.astro'
 ---
 
 <Base lang="en" theme="dark">
-  <NavBar></NavBar>
-  <Hero version={"2.0.0"}/>
-  <Body/>
+  <NavBar />
+  <main>
+    <Hero version="2.0.0" />
+    <Features />
+    <QuickStart />
+  </main>
 </Base>

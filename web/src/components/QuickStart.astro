@@ -1,0 +1,36 @@
+---
+const steps = [
+  {
+    title: 'Apply the MySQL 8 schema',
+    description: 'Point a connect-only MySQL 8 database at ModularJobs and apply the schema with scripts/apply-mysql-schema.sh. The game and API processes never create tables.',
+  },
+  {
+    title: 'Install the Paper jar',
+    description: 'Drop the plugin jar into your Paper server\u2019s plugins folder and restart once. Configure database.yml to your schema.',
+  },
+  {
+    title: 'Run /jobs editor',
+    description: 'Start the secure web editor with /jobs editor and manage jobs, tasks, payables, boosts, and upgrade trees from your browser.',
+  },
+]
+---
+<section class="bg-base-200 py-16">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="mb-10 text-center">
+      <h2 class="text-3xl font-bold">Quick Start</h2>
+      <p class="mt-2 opacity-70">Up and running in three steps.</p>
+    </div>
+    <ol class="steps steps-vertical lg:steps-horizontal">
+      {
+        steps.map(({ title, description }, index) => (
+          <li class="step step-primary">
+            <div class="p-2">
+              <h3 class="font-bold">{index + 1}. {title}</h3>
+              <p class="mt-1 text-sm opacity-80">{description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
