@@ -53,11 +53,11 @@ class RelationalTimedBoostRepositoryIdentityTest {
       st.execute("DROP TABLE IF EXISTS time_boosts");
       st.execute("""
           CREATE TABLE time_boosts (
-            target_id    TEXT    NOT NULL,
-            source_id    TEXT    NOT NULL,
-            epoch_millis BIGINT  NOT NULL,
-            duration     BYTEA   NULL,
-            boost_source BYTEA   NOT NULL,
+            target_id    VARCHAR(191) NOT NULL,
+            source_id    VARCHAR(191) NOT NULL,
+            epoch_millis BIGINT       NOT NULL,
+            duration     BLOB         NULL,
+            boost_source BLOB         NOT NULL,
             PRIMARY KEY (target_id, source_id)
           )
           """);
@@ -188,7 +188,7 @@ class RelationalTimedBoostRepositoryIdentityTest {
     }
   }
 
-  /** ConnectionSource that reuses a single open JDBC connection (in-memory SQLite). */
+  /** ConnectionSource that reuses a single open JDBC connection (live MySQL). */
   private static final class FixedConnectionSource implements ConnectionSource {
     private final Connection connection;
 

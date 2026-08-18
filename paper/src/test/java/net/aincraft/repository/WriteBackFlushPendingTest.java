@@ -32,7 +32,7 @@ class WriteBackFlushPendingTest {
     connection = NonClosableConnection.create(raw);
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS kv_writeback_test");
-      st.execute("CREATE TABLE kv_writeback_test (k TEXT PRIMARY KEY, v TEXT NOT NULL)");
+      st.execute("CREATE TABLE kv_writeback_test (k VARCHAR(191) PRIMARY KEY, v VARCHAR(191) NOT NULL)");
     }
     ConnectionSource source = new FixedSource(connection);
     RelationalRepositoryImpl<String, String> relational =
@@ -129,7 +129,7 @@ class WriteBackFlushPendingTest {
     @Override
     public String getSaveQuery() {
       return "INSERT INTO kv_writeback_test (k, v) VALUES (?, ?) "
-          + "ON CONFLICT (k) DO UPDATE SET v = excluded.v";
+          + "ON DUPLICATE KEY UPDATE v = VALUES(v)";
     }
 
     @Override

@@ -71,6 +71,7 @@ class MysqlSchemaFidelityTest {
       connection.close();
     }
   }
+
   private void requireMysql() throws SQLException {
     assumeTrue(mysqlAvailable, "MySQL must be reachable at " + jdbcUrl);
     if (connection == null || connection.isClosed()) {
@@ -147,7 +148,7 @@ class MysqlSchemaFidelityTest {
         BigDecimal readAmount = rs.getBigDecimal("amount");
         assertNotNull(readAmount);
         assertEquals(0, amount.compareTo(readAmount),
-            "NUMERIC amount must round-trip without loss; expected " + amount + " got " + readAmount);
+            "DECIMAL amount must round-trip without loss; expected " + amount + " got " + readAmount);
         assertNull(rs.getString("currency_identifier"));
         assertFalse(rs.next());
       }
@@ -237,10 +238,8 @@ class MysqlSchemaFidelityTest {
           "time_boost_identity",
           "player_upgrades",
           "editor_sessions")) {
-        st.execute("TRUNCATE TABLE " + table + " RESTART IDENTITY CASCADE");
+        st.execute("DELETE FROM " + table);
       }
-    } catch (SQLException e) {
-      // Tables may not all exist on first apply failure; ignore for cleanup
     }
   }
 

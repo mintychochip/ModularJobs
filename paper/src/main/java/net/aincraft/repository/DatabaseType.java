@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -34,20 +34,112 @@ public enum DatabaseType {
     return className;
   }
 
+  /**
+   * Returns the shipped DDL statements for this database type.
+   *
+   * <p>The file is split on semicolons that are not inside SQL comments or string
+   * literals, so comment lines such as {@code -- Apply out-of-band; the plugin never runs DDL.}
+   * do not create partial statements.
+   */
   public String[] getSQLTables() {
     try (InputStream resourceStream = ResourceExtractor.getResourceStream(
         String.format("sql/%s.sql", identifier));
         BufferedReader reader = new BufferedReader(
             new InputStreamReader(resourceStream, StandardCharsets.UTF_8))) {
-      Stream<String> lines = reader.lines();
-      String tables = lines.collect(Collectors.joining("\n"));
-      return Arrays.stream(tables.split(";"))
-          .map(s -> s.trim() + ";")
-          .filter(s -> !s.equals(";"))
-          .toArray(String[]::new);
+      String sql = reader.lines().collect(Collectors.joining("\n"));
+      return splitStatements(sql);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Splits SQL on statement terminators ({@code ;}) while respecting single-line
+   * comments ({@code --}), block comments ({@code /* * /}), and single/double-quoted
+   * string literals.
+   */
+  private static String[] splitStatements(String sql) {
+    List<String> statements = new ArrayList<>();
+    StringBuilder current = new StringBuilder();
+    boolean inSingleQuote = false;
+    boolean inDoubleQuote = false;
+    boolean inLineComment = false;
+    boolean inBlockComment = false;
+    boolean escapeNext = false;
+
+    for (int i = 0; i < sql.length(); i++) {
+      char c = sql.charAt(i);
+
+      if (inLineComment) {
+        if (c == '\n') {
+          inLineComment = false;
+        }
+        continue;
+      }
+
+      if (inBlockComment) {
+        if (c == '*' && i + 1 < sql.length() && sql.charAt(i + 1) == '/') {
+          inBlockComment = false;
+          i++; // skip the closing '/'
+        }
+        continue;
+      }
+
+      if (inSingleQuote || inDoubleQuote) {
+        current.append(c);
+        if (escapeNext) {
+          escapeNext = false;
+        } else if (c == '\\') {
+          escapeNext = true;
+        } else if (c == '\'' && inSingleQuote) {
+          inSingleQuote = false;
+        } else if (c == '"' && inDoubleQuote) {
+          inDoubleQuote = false;
+        }
+        continue;
+      }
+
+      if (c == '-' && i + 1 < sql.length() && sql.charAt(i + 1) == '-') {
+        inLineComment = true;
+        i++; // skip second '-'
+        continue;
+      }
+
+      if (c == '/' && i + 1 < sql.length() && sql.charAt(i + 1) == '*') {
+        inBlockComment = true;
+        i++; // skip '*'
+        continue;
+      }
+
+      if (c == '\'') {
+        inSingleQuote = true;
+        current.append(c);
+        continue;
+      }
+
+      if (c == '"') {
+        inDoubleQuote = true;
+        current.append(c);
+        continue;
+      }
+
+      if (c == ';') {
+        String stmt = current.toString().trim();
+        if (!stmt.isEmpty()) {
+          statements.add(stmt + ";");
+        }
+        current.setLength(0);
+      } else {
+        current.append(c);
+      }
+    }
+
+    String remaining = current.toString().trim();
+    if (!remaining.isEmpty()) {
+      statements.add(remaining + ";");
+    }
+
+    return statements.toArray(new String[0]);
   }
 
   /**

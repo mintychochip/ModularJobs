@@ -46,9 +46,9 @@ class RelationalJobProgressionRepositoryTest {
       st.execute("DROP TABLE IF EXISTS " + TABLE);
       st.execute("""
           CREATE TABLE job_progressions_test (
-            player_id  TEXT NOT NULL,
-            job_key    TEXT NOT NULL,
-            experience NUMERIC(38, 10) NOT NULL,
+            player_id  VARCHAR(191)    NOT NULL,
+            job_key    VARCHAR(191)    NOT NULL,
+            experience DECIMAL(38, 10) NOT NULL,
             PRIMARY KEY (player_id, job_key)
           )
           """);
