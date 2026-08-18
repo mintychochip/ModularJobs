@@ -3,7 +3,7 @@
  *
  * Prefer the hash fragment for the secret token so it is not sent to the
  * server/proxy in the request line or leaked via Referer:
- *   /session-editor/?code=ABC#token=SECRET
+ *   /editor/?code=ABC#token=SECRET
  *
  * Legacy `?token=` / `?sessionToken=` query params are still accepted, then
  * optionally scrubbed via {@link scrubTokenFromQuery}.
@@ -48,18 +48,18 @@ export function sessionEditorPath(code: string, token: string): string {
  * token moves into the hash and is removed from search (history + Referer hygiene).
  * No-op when there is no window or nothing to scrub.
  */
-export function scrubTokenFromQuery(): void {
-  if (typeof window === 'undefined' || !window.history?.replaceState) {
+export function scrubTokenFromQuery(win: Window = window): void {
+  if (typeof win === 'undefined' || !win.history?.replaceState) {
     return;
   }
   const { code, token, tokenFromQuery } = readSessionCredentials(
-    window.location.search,
-    window.location.hash,
+    win.location.search,
+    win.location.hash,
   );
   if (!tokenFromQuery || !token) {
     return;
   }
-  const params = new URLSearchParams(window.location.search.slice(1));
+  const params = new URLSearchParams(win.location.search.slice(1));
   params.delete('token');
   params.delete('sessionToken');
   if (code && !params.get('code') && !params.get('session')) {
@@ -67,12 +67,12 @@ export function scrubTokenFromQuery(): void {
   }
   const search = params.toString() ? `?${params.toString()}` : '';
   const hashParams = new URLSearchParams(
-    window.location.hash.startsWith('#')
-      ? window.location.hash.slice(1)
-      : window.location.hash,
+    win.location.hash.startsWith('#')
+      ? win.location.hash.slice(1)
+      : win.location.hash,
   );
   hashParams.set('token', token);
   const hash = `#${hashParams.toString()}`;
-  const next = `${window.location.pathname}${search}${hash}`;
-  window.history.replaceState(null, '', next);
+  const next = `${win.location.pathname}${search}${hash}`;
+  win.history.replaceState(null, '', next);
 }

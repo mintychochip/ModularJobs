@@ -1,8 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   SessionApiClient,
+  originMatchesPattern,
   resolveApiBaseUrl,
   setTaskPayableAmount,
+  validateApiBase,
 } from './apiClient';
 import type { EditorPayload } from './types';
 
@@ -43,6 +45,176 @@ describe('resolveApiBaseUrl', () => {
     expect(
       resolveApiBaseUrl({ VITE_SESSION_API_URL: 'http://api.example:9000' }),
     ).toBe('http://api.example:9000');
+  });
+
+  it('uses ?api= when allowed', () => {
+    const env = {
+      VITE_SESSION_API_URL: 'http://api.example:9000',
+      VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+    };
+    expect(resolveApiBaseUrl(env, '?api=https://s1.modularjobs.com')).toBe(
+      'https://s1.modularjobs.com',
+    );
+  });
+
+  it('rejects ?api= with wrong origin', () => {
+    const env = {
+      VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+    };
+    expect(() =>
+      resolveApiBaseUrl(env, '?api=https://evil.com'),
+    ).toThrow(/not allowed/);
+  });
+
+  it('rejects non-HTTPS ?api= in production', () => {
+    const env = {
+      VITE_ALLOWED_API_ORIGINS: 'http://*',
+    };
+    expect(() =>
+      resolveApiBaseUrl(env, '?api=http://api.modularjobs.com'),
+    ).toThrow(/must use HTTPS/);
+  });
+
+  it('allows non-HTTPS ?api= with VITE_ALLOW_HTTP_API', () => {
+    const env = {
+      VITE_ALLOWED_API_ORIGINS: 'http://localhost:*',
+      VITE_ALLOW_HTTP_API: 'true',
+    };
+    expect(
+      resolveApiBaseUrl(env, '?api=http://localhost:18787'),
+    ).toBe('http://localhost:18787');
+  });
+});
+
+describe('validateApiBase', () => {
+  it('accepts exact allowed origin', () => {
+    expect(
+      validateApiBase('https://s1.modularjobs.com', {
+        VITE_ALLOWED_API_ORIGINS: 'https://s1.modularjobs.com',
+      }),
+    ).toBe('https://s1.modularjobs.com');
+  });
+
+  it('rejects unlisted origin', () => {
+    expect(() =>
+      validateApiBase('https://evil.com', {
+        VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+      }),
+    ).toThrow(/not allowed/);
+  });
+
+  it('rejects non-web schemes even when allow-listed', () => {
+    expect(() =>
+      validateApiBase('javascript:alert(1)', {
+        VITE_ALLOWED_API_ORIGINS: '*',
+        VITE_ALLOW_HTTP_API: 'true',
+      }),
+    ).toThrow(/must use HTTP or HTTPS/);
+    expect(() =>
+      validateApiBase('file:///etc/passwd', {
+        VITE_ALLOWED_API_ORIGINS: '*',
+        VITE_ALLOW_HTTP_API: 'true',
+      }),
+    ).toThrow(/must use HTTP or HTTPS/);
+    expect(() =>
+      validateApiBase('ws://localhost:18787', {
+        VITE_ALLOWED_API_ORIGINS: '*',
+        VITE_ALLOW_HTTP_API: 'true',
+      }),
+    ).toThrow(/must use HTTP or HTTPS/);
+    expect(() =>
+      validateApiBase('data:text/html;base64,PHNjcmlwdD4=', {
+        VITE_ALLOWED_API_ORIGINS: '*',
+        VITE_ALLOW_HTTP_API: 'true',
+      }),
+    ).toThrow(/must use HTTP or HTTPS/);
+  });
+
+  it('rejects non-web schemes despite VITE_ALLOW_HTTP_API', () => {
+    expect(() =>
+      validateApiBase('javascript:alert(1)', {
+        VITE_ALLOWED_API_ORIGINS: 'javascript:*',
+        VITE_ALLOW_HTTP_API: 'true',
+      }),
+    ).toThrow(/must use HTTP or HTTPS/);
+  });
+
+  it('accepts http with VITE_ALLOW_HTTP_API and matching allow-list', () => {
+    expect(
+      validateApiBase('http://localhost:18787', {
+        VITE_ALLOWED_API_ORIGINS: 'http://localhost:*',
+        VITE_ALLOW_HTTP_API: 'true',
+      }),
+    ).toBe('http://localhost:18787');
+  });
+
+  it('rejects ?api= with URL credentials', () => {
+    expect(() =>
+      validateApiBase('https://user:pass@s1.modularjobs.com', {
+        VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+      }),
+    ).toThrow(/credentials/);
+  });
+
+  it('rejects ?api= with a query string', () => {
+    expect(() =>
+      validateApiBase('https://s1.modularjobs.com?token=steal', {
+        VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+      }),
+    ).toThrow(/query string/);
+  });
+
+  it('rejects ?api= with a fragment', () => {
+    expect(() =>
+      validateApiBase('https://s1.modularjobs.com#secret', {
+        VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+      }),
+    ).toThrow(/fragment/);
+  });
+
+  it('rejects credentials/query/fragment even with HTTPS disabled', () => {
+    expect(() =>
+      validateApiBase('http://user:pass@localhost:18787?x=1#y', {
+        VITE_ALLOWED_API_ORIGINS: 'http://localhost:*',
+        VITE_ALLOW_HTTP_API: 'true',
+      }),
+    ).toThrow(/credentials/);
+  });
+
+  it('normalizes to origin + path without trailing slash', () => {
+    expect(
+      validateApiBase('https://s1.modularjobs.com/api/v2/', {
+        VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+      }),
+    ).toBe('https://s1.modularjobs.com/api/v2');
+    expect(
+      validateApiBase('https://s1.modularjobs.com/', {
+        VITE_ALLOWED_API_ORIGINS: 'https://*.modularjobs.com',
+      }),
+    ).toBe('https://s1.modularjobs.com');
+  });
+});
+
+describe('originMatchesPattern', () => {
+  it('matches exact origin', () => {
+    expect(originMatchesPattern('https://s1.modularjobs.com', 'https://s1.modularjobs.com')).toBe(true);
+  });
+
+  it('matches subdomain wildcard', () => {
+    expect(originMatchesPattern('https://s1-api.modularjobs.com', 'https://*.modularjobs.com')).toBe(true);
+  });
+
+  it('matches port wildcard', () => {
+    expect(originMatchesPattern('http://localhost:18787', 'http://localhost:*')).toBe(true);
+  });
+
+  it('rejects origin outside wildcard', () => {
+    expect(originMatchesPattern('https://evil.modularjobs.com.evil.com', 'https://*.modularjobs.com')).toBe(false);
+    expect(originMatchesPattern('https://modularjobs.com', 'https://*.modularjobs.com')).toBe(false);
+  });
+
+  it('rejects exact mismatch', () => {
+    expect(originMatchesPattern('https://s2.modularjobs.com', 'https://s1.modularjobs.com')).toBe(false);
   });
 });
 

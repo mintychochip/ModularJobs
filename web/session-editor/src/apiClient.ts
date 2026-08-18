@@ -1,8 +1,11 @@
-import type { CreateSessionResponse, EditorPayload, SessionEnvelope } from './types';
+import type { EditorPayload, SessionEnvelope } from './types';
 
 /**
- * Client for the Rust web/rest-api (Postgres-backed secure sessions).
+ * Client for the Rust web/rest-api (MySQL-backed secure sessions).
  * Does not use bytebin.lucko.me.
+ *
+ * Session creation is not exposed in the browser: the Paper server creates
+ * the session and hands the editor a code + token + per-server API origin.
  */
 export class SessionApiClient {
   constructor(private readonly baseUrl: string) {
@@ -13,30 +16,6 @@ export class SessionApiClient {
 
   get base(): string {
     return this.baseUrl.replace(/\/$/, '');
-  }
-
-  /**
-   * Create a session. Server always mints the token.
-   * When the API sets SESSION_CREATE_SECRET, pass the same value as createSecret
-   * (or set VITE_SESSION_CREATE_SECRET for the default client).
-   */
-  async createSession(
-    payload: EditorPayload,
-    createSecret?: string,
-  ): Promise<CreateSessionResponse> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (createSecret) {
-      headers['X-Create-Secret'] = createSecret;
-    }
-    const response = await fetch(`${this.base}/api/v1/sessions`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to create session: ${response.status}`);
-    }
-    return response.json();
   }
 
   /**
@@ -104,10 +83,16 @@ export class SessionApiClient {
   }
 }
 
-/** Resolve API base URL from Vite env or runtime default. */
+/** Resolve API base URL from Vite env, optionally overridden by ?api= in the URL. */
 export function resolveApiBaseUrl(
   env: Record<string, string | undefined> = import.meta.env as Record<string, string | undefined>,
+  search: string = typeof window !== 'undefined' ? window.location.search : '',
 ): string {
+  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+  const runtimeApi = params.get('api')?.trim() ?? '';
+  if (runtimeApi) {
+    return validateApiBase(runtimeApi, env);
+  }
   return (
     env.VITE_SESSION_API_URL ||
     env.VITE_API_BASE_URL ||
@@ -115,10 +100,110 @@ export function resolveApiBaseUrl(
   );
 }
 
+/**
+ * Validate a runtime ?api= URL before we send the secret token to it.
+ * - Must be a valid URL.
+ * - Must use http: or https: scheme (javascript:, file:, ws:, data:, … rejected).
+ * - Must be HTTPS unless VITE_ALLOW_HTTP_API=true.
+ * - Origin must match the VITE_ALLOWED_API_ORIGINS allow-list (or the build-time
+ *   default origin if no allow-list is configured).
+ */
+export function validateApiBase(
+  apiBase: string,
+  env: Record<string, string | undefined>,
+): string {
+  let url: URL;
+  try {
+    url = new URL(apiBase);
+  } catch {
+    throw new Error(`Invalid ?api= URL: ${apiBase}`);
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error(`?api= URL must use HTTP or HTTPS: ${apiBase}`);
+  }
+
+  const allowHttp = env.VITE_ALLOW_HTTP_API === 'true';
+  if (url.protocol !== 'https:' && !allowHttp) {
+    throw new Error(`?api= URL must use HTTPS in production: ${apiBase}`);
+  }
+
+  // Reject URLs carrying credentials, query strings, or fragments: the base URL
+  // must be a bare origin+path so the token is never sent to a crafted target
+  // and so path/query can never smuggle unexpected destinations.
+  if (url.username || url.password) {
+    throw new Error(`?api= URL must not contain credentials: ${apiBase}`);
+  }
+  if (url.search) {
+    throw new Error(`?api= URL must not contain a query string: ${apiBase}`);
+  }
+  if (url.hash) {
+    throw new Error(`?api= URL must not contain a fragment: ${apiBase}`);
+  }
+
+  // Normalize: keep origin + path only, with no trailing slash.
+  const normalize = (u: URL): string => {
+    const base = u.origin + u.pathname;
+    return base.endsWith('/') ? base.slice(0, -1) : base;
+  };
+
+  const allowed = (env.VITE_ALLOWED_API_ORIGINS ?? '').trim();
+  const patterns = allowed
+    ? allowed.split(',').map((p) => p.trim()).filter(Boolean)
+    : [];
+
+  if (patterns.length === 0) {
+    // No allow-list: only accept the build-time default origin.
+    const defaultBase = env.VITE_SESSION_API_URL || env.VITE_API_BASE_URL;
+    const defaultUrl = defaultBase ? new URL(defaultBase) : null;
+    if (defaultUrl && url.origin === defaultUrl.origin) {
+      return normalize(url);
+    }
+    throw new Error(
+      '?api= URL is not in the allowed API origin list; set VITE_ALLOWED_API_ORIGINS'
+    );
+  }
+
+  if (!patterns.some((p) => originMatchesPattern(url.origin, p))) {
+    throw new Error(`?api= URL origin ${url.origin} is not allowed`);
+  }
+
+  return normalize(url);
+}
+
+/**
+ * Match an origin against a pattern. Supports:
+ * - Exact: `https://api.example.com`
+ * - Glob (`*` matches any sequence): `https://*.example.com`, `http://localhost:*`
+ */
+export function originMatchesPattern(origin: string, pattern: string): boolean {
+  if (origin === pattern) return true;
+  if (!pattern.includes('*')) return false;
+
+  const segments = pattern.split('*');
+  let rest = origin;
+
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    if (i === 0) {
+      if (!rest.startsWith(segment)) return false;
+      rest = rest.slice(segment.length);
+    } else if (i === segments.length - 1) {
+      return rest.endsWith(segment);
+    } else {
+      const idx = rest.indexOf(segment);
+      if (idx === -1) return false;
+      rest = rest.slice(idx + segment.length);
+    }
+  }
+
+  return true;
+}
+
 export function createDefaultClient(
   env?: Record<string, string | undefined>,
+  search?: string,
 ): SessionApiClient {
-  return new SessionApiClient(resolveApiBaseUrl(env));
+  return new SessionApiClient(resolveApiBaseUrl(env, search));
 }
 
 /**
