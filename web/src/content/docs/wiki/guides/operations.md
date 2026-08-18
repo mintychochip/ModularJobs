@@ -6,7 +6,7 @@ description: Build, configure, and validate a ModularJobs Paper deployment.
 ## Release checklist
 
 1. Build the Paper artifact with `./gradlew :paper:build`.
-2. Apply `paper/src/main/resources/sql/postgres.sql` out of band.
+2. Apply `paper/src/main/resources/sql/mysql.sql` out of band.
 3. Review generated `config.yml` and `database.yml` before enabling jobs.
 4. Install only the optional integrations required by the server.
 5. Treat the YAML, JSON, and CSV resources as starter content and replace
@@ -15,7 +15,7 @@ description: Build, configure, and validate a ModularJobs Paper deployment.
 ## Secure editor checklist
 
 The editor is disabled by default. If enabled, configure an operator-managed
-REST session API, web editor URL, create secret, and PostgreSQL session schema.
+REST session API, web editor URL, create secret, and MySQL 8 session schema.
 The Paper plugin does not launch or provision those services.
 
 ## Verification

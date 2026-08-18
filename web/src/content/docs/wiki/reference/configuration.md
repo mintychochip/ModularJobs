@@ -32,5 +32,5 @@ URLs and the create secret explicitly before enabling it.
 
 ## Persistence
 
-Paper and the REST API use operator-managed PostgreSQL. Apply schema files
+Paper and the REST API use operator-managed MySQL 8. Apply schema files
 before startup; neither process creates tables during normal operation.

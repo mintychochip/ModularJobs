@@ -1,7 +1,7 @@
 # ModularJobs web
 
 This workspace contains the ModularJobs documentation site and the secure
-session-editor companion. The site documents the Paper plugin, PostgreSQL
+session-editor companion. The site documents the Paper plugin, MySQL 8
 configuration, optional integrations, and operator-managed editor sessions.
 
 ## Project structure
@@ -11,7 +11,7 @@ src/content/docs/   Starlight documentation
 src/components/     Astro landing-page components
 src/pages/          Astro routes, including the editor handoff page
 session-editor/     React secure session editor
-rest-api/           Rust REST API backed by PostgreSQL
+rest-api/           Rust REST API backed by MySQL
 ```
 
 ## Documentation site
@@ -25,17 +25,54 @@ npm run build     # production site in dist/
 npm run preview   # preview the production build
 ```
 
+`npm run build` also builds the React session editor and bundles it under
+`dist/editor/` so the Astro site and editor are served from the same
+domain.
+
 The site navigation is configured in `astro.config.mjs`. Markdown and MDX
 content lives under `src/content/docs/`.
 
 ## Secure session stack
 
 The editor is opt-in from the Paper plugin. Operators must configure the Rust
-REST API, PostgreSQL schema, web editor URL, and session-create secret
-explicitly; the plugin does not launch either external service.
+REST API, MySQL 8 schema, web editor URL, and session-create secret explicitly;
+the plugin does not launch either external service.
+
+Per-server deployment:
+
+```
+                          https://modularjobs.com
+                                 │
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+        ▼                        ▼                        ▼
+ /wiki/*                    /editor/                 (React editor)
+ (Astro docs)            (React editor)               served at /editor/
+                               │
+                               │ direct load
+                               ▼
+                   ?api=https://s1-api.modularjobs.com
+                   &code=ABC#token=SECRET
+
+Each Paper server runs its own REST API on a unique origin (e.g.
+s1-api.modularjobs.com, s2-api.modularjobs.com). The same editor domain
+receives the per-server API base in the `?api=` query and validates it against
+a build-time allow-list before sending the token.
+```
+
+Build the editor with your allowed API origins (must be HTTPS in production):
 
 ```bash
-cd rest-api && cargo test
+export VITE_ALLOWED_API_ORIGINS='https://*.modularjobs.com'
+export VITE_SESSION_API_URL='https://modularjobs.com'   # fallback default
+npm run build
+```
+
+`VITE_ALLOW_HTTP_API=true` is only for local smoke testing and must never be
+set in production.
+
+```bash
+cd rest-api && cargo test   # requires a MySQL instance
 cd ../session-editor && npm install && npm test && npm run build
 ```
 
