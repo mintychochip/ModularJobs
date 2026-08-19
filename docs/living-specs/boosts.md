@@ -56,8 +56,8 @@ permission-gated.
 
 Player predicates live in `dev.conditions`. Boost rules persist
 `priority` + condition serializer bytes inside `SerializableBoostData` JSON.
-Item PDC stores that JSON inside a `dev.databag.DataBag` `BYTE_ARRAY`.
-Touch payment pipeline order carefully.
+Item PDC stores that JSON inside a `dev.databag.DataBag` `BYTE_ARRAY`
+with format id `1`. Touch payment pipeline order carefully.
 
 ## Next
 
