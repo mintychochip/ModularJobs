@@ -8,8 +8,8 @@ configuration, optional integrations, and operator-managed editor sessions.
 
 ```text
 src/content/docs/   Starlight documentation
-src/components/     Astro landing-page components
-src/pages/          Astro routes, including the editor handoff page
+src/homepage/       React marketing homepage
+src/pages/          Thin Astro hosts, including the editor handoff page
 session-editor/     React secure session editor
 rest-api/           Rust REST API backed by MySQL
 ```
@@ -34,9 +34,10 @@ content lives under `src/content/docs/`.
 
 ## Landing page
 
-`src/pages/index.astro` renders the marketing page from the design tokens in
-`src/styles/site.css` — Geist Sans/Mono with light and dark palettes selected by
-`data-theme` on `<html>` and remembered in `localStorage`.
+The marketing UI lives in React (`src/homepage/`). `src/pages/index.astro` is a
+thin host that mounts that tree. Design tokens stay in `src/styles/site.css` —
+Geist Sans/Mono with light and dark palettes selected by `data-theme` on
+`<html>` and remembered in `localStorage` (`theme-preference`).
 
 The download section reads GitHub releases through `src/lib/releases.ts`. The
 build bakes in the release known at deploy time, then the page re-checks the API

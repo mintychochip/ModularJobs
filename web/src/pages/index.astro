@@ -1,23 +1,11 @@
 ---
 import Base from '../layouts/Base.astro'
-import NavBar from '../components/NavBar.astro'
-import Hero from '../components/Hero.astro'
-import Download from '../components/Download.astro'
-import Features from '../components/Features.astro'
-import QuickStart from '../components/QuickStart.astro'
-import Footer from '../components/Footer.astro'
+import { HomePage } from '../homepage/HomePage'
 import { fetchLatestRelease } from '../lib/releases'
 
 const release = await fetchLatestRelease()
 ---
 
 <Base title="ModularJobs — job progression for Paper servers">
-  <NavBar />
-  <main class="main">
-    <Hero version={release?.version} />
-    <Download release={release} />
-    <Features />
-    <QuickStart />
-    <Footer />
-  </main>
+  <HomePage client:load initialRelease={release} />
 </Base>
