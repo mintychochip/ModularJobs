@@ -1,11 +1,14 @@
 package net.aincraft.service;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.conditions.gson.GsonConditionSerializer;
+import dev.conditions.paper.PersistentBags;
 import dev.databag.DataBag;
+import dev.databag.FormattedBytes;
 import java.math.BigDecimal;
 import java.util.BitSet;
 import java.util.List;
@@ -48,15 +51,7 @@ class ItemBoostDataServicePdcTest {
 
   @Test
   void pdcByteArrayDecodesToSameBoostPayload() {
-    SerializableBoostData data = new PassiveBoostData(
-        new RuledBoostSourceImpl(
-            List.of(new Rule(
-                BoostFactoryImpl.INSTANCE.sneaking(true),
-                10,
-                new MultiplicativeBoostImpl(new BigDecimal("1.25")))),
-            Key.key("modularjobs", "mining_helmet"),
-            "helmet"),
-        new BitSet());
+    SerializableBoostData data = sampleData();
     ItemStack stack = new ItemStack(Material.DIAMOND_HELMET);
     service.addData(data, stack);
 
@@ -66,11 +61,50 @@ class ItemBoostDataServicePdcTest {
     assertTrue(tag.length > 0);
 
     DataBag bag = DataBag.fromBytes(tag);
-    byte[] payload = bag.getBytes(ItemBoostDataService.BOOST_PAYLOAD_KEY).orElseThrow();
-    assertArrayEquals(codec.write(data), payload);
+    FormattedBytes payload = bag.getFormatted(ItemBoostDataService.BOOST_PAYLOAD_KEY).orElseThrow();
+    assertEquals(ItemBoostDataService.BOOST_PAYLOAD_FORMAT, payload.format());
+    assertArrayEquals(codec.write(data), payload.value());
 
     Optional<SerializableBoostData> roundTrip = service.getData(stack);
     assertTrue(roundTrip.isPresent());
-    assertArrayEquals(payload, codec.write(roundTrip.get()));
+    assertArrayEquals(payload.value(), codec.write(roundTrip.get()));
+  }
+
+  @Test
+  void stillReadsUnformattedBagBytes() {
+    SerializableBoostData data = sampleData();
+    ItemStack stack = new ItemStack(Material.DIAMOND_HELMET);
+    DataBag legacy = DataBag.create()
+        .setBytes(ItemBoostDataService.BOOST_PAYLOAD_KEY, codec.write(data));
+    PersistentBags.write(stack, ItemBoostDataService.ITEM_BOOST_DATA_KEY, legacy);
+
+    Optional<SerializableBoostData> roundTrip = service.getData(stack);
+    assertTrue(roundTrip.isPresent());
+    assertArrayEquals(codec.write(data), codec.write(roundTrip.get()));
+  }
+
+  @Test
+  void stillReadsRawJsonBlob() {
+    SerializableBoostData data = sampleData();
+    ItemStack stack = new ItemStack(Material.DIAMOND_HELMET);
+    byte[] json = codec.write(data);
+    stack.editPersistentDataContainer(pdc ->
+        pdc.set(ItemBoostDataService.ITEM_BOOST_DATA_KEY, PersistentDataType.BYTE_ARRAY, json));
+
+    Optional<SerializableBoostData> roundTrip = service.getData(stack);
+    assertTrue(roundTrip.isPresent());
+    assertArrayEquals(json, codec.write(roundTrip.get()));
+  }
+
+  private static SerializableBoostData sampleData() {
+    return new PassiveBoostData(
+        new RuledBoostSourceImpl(
+            List.of(new Rule(
+                BoostFactoryImpl.INSTANCE.sneaking(true),
+                10,
+                new MultiplicativeBoostImpl(new BigDecimal("1.25")))),
+            Key.key("modularjobs", "mining_helmet"),
+            "helmet"),
+        new BitSet());
   }
 }

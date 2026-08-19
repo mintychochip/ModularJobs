@@ -2,6 +2,8 @@ package net.aincraft.service;
 
 import dev.conditions.paper.PersistentBags;
 import dev.databag.DataBag;
+import dev.databag.FormattedBytes;
+import dev.databag.UnknownBagFormatException;
 import java.util.Optional;
 import net.aincraft.boost.BoostDataCodec;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
@@ -14,8 +16,9 @@ import org.bukkit.persistence.PersistentDataType;
  * Stores and reads boost data on {@link ItemStack}s via the Bukkit persistent data container.
  *
  * <p>The PDC tag is a Kryo {@link DataBag} {@code BYTE_ARRAY}. Boost JSON lives in the bag
- * as a {@code byte[]} primitive (condition graphs stay {@link dev.conditions.ConditionSerializer}
- * bytes, not Kryo condition classes).
+ * as formatted bytes ({@link #BOOST_PAYLOAD_FORMAT}) so later encodings can migrate.
+ * Condition graphs stay {@link dev.conditions.ConditionSerializer} bytes, not Kryo
+ * condition classes.
  */
 public final class ItemBoostDataService {
 
@@ -24,6 +27,9 @@ public final class ItemBoostDataService {
 
   /** Bag key for the {@link SerializableBoostData} JSON payload. */
   public static final Key BOOST_PAYLOAD_KEY = Key.key("modularjobs", "boost_data");
+
+  /** Format id for {@link #BOOST_PAYLOAD_KEY} UTF-8 JSON (`SerializableBoostData`). */
+  public static final int BOOST_PAYLOAD_FORMAT = 1;
 
   private final BoostDataCodec codec;
 
@@ -38,7 +44,8 @@ public final class ItemBoostDataService {
    * @param stack item to attach the data to
    */
   public void addData(SerializableBoostData data, ItemStack stack) {
-    DataBag bag = DataBag.create().setBytes(BOOST_PAYLOAD_KEY, codec.write(data));
+    DataBag bag = DataBag.create()
+        .setBytes(BOOST_PAYLOAD_KEY, BOOST_PAYLOAD_FORMAT, codec.write(data));
     PersistentBags.write(stack, ITEM_BOOST_DATA_KEY, bag);
   }
 
@@ -57,11 +64,19 @@ public final class ItemBoostDataService {
     if (blob == null || blob.length == 0) {
       return Optional.empty();
     }
+    if (DataBag.isVersioned(blob)) {
+      try {
+        return readBagPayload(DataBag.fromBytes(blob));
+      } catch (UnknownBagFormatException ignored) {
+        return Optional.empty();
+      } catch (RuntimeException ignored) {
+        return Optional.empty();
+      }
+    }
     try {
-      DataBag bag = DataBag.fromBytes(blob);
-      Optional<byte[]> payload = bag.getBytes(BOOST_PAYLOAD_KEY);
-      if (payload.isPresent()) {
-        return Optional.of(codec.read(payload.get()));
+      Optional<SerializableBoostData> fromBag = readBagPayload(DataBag.fromBytes(blob));
+      if (fromBag.isPresent()) {
+        return fromBag;
       }
     } catch (RuntimeException ignored) {
       // fall through to legacy raw JSON blob
@@ -71,5 +86,21 @@ public final class ItemBoostDataService {
     } catch (RuntimeException ignored) {
       return Optional.empty();
     }
+  }
+
+  private Optional<SerializableBoostData> readBagPayload(DataBag bag) {
+    Optional<FormattedBytes> formatted = bag.getFormatted(BOOST_PAYLOAD_KEY);
+    if (formatted.isPresent()) {
+      FormattedBytes payload = formatted.get();
+      if (payload.format() != BOOST_PAYLOAD_FORMAT) {
+        return Optional.empty();
+      }
+      return Optional.of(codec.read(payload.value()));
+    }
+    Optional<byte[]> raw = bag.getBytes(BOOST_PAYLOAD_KEY);
+    if (raw.isPresent()) {
+      return Optional.of(codec.read(raw.get()));
+    }
+    return Optional.empty();
   }
 }

@@ -168,7 +168,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: mintychochip/databag
-          ref: e27fedd42489d66242460770e04745de3812afff
+          ref: 108727923e773e98e189d7029a1c7acbe198b442
           path: databag
           fetch-depth: 1
 
