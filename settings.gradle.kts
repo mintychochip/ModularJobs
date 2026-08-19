@@ -24,6 +24,32 @@ dependencyResolutionManagement {
             name = "mintLocal"
             url = uri(rootDir.resolve("../mint/build/maven-repo"))
         }
+        // databag (./gradlew -p ../databag publishAllPublicationsToLocalBuildRepoRepository)
+        maven {
+            name = "databagLocal"
+            url = uri(rootDir.resolve("../databag/build/maven-repo"))
+        }
+        maven {
+            name = "databagGitHub"
+            url = uri("https://maven.pkg.github.com/mintychochip/databag")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: ""
+            }
+        }
+        // conditions library (./gradlew -p ../conditions publishAllPublicationsToLocalBuildRepoRepository)
+        maven {
+            name = "conditionsLocal"
+            url = uri(rootDir.resolve("../conditions/build/maven-repo"))
+        }
+        maven {
+            name = "conditionsGitHub"
+            url = uri("https://maven.pkg.github.com/aincraft-org/conditions")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: ""
+            }
+        }
         mavenLocal()
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")

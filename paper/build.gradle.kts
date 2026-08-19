@@ -4,10 +4,12 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.kryo)
     implementation(libs.guava)
     implementation(project(":api"))
     implementation(project(":common"))
+    implementation(libs.conditions.gson)
+    implementation(libs.conditions.paper)
+    implementation(libs.databag)
     implementation(libs.exp4j)
     implementation(libs.hikaricp)
     implementation(libs.caffeine)

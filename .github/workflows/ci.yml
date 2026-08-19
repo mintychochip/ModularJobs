@@ -164,9 +164,45 @@ jobs:
             -Dmaven.repo.local=${{ runner.temp }}/m2 \
             --console=plain --no-daemon
 
+      - name: Checkout databag dependency
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: mintychochip/databag
+          ref: e27fedd42489d66242460770e04745de3812afff
+          path: databag
+          fetch-depth: 1
+
+      - name: Link databag local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/databag" "$GITHUB_WORKSPACE/../databag"
+
+      - name: Publish databag local Maven artifacts
+        working-directory: databag
+        run: |
+          chmod +x gradlew
+          ./gradlew publishAllPublicationsToLocalBuildRepoRepository --console=plain --no-daemon
+
+      - name: Checkout conditions dependency
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: aincraft-org/conditions
+          ref: 052a8c6be7d908f2a6d9ed15d16081b74fd5ae8c
+          path: conditions
+          fetch-depth: 1
+
+      - name: Link conditions local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/conditions" "$GITHUB_WORKSPACE/../conditions"
+
+      - name: Publish conditions local Maven artifacts
+        working-directory: conditions
+        run: |
+          chmod +x gradlew
+          ./gradlew publishAllPublicationsToLocalBuildRepoRepository --console=plain --no-daemon
+
       - name: Verify required local dependency artifacts
         run: |
           test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
+          test -f ../databag/build/maven-repo/dev/databag/databag/0.0.0-SNAPSHOT/databag-0.0.0-SNAPSHOT.pom
+          test -f ../conditions/build/maven-repo/dev/conditions/api/0.0.0-SNAPSHOT/api-0.0.0-SNAPSHOT.pom
 
 
       - name: Grant execute permission for gradlew
