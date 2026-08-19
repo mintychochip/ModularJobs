@@ -26,6 +26,8 @@ public final class SchemaPresence {
   /** Session API table (same MySQL store). Optional for pure game-only pools. */
   public static final String EDITOR_SESSIONS = "editor_sessions";
 
+  private static final String TABLE_EXISTS = SqlStatements.load("schema/table-exists.sql");
+
   private SchemaPresence() {}
 
   /**
@@ -55,12 +57,7 @@ public final class SchemaPresence {
     if (type != DatabaseType.MYSQL) {
       throw new IllegalArgumentException("Only MySQL is supported, got " + type);
     }
-    try (PreparedStatement ps = connection.prepareStatement(
-        """
-            SELECT 1 FROM information_schema.tables
-            WHERE table_schema = DATABASE()
-              AND table_name = ?
-            """)) {
+    try (PreparedStatement ps = connection.prepareStatement(TABLE_EXISTS)) {
       ps.setString(1, table);
       try (ResultSet rs = ps.executeQuery()) {
         return rs.next();

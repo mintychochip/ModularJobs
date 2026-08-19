@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.aincraft.repository.ConnectionSource;
-import net.aincraft.repository.DatabaseType;
+import net.aincraft.repository.SqlStatements;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,30 +24,19 @@ import org.jetbrains.annotations.Nullable;
 public final class PlayerUpgradeRepository {
 
   private static final String SELECT_QUERY =
-      "SELECT total_skill_points, unlocked_nodes FROM player_upgrades WHERE player_id = ? AND job_key = ?";
+      SqlStatements.load("player_upgrades/select.sql");
 
   private static final String UPSERT_QUERY =
-      "INSERT INTO player_upgrades (player_id, job_key, total_skill_points, unlocked_nodes) "
-          + "VALUES (?, ?, ?, ?) "
-          + "ON DUPLICATE KEY UPDATE "
-          + "total_skill_points = VALUES(total_skill_points), "
-          + "unlocked_nodes = VALUES(unlocked_nodes)";
+      SqlStatements.load("player_upgrades/upsert.sql");
 
   private static final String DELETE_QUERY =
-      "DELETE FROM player_upgrades WHERE player_id = ? AND job_key = ?";
+      SqlStatements.load("player_upgrades/delete.sql");
 
   private static final String SELECT_STATE_QUERY =
-      "SELECT total_skill_points, unlocked_nodes, node_levels FROM player_upgrades WHERE player_id = ? AND job_key = ?";
+      SqlStatements.load("player_upgrades/select-state.sql");
 
-  private String stateUpsertQuery() {
-    return "INSERT INTO player_upgrades "
-        + "(player_id, job_key, total_skill_points, unlocked_nodes, node_levels) "
-        + "VALUES (?, ?, ?, '', ?) "
-        + "ON DUPLICATE KEY UPDATE "
-        + "total_skill_points = VALUES(total_skill_points), "
-        + "unlocked_nodes = VALUES(unlocked_nodes), "
-        + "node_levels = VALUES(node_levels)";
-  }
+  private static final String UPSERT_STATE_QUERY =
+      SqlStatements.load("player_upgrades/upsert-state.sql");
 
   private final ConnectionSource connectionSource;
 
@@ -147,7 +136,7 @@ public final class PlayerUpgradeRepository {
    */
   public void saveState(@NotNull SkillTreeState state) {
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(stateUpsertQuery())) {
+        PreparedStatement ps = connection.prepareStatement(UPSERT_STATE_QUERY)) {
       ps.setString(1, state.playerId());
       ps.setString(2, state.jobKey());
       ps.setInt(3, state.totalSkillPoints());

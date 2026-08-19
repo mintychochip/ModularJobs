@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import net.aincraft.repository.ConnectionSource;
+import net.aincraft.repository.SqlStatements;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -32,6 +33,10 @@ import org.jetbrains.annotations.NotNull;
  * {@code minecraft} for context keys). Imports run as a single transaction.
  */
 public final class YamlJobTaskLoader {
+
+  private static final String COUNT_JOB_TASKS = SqlStatements.load("job_tasks/count.sql");
+  private static final String INSERT_TASK = SqlStatements.load("job_tasks/insert-task.sql");
+  private static final String INSERT_PAYABLE = SqlStatements.load("job_tasks/insert-payable.sql");
 
   private final Plugin plugin;
   private final ConnectionSource connectionSource;
@@ -85,7 +90,7 @@ public final class YamlJobTaskLoader {
   private boolean isTableEmpty() {
     try (Connection connection = connectionSource.getConnection();
          Statement stmt = connection.createStatement();
-         ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM job_tasks")) {
+         ResultSet rs = stmt.executeQuery(COUNT_JOB_TASKS)) {
       return rs.next() && rs.getInt(1) == 0;
     } catch (SQLException e) {
       throw new RuntimeException("Failed to check if job_tasks table is empty", e);
@@ -187,14 +192,11 @@ public final class YamlJobTaskLoader {
 
   /** Inserts all tasks and their payables in a single transaction; rolls back on failure. */
   private void batchInsert(List<TaskEntry> tasks) {
-    String insertTask = "INSERT INTO job_tasks (job_key, action_type_key, context_key) VALUES (?, ?, ?)";
-    String insertPayable = "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount, currency_identifier) VALUES (?, ?, ?, ?)";
-
     try (Connection connection = connectionSource.getConnection()) {
       connection.setAutoCommit(false);
 
-      try (PreparedStatement taskStmt = connection.prepareStatement(insertTask, Statement.RETURN_GENERATED_KEYS);
-           PreparedStatement payableStmt = connection.prepareStatement(insertPayable)) {
+      try (PreparedStatement taskStmt = connection.prepareStatement(INSERT_TASK, Statement.RETURN_GENERATED_KEYS);
+           PreparedStatement payableStmt = connection.prepareStatement(INSERT_PAYABLE)) {
 
         for (TaskEntry task : tasks) {
           taskStmt.setString(1, task.jobKey);

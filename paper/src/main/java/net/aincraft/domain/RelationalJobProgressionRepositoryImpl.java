@@ -15,6 +15,7 @@ import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.MemoryJobRepositoryImpl;
 import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.repository.ConnectionSource;
+import net.aincraft.repository.SqlStatements;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -47,41 +48,33 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   private final MemoryJobRepositoryImpl jobRepository;
   private final ConnectionSource connectionSource;
   private final String tableName;
+  private final String saveQuery;
+  private final String loadQuery;
+  private final String loadAllByJobQuery;
+  private final String loadAllForPlayerQuery;
+  private final String deleteQuery;
   private final Cache<JobProgressionRepository.Key, JobProgressionRecord> readCache = Caffeine.newBuilder()
       .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE)
       .build();
-
-  private static final String SAVE_QUERY = """
-      INSERT INTO %s (player_id, job_key, experience)
-      VALUES (?,?,?)
-      ON DUPLICATE KEY UPDATE experience = VALUES(experience);
-      """;
-
-  private static final String LOAD_QUERY = """
-      SELECT experience FROM %s WHERE player_id = ?
-      AND job_key = ? LIMIT 1;
-      """;
-
-  private static final String LOAD_ALL_BY_JOB_QUERY = """
-      SELECT player_id,experience FROM %s WHERE job_key = ?
-      ORDER BY (experience IS NULL), CAST(experience AS DECIMAL(38,10))
-      DESC LIMIT %d;
-      """;
-
-  private static final String LOAD_ALL_FOR_PLAYER = """
-      SELECT job_key,experience FROM %s WHERE player_id = ?
-      LIMIT %d;
-      """;
-
-  private static final String DELETE_QUERY = """
-      DELETE FROM %s WHERE player_id = ? AND job_key = ?
-      """;
 
   private RelationalJobProgressionRepositoryImpl(MemoryJobRepositoryImpl jobRepository,
       ConnectionSource connectionSource, String tableName) {
     this.jobRepository = jobRepository;
     this.connectionSource = connectionSource;
     this.tableName = tableName;
+    this.saveQuery = bindTable(SqlStatements.load("job_progression/save.sql"));
+    this.loadQuery = bindTable(SqlStatements.load("job_progression/load.sql"));
+    this.loadAllByJobQuery = bindTable(SqlStatements.load("job_progression/load-all-by-job.sql"));
+    this.loadAllForPlayerQuery = bindTable(SqlStatements.load("job_progression/load-all-for-player.sql"));
+    this.deleteQuery = bindTable(SqlStatements.load("job_progression/delete.sql"));
+  }
+
+  private String bindTable(String sql) {
+    return sql.replace("{table}", tableName);
+  }
+
+  private String withLimit(String sql, int limit) {
+    return sql.replace("{limit}", Integer.toString(limit));
   }
 
   static JobProgressionRepository create(MemoryJobRepositoryImpl jobRepository,
@@ -92,8 +85,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   @Override
   public boolean save(JobProgressionRecord record) {
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            String.format(SAVE_QUERY, tableName))) {
+        PreparedStatement ps = connection.prepareStatement(saveQuery)) {
       String jobKey = record.jobRecord().jobKey();
       ps.setString(1, record.playerId());
       ps.setString(2, jobKey);
@@ -120,8 +112,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       return null;
     }
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            String.format(LOAD_QUERY, tableName))) {
+        PreparedStatement ps = connection.prepareStatement(loadQuery)) {
       ps.setString(1, playerId);
       ps.setString(2, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
@@ -147,7 +138,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     List<JobProgressionRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            String.format(LOAD_ALL_BY_JOB_QUERY, tableName, limit))) {
+            withLimit(loadAllByJobQuery, limit))) {
       ps.setString(1, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
@@ -175,7 +166,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     List<JobProgressionRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(
-            String.format(LOAD_ALL_FOR_PLAYER, tableName, limit))) {
+            withLimit(loadAllForPlayerQuery, limit))) {
       ps.setString(1, playerId);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
@@ -205,8 +196,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   @Override
   public boolean delete(String playerId, String jobKey) {
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            String.format(DELETE_QUERY, tableName))) {
+        PreparedStatement ps = connection.prepareStatement(deleteQuery)) {
       ps.setString(1, playerId);
       ps.setString(2, jobKey);
       if (ps.executeUpdate() > 0) {

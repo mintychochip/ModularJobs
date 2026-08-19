@@ -29,6 +29,15 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   /** Unit separator — must not appear in UUIDs or namespaced keys. */
   static final char KEY_SEP = '\u001f';
 
+  private static final String SELECT_SOURCE_IDS =
+      SqlStatements.load("time_boosts/select-source-ids.sql");
+  private static final String SELECT_BOOST =
+      SqlStatements.load("time_boosts/select.sql");
+  private static final String SAVE_BOOST =
+      SqlStatements.load("time_boosts/save.sql");
+  private static final String DELETE_BOOST =
+      SqlStatements.load("time_boosts/delete.sql");
+
   private final ConnectionSource connectionSource;
   private final KryoCodecRegistry codecRegistry;
   private final RelationalRepositoryImpl<String, ActiveBoostData> relational;
@@ -97,8 +106,7 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
 
     // Get source IDs from database by pure target_id
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            "SELECT source_id FROM time_boosts WHERE target_id = ?")) {
+        PreparedStatement ps = connection.prepareStatement(SELECT_SOURCE_IDS)) {
 
       ps.setString(1, targetIdentifier);
       try (ResultSet rs = ps.executeQuery()) {
@@ -196,21 +204,17 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
 
     @Override
     public String getSelectQuery() {
-      return "SELECT source_id, epoch_millis, duration, boost_source FROM time_boosts "
-          + "WHERE target_id = ? AND source_id = ?";
+      return SELECT_BOOST;
     }
 
     @Override
     public String getSaveQuery() {
-      return "INSERT INTO time_boosts (target_id, source_id, epoch_millis, duration, boost_source) "
-          + "VALUES (?, ?, ?, ?, ?) "
-          + "ON DUPLICATE KEY UPDATE epoch_millis = VALUES(epoch_millis), "
-          + "duration = VALUES(duration), boost_source = VALUES(boost_source)";
+      return SAVE_BOOST;
     }
 
     @Override
     public String getDeleteQuery() {
-      return "DELETE FROM time_boosts WHERE target_id = ? AND source_id = ?";
+      return DELETE_BOOST;
     }
 
     @Override

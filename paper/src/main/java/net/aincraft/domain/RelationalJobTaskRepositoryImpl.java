@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
-import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.repository.ConnectionSource;
+import net.aincraft.repository.SqlStatements;
 
 /**
  * SQL-backed repository for job task records, keyed by the tuple
@@ -29,20 +29,29 @@ public final class RelationalJobTaskRepositoryImpl {
 
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
   private static final int CACHE_MAXIMUM_SIZE = 10_000;
+
+  private static final String SELECT_PAYABLES =
+      SqlStatements.load("job_tasks/select-payables.sql");
+  private static final String SELECT_TASK_ID =
+      SqlStatements.load("job_tasks/select-task-id.sql");
+  private static final String INSERT_TASK =
+      SqlStatements.load("job_tasks/insert-task.sql");
+  private static final String DELETE_PAYABLES =
+      SqlStatements.load("job_tasks/delete-payables.sql");
+  private static final String INSERT_PAYABLE =
+      SqlStatements.load("job_tasks/insert-payable.sql");
+  private static final String DELETE_TASK =
+      SqlStatements.load("job_tasks/delete-task.sql");
+  private static final String SELECT_CONTEXT_KEYS =
+      SqlStatements.load("job_tasks/select-context-keys.sql");
+  private static final String SELECT_RECORDS_MAP =
+      SqlStatements.load("job_tasks/select-records-map.sql");
+
   private final ConnectionSource connectionSource;
 
   /** Read-through cache keyed by (jobKey, actionTypeKey, contextKey). */
   private final Cache<String, JobTaskRecord> readCache = Caffeine.newBuilder()
       .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE).build();
-
-  private static final String GET_RECORDS_MAP = """
-      SELECT t.context_key, t.task_id, t.action_type_key,
-             p.payable_type_key, p.amount, p.currency_identifier
-      FROM job_tasks t
-      LEFT JOIN job_task_payables p ON p.job_task_id = t.task_id
-      WHERE t.job_key = ?
-      ORDER BY t.action_type_key, t.task_id
-      """;
 
   /**
    * @param connectionSource the source of database connections for all operations
@@ -66,8 +75,7 @@ public final class RelationalJobTaskRepositoryImpl {
       return taskRecord;
     }
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            "SELECT p.payable_type_key, p.amount, p.currency_identifier FROM job_task_payables p JOIN job_tasks t ON p.job_task_id = t.task_id WHERE t.job_key=? AND t.action_type_key=? AND t.context_key=?;")) {
+        PreparedStatement ps = connection.prepareStatement(SELECT_PAYABLES)) {
       ps.setString(1, jobKey);
       ps.setString(2, actionTypeKey);
       ps.setString(3, contextKey);
@@ -102,8 +110,7 @@ public final class RelationalJobTaskRepositoryImpl {
       try {
         // Check if task exists
         Integer taskId = null;
-        try (PreparedStatement ps = connection.prepareStatement(
-            "SELECT task_id FROM job_tasks WHERE job_key=? AND action_type_key=? AND context_key=?")) {
+        try (PreparedStatement ps = connection.prepareStatement(SELECT_TASK_ID)) {
           ps.setString(1, record.jobKey());
           ps.setString(2, record.actionTypeKey());
           ps.setString(3, record.contextKey());
@@ -117,8 +124,7 @@ public final class RelationalJobTaskRepositoryImpl {
         if (taskId == null) {
           // Insert new task
           try (PreparedStatement ps = connection.prepareStatement(
-              "INSERT INTO job_tasks (job_key, action_type_key, context_key) VALUES (?, ?, ?)",
-              PreparedStatement.RETURN_GENERATED_KEYS)) {
+              INSERT_TASK, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, record.jobKey());
             ps.setString(2, record.actionTypeKey());
             ps.setString(3, record.contextKey());
@@ -131,8 +137,7 @@ public final class RelationalJobTaskRepositoryImpl {
           }
         } else {
           // Delete existing payables for update
-          try (PreparedStatement ps = connection.prepareStatement(
-              "DELETE FROM job_task_payables WHERE job_task_id=?")) {
+          try (PreparedStatement ps = connection.prepareStatement(DELETE_PAYABLES)) {
             ps.setInt(1, taskId);
             ps.executeUpdate();
           }
@@ -140,8 +145,7 @@ public final class RelationalJobTaskRepositoryImpl {
 
         // Insert payables
         if (taskId != null && record.payables() != null) {
-          try (PreparedStatement ps = connection.prepareStatement(
-              "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount, currency_identifier) VALUES (?, ?, ?, ?)")) {
+          try (PreparedStatement ps = connection.prepareStatement(INSERT_PAYABLE)) {
             for (PayableRecord payable : record.payables()) {
               ps.setInt(1, taskId);
               ps.setString(2, payable.payableTypeKey());
@@ -180,8 +184,7 @@ public final class RelationalJobTaskRepositoryImpl {
       try {
         // Get task_id first
         Integer taskId = null;
-        try (PreparedStatement ps = connection.prepareStatement(
-            "SELECT task_id FROM job_tasks WHERE job_key=? AND action_type_key=? AND context_key=?")) {
+        try (PreparedStatement ps = connection.prepareStatement(SELECT_TASK_ID)) {
           ps.setString(1, jobKey);
           ps.setString(2, actionTypeKey);
           ps.setString(3, contextKey);
@@ -197,15 +200,13 @@ public final class RelationalJobTaskRepositoryImpl {
         }
 
         // Delete payables first (foreign key)
-        try (PreparedStatement ps = connection.prepareStatement(
-            "DELETE FROM job_task_payables WHERE job_task_id=?")) {
+        try (PreparedStatement ps = connection.prepareStatement(DELETE_PAYABLES)) {
           ps.setInt(1, taskId);
           ps.executeUpdate();
         }
 
         // Delete task
-        try (PreparedStatement ps = connection.prepareStatement(
-            "DELETE FROM job_tasks WHERE task_id=?")) {
+        try (PreparedStatement ps = connection.prepareStatement(DELETE_TASK)) {
           ps.setInt(1, taskId);
           ps.executeUpdate();
         }
@@ -231,8 +232,7 @@ public final class RelationalJobTaskRepositoryImpl {
   public Map<String, List<JobTaskRecord>> getRecords(String jobKey) {
     Map<String, Map<Integer, TaskRecordAccumulator>> actionTypeTaskMap = new LinkedHashMap<>();
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            GET_RECORDS_MAP)) {
+        PreparedStatement ps = connection.prepareStatement(SELECT_RECORDS_MAP)) {
       ps.setString(1, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
@@ -286,8 +286,7 @@ public final class RelationalJobTaskRepositoryImpl {
   public List<JobTaskRecord> getRecords(String jobKey, String actionTypeKey) {
     List<JobTaskRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            "SELECT context_key FROM job_tasks WHERE job_key=? AND action_type_key=?;")) {
+        PreparedStatement ps = connection.prepareStatement(SELECT_CONTEXT_KEYS)) {
       ps.setString(1, jobKey);
       ps.setString(2, actionTypeKey);
       try (ResultSet rs = ps.executeQuery()) {
