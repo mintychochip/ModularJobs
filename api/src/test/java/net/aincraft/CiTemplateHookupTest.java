@@ -1,6 +1,7 @@
 package net.aincraft;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -14,12 +15,22 @@ class CiTemplateHookupTest {
   private static final String RELEASE_VERSION = "26.8.17.99";
 
   @Test
-  void consumerWorkflowUsesReusablePaperWorkflow() throws IOException {
+  void consumerWorkflowBuildsAndUploadsApiArtifact() throws IOException {
     Path workflow = Path.of(requiredProperty("ci.workflow"));
     String text = Files.readString(workflow);
     assertTrue(
+        text.contains("name: API build + publish artifact"),
+        "missing inline api-build job in " + workflow);
+    assertTrue(
+        text.contains(":api:test :api:build"),
+        "missing api gradle tasks in " + workflow);
+    assertTrue(
+        text.contains("api/build/libs/*.jar"),
+        "missing api jar upload glob in " + workflow);
+    assertFalse(
         text.contains("aincraft-org/ci-template/.github/workflows/paper.yml@"),
-        "missing paper.yml uses in " + workflow);
+        "reusable workflow must not be referenced from " + workflow
+            + " (aincraft-org/ci-template is private and unresolvable from a public repo)");
   }
 
   @Test
