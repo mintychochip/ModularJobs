@@ -11,6 +11,7 @@ intent or progress changes. Checkboxes in these files are the persistence layer.
 | **Persistence** | [persistence.md](./persistence.md) | MySQL 8-only, connect-only schema, repositories |
 | **Jobs progression** | [jobs-progression.md](./jobs-progression.md) | Jobs, tasks, actions, payment eligibility, XP |
 | **Payables & economy** | [payables-economy.md](./payables-economy.md) | Payable awards, Mint ledger bridge |
+| **Conditions** | [conditions.md](./conditions.md) | Player predicates (`aincraft-org/conditions`); item bags (`mintychochip/databag`) |
 | **Boosts** | [boosts.md](./boosts.md) | Timed/item boosts, boost engine |
 | **Skill tree** | [skill-tree.md](./skill-tree.md) | JSON-driven job upgrade graphs |
 | **Secure sessions** | [secure-sessions.md](./secure-sessions.md) | REST API, React editor, Paper export/apply |

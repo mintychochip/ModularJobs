@@ -1,7 +1,7 @@
 # Boosts — Living Spec
 
 > Status: active  
-> Last updated: 2026-08-08  
+> Last updated: 2026-08-19  
 > Owners: modularjobs maintainers
 
 ## Intent
@@ -18,7 +18,8 @@ permission-gated.
 - Boost model in `api` (`container.boost`, factories)
 - `BoostEngine` evaluation in `paper` payment path
 - Timed boost persistence (`time_boosts` / identity tables)
-- Conditions and policies for when a boost applies
+- Conditions and policies for when a boost applies (player predicates owned by
+  [conditions.md](./conditions.md); boosts persist them as serializer bytes)
 - Admin `/jobs boost` (requires `modularjobs.admin`)
 
 ### Out of scope / non-goals
@@ -53,11 +54,14 @@ permission-gated.
 
 ### Current notes
 
-Stable capability. Touch carefully when changing payment pipeline order.
+Player predicates live in `dev.conditions`. Boost rules persist
+`priority` + condition serializer bytes inside `SerializableBoostData` JSON.
+Item PDC stores that JSON inside a `dev.databag.DataBag` `BYTE_ARRAY`.
+Touch payment pipeline order carefully.
 
 ## Next
 
-- [ ] No committed near-term boost features — groom when operators request metrics or new condition types
+- [ ] Broader vanilla condition subset as content needs (see conditions catalog)
 
 ## Future
 

@@ -1,7 +1,7 @@
 # ModularJobs — Living Spec (product / platform)
 
 > Status: active  
-> Last updated: 2026-08-14
+> Last updated: 2026-08-19
 > Owners: modularjobs maintainers
 
 ## Intent
@@ -47,9 +47,9 @@ process running DDL.
 
 | Module | Role | Allowed deps |
 |--------|------|----------------|
-| `api` | Public contracts for integrators | JDK + `common`; no Paper |
-| `common` | Shared DTOs (editor payload, …) | JDK only |
-| `paper` | Plugin impl + shadow jar | api, common, Paper, Craftux, optional soft-depends |
+| `api` | Public contracts for integrators | JDK + `conditions-api`; no Paper |
+| `common` | Shared DTOs + JSON codecs (editor, conditions) | JDK + Gson; may depend on `api` |
+| `paper` | Plugin impl + shadow jar | api, common, Paper, Craftux, databag, optional soft-depends |
 | `web/*` | Docs, React editor, Rust REST | Node / Rust / MySQL client |
 
 ### How to build here
