@@ -27,10 +27,14 @@ import net.aincraft.commands.TopCommand;
 import net.aincraft.commands.TreeEditorCommand;
 import net.aincraft.commands.UpgradesCommand;
 import net.aincraft.config.YamlConfiguration;
+import net.aincraft.config.LevelUpCommandsConfig;
+import net.aincraft.config.ProgressionLimitsConfig;
 import net.aincraft.container.ActionType;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.PayableType;
 import net.aincraft.service.ItemBoostDataService;
+import net.aincraft.service.JoinGate;
+import net.aincraft.service.LevelUpCommandExecutor;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
@@ -47,7 +51,10 @@ import net.aincraft.gui.StatsGui;
 import net.aincraft.gui.UpgradeTreeGui;
 import net.aincraft.gui.craftux.CraftuxSurfaces;
 import net.aincraft.gui.craftux.CraftuxUiHost;
+import net.aincraft.listener.AutoJoinListener;
+import net.aincraft.listener.LevelUpCommandListener;
 import net.aincraft.payable.PayableWiring;
+import net.aincraft.payment.PaymentSettings;
 import net.aincraft.payment.PaymentWiring;
 import net.aincraft.placeholders.PlaceholderExpansionHandle;
 import net.aincraft.profession.ProfessionWiring;
@@ -169,13 +176,18 @@ public final class PluginContext {
     // construction so the experience handler can close over JobService.
     Registry<PayableType> payableTypeRegistry = new SimpleRegistryImpl<>();
 
+    ProgressionLimitsConfig progressionLimits = ProgressionLimitsConfig.fromPlugin(plugin);
+    PaymentSettings paymentSettingsForJoin = PaymentSettings.fromPlugin(plugin);
+    JoinGate joinGate = new JoinGate(progressionLimits, paymentSettingsForJoin.disabledWorlds());
+
     DomainWiring domain = DomainWiring.create(
         plugin,
         connectionSource,
         resources,
         actionTypeRegistry,
         payableTypeRegistry,
-        keyResolver);
+        keyResolver,
+        joinGate);
 
     // Craftux inventory + text surfaces (scoreboard / boss bar) for all plugin UIs
     CraftuxUiHost craftuxUi = CraftuxUiHost.create(plugin);
@@ -266,10 +278,15 @@ public final class PluginContext {
         professions.recipeService,
         professions.professionService);
 
+    LevelUpCommandsConfig levelUpCommands = LevelUpCommandsConfig.fromPlugin(plugin);
+    LevelUpCommandExecutor levelUpCommandExecutor = new LevelUpCommandExecutor(
+        levelUpCommands,
+        command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+
     EditorConfig editorConfig = EditorConfig.fromPlugin(plugin);
 
     JobBrowseGui jobBrowseGui = new JobBrowseGui(
-        craftuxUi.inventory(), domain.jobService, upgradeService);
+        craftuxUi.inventory(), domain.jobService, upgradeService, joinGate);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_JOB_JOIN, jobBrowseGui::onJoin);
     StatsGui statsGui = new StatsGui(craftuxUi.inventory());
     craftuxUi.actions().register(CraftuxUiHost.ACTION_STATS_PREV, statsGui::onPrev);
@@ -283,7 +300,7 @@ public final class PluginContext {
         domain.jobService, domain.jobResolver, preferencesService, jobInfoGui);
 
     Set<JobsCommand> commands = new LinkedHashSet<>();
-    commands.add(new JoinCommand(domain.jobService, domain.jobResolver));
+    commands.add(new JoinCommand(domain.jobService, domain.jobResolver, joinGate));
     commands.add(new ListCommand(domain.jobService));
     commands.add(new BrowseCommand(jobBrowseGui));
     commands.add(new TopCommand(domain.jobService, topPageProvider, plugin, craftuxSurfaces));
@@ -319,6 +336,10 @@ public final class PluginContext {
     List<Listener> listenerList = new ArrayList<>();
     listenerList.addAll(payment.listeners);
     listenerList.add(new ConsumableBoostController(itemBoostDataService, timedBoostDataService));
+    // Config-driven level-up commands run after payment listeners have played feedback.
+    listenerList.add(new LevelUpCommandListener(levelUpCommandExecutor));
+    // Auto-join configured jobs after perks are restored by upgrade listeners.
+    listenerList.add(new AutoJoinListener(domain.jobService, progressionLimits));
     // Info/stats navigation is craftux inventory actions (no Paper Dialog listener)
     listenerList.add(new UpgradeLevelUpListener(upgradeService, skillTreeRegistry));
     // UpgradeTreeGui clicks are host craftux actions (no Bukkit Listener)

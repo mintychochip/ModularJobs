@@ -52,3 +52,16 @@ editor:
   # Must match REST SESSION_CREATE_SECRET when the API requires one.
   session-create-secret: ""
   session-ttl-minutes: 1440
+
+# Commands run by the console when a player levels up in a job.
+# Each entry: { command: "...", min-level: N }.
+# Placeholders: {player}, {level}, {job}.
+level-up-commands: []
+
+# Join eligibility. max-jobs: 0 = unlimited.
+# auto-join-jobs: joined on login if not already in them.
+# world-join-restriction: reject joining while in a payout disabled-world.
+progression-limits:
+  max-jobs: 0
+  auto-join-jobs: []
+  world-join-restriction: true

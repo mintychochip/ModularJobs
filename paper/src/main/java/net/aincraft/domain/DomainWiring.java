@@ -15,6 +15,7 @@ import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.PluginResources;
 import net.aincraft.domain.JobResolver;
 import net.aincraft.service.JobService;
+import net.aincraft.service.JoinGate;
 import net.aincraft.service.YamlJobTaskLoader;
 import net.aincraft.util.KeyResolver;
 import org.bukkit.plugin.Plugin;
@@ -56,7 +57,8 @@ public final class DomainWiring {
       PluginResources resources,
       Registry<ActionType> actionTypeRegistry,
       Registry<PayableType> payableTypeRegistry,
-      KeyResolver keyResolver) {
+      KeyResolver keyResolver,
+      JoinGate joinGate) {
     YamlRecordLoader loader = new YamlRecordLoader();
     Map<String, JobRecord> records = loader.load(YamlConfiguration.create(plugin, "jobs.yml"));
     MemoryJobRepositoryImpl jobRepository = new MemoryJobRepositoryImpl(records);
@@ -90,6 +92,7 @@ public final class DomainWiring {
         keyResolver,
         jobRepository,
         progressionService,
+        joinGate,
         plugin);
     JobResolver jobResolver = new JobResolver(jobService);
     return new DomainWiring(

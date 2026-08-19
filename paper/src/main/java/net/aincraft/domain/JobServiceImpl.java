@@ -25,6 +25,7 @@ import net.aincraft.event.JobLeaveEvent;
 import net.aincraft.paper.event.PaperEventBridge;
 import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
+import net.aincraft.service.JoinGate;
 import net.aincraft.util.KeyResolver;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
@@ -59,6 +60,7 @@ final class JobServiceImpl implements JobService {
   private final KeyResolver keyResolver;
   private final MemoryJobRepositoryImpl jobRepository;
   private final ProgressionService progressionService;
+  private final JoinGate joinGate;
   private final Plugin plugin;
 
   /**
@@ -68,6 +70,7 @@ final class JobServiceImpl implements JobService {
    * @param keyResolver            resolves {@link Context} to keys for task lookup
    * @param jobRepository          in-memory job definitions
    * @param progressionService     live/archive progression store facade
+   * @param joinGate               join-eligibility gate
    * @param plugin                 plugin for key namespaces and events
    */
   public JobServiceImpl(
@@ -77,6 +80,7 @@ final class JobServiceImpl implements JobService {
       KeyResolver keyResolver,
       MemoryJobRepositoryImpl jobRepository,
       ProgressionService progressionService,
+      JoinGate joinGate,
       Plugin plugin) {
     this.actionTypeRegistry = actionTypeRegistry;
     this.payableTypeRegistry = payableTypeRegistry;
@@ -84,6 +88,7 @@ final class JobServiceImpl implements JobService {
     this.keyResolver = keyResolver;
     this.jobRepository = jobRepository;
     this.progressionService = progressionService;
+    this.joinGate = joinGate;
     this.plugin = plugin;
   }
 
@@ -144,6 +149,19 @@ final class JobServiceImpl implements JobService {
     UUID uuid = UUID.fromString(playerId);
     Player player = Bukkit.getPlayer(uuid);
     Job job = PersistenceConverters.fromRecord(jobRecord, plugin, payableTypeRegistry);
+
+    // Enforce join eligibility (max jobs, per-job permission, world restriction) when the
+    // player is online. This is the single enforcement point shared by /jobs join and the GUI.
+    if (player != null) {
+      List<JobProgression> current = progressionService.loadAllForPlayer(playerId, 100).stream()
+          .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
+          .toList();
+      JoinGate.JoinResult result = joinGate.canJoin(player, job, current);
+      if (result != JoinGate.JoinResult.ALLOWED) {
+        return false;
+      }
+    }
+
     PaperEventBridge events = new PaperEventBridge(Bridge.bridge().eventBus());
 
     // Try to restore from archive first (rejoin case)

@@ -7,7 +7,10 @@ import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.Job;
+import net.aincraft.JobProgression;
 import net.aincraft.domain.JobResolver;
+import net.aincraft.service.JoinGate;
+import net.aincraft.service.JoinGate.JoinResult;
 import net.aincraft.service.JobService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -19,12 +22,14 @@ public final class JoinCommand implements JobsCommand {
 
   private final JobService jobService;
   private final JobResolver jobResolver;
+  private final JoinGate joinGate;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
-  /** Creates the join command with the job service and resolver used to look up jobs. */
-  public JoinCommand(JobService jobService, JobResolver jobResolver) {
+  /** Creates the join command with the job service, resolver, and join gate. */
+  public JoinCommand(JobService jobService, JobResolver jobResolver, JoinGate joinGate) {
     this.jobService = jobService;
     this.jobResolver = jobResolver;
+    this.joinGate = joinGate;
   }
 
   /**
@@ -63,10 +68,37 @@ public final class JoinCommand implements JobsCommand {
             return 0;
           }
 
-          if (jobService.joinJob(player.getUniqueId().toString(), job.key().toString())) {
-            Messages.send(player, "<primary>✓ You joined</primary> <secondary>" + job.getPlainName() + "</secondary> <primary>!</primary>");
+          String playerId = player.getUniqueId().toString();
+          if (jobService.getProgression(playerId, job.key().toString()) != null) {
+            Messages.send(player, "<neutral>You are already in</neutral> <secondary>"
+                + job.getPlainName() + "</secondary>.");
+            return Command.SINGLE_SUCCESS;
+          }
+
+          List<JobProgression> current = jobService.getProgressions(player.getUniqueId());
+          JoinResult result = joinGate.canJoin(player, job, current);
+          switch (result) {
+            case MAX_JOBS -> Messages.send(player,
+                "<error>You reached the maximum number of jobs you can join.");
+            case PERMISSION_DENIED -> Messages.send(player,
+                "<error>You do not have permission to join</error> <secondary>"
+                    + job.getPlainName() + "</secondary><error>.</error>");
+            case WORLD_DENIED -> Messages.send(player,
+                "<error>You cannot join jobs while in this world.");
+            default -> {
+              // proceed
+            }
+          }
+          if (result != JoinResult.ALLOWED) {
+            return Command.SINGLE_SUCCESS;
+          }
+
+          if (jobService.joinJob(playerId, job.key().toString())) {
+            Messages.send(player, "<primary>✓ You joined</primary> <secondary>"
+                + job.getPlainName() + "</secondary> <primary>!</primary>");
           } else {
-            Messages.send(player, "<neutral>You are already in</neutral> <secondary>" + job.getPlainName() + "</secondary>.");
+            Messages.send(player, "<neutral>You could not join</neutral> <secondary>"
+                + job.getPlainName() + "</secondary>.");
           }
 
           return Command.SINGLE_SUCCESS;

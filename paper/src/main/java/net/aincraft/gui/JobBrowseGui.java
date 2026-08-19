@@ -20,6 +20,7 @@ import net.aincraft.container.Payable;
 import net.aincraft.gui.craftux.CraftuxItems;
 import net.aincraft.gui.craftux.CraftuxUiHost;
 import net.aincraft.service.JobService;
+import net.aincraft.service.JoinGate;
 import net.aincraft.upgrade.UpgradeService;
 import net.aincraft.upgrade.UpgradeTree;
 import net.aincraft.util.Messages;
@@ -48,6 +49,7 @@ public final class JobBrowseGui {
   private final InventoryRuntime inventory;
   private final JobService jobService;
   private final UpgradeService upgradeService;
+  private final JoinGate joinGate;
 
   /** Per-audience session: slot index → job key for join dispatch. */
   private final Map<UUID, Map<Integer, String>> sessions = new HashMap<>();
@@ -56,10 +58,12 @@ public final class JobBrowseGui {
   public JobBrowseGui(
       InventoryRuntime inventory,
       JobService jobService,
-      UpgradeService upgradeService) {
+      UpgradeService upgradeService,
+      JoinGate joinGate) {
     this.inventory = inventory;
     this.jobService = jobService;
     this.upgradeService = upgradeService;
+    this.joinGate = joinGate;
   }
 
   /** Opens the browse menu for {@code player}. */
@@ -88,9 +92,34 @@ public final class JobBrowseGui {
     }
 
     String playerId = audience.toString();
+    String name;
     try {
+      name = jobService.getJob(jobKey).getPlainName();
+    } catch (IllegalArgumentException e) {
+      Messages.send(player, "<error>Job not found: " + jobKey);
+      player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+      return;
+    }
+    try {
+      if (jobService.getProgression(playerId, jobKey) != null) {
+        Messages.send(player, "<neutral>You are already in</neutral> <secondary>" + name + "</secondary>.");
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.0f);
+        return;
+      }
+      JoinGate.JoinResult result = joinGate.canJoin(
+          player, jobService.getJob(jobKey), jobService.getProgressions(audience));
+      if (result != JoinGate.JoinResult.ALLOWED) {
+        Messages.send(player, switch (result) {
+          case MAX_JOBS -> "<error>You reached the maximum number of jobs you can join.";
+          case PERMISSION_DENIED -> "<error>You do not have permission to join</error> <secondary>"
+              + name + "</secondary><error>.</error>";
+          case WORLD_DENIED -> "<error>You cannot join jobs while in this world.";
+          case ALLOWED -> "";
+        });
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.0f);
+        return;
+      }
       if (jobService.joinJob(playerId, jobKey)) {
-        String name = jobService.getJob(jobKey).getPlainName();
         Messages.send(player,
             "<primary>✓ You joined</primary> <secondary>" + name + "</secondary> <primary>!</primary>");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.2f);
@@ -102,8 +131,7 @@ public final class JobBrowseGui {
           }
         }, 1L);
       } else {
-        String name = jobService.getJob(jobKey).getPlainName();
-        Messages.send(player, "<neutral>You are already in</neutral> <secondary>" + name + "</secondary>.");
+        Messages.send(player, "<neutral>You could not join</neutral> <secondary>" + name + "</secondary>.");
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.0f);
       }
     } catch (IllegalArgumentException e) {
