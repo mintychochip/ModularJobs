@@ -38,6 +38,8 @@ dependencies {
     // MockBukkit for Paper 26.2 — mock server for OfflinePlayer / Material runtime
     testImplementation(libs.mockbukkit)
     testImplementation(libs.paper.api)
+    // PlaceholderAPI for expansion unit tests (compileOnly in main)
+    testImplementation(libs.placeholderapi)
     // MySQL only — driver ships in the plugin artifact
     implementation(libs.mysql)
     testImplementation(libs.mysql)
