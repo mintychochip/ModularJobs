@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Added
+
+- Full PlaceholderAPI `modular` placeholder set (`level_<job>`, `experience_<job>`,
+  `maxexperience_<job>`, `maxlevel_<job>`, `name_<job>`, `description_<job>`,
+  `isin_<job>`, `canjoin_<job>`, `joinedjobcount`, `jobs`, `totallevels`, `maxjobs`,
+  `archivedjobs`).
+- Progression join limits: `progression-limits.max-jobs`, per-job `jobs.join.<job>`
+  permission (checked by `/jobs join` and the browse GUI), world join restriction
+  (reject joining while in a payout disabled-world), and `auto-join-jobs` on login.
+- Config-driven level-up commands (`level-up-commands` in `config.yml`) with
+  `{player}` / `{level}` / `{job}` placeholders and `min-level` gating.
+
 ## 26.8.11.1 — ModularJobs API and Azoth gathering gates
 
 ### Added

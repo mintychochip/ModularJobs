@@ -60,6 +60,9 @@ reliable multi-payable accumulation under concurrency.
 - [x] Multi-payable XP accumulation + write-back re-queue merge
 - [x] Admin level/exp gated; production permission tree
 - [x] PlaceholderAPI soft-depend expansion
+- [x] PlaceholderAPI expansion: full `modular` placeholder set (level/experience/jobs/totallevels/maxjobs/name/description/isin/canjoin/…)
+- [x] Join limits: max-jobs, per-job `jobs.join.<job>` permission, world join restriction, auto-join on login
+- [x] Config-driven level-up commands (`level-up-commands` in config.yml)
 
 ### Current notes
 
