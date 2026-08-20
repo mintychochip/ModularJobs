@@ -48,7 +48,10 @@ shaped; boosts persist a condition as serializer **bytes** next to rule priority
   unknown envelope versions throw.
 - CalVer `YY.M.D.REVISION` on that repo; local default `0.0.0-SNAPSHOT`.
 - Adventure-shaped: immutable records, `ConditionSerializer.read/write(byte[])`.
-- Spec against Paper/Minecraft JSON keys; do not invent a game-agnostic SPI.
+- Spec against Paper/Minecraft JSON keys for built-in kinds. Third-party ids
+  register a `ConditionHandler` (JSON → `DataBag` arguments +
+  `ConditionContext.extras()`); do not fold party/region/profession/etc. into
+  ModularJobs or the core factory.
 - Boost config files may inline condition objects; item/DB stores bytes.
 
 ### Explicit do-nots
@@ -70,6 +73,7 @@ shaped; boosts persist a condition as serializer **bytes** next to rule priority
 - [x] Kryo primitive bag (`DataBag`) embeds on items as PDC `BYTE_ARRAY`
 - [x] `DataBag` extracted to [mintychochip/databag](https://github.com/mintychochip/databag) (`dev.databag:databag`)
 - [x] DataBag envelope versions + formatted payload ids for migrations
+- [x] `ConditionHandler` / `DataHandler` SPI so extra predicates are not ModularJobs-owned
 
 ## Next
 
@@ -93,6 +97,7 @@ shaped; boosts persist a condition as serializer **bytes** next to rule priority
 | 2026-08-19 | Kryo `DataBag` primitives on item PDC `BYTE_ARRAY` | Light PDC-like store; conditions stay JSON bytes inside the bag |
 | 2026-08-19 | `DataBag` lives in `mintychochip/databag` (`dev.databag`) | Primitive bag is reusable; conditions/paper keep `PersistentBags` |
 | 2026-08-19 | DataBag v1 envelope + format ids on `byte[]` slots | Unversioned bags still read; new primitives skip; payload encodings migrate |
+| 2026-08-19 | `ConditionHandler` + `DataHandler` registries; extras `DataBag` on the snapshot | Party/region/etc. stay out of ModularJobs; unknown ids still throw |
 
 ## Open questions
 

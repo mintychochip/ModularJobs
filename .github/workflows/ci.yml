@@ -168,7 +168,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: mintychochip/databag
-          ref: 108727923e773e98e189d7029a1c7acbe198b442
+          ref: 373f7d0991e121afbcccf32015105010cafab2be
           path: databag
           fetch-depth: 1
 
@@ -185,7 +185,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: aincraft-org/conditions
-          ref: 052a8c6be7d908f2a6d9ed15d16081b74fd5ae8c
+          ref: 7d30d892b66b7ab440edd881105b1c4ad4ab4c0e
           path: conditions
           fetch-depth: 1
 
