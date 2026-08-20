@@ -74,6 +74,7 @@ shaped; boosts persist a condition as serializer **bytes** next to rule priority
 - [x] `DataBag` extracted to [mintychochip/databag](https://github.com/mintychochip/databag) (`dev.databag:databag`)
 - [x] DataBag envelope versions + formatted payload ids for migrations
 - [x] `ConditionHandler` / `DataHandler` SPI so extra predicates are not ModularJobs-owned
+- [x] ModularJobs registers `BoostPayloadHandler` and fills job extras on evaluate
 
 ## Next
 
