@@ -9,6 +9,7 @@ import dev.conditions.gson.GsonConditionSerializer;
 import dev.conditions.paper.PersistentBags;
 import dev.databag.DataBag;
 import dev.databag.FormattedBytes;
+import net.aincraft.boost.BoostPayloadHandler;
 import java.math.BigDecimal;
 import java.util.BitSet;
 import java.util.List;
@@ -64,6 +65,7 @@ class ItemBoostDataServicePdcTest {
     FormattedBytes payload = bag.getFormatted(ItemBoostDataService.BOOST_PAYLOAD_KEY).orElseThrow();
     assertEquals(ItemBoostDataService.BOOST_PAYLOAD_FORMAT, payload.format());
     assertArrayEquals(codec.write(data), payload.value());
+    assertArrayEquals(codec.write(data), bag.get(BoostPayloadHandler.INSTANCE).orElseThrow());
 
     Optional<SerializableBoostData> roundTrip = service.getData(stack);
     assertTrue(roundTrip.isPresent());

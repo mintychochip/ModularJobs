@@ -22,6 +22,9 @@ import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
+import dev.conditions.paper.PaperConditionContexts;
+import dev.databag.DataBag;
+import net.aincraft.boost.ModularJobsBags;
 import net.aincraft.upgrade.UpgradeBoostDataService;
 import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
@@ -68,12 +71,21 @@ public final class BoostEngine {
       return Map.of();
     }
 
+    String jobKey = progression == null || progression.job() == null
+        ? null
+        : progression.job().key().asString();
+    DataBag extras = ModularJobsBags.extras(
+        jobKey, progression == null ? 0 : progression.level());
     BoostContext boostContext = new BoostContext(
         type,
         progression,
         onlinePlayer.getUniqueId(),
         onlinePlayer.getWorld().getName(),
-        payable);
+        payable,
+        PaperConditionContexts.from(
+            onlinePlayer,
+            jobKey == null ? Set.of() : Set.of(jobKey),
+            extras));
     List<BoostSource> itemSources = aggregateItemSources(onlinePlayer);
     List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
         new PlayerTarget(onlinePlayer.getUniqueId()));

@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import net.aincraft.boost.BoostFactoryImpl;
+import net.aincraft.boost.ModularJobsBags;
 import net.aincraft.boost.ConsumableBoostController;
 import net.aincraft.boost.config.BoostSourceLoader;
 import net.aincraft.commands.ApplyEditsCommand;
@@ -71,7 +72,8 @@ import net.aincraft.repository.DatabaseConfigSections;
 import net.aincraft.repository.PluginResources;
 import net.aincraft.repository.SharedConnectionSources;
 import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
-import net.aincraft.serialization.KryoCodecRegistry;
+import net.aincraft.boost.BoostDataCodec;
+import dev.conditions.gson.GsonConditionSerializer;
 import net.aincraft.service.PreferencesServiceImpl;
 import net.aincraft.service.PreferencesService;
 import net.aincraft.service.TimedBoostDataServiceImpl;
@@ -164,10 +166,11 @@ public final class PluginContext {
     SharedConnectionSources sharedSources = new SharedConnectionSources(plugin, resources);
     ConnectionSource connectionSource = sharedSources.getOrCreate(payableSection);
 
-    KryoCodecRegistry codecRegistry = new KryoCodecRegistry();
+    ModularJobsBags.register();
     KeyResolver keyResolver = KeyResolvers.create();
     BoostFactory boostFactory = BoostFactoryImpl.INSTANCE;
     ConditionFactory conditionFactory = BoostFactoryImpl.INSTANCE;
+    BoostDataCodec boostDataCodec = new BoostDataCodec(GsonConditionSerializer.gson(), boostFactory);
     Gson gson = GsonProvider.create();
 
     Registry<ActionType> actionTypeRegistry = ActionTypeRegistryProvider.create(plugin);
@@ -204,11 +207,11 @@ public final class PluginContext {
         DatabaseConfigSections.requireSection(databaseConfig, "timed-boost");
     ConnectionSource timedBoostSource = sharedSources.getOrCreate(timedBoostSection);
     RelationalTimedBoostRepositoryImpl timedBoostRepository = new RelationalTimedBoostRepositoryImpl(
-        plugin, timedBoostSource, codecRegistry);
+        plugin, timedBoostSource, boostDataCodec);
     resources.onFlush(timedBoostRepository::flushPending);
     TimedBoostDataService timedBoostDataService =
         new TimedBoostDataServiceImpl(timedBoostRepository);
-    ItemBoostDataService itemBoostDataService = new ItemBoostDataService(codecRegistry);
+    ItemBoostDataService itemBoostDataService = new ItemBoostDataService(boostDataCodec);
 
     PreferencesService preferencesService = new PreferencesServiceImpl(plugin);
 

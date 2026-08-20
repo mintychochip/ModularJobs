@@ -6,6 +6,7 @@ import dev.databag.FormattedBytes;
 import dev.databag.UnknownBagFormatException;
 import java.util.Optional;
 import net.aincraft.boost.BoostDataCodec;
+import net.aincraft.boost.BoostPayloadHandler;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
 import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
@@ -26,10 +27,10 @@ public final class ItemBoostDataService {
       "modular_jobs:item_boost_data");
 
   /** Bag key for the {@link SerializableBoostData} JSON payload. */
-  public static final Key BOOST_PAYLOAD_KEY = Key.key("modularjobs", "boost_data");
+  public static final Key BOOST_PAYLOAD_KEY = BoostPayloadHandler.KEY;
 
   /** Format id for {@link #BOOST_PAYLOAD_KEY} UTF-8 JSON (`SerializableBoostData`). */
-  public static final int BOOST_PAYLOAD_FORMAT = 1;
+  public static final int BOOST_PAYLOAD_FORMAT = BoostPayloadHandler.FORMAT;
 
   private final BoostDataCodec codec;
 
@@ -44,8 +45,7 @@ public final class ItemBoostDataService {
    * @param stack item to attach the data to
    */
   public void addData(SerializableBoostData data, ItemStack stack) {
-    DataBag bag = DataBag.create()
-        .setBytes(BOOST_PAYLOAD_KEY, BOOST_PAYLOAD_FORMAT, codec.write(data));
+    DataBag bag = DataBag.create().set(BoostPayloadHandler.INSTANCE, codec.write(data));
     PersistentBags.write(stack, ITEM_BOOST_DATA_KEY, bag);
   }
 
@@ -89,6 +89,10 @@ public final class ItemBoostDataService {
   }
 
   private Optional<SerializableBoostData> readBagPayload(DataBag bag) {
+    Optional<byte[]> handled = bag.get(BoostPayloadHandler.INSTANCE);
+    if (handled.isPresent()) {
+      return Optional.of(codec.read(handled.get()));
+    }
     Optional<FormattedBytes> formatted = bag.getFormatted(BOOST_PAYLOAD_KEY);
     if (formatted.isPresent()) {
       FormattedBytes payload = formatted.get();
