@@ -34,6 +34,31 @@ class CiTemplateHookupTest {
   }
 
   @Test
+  void ciUsesPinnedActionMajorsAndCleanCheck() throws IOException {
+    String text = Files.readString(Path.of(requiredProperty("ci.workflow")));
+    assertTrue(text.contains("actions/checkout@v7"), "checkout must be @v7");
+    assertTrue(text.contains("actions/setup-java@v5"), "setup-java must be @v5");
+    assertTrue(text.contains("gradle/actions/setup-gradle@v6"), "setup-gradle must be @v6");
+    assertTrue(text.contains("./gradlew clean check"), "java gate must be clean check");
+    assertFalse(
+        text.contains("java-version: \"21\""),
+        "CI must not install JDK 21 after the Java 25-only cutover");
+  }
+
+  @Test
+  void nightlyIsScheduleOrManualAndPublishesShadowJar() throws IOException {
+    Path nightly =
+        Path.of(requiredProperty("project.root")).resolve(".github/workflows/nightly.yml");
+    assertTrue(Files.isRegularFile(nightly), "missing " + nightly);
+    String text = Files.readString(nightly);
+    assertTrue(text.contains("cron: '0 4 * * *'"), "nightly must schedule at 04:00 UTC");
+    assertTrue(text.contains("workflow_dispatch"), "nightly must be manually dispatchable");
+    assertTrue(text.contains("gh release create nightly"), "must replace rolling nightly tag");
+    assertTrue(text.contains("paper/build/libs/*-all.jar"), "must publish paper shadow jar");
+    assertTrue(isScheduleOrManualOnly(text), "nightly must not run on push/PR/tag");
+  }
+
+  @Test
   void leftoverLocalJobsDoNotPublishOnPushPrOrTag() throws IOException {
     Path dir = Path.of(requiredProperty("project.root")).resolve(".github/workflows");
     try (var stream = Files.list(dir)) {

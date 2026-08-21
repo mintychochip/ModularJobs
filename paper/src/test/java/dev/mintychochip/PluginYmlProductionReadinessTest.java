@@ -1,5 +1,6 @@
 package dev.mintychochip;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,9 +31,7 @@ class PluginYmlProductionReadinessTest {
           "no commands.test entry");
 
       String api = yml.getString("api-version");
-      assertNotNull(api);
-      // Must not be the stale 1.13 stub
-      assertFalse("1.13".equals(api), "api-version must be modern (not 1.13), got " + api);
+      assertEquals("26.2", api, "api-version must be Paper 26.2, got " + api);
 
       assertTrue(yml.getStringList("softdepend").stream()
               .anyMatch(s -> s.equalsIgnoreCase("Mint")),
