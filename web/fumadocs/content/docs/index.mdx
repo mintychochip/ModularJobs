@@ -11,6 +11,30 @@ profession-gated world interactions. Configure everything from a secure web
 editor or plain YAML/JSON files.
 </Callout>
 
+## The idea
+
+Jobs are named tracks of work. Players join them, do the actions those jobs
+care about, and the server records experience and payables. Nothing here is a
+Minecraft vanilla mechanic — it is plugin configuration on top of Paper.
+
+## basics
+
+Day one is provisioning MySQL 8 out of band, pointing `database.yml` at that
+database, and restarting with the starter job files still in place. You do not
+need skill trees, boosts, or the web editor yet.
+
+## Everyday
+
+Operators come back to joining jobs, checking stats, and tweaking task amounts
+in YAML or the editor. Most servers stop at that loop.
+
+## Advanced
+
+<Callout type="info">Advanced — you do not need this to get started.</Callout>
+
+Profession gates, upgrade trees, timed boosts, and the secure session editor
+are later machinery. They are documented in the guides below.
+
 ## Quick start
 
 1. Apply the MySQL 8 schema out of band.

@@ -10,7 +10,9 @@
 
 **Spec:** `docs/superpowers/specs/2026-08-21-server-skill-alignment-design.md`
 
-**Wave 1 status:** landed on `chore/server-skill-alignment`. Verified `./gradlew :api:test :common:test :paper:test` and `./gradlew clean check` (analyzers still report-only). Packaged `plugin.yml` has `api-version: '26.2'`. Wave 2 not started.
+**Wave 1 status:** landed on `chore/server-skill-alignment`. Verified `./gradlew :api:test :common:test :paper:test` and `./gradlew clean check` (analyzers still report-only). Packaged `plugin.yml` has `api-version: '26.2'`.
+
+**Wave 2 status:** landed. `./gradlew check` is fail-closed (Spotless + Google Checks + PMD + SpotBugs). Fumadocs `npm test` (`verify-docs.mjs --ladder=guides`) passes.
 
 ## Global constraints
 

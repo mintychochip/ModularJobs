@@ -4,6 +4,28 @@ description: MySQL 8 provisioning, connection pooling, and schema ownership rule
 icon: Database
 ---
 
+## The idea
+
+Player progress lives in one operator-owned MySQL 8 database. The plugin
+connects and checks that tables exist; it never creates them.
+
+## basics
+
+Apply `sql/mysql.sql` with the ops script, put the JDBC URL in `database.yml`,
+restart. Missing tables fail startup with a pointer at that script.
+
+## Everyday
+
+Shared JDBC URL plus username shares one Hikari pool. Keep passwords out of
+git. Back up MySQL the way you back up any other service.
+
+## Advanced
+
+<Callout type="info">Advanced — you do not need this to get started.</Callout>
+
+Pool sizing and schema-presence checks are operator tuning, not day-one
+work.
+
 ## MySQL 8 only
 
 ModularJobs supports **MySQL 8 only**. SQLite, PostgreSQL, MariaDB, and Mongo

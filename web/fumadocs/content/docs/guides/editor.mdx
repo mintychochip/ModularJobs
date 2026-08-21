@@ -4,6 +4,27 @@ description: Export job tasks, edit in the browser, and apply changes back throu
 icon: Lock
 ---
 
+## The idea
+
+The web editor is a second way to change job tasks. YAML on disk still
+works; the editor is for operators who want a browser session.
+
+## basics
+
+Leave the editor off. The plugin never starts a website or a REST process
+for you.
+
+## Everyday
+
+When enabled, export a session, edit tasks in the browser, apply the code
+back in game.
+
+## Advanced
+
+<Callout type="info">Advanced — you do not need this to get started.</Callout>
+
+Tokens, create secrets, and CORS are operator hardening for a public API.
+
 The web editor is **opt-in**. Operators must provision the Rust REST API, the
 MySQL 8 schema, the web editor URL, and the session-create secret explicitly —
 the Paper plugin does not launch or provision any external service.

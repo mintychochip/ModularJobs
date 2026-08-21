@@ -93,7 +93,7 @@ Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.m
 - [ ] Keep living-spec horizons in sync when domain work ships
 - [ ] Align any remaining operator docs with MySQL-only persistence, optional
 - [x] Server-skill alignment Wave 1: toolchain pins, `api-version` 26.2, CI action majors, nightly, Hikari 7.0.2 (`docs/superpowers/specs/2026-08-21-server-skill-alignment-design.md`)
-- [ ] Server-skill alignment Wave 2: Spotless + Google Checks fail-on-`check`, Fumadocs verify-docs gate
+- [x] Server-skill alignment Wave 2: Spotless + Google Checks fail-on-`check`, Fumadocs verify-docs gate
 
 ## Future
 

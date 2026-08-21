@@ -4,6 +4,24 @@ description: Release checklist and verification commands for a ModularJobs deplo
 icon: ListChecks
 ---
 
+## The idea
+
+Operations is the checklist for shipping a jar, not a player guide.
+
+## basics
+
+Build the plugin, apply MySQL schema, read the generated configs, restart.
+
+## Everyday
+
+Re-run the Java tests and keep starter YAML as examples you replace.
+
+## Advanced
+
+<Callout type="info">Advanced — you do not need this to get started.</Callout>
+
+The editor stack is extra process to provision if you enabled it.
+
 ## Release checklist
 
 1. Build the Paper artifact with `./gradlew :paper:build`.

@@ -4,6 +4,27 @@ description: JSON-driven job upgrade graphs, skill points, nodes, and requiremen
 icon: GitBranch
 ---
 
+## The idea
+
+A skill tree is a graph of unlocks on a job. JSON describes the nodes;
+Java enforces unlocks and stores what the player bought.
+
+## basics
+
+You can ship jobs with no trees. Trees are extra files under
+`upgrade_trees/`.
+
+## Everyday
+
+Players open `/jobs upgrade`, spend points, and unlock nodes you defined.
+
+## Advanced
+
+<Callout type="info">Advanced — you do not need this to get started.</Callout>
+
+Requirements, exclusive paths, and Wynncraft-style layouts are later
+content work.
+
 ## How trees work
 
 Each job can own a **JSON-driven skill-node graph**. Java owns the system
