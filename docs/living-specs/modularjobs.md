@@ -55,7 +55,7 @@ process running DDL.
 ### How to build here
 
 - Prefer existing patterns (repository + domain mapper, wiring classes, Messages).
-- Commands: Paper Brigadier; themed text via `net.aincraft.util.Messages` (not Mint).
+- Commands: Paper Brigadier; themed text via `dev.mintychochip.util.Messages` (not Mint).
 - Tests: JUnit 5; MockBukkit for Bukkit-touching tests; live MySQL for SQL repo tests
   (`MODULARJOBS_TEST_MYSQL_*` or `localhost:13306`; skip when unavailable).
 - Static analysis: `./gradlew check`; fail-on-findings with `-Pquality.fail=true`.

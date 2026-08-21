@@ -63,6 +63,9 @@ reliable multi-payable accumulation under concurrency.
 - [x] PlaceholderAPI expansion: full `modular` placeholder set (level/experience/jobs/totallevels/maxjobs/name/description/isin/canjoin/…)
 - [x] Join limits: max-jobs, per-job `jobs.join.<job>` permission, world join restriction, auto-join on login
 - [x] Config-driven level-up commands (`level-up-commands` in config.yml)
+- [x] Recipe experience depreciation for registered craft recipes (profession level vs required level)
+- [x] Startup cross-validation: craft job tasks ↔ `recipes.yml` (separate canonical files)
+- [x] Starter recipe metadata loaded from `recipes.yml` at startup
 
 ### Current notes
 
@@ -71,6 +74,7 @@ touches adjacent domains (economy, gates, editor) rather than rewriting the pipe
 
 ## Next
 
+- [ ] Re-run craft-recipe validation after editor apply / recipe reload (future lifecycle)
 - [ ] Smoke-test payment path after Mint provider lands (money deposits + XP still correct)
 - [ ] Document operator-facing payment/exploit knobs if wiki lags README
 

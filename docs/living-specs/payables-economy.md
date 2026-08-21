@@ -52,7 +52,7 @@ startup behavior.
 
 - Factory: `EconomyProviderFactory` — prefer the optional Mint bridge, then apply
   the configured missing-provider policy.
-- Package: `net.aincraft.payable`; wire via `PayableWiring`.
+- Package: `dev.mintychochip.payable`; wire via `PayableWiring`.
 - Tests: unit-test factory policy and fallback behavior; use MockBukkit/service
   registration where a live Bukkit service is needed.
 - Keep the payment pipeline calling `EconomyProvider.deposit` only — no direct

@@ -68,7 +68,7 @@ tasks {
             val fromCraftux = details.file.absolutePath.contains("craftux-")
             fromCraftux && (details.name == "plugin.yml" || details.name == "config.yml")
         }
-        relocate("dev.craftux", "net.aincraft.libs.craftux")
+        relocate("dev.craftux", "dev.mintychochip.libs.craftux")
     }
 
     build {

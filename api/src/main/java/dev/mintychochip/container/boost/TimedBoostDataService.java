@@ -1,0 +1,61 @@
+package dev.mintychochip.container.boost;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.boost.BoostData.SerializableBoostData;
+import dev.mintychochip.container.boost.BoostData.TimedBoostData;
+import dev.mintychochip.container.boost.TimedBoostDataService.Target.GlobalTarget;
+import dev.mintychochip.container.boost.TimedBoostDataService.Target.PlayerTarget;
+import org.jetbrains.annotations.Nullable;
+
+public interface TimedBoostDataService {
+
+  sealed interface Target permits GlobalTarget, PlayerTarget {
+
+    record GlobalTarget() implements Target {}
+
+    record PlayerTarget(UUID playerId) implements Target {}
+  }
+
+  /**
+   * Active timed boost row. Expiry is computed from {@link #started} + {@link #duration};
+   * expired rows are deleted by {@link TimedBoostDataService#findApplicableBoosts(Target)}.
+   */
+  record ActiveBoostData(String targetIdentifier, String sourceIdentifier, Instant started,
+                         @Nullable Duration duration, BoostSource boostSource) {
+
+    public boolean isExpired() {
+      return isExpired(System.currentTimeMillis());
+    }
+
+    /**
+     * Expiry check against an explicit clock (for tests / deterministic cleanup).
+     */
+    public boolean isExpired(long nowMillis) {
+      if (duration == null) {
+        return false; // Permanent boost
+      }
+      long expiresAt = started.toEpochMilli() + duration.toMillis();
+      return nowMillis > expiresAt;
+    }
+  }
+
+  List<ActiveBoostData> findApplicableBoosts(Target target);
+
+  List<ActiveBoostData> findBoosts(Target target);
+
+  <T extends TimedBoostData & SerializableBoostData> void addData(T data, Target target);
+
+  /**
+   * Remove a timed boost from a target.
+   *
+   * @param target           the target (player or global)
+   * @param sourceIdentifier the boost source key string
+   * @return true if a boost was removed, false otherwise
+   */
+  boolean removeBoost(Target target, String sourceIdentifier);
+
+}

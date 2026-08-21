@@ -3,7 +3,9 @@
 ## Unreleased
 
 ### Added
-
+- Startup cross-validation between craft job tasks and `recipes.yml` (`content-validation.craft-recipes`).
+- Recipe experience depreciation for registered craft recipes (config: `recipe-experience-depreciation`).
+- Shipped `recipes.yml` registers starter profession recipe metadata at startup (craft gates + depreciation).
 - Full PlaceholderAPI `modular` placeholder set (`level_<job>`, `experience_<job>`,
   `maxexperience_<job>`, `maxlevel_<job>`, `name_<job>`, `description_<job>`,
   `isin_<job>`, `canjoin_<job>`, `joinedjobcount`, `jobs`, `totallevels`, `maxjobs`,
@@ -13,6 +15,12 @@
   (reject joining while in a payout disabled-world), and `auto-join-jobs` on login.
 - Config-driven level-up commands (`level-up-commands` in `config.yml`) with
   `{player}` / `{level}` / `{job}` placeholders and `min-level` gating.
+
+### Changed
+
+
+- Migrated Java domain package from `net.aincraft` to `dev.mintychochip` (`api`, `common`, `paper`).
+
 
 ## 26.8.11.1 — ModularJobs API and Azoth gathering gates
 

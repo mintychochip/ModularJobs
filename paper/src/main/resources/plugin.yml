@@ -1,6 +1,6 @@
 name: ModularJobs
 version: '${version}'
-main: net.aincraft.ModularJobsBootstrap
+main: dev.mintychochip.ModularJobsBootstrap
 authors: [ ModularJobs contributors ]
 api-version: '1.21'
 softdepend:

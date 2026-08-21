@@ -19,6 +19,21 @@ economy:
 # dependent plugins; this flag exposes the optional Recipe/Buff/Station/NodeHarvest services.
 profession-apis:
   register-bukkit-services: false
+
+# Recipe experience depreciation for registered craft recipes. When a player's profession level
+# exceeds a recipe's required level, craft XP scales down to zero over window-levels.
+recipe-experience-depreciation:
+  enabled: true
+  grace-levels: 0
+  window-levels: 10
+# Cross-validation between craft job tasks (MySQL) and recipes.yml (separate canonical files).
+content-validation:
+  craft-recipes:
+    enabled: true
+    warn-tasks-without-recipe: true
+    log-recipes-without-task: true
+    max-detail-lines: 10
+
 # Optional external interaction gates can enforce world-level requirements. ModularJobs
 # continues to own profession progression, task data, and payment.
 

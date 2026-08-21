@@ -1,0 +1,38 @@
+# Starter profession recipe metadata for craft gates and experience depreciation.
+# Replace or extend these examples for your server's progression design.
+#
+# Recipe ids must match recipe_unlock keys in upgrade trees. Each crafted item output
+# may map to at most one registered recipe (craftOutputKey must be unique).
+# Startup cross-validation warns when craft job tasks lack matching entries here (see config.yml).
+
+# When a recipe id differs from the vanilla craft result, set output explicitly:
+#   modularjobs:custom_iron_sword:
+#     profession: weaponsmithing
+#     required-level: 25
+#     tier: 3
+#     output: minecraft:iron_sword   # only if no other recipe already owns that output
+recipes:
+  minecraft:iron_sword:
+    profession: weaponsmithing
+    required-level: 10
+    tier: 2
+  minecraft:diamond_sword:
+    profession: weaponsmithing
+    required-level: 30
+    tier: 3
+  minecraft:netherite_sword:
+    profession: weaponsmithing
+    required-level: 50
+    tier: 5
+  minecraft:iron_pickaxe:
+    profession: weaponsmithing
+    required-level: 10
+    tier: 2
+  minecraft:diamond_pickaxe:
+    profession: weaponsmithing
+    required-level: 30
+    tier: 3
+  minecraft:netherite_pickaxe:
+    profession: weaponsmithing
+    required-level: 50
+    tier: 5

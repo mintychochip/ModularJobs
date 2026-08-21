@@ -7,7 +7,7 @@ MySQL-backed REST API (Rust) and React secure session editor.
 
 | Path | Role |
 |------|------|
-| `api` | Pure public contracts (no Paper) |
+| `api` | Pure public contracts (no Paper); depends on `dev.conditions:api` |
 | `common` | Shared DTOs (editor payload, …) |
 | `paper` | Paper plugin implementation (shadow jar) |
 | `web` | Docs + session-editor + rest-api |
@@ -102,7 +102,7 @@ Index: `docs/living-specs/README.md`. One-shot design dumps under
 
 - Composition root: `PluginContext` + package `*Wiring` (no Guice)
 - Repository pattern + HikariCP against MySQL only
-- Commands: Paper Brigadier; themed text via `net.aincraft.util.Messages` (not Mint)
+- Commands: Paper Brigadier; themed text via `dev.mintychochip.util.Messages` (not Mint)
 - Tests: JUnit 5; MockBukkit for Bukkit-touching tests; repository SQL tests need a live MySQL
   (`MODULARJOBS_TEST_MYSQL_*` or default `localhost:13306`; skipped when unavailable)
 

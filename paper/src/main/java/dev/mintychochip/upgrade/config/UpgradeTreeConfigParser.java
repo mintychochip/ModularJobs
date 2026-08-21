@@ -1,0 +1,187 @@
+package dev.mintychochip.upgrade.config;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import dev.mintychochip.boost.RuledBoostSourceImpl;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.boost.RuledBoostSource.Rule;
+import dev.mintychochip.container.boost.factories.BoostFactory;
+import dev.mintychochip.container.boost.factories.ConditionFactory;
+import dev.mintychochip.upgrade.UpgradeEffect;
+import dev.mintychochip.upgrade.UpgradeEffect.BoostEffect;
+import dev.mintychochip.upgrade.UpgradeEffect.PermissionEffect;
+import dev.mintychochip.upgrade.UpgradeEffect.RuledBoostEffect;
+import dev.mintychochip.upgrade.UpgradeNode;
+import dev.mintychochip.upgrade.Position;
+import dev.mintychochip.upgrade.UpgradeTree;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.EffectConfig;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.NodeConfig;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.PositionConfig;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.RuleConfig;
+import net.kyori.adventure.key.Key;
+
+/**
+ * Parses UpgradeTreeConfig from JSON into UpgradeTree instances.
+ * Supports both simple boost effects and ruled boost effects with conditions.
+ */
+public final class UpgradeTreeConfigParser {
+
+  private final dev.mintychochip.boost.config.BoostSourceConfigParser boostSourceParser;
+
+  public UpgradeTreeConfigParser(
+      ConditionFactory conditionFactory,
+      BoostFactory boostFactory
+  ) {
+    this.boostSourceParser = new dev.mintychochip.boost.config.BoostSourceConfigParser(
+        conditionFactory, boostFactory);
+  }
+
+  public UpgradeTree parse(UpgradeTreeConfig config) {
+    String jobKey = config.job();
+    Key treeKey = Key.key("modularjobs", "upgrade_tree/" + jobKey);
+
+    Map<String, UpgradeNode> nodes = new HashMap<>();
+
+    for (Map.Entry<String, NodeConfig> entry : config.nodes().entrySet()) {
+      String nodeKey = entry.getKey();
+      NodeConfig nodeConfig = entry.getValue();
+      UpgradeNode node = parseNode(jobKey, nodeKey, nodeConfig);
+      nodes.put(nodeKey, node);
+    }
+
+    return new UpgradeTree(
+        treeKey,
+        jobKey,
+        config.description(),
+        config.root(),
+        config.skill_points_per_level(),
+        nodes,
+        new HashMap<>(),   // No perk policies in legacy format
+        Set.of()          // No paths in legacy format
+    );
+  }
+
+  private UpgradeNode parseNode(String jobKey, String nodeKey, NodeConfig config) {
+    final Key key = Key.key(jobKey, nodeKey);
+
+    // Material name string; paper GUI resolves via Material.matchMaterial (BARRIER fallback)
+    final String icon = config.icon() != null ? config.icon() : "BARRIER";
+
+    final Set<String> prerequisites = config.prerequisites() != null
+        ? new HashSet<>(config.prerequisites())
+        : Set.of();
+
+    final Set<String> exclusive = config.exclusive() != null
+        ? new HashSet<>(config.exclusive())
+        : Set.of();
+
+    final List<String> children = config.children() != null
+        ? config.children()
+        : List.of();
+
+    List<UpgradeEffect> effects = new ArrayList<>();
+    if (config.effects() != null) {
+      for (EffectConfig effectConfig : config.effects()) {
+        UpgradeEffect effect = parseEffect(effectConfig, jobKey, nodeKey);
+        if (effect != null) {
+          effects.add(effect);
+        }
+      }
+    }
+
+    Position position = null;
+    if (config.position() != null) {
+      PositionConfig pos = config.position();
+      position = new Position(pos.x(), pos.y());
+    }
+
+    // Auto-detect perkId and level from node key if not explicitly set
+    String perkId = config.perkId();
+    int level = config.level() != null ? config.level() : 1;
+
+    if (perkId == null) {
+      // Try parsing from nodeKey pattern: "name_level" (e.g., "efficiency_1", "crit_chance_2")
+      String[] parts = nodeKey.split("_");
+      if (parts.length >= 2) {
+        String lastPart = parts[parts.length - 1];
+        try {
+          int parsedLevel = Integer.parseInt(lastPart);
+          // Successfully parsed level - extract perkId from remaining parts
+          level = parsedLevel;
+          perkId = String.join("_", java.util.Arrays.copyOf(parts, parts.length - 1));
+        } catch (NumberFormatException ignored) {
+          // No numeric suffix - use nodeKey as perkId with level 1
+          perkId = nodeKey;
+          level = 1;
+        }
+      } else {
+        // No underscore - use nodeKey as perkId with level 1
+        perkId = nodeKey;
+        level = 1;
+      }
+    }
+
+    return new UpgradeNode(
+        key,
+        config.name(),
+        config.description(),
+        icon,           // locked icon
+        icon,           // unlocked icon (same as locked for legacy format)
+        null,           // itemModel (not supported in legacy)
+        null,           // unlockedItemModel (not supported in legacy)
+        config.cost(),
+        prerequisites,
+        Set.of(),       // maxedPrerequisites - empty for legacy format
+        exclusive,
+        children,
+        effects,
+        position,
+        List.of(), // pathPoints - empty for legacy format
+        perkId,
+        level
+    );
+  }
+
+  private UpgradeEffect parseEffect(EffectConfig config, String jobKey, String nodeKey) {
+    return switch (config.type().toLowerCase()) {
+      case "boost" -> {
+        String target = config.target() != null ? config.target() : BoostEffect.TARGET_ALL;
+        BigDecimal amount = config.amount() != null
+            ? BigDecimal.valueOf(config.amount())
+            : BigDecimal.ONE;
+        yield new BoostEffect(target, amount);
+      }
+      case "ruled_boost" -> {
+        // Parse ruled boost with conditions (same structure as boost_sources)
+        String target = config.target() != null ? config.target() : BoostEffect.TARGET_ALL;
+        BoostSource boostSource = parseRuledBoostSource(config, jobKey, nodeKey);
+        yield new RuledBoostEffect(target, boostSource);
+      }
+      case "permission" -> {
+        String perm = config.permission() != null ? config.permission() : "jobs.unknown";
+        yield new PermissionEffect(perm);
+      }
+      default -> null;
+    };
+  }
+
+  private BoostSource parseRuledBoostSource(EffectConfig config, String jobKey, String nodeKey) {
+    Key key = Key.key("modularjobs", "upgrade/" + jobKey + "/" + nodeKey);
+    List<Rule> rules = new ArrayList<>();
+
+    if (config.rules() != null) {
+      for (RuleConfig ruleConfig : config.rules()) {
+        Rule rule = boostSourceParser.parseRule(ruleConfig);
+        rules.add(rule);
+      }
+    }
+
+    String desc = config.description() != null ? config.description() : nodeKey + " upgrade boost";
+    return new RuledBoostSourceImpl(rules, key, desc);
+  }
+}
