@@ -32,6 +32,19 @@ class CiTemplateHookupTest {
   }
 
   @Test
+  void databagSnapshotsResolveOnlyFromSiblingMavenRepo() throws IOException {
+    String text =
+        Files.readString(Path.of(requiredProperty("project.root")).resolve("settings.gradle.kts"));
+    assertTrue(
+        text.contains("exclusiveContent"),
+        "databag SNAPSHOT must be exclusiveContent so remote metadata 401/DNS cannot fail CI");
+    assertTrue(text.contains("dev.mintychochip.databag"), text);
+    assertFalse(
+        text.contains("repo.incendo.org"),
+        "incendo DNS failures must not participate in SNAPSHOT metadata lookup");
+  }
+
+  @Test
   void ciUsesPinnedActionMajorsAndCleanCheck() throws IOException {
     String text = Files.readString(Path.of(requiredProperty("ci.workflow")));
     assertTrue(text.contains("actions/checkout@v7"), "checkout must be @v7");

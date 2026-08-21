@@ -24,17 +24,30 @@ dependencyResolutionManagement {
             name = "mintLocal"
             url = uri(rootDir.resolve("../mint/build/maven-repo"))
         }
-        // databag (./gradlew -p ../databag publishAllPublicationsToLocalBuildRepoRepository)
-        maven {
-            name = "databagLocal"
-            url = uri(rootDir.resolve("../databag/build/maven-repo"))
+        // Sibling SNAPSHOT: exclusive so Gradle 9.7 does not fail the whole
+        // resolve when a remote (GitHub Packages 401, incendo DNS) errors on
+        // maven-metadata.xml. Publish with:
+        //   ./gradlew -p ../databag publishAllPublicationsToLocalBuildRepoRepository
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "databagLocal"
+                    url = uri(rootDir.resolve("../databag/build/maven-repo"))
+                }
+            }
+            filter {
+                includeGroup("dev.mintychochip.databag")
+            }
         }
-        maven {
-            name = "databagGitHub"
-            url = uri("https://maven.pkg.github.com/mintychochip/databag")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR") ?: ""
-                password = System.getenv("GITHUB_TOKEN") ?: ""
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "conditionsLocal"
+                    url = uri(rootDir.resolve("../conditions/build/maven-repo"))
+                }
+            }
+            filter {
+                includeGroup("dev.conditions")
             }
         }
         mavenLocal()
@@ -44,7 +57,5 @@ dependencyResolutionManagement {
         maven("https://repo.codemc.io/repository/maven-public/")
         maven("https://nexus.neetgames.com/repository/maven-releases/")
         maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
-        // optional; DNS sometimes fails — content also on GitLab above
-        maven("https://repo.incendo.org/releases")
     }
 }
