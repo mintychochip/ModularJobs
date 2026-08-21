@@ -1,0 +1,68 @@
+---
+title: Commands & permissions
+description: The /jobs command tree, arguments, and permission nodes.
+icon: Terminal
+---
+
+All commands are registered under both `/jobs` and the alias `/j`.
+
+## Player commands
+
+| Command | Arguments | Permission | Purpose |
+| --- | --- | --- | --- |
+| `/jobs join <job>` | job name | join gates (per-job `jobs.join.<job>`, limits, worlds) | Join a job |
+| `/jobs leave <job>` | job name | — | Leave one job |
+| `/jobs leave all` | — | `jobs.command.leaveall` | Leave every job |
+| `/jobs list` | — | `jobs.command.list` | List jobs and usage |
+| `/jobs browse` | — | `jobs.command.browse` | Open the browse GUI |
+| `/jobs info <job> [page]` | job, optional page | — | Job task/action info (GUI or chat per preference) |
+| `/jobs info chat <job> [page]` | job, optional page | — | Force chat format |
+| `/jobs info gui <job> [page]` | job, optional page | — | Force GUI format |
+| `/jobs info preference entries <count>` | 1–50 | — | Preferred entries per page |
+| `/jobs info preference gui` / `chat` | — | — | Default view mode |
+| `/jobs stats` | — | `jobs.command.stats` | Own stats GUI |
+| `/jobs stats chat` | — | `jobs.command.stats` | Own stats in chat |
+| `/jobs archive` | — | `jobs.command.archive` | Own archived progression |
+| `/jobs boosts` | — | — | Your active boosts (timed, item, upgrade) |
+| `/jobs top` | — | — | Overall leaderboard, page 1 |
+| `/jobs top <job> [page]` | job, page | — | Job leaderboard page |
+| `/jobs top mode chat\|scoreboard` | mode | — | Leaderboard display mode |
+| `/jobs upgrade <job>` | job | — | Open the upgrade tree GUI |
+| `/jobs upgrade <job> unlock <node>` | job, node | — | Unlock a node |
+| `/jobs upgrade <job> reset` | job | — | Reset your upgrades for that job |
+
+## Admin commands
+
+All of these require `modularjobs.admin` (op by default), or the node listed.
+
+| Command | Arguments | Permission | Purpose |
+| --- | --- | --- | --- |
+| `/jobs stats <player>` / `chat <player>` | player | `jobs.command.admin.stats` | Others' stats |
+| `/jobs archive <player>` | player | `jobs.command.admin.archive` | Others' archived progression |
+| `/jobs level set` / `add` / `subtract <player> <job> <amount>` | player, job, amount | `modularjobs.admin` | Admin level control |
+| `/jobs experience set` / `add` / `subtract <player> <job> <amount>` | player, job, amount | `modularjobs.admin` | Admin experience control |
+| `/jobs boost apply <target> <source> <duration>` | target (`@global`, `@all`, player), source key, duration | `modularjobs.admin` | Grant a timed boost |
+| `/jobs boost remove <target> <source>` | target, source key | `modularjobs.admin` | Remove a timed boost |
+| `/jobs boost list [target]` | optional target | `modularjobs.admin` | List boosts for a target |
+| `/jobs boost item <source> <duration> [amount]` | source, duration, amount 1–64 | `modularjobs.admin` | Create boost consumables |
+| `/jobs boost sources [reload\|info <key>]` | — | `modularjobs.admin` | List, inspect, reload boost sources |
+| `/jobs editor [job]` | optional job | `modularjobs.admin` | Export tasks to the web editor (only when editor enabled) |
+| `/jobs applyedits <code>` | code | `modularjobs.admin` | Apply a web-editor payload (only when editor enabled) |
+| `/jobs treeeditor <job>` / `treeeditor new <job>` | job | `jobs.command.admin.treeeditor` | Edit / create an upgrade tree |
+
+## Permission nodes
+
+| Node | Default | Purpose |
+| --- | --- | --- |
+| `modularjobs.admin` | op | Level/exp admin, boost, web editor, applyedits |
+| `jobs.join.<job>` | true | Join a specific job |
+| `jobs.command.browse` | true | Browse GUI |
+| `jobs.command.list` | true | List jobs |
+| `jobs.command.stats` | true | Own stats |
+| `jobs.command.admin.stats` | op | Others' stats |
+| `jobs.command.archive` | true | Own archive |
+| `jobs.command.admin.archive` | op | Others' archive |
+| `jobs.command.leaveall` | true | Leave all jobs |
+| `jobs.command.admin.treeeditor` | op | Upgrade tree editor |
+| `jobs.command.admin.boost` | op | Alias node; child grants `modularjobs.admin` |
+| `jobs.command.admin.editor` | op | Alias node; child grants `modularjobs.admin` |

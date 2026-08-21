@@ -1,0 +1,12 @@
+{
+  "title": "Developer",
+  "defaultOpen": true,
+  "pages": [
+    "architecture",
+    "api",
+    "events",
+    "conditions-boosts",
+    "persistence",
+    "contributing"
+  ]
+}

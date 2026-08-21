@@ -1,6 +1,7 @@
 ---
 title: Operations
-description: Build, configure, and validate a ModularJobs Paper deployment.
+description: Release checklist and verification commands for a ModularJobs deployment.
+icon: ListChecks
 ---
 
 ## Release checklist
@@ -16,10 +17,16 @@ description: Build, configure, and validate a ModularJobs Paper deployment.
 
 The editor is disabled by default. If enabled, configure an operator-managed
 REST session API, web editor URL, create secret, and MySQL 8 session schema.
-The Paper plugin does not launch or provision those services.
+The Paper plugin does not launch or provision those services. See the
+[editor guide](../editor/).
 
 ## Verification
 
-Run the Java module tests from the repository root. For the web stack, run
-`cargo test` in `web/rest-api` and `npm test && npm run build` in
-`web/session-editor`.
+Run the Java module tests from the repository root:
+
+```bash
+./gradlew :api:test :common:test :paper:test
+```
+
+For the web stack, run `cargo test` in `web/rest-api` and
+`npm test && npm run build` in `web/session-editor`.

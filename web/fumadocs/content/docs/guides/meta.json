@@ -1,5 +1,15 @@
 {
   "title": "Guides",
   "defaultOpen": true,
-  "pages": ["operations"]
+  "pages": [
+    "getting-started",
+    "database",
+    "economy",
+    "boosts",
+    "skill-trees",
+    "anti-exploit",
+    "editor",
+    "placeholders",
+    "operations"
+  ]
 }

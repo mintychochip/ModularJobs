@@ -1,0 +1,105 @@
+---
+title: Secure editor
+description: Export job tasks, edit in the browser, and apply changes back through the REST API.
+icon: Lock
+---
+
+The web editor is **opt-in**. Operators must provision the Rust REST API, the
+MySQL 8 schema, the web editor URL, and the session-create secret explicitly —
+the Paper plugin does not launch or provision any external service.
+
+## Architecture
+
+```
+Plugin export (payload JSON)
+    → POST web/rest-api /api/v1/sessions  (create)
+    → MySQL table editor_sessions
+    → PUT save with Bearer / X-Session-Token
+    → Paper /jobs applyedits <code> applies through job task repositories
+```
+
+- **Session code** is public, carried in the URL query (`?code=ABC`).
+- **Session token** is secret, carried in the URL fragment (`#token=SECRET`)
+  so it stays out of server access logs.
+- GET/PUT require `Authorization: Bearer <token>` or `X-Session-Token`;
+  wrong/missing token → 401.
+- Create may require `X-Create-Secret` when the REST API is configured with
+  `SESSION_CREATE_SECRET`.
+
+## Configure the plugin
+
+```yaml
+# config.yml
+editor:
+  enabled: false
+  session-api-url: ""
+  web-editor-url: ""
+  session-create-secret: "" # must match REST SESSION_CREATE_SECRET when set
+  session-ttl-minutes: 1440
+```
+
+Set all four values, then restart. The `/jobs editor` and `/jobs applyedits`
+commands only exist while the editor is enabled.
+
+## Run the REST API
+
+```bash
+export DATABASE_URL=mysql://user:pass@host:3306/modularjobs
+export BIND_ADDR=127.0.0.1:18787
+# optional hardening:
+# export SESSION_CREATE_SECRET=...
+# export CORS_ALLOW_ORIGINS=https://editor.example.com
+cargo run --release --manifest-path web/rest-api/Cargo.toml
+```
+
+| Env var | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Shared MySQL 8 database (schema must already exist) |
+| `BIND_ADDR` | Bind address; default `127.0.0.1:18787` |
+| `SESSION_CREATE_SECRET` | When set, POST /sessions requires a matching `X-Create-Secret` (constant-time); required in production mode |
+| `CORS_ALLOW_ORIGINS` | Comma-separated allowed origins; `*` is an explicit insecure opt-in |
+
+Production mode is implied by binding on a non-loopback address (or
+`MODULARJOBS_PRODUCTION=1`), and requires `DATABASE_URL` +
+`SESSION_CREATE_SECRET`.
+
+### Endpoints
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| POST | `/api/v1/sessions` | `X-Create-Secret` when configured |
+| GET | `/api/v1/sessions/{code}` | Bearer / `X-Session-Token` |
+| GET | `/api/v1/sessions/{code}/payload` | Bearer / `X-Session-Token` |
+| PUT | `/api/v1/sessions/{code}` | Bearer / `X-Session-Token` |
+| GET | `/healthz` | none |
+
+## Build the editor
+
+```bash
+cd web/session-editor
+npm install
+export VITE_ALLOWED_API_ORIGINS='https://*.modularjobs.com'  # must be HTTPS in production
+export VITE_SESSION_API_URL='https://modularjobs.com'        # fallback default
+npm run build
+```
+
+`VITE_ALLOW_HTTP_API=true` exists **only** for local smoke testing and must
+never be set in production. The editor never uses Bytebin and does not create
+sessions — Paper generates the handoff URL.
+
+## In-game workflow
+
+1. `modularjobs.admin` player runs **`/jobs editor`** (all tasks) or
+   **`/jobs editor <job>`**.
+2. The plugin exports the payload → REST create → stores a local code→token
+   handoff (Caffeine, with owner and expiry) → shows the URL.
+3. The player opens the URL, edits, and saves (token in fragment).
+4. Back in game, **`/jobs applyedits <code>`** imports the payload through the
+   task repositories (cache-correct) and reports imported/deleted counts.
+   Apply requires the mapping **owned by** the executing player; success
+   removes the mapping, failure retains it for retry.
+
+<Callout type="warn" title="Handoff is not a payload store">
+The local Paper mapping is handoff-only (code → token, owner, expiry) — not a
+second payload store. Durable session payload authority is MySQL + REST.
+</Callout>

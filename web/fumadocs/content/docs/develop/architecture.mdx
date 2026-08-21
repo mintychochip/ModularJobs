@@ -1,0 +1,74 @@
+---
+title: Architecture
+description: Modules, composition root, and where each layer lives.
+icon: Layers
+---
+
+ModularJobs is a Gradle multi-module project. The plugin ships as a shadow jar
+from the `paper` module; the `api` module is a pure integration surface.
+
+## Modules
+
+| Module | Role | Allowed dependencies |
+| --- | --- | --- |
+| `api` | Pure public contracts for integrators | JDK + `conditions-api`; **no Paper** |
+| `common` | Shared DTOs + JSON codecs (editor, conditions) | JDK + Gson; may depend on `api` |
+| `paper` | Paper plugin implementation (shadow jar) | api, common, Paper, Craftux, databag, optional soft-depends |
+| `web/*` | FumaDocs site, React editor, Rust REST | Node / Rust / MySQL client |
+
+<Callout type="warn" title="api purity">
+`api` has **zero Paper/Bukkit dependencies**. Paper-only types stay in `paper`.
+Never put Bukkit types in `api` — this is what keeps the contracts usable by
+Rust/TS tooling and other JVM projects.
+</Callout>
+
+## Composition root
+
+There is **no DI framework** (Guice was removed). The object graph is
+constructed manually:
+
+- `PluginContext.create(plugin)` builds the graph.
+- Package `*Wiring` classes (DomainWiring, PayableWiring, PaymentWiring,
+  KeyResolvers, …) construct each layer.
+- `BridgeImpl` implements the `Bridge` static facade so `api` consumers can
+  reach runtime services.
+
+```
+ModularJobsBootstrap
+  └─ PluginContext
+       ├─ DomainWiring        (jobs, progression, tasks, mappers)
+       ├─ PayableWiring       (economy provider, payables)
+       ├─ PaymentWiring       (boost engine, payment listeners)
+       ├─ KeyResolvers        (key → job/task resolution)
+       ├─ commands            (Brigadier tree under /jobs)
+       └─ listeners           (payment, consumable boosts, level-up)
+```
+
+## Layering
+
+- **Domain layer**: job / JobProgression / JobTask / Payable services with
+  `DomainMapper<Domain, Record>` conversion.
+- **Repository pattern**: `JobRepository`, `JobProgressionRepository`,
+  `TimedBoostRepository`, `UserUpgradeRepository` against MySQL (HikariCP).
+- **Service layer**: `JobService`, `ProgressionService`, `UpgradeService`,
+  `EditorService`.
+- **Serialization**: Gson JSON; Kryo codecs were removed from the conditions /
+  boost path (conditions API owns ser/de).
+- **Commands**: Paper Brigadier, themed text via `net.aincraft.util.Messages`.
+- **UI**: Craftux-backed GUIs (browse, stats, job info, upgrade tree) — the
+  current mandatory UI dependency, explicitly deferred for removal.
+
+## Database
+
+One shared MySQL 8 database for game data and editor sessions; schema applied
+out of band, both runtime processes are connect-only. See
+[persistence](../persistence/).
+
+## Web stack
+
+| Piece | Tech | Role |
+| --- | --- | --- |
+| `web/fumadocs` | Next.js + FumaDocs | Static docs site at `/docs` (this site) |
+| `web/rest-api` | Rust / Axum | Secure session REST API on MySQL |
+| `web/session-editor` | React / Vite | Browser editor consuming the REST API |
+| `web/src` | Astro + React | Marketing homepage + editor handoff page |

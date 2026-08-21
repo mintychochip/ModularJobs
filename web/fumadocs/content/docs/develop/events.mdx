@@ -1,0 +1,70 @@
+---
+title: Events & services
+description: The synchronous EventBus, lifecycle/payment events, and Bukkit services.
+icon: Radio
+---
+
+## EventBus
+
+`Bridge.bridge().eventBus()` is a **synchronous, type-agnostic** bus:
+`subscribe(Consumer<Object>)` + `publish(T)`. No priority, no async dispatch,
+no unsubscribe. Subscribers receive every published event and filter by type.
+
+```java
+var bus = Bridge.bridge().eventBus();
+bus.subscribe(event -> {
+  if (event instanceof JobLevelEvent level) {
+    // level.playerId(), level.job(), level.newLevel()
+  }
+});
+```
+
+## Lifecycle events
+
+| Event | Payload | Mutable? |
+| --- | --- | --- |
+| `JobJoinEvent` | `playerId()`, `job()`, `getLevel()`, `isRejoin()` | no |
+| `JobLeaveEvent` | `playerId()`, `job()`, `getFinalLevel()` | no |
+| `JobLevelEvent` | `playerId()`, `job()`, `previousLevel()`, `newLevel()`, `reason()` (`EXPERIENCE` / `ADMIN_COMMAND` / `OTHER`) | no |
+
+## Experience & payment events
+
+| Event | Payload | Mutable? |
+| --- | --- | --- |
+| `JobExperienceGainEvent` | `playerId()`, `job()`, `progression()`, `experienceGained()` | **yes** — veto or alter the gain |
+| `JobsPrePaymentEvent` | `playerId()`, `job()`, `progression()`, `payable()` | **yes** — pre-payment veto hook |
+| `JobsPaymentEvent` | `playerId()`, `job()`, `progression()`, `base()` | **yes** — post-payment contract |
+
+All three implement `Cancellable` (`isCancelled()` / `setCancelled(boolean)`).
+The XP and pre-payment hooks are the main behavioral integration points.
+
+## Bukkit services
+
+The plugin registers Bukkit services available to dependent plugins:
+
+| Service | Registered | Notes |
+| --- | --- | --- |
+| `ProfessionService` | **always** | Core catalog/progression facade |
+| `RecipeService` | `profession-apis.register-bukkit-services: true` | Learned recipes (`knows`, `learn`, `recipes`) |
+| `BuffService` | same flag | Food/combat consumable buffs (`BuffSlot.FOOD`/`COMBAT`) |
+| `StationService` | same flag | Station-level crafting/gathering gates |
+| `NodeHarvestService` | same flag | Resource-node harvest integration |
+
+```java
+var svc = Bukkit.getServicesManager().load(ProfessionService.class);
+```
+
+`ProfessionService`: `tracks()`, `getProgression(UUID, String)`,
+`join(UUID, String)`, `leave(UUID, String)`, `hasProfession`,
+`getLevel(UUID, String)`, `addExperience(UUID, String, BigDecimal)`.
+
+## Service facade (api)
+
+The `Bridge` also exposes the plain interfaces integrators use directly:
+
+| Interface | Purpose |
+| --- | --- |
+| `JobService` | Jobs, progression, join/leave, XP operations |
+| `PreferencesService` | Player page-size preference (`getPageSize` / `setPageSize`) |
+| `ExploitProtectionStore` | Protections tracked per object (timers) |
+| `TimedBoostDataService` | Sealed `Target` (`GlobalTarget` / `PlayerTarget`) + `ActiveBoostData` find/add/remove |

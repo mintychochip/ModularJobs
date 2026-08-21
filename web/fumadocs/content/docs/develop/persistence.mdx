@@ -1,0 +1,72 @@
+---
+title: Persistence
+description: Repositories, the connect-only MySQL policy, and schema verification.
+icon: Server
+---
+
+## Policy
+
+ModularJobs supports **MySQL 8 only** and **never runs DDL from a runtime
+process** — neither the Paper plugin nor the Rust REST API creates tables.
+
+- Source of truth: `paper/src/main/resources/sql/mysql.sql`
+- Apply: `./scripts/apply-mysql-schema.sh`
+- Verification: `SchemaPresence` on connect; checks `table-exists.sql` per
+  required table. Missing tables → hard error, no `CREATE`.
+
+Lab/integration tests may apply the SQL file explicitly; production paths stay
+connect-only. Do not reintroduce boot-time `CREATE TABLE` or other dialects.
+
+## Repositories
+
+| Repository | Backing table(s) | Notes |
+| --- | --- | --- |
+| `JobRepository` | (config-backed) | Job catalog from `jobs.yml` |
+| `JobProgressionRepository` | `job_progression`, `archive_job_progression` | Level/XP; archive on leave |
+| `JobTaskRepository` | `job_tasks`, `job_task_payables`, `payable_records` | Applied via editor paths |
+| `RelationalTimedBoostRepository` | `time_boosts`, `time_boost_identity` | Timed boost persistence |
+| `UserUpgradeRepository` | `player_upgrades` | Skill points, unlocked nodes, node levels |
+
+SQL lives in classpath resources under
+`paper/src/main/resources/sql/<table>/` (`.sql` per operation) — the
+repository pattern never inlines SQL strings.
+
+## Schema notes
+
+- Money/XP are `DECIMAL(38,10)`; key-bearing identifiers use bounded `VARCHAR(191)`.
+- `job_task_payables.job_task_id` → `job_tasks.task_id` `ON DELETE CASCADE`.
+- `editor_sessions` stores the payload as `JSON` with `expires_at` and
+  `updated_at`; the REST API is the session authority.
+- `player_upgrades` keeps `total_skill_points`, `unlocked_nodes` (legacy
+  migration), and authoritative `node_levels`.
+
+## Connection pooling
+
+HikariCP pools are keyed by `jdbc-url` + `username` — identical sections share
+one pool. `database.yml` sections: `payable`, `timed-boost`, `progression`,
+`upgrades`.
+
+## Task data ownership
+
+- `job_tasks.csv` seeds **only an empty** `job_tasks` table; startup skips
+  import when tasks exist.
+- Live task mutations go through the editor apply path or reviewed SQL — never
+  by editing the packaged CSV.
+- The `fisher` → `fisherman` job-key rename requires an operator-managed data
+  update before deploying the renamed catalog.
+
+## Concurrency invariants
+
+- Multi-XP awards in one payment **reload progression per payable** so awards
+  accumulate.
+- Write-back flush failure **re-queues** with max-experience merge — no
+  older-XP clobber.
+- Kill multi-damage pays each qualifying contributor above the cutoff.
+
+## Test strategies
+
+- Pure unit tests for curves/mappers — no DB.
+- MockBukkit 26.2 for listener/payment/Bukkit-touching tests.
+- Repository SQL tests need a live MySQL
+  (`MODULARJOBS_TEST_MYSQL_*` or default `localhost:13306`); they skip when
+  unavailable.

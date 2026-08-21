@@ -1,0 +1,117 @@
+---
+title: Getting started
+description: Install ModularJobs, provision MySQL 8, and configure your first jobs and tasks.
+icon: Rocket
+---
+
+## Requirements
+
+- Minecraft **1.21.x** on **Paper 26.2** (or a fork)
+- **MySQL 8** (no other database is supported)
+- Java **21+** runtime (build toolchain is Java 25)
+
+## 1. Install the plugin
+
+1. Drop `modularjobs-paper-26.8.11.1.jar` into `plugins/`.
+2. Start the server once to generate the configuration under
+   `plugins/ModularJobs/`:
+
+   - `config.yml` — payment, economy, editor, and progression settings
+   - `database.yml` — MySQL connection sections
+   - `jobs.yml` — job catalog (display names, curves, perks)
+   - `job_tasks.yml` / `job_tasks.csv` — task payables
+   - `boost_sources_default.json` — boost source definitions
+   - `exploit-config.yml` — anti-farm protections
+   - `upgrade_trees/*.json` — skill trees
+
+<Callout type="warn" title="Starter content">
+The bundled YAML, JSON, and CSV files are **generic starter content**. Replace
+or extend them rather than treating the shipped amounts as a universal economy
+or progression balance.
+</Callout>
+
+## 2. Provision the database
+
+The plugin **never runs DDL**. Apply the schema out of band, before startup:
+
+```bash
+export DATABASE_URL=mysql://user:pass@host:3306/modularjobs
+./scripts/apply-mysql-schema.sh
+# or:
+mysql "$DATABASE_URL" < paper/src/main/resources/sql/mysql.sql
+```
+
+Required tables: `job_progression`, `archive_job_progression`,
+`payable_records`, `job_tasks`, `job_task_payables`, `time_boost_identity`,
+`time_boosts`, `player_upgrades`, `editor_sessions`.
+
+Missing tables → the plugin **fails at startup** with a message pointing at the
+apply script.
+
+## 3. Configure database connections
+
+`database.yml` has four pool sections; sections with the same `jdbc-url` +
+`username` share one Hikari pool:
+
+```yaml
+payable:
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
+  username: modularjobs
+  password: secret
+  maximum-pool-size: 10
+
+timed-boost:
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
+  username: modularjobs
+  password: secret
+
+progression:
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
+  username: modularjobs
+  password: secret
+
+upgrades:
+  type: mysql
+  jdbc-url: jdbc:mysql://host:3306/modularjobs
+  username: modularjobs
+  password: secret
+```
+
+## 4. Review config
+
+- **Economy** — optional; see the [economy guide](../economy/).
+- **Editor** — disabled until you supply a REST API and web URL; see the
+  [editor guide](../editor/).
+- **Progression limits** — `max-jobs`, auto-join, and world join restriction.
+- **Level-up commands** — console commands run on level-up with `{player}`,
+  `{level}`, `{job}` placeholders.
+
+## 5. Install optional integrations
+
+Only what the server uses:
+
+| Integration | Purpose |
+| --- | --- |
+| PlaceholderAPI | `%modular_*%` placeholders |
+| Mint | Economy deposits for money payables |
+| Azoth | World-interaction gates (block break, fishing, harvesting) |
+| mcMMO | mcMMO ability boost source |
+| Bolt / LWC / Choco | Protection / lock integrations |
+
+## 6. Verify
+
+```bash
+# player side
+/jobs list
+/jobs join miner
+/jobs stats
+
+# admin side (op)
+/jobs level set <player> miner 10
+/jobs boost apply @global modularjobs:mining_boost 1d
+```
+
+Restart after configuration changes — there is no full hot-reload story today.

@@ -1,0 +1,100 @@
+---
+title: Build & test
+description: Gradle modules, quality gates, CI, and the web stack commands.
+icon: Wrench
+---
+
+## Prerequisites
+
+- JDK **25** toolchain (Java 21 runtime target for `api`/`common` artifacts)
+- Node 20.x / 22.x for the docs and editor apps
+- Rust stable for `web/rest-api`
+- MySQL 8 for integration tests
+
+## Build the plugin
+
+```bash
+./gradlew :paper:build
+# artifact: paper/build/libs/paper-26.8.11.1-all.jar
+```
+
+## Unit tests
+
+```bash
+./gradlew :api:test :common:test :paper:test
+```
+
+## Static analysis
+
+Error Prone runs at compile; Checkstyle / PMD / SpotBugs on `check`:
+
+```bash
+./gradlew check
+# reports under */build/reports/{checkstyle,pmd,spotbugs}/
+./gradlew check -Pquality.fail=true   # enforce fail-on-findings
+```
+
+Configs live in `config/{checkstyle,pmd,spotbugs}/`.
+
+## Web stack
+
+```bash
+# FumaDocs docs site
+cd web/fumadocs
+npm install
+npm run dev          # local docs at http://localhost:3000/docs
+npm run build        # static export in out/ (basePath /docs)
+npm run types:check
+
+# Rust REST API
+cd web/rest-api
+cargo test           # requires a MySQL instance
+cargo run --release
+
+# React session editor
+cd web/session-editor
+npm install && npm test && npm run build
+
+# Astro marketing site
+cd web
+npm install && npm run build
+```
+
+## Git hooks + CI
+
+Install hooks once per clone:
+
+```bash
+./scripts/install-git-hooks.sh
+# SKIP_PRECOMMIT=1 git commit ...  # emergency bypass
+```
+
+Pre-commit runs compile/tests for staged Java, `cargo check` for
+`web/rest-api`, and `npm test` for `web/session-editor`.
+
+GitHub Actions (`.github/workflows/ci.yml`):
+
+| Job | What runs |
+| --- | --- |
+| `java` | JDK 25 + MySQL 8 service: `./gradlew check`, shadow jar + report artifacts |
+| `rest-api` | Rust stable + MySQL 8: `cargo test` |
+
+## Publishing
+
+`api` and `common` publish Java 21-compatible artifacts
+(`modularjobs-api`, `modularjobs-common`) via GitHub Packages, aligned with the
+plugin version (e.g. `26.8.11.1`). Version alignment between `plugin.yml`,
+root Gradle version, and `CHANGELOG.md` is enforced by
+`scripts/validate-release-version.sh` and the release packaging scripts.
+
+## Coding conventions
+
+- **SOLID / DRY / SRP**, senior-Java discipline.
+- Prefer existing patterns over new frameworks (composition root, repository +
+  domain mapper, `Messages` theming).
+- Commands: Paper Brigadier; themed text via `net.aincraft.util.Messages`.
+- Atomic commits — one logical change per commit.
+- Living specs under `docs/living-specs/` are the authoritative domain
+  catalogs; read the relevant one before coding, flip checkboxes when work
+  ships.
+- Never add DDL-in-process, Bukkit types in `api`, or new DI frameworks.

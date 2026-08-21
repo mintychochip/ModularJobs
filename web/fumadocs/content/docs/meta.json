@@ -3,9 +3,11 @@
   "pages": [
     "index",
     "---Operator---",
-    "reference",
     "guides",
+    "reference",
     "---Features---",
-    "features"
+    "features",
+    "---Developer---",
+    "develop"
   ]
 }

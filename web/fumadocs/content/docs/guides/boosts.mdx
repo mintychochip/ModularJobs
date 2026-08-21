@@ -1,0 +1,107 @@
+---
+title: Boosts
+description: Timed, item, and upgrade boosts — conditions, policies, and the admin commands.
+icon: Zap
+---
+
+## Boost families
+
+The boost engine aggregates three source families when paying a job action:
+
+| Family | Where it lives | Example |
+| --- | --- | --- |
+| **Timed boosts** | MySQL (`time_boosts`), granted by admins | `/jobs boost apply @global modularjobs:mining_boost 1d` |
+| **Item boosts** | Consumables / passive items in inventory | `/jobs boost item modularjobs:mining_boost 30m 1` |
+| **Upgrade boosts** | Skill-tree node effects | `/jobs upgrade miner` |
+
+Evaluation is deterministic: a `BoostContext` (action type, progression,
+player, world, payable, condition snapshot) is evaluated against every source;
+each source's highest-priority matching rule wins, and boosts never
+double-apply the same source (identity keyed by target + source).
+
+## Conditions
+
+A boost rule matches when its condition evaluates truthy against the player
+snapshot. Available condition kinds include:
+
+| Condition | Applies when |
+| --- | --- |
+| `always` | Always |
+| `world` | Player is in the named world |
+| `biome` | Player is in the named biome |
+| `sneaking` / `sprinting` | Player is (not) sneaking / sprinting |
+| `weather` | Weather state matches |
+| `potion_effect` | Player has the potion effect (duration / amplifier) |
+| `resource` | Player resource (health / hunger / experience) compares via relational operator |
+| `modularjobs:job` | Player has the job (via snapshot extras) |
+| `modularjobs:job_level` | Player's job level compares |
+
+Conditions compose with `and` / `or` / `not` trees in JSON.
+
+## Boost sources
+
+`boost_sources_default.json` ships 19 starter sources under `boost_sources`.
+Each source is a namespaced key with a description and a rules array; a rule is
+`priority` + `conditions` + `boost`:
+
+```json
+{
+  "key": "modularjobs:mining_boost",
+  "description": "Enhanced mining rewards - Highest boost in the Nether while sneaking",
+  "rules": [
+    {
+      "priority": 100,
+      "conditions": {
+        "type": "and",
+        "conditions": [
+          { "type": "world", "value": "world_nether" },
+          { "type": "sneaking", "value": true }
+        ]
+      },
+      "boost": { "type": "multiplicative", "amount": 3.0 }
+    },
+    {
+      "priority": 10,
+      "conditions": { "type": "always" },
+      "boost": { "type": "multiplicative", "amount": 1.25 }
+    }
+  ]
+}
+```
+
+`/jobs boost sources` lists sources; `sources info <key>` shows a source's
+rules; `sources reload` re-reads the file.
+
+## Admin commands
+
+All boost commands require `modularjobs.admin` (op by default).
+
+| Command | Effect |
+| --- | --- |
+| `/jobs boost apply <target> <source> <duration>` | Grant a timed boost to `@global`, `@all`, or one online player |
+| `/jobs boost remove <target> <source>` | Remove a timed boost from the global target or a player |
+| `/jobs boost list [target]` | List timed, passive item, and upgrade boosts for a target |
+| `/jobs boost item <source> <duration> [amount]` | Create consumable items carrying a timed boost source |
+| `/jobs boost sources` | List / reload boost sources |
+| `/jobs boosts` | View your own active boosts |
+
+Duration formats: `1d`, `30m`, `1h30m`, etc.
+
+<Callout type="warn" title="Permission gate">
+Boost administration is never available to normal players. `/jobs boost`,
+`/jobs editor`, and `/jobs applyedits` all require `modularjobs.admin`.
+</Callout>
+
+## mcMMO ability booms
+
+When mcMMO is installed, it contributes a **multiplicative boost source**
+during player ability activation: it listens for
+`McMMOPlayerAbilityActivateEvent` / `DeactivateEvent`, tracks the active
+`SuperAbilityType` per player, and emits a configured multiplicative boost.
+
+## Persistence
+
+Timed boosts persist in MySQL (`time_boosts` + `time_boost_identity`) — nothing
+is in-memory only for production timed boosts. Condition serializer bytes and
+rule priority travel inside `SerializableBoostData` JSON; item storage embeds
+that JSON in a PDC `DataBag` (`BYTE_ARRAY`, format id `1`).

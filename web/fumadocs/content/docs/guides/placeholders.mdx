@@ -1,0 +1,43 @@
+---
+title: Placeholders
+description: The modular PlaceholderAPI expansion set.
+icon: Braces
+---
+
+PlaceholderAPI is an optional soft-dependency. When present, ModularJobs
+registers the **`modular`** expansion; it is unregistered on plugin disable.
+
+## Global placeholders
+
+| Placeholder | Meaning |
+| --- | --- |
+| `%modular_joinedjobcount%` | Number of active progressions |
+| `%modular_jobs%` | Comma-separated plain job names |
+| `%modular_totallevels%` | Sum of levels across active progressions |
+| `%modular_maxjobs%` | Number of registered jobs |
+| `%modular_archivedjobs%` | Number of archived (left) progressions |
+
+## Per-job placeholders
+
+`<param>_<job>` where `<job>` is the job plain name (e.g. `fisherman`):
+
+| Placeholder | Meaning |
+| --- | --- |
+| `%modular_level_<job>%` | Current level |
+| `%modular_experience_<job>%` | Current experience |
+| `%modular_maxexperience_<job>%` | Experience required for the next level / max |
+| `%modular_maxlevel_<job>%` | Job max level |
+| `%modular_name_<job>%` | Job display plain name |
+| `%modular_description_<job>%` | Job description (plain text) |
+| `%modular_isin_<job>%` | `true` / `false` if the player is in the job |
+| `%modular_canjoin_<job>%` | `true` / `false` if the player can join the job |
+
+When the player is not in the job: `isin` → `false`, `canjoin` → `true`,
+other params → empty string.
+
+## Example
+
+```text
+You are level %modular_level_miner% in Miner (%modular_experience_miner% XP).
+Jobs: %modular_jobs%
+```

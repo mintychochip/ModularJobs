@@ -1,0 +1,95 @@
+---
+title: Conditions & boost engine
+description: Player predicates, databags, snapshots, and engine evaluation.
+icon: Binary
+---
+
+## Player conditions
+
+Player predicates are their own API — [aincraft-org/conditions](
+https://github.com/aincraft-org/conditions) (`dev.conditions:api|gson|paper`,
+CalVer `YY.M.D.REVISION`). They are **not** a boost implementation detail.
+
+Key facts:
+
+- Conditions evaluate against a **Paper-free snapshot** (player, living
+  entity, block) — `Condition` never looks up a `Player`; Paper builds the
+  `ConditionContext`.
+- JSON is **vanilla loot-condition shaped**; the serializer produces bytes.
+- Missing player / missing snapshot fields **fail closed** (`false`).
+- Unknown condition ids fail on read.
+- Paper adapters: `from`, `fromLiving`, `fromBlock`; `modularjobs:*` types
+  provide job / job_level predicates through snapshot extras.
+- Kryo is not used for conditions or `SerializableBoostData`.
+
+<Callout type="info" title="ConditionHandler SPI">
+Third-party condition ids register a `ConditionHandler` (JSON → `DataBag`
+arguments + `ConditionContext.extras()`). Party/region/profession extras stay
+out of ModularJobs — that is the SPI's job.
+</Callout>
+
+## Databag storage
+
+Primitive storage lives in [mintychochip/databag](
+https://github.com/mintychochip/databag) (`dev.databag:databag`). Item boost
+data embeds as PDC `BYTE_ARRAY`:
+
+- Envelope v1 (`DBAG` + version + length-prefixed entries); unversioned v0
+  still reads.
+- Payload encodings that may change use `setBytes(key, formatId, bytes)` /
+  `getFormatted`.
+- Unknown tags in v1+ skip; unknown envelope versions throw.
+
+ModularJobs registers `BoostPayloadHandler` (format id `1`) and fills
+`modularjobs:job` / `modularjobs:job_level` extras on evaluation.
+
+## Boost engine
+
+`BoostEngine` aggregates three source families:
+
+1. **Passive item sources** from inventory.
+2. **Active timed boosts** for the player target (MySQL).
+3. **Upgrade-tree sources** for the current job.
+
+Offline players return no boosts. Evaluation builds a `BoostContext`
+(action type, progression, player UUID, world, payable, condition snapshot);
+each `RuledBoostSource` selects its **highest-priority matching rule**;
+boosts never double-apply the same source (identity: target + source).
+
+### Boost data model
+
+`BoostData` is a sealed hierarchy: `SerializableBoostData`,
+`ConsumableBoostData`, `PassiveBoostData`, `TimedBoostData`.
+`BoostSource` (extends `Keyed`) is the primary modifier-source extension
+point: `evaluate(BoostContext): List<Boost>` + nullable `description()`.
+
+### Condition builder API
+
+`Condition` offers static factories (biome, world, resource, sneak, sprint,
+liquid, potion, weather) plus `and`/`or`/`negate`/`compose` combinators.
+`ConditionFactory` (via `Bridge.bridge().conditionFactory()`) includes the
+job / jobAny builders.
+
+Enums that shape conditions:
+
+| Enum | Values |
+| --- | --- |
+| `LogicalOperator` | AND, OR, XOR, NAND, NOR, XNOR, IMPLIES |
+| `RelationalOperator` | BigDecimal comparisons |
+| `WeatherState` | THUNDERING, RAINING, CLEAR |
+| `PlayerResourceType` | HEALTH, HUNGER, EXPERIENCE |
+| `PotionConditionType` | DURATION, AMPLIFIER |
+
+### Factories
+
+Both `BoostFactory` and `ConditionFactory` are `@Internal` — reach them via
+`Bridge`; they create additive/multiplicative boosts and the full condition
+builder API. The transient boost-source registry
+(`RegistryKeys.TRANSIENT_BOOST_SOURCES`) is where plugins register custom
+sources.
+
+## Engine tests
+
+The pure engine cases run without Bukkit; repository tests need a live MySQL.
+MockBukkit 26.2 covers listener/payment tests where a Bukkit service is
+needed.

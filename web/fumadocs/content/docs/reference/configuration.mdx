@@ -1,0 +1,117 @@
+---
+title: Configuration reference
+description: Current ModularJobs operator configuration and distribution defaults.
+icon: Settings2
+---
+
+## `config.yml`
+
+```yaml
+# Payment eligibility
+pay-in-creative: true
+pay-while-riding: false
+disabled-worlds: []            # world names (case-insensitive) where job actions never pay
+kill-contribution-cutoff: 0.5  # fraction of total damage a contributor must deal for kill pay
+furnace-max-distance: 25.0     # max distance (blocks) from furnace for smelt/bake attribution
+
+# Economy (Mint is optional)
+economy:
+  required: false
+  missing-provider: blackhole # blackhole | fail
+
+# Auxiliary profession services (core ProfessionService is always registered)
+profession-apis:
+  register-bukkit-services: false
+
+# Command output colors
+colors:
+  primary: "#FFD700"
+  secondary: "#FFFF00"
+  accent: "#00FFFF"
+  tertiary: "#FF00FF"
+  neutral: "#808080"
+  error: "#FF0000"
+
+# Player info-display preferences
+preferences:
+  entries-per-page: 10         # players can override with /jobs info preference entries <count>
+  default-gui-mode: true       # true = GUI dialog, false = chat output
+
+# Secure web editor (disabled until external services are configured)
+editor:
+  enabled: false
+  session-api-url: ""
+  web-editor-url: ""
+  session-create-secret: ""
+  session-ttl-minutes: 1440
+
+# Console commands run when a player levels up
+# Placeholders: {player}, {level}, {job}
+level-up-commands: []
+# example:
+# - command: "say {player} reached level {level} in {job}"
+#   min-level: 10
+
+# Join eligibility (max-jobs: 0 = unlimited)
+progression-limits:
+  max-jobs: 0
+  auto-join-jobs: []
+  world-join-restriction: true # reject joining while in a payout disabled-world
+```
+
+### Economy
+
+Mint is optional. `blackhole` is the safe default when no provider is
+available; positive economy payables are accepted and discarded. Use `fail`
+when currency rewards are mandatory. Legacy `required: true` maps to `fail`
+when no explicit policy is present.
+
+### Editor
+
+The editor requires an external REST API and web application. Configure both
+URLs and the create secret explicitly before enabling it. See the
+[editor guide](../../guides/editor/).
+
+### Level-up commands
+
+Each entry runs as console on level-up when `min-level ≤ new level`.
+`{player}`, `{level}`, `{job}` placeholders are replaced.
+
+### Progression limits
+
+- `max-jobs: 0` = unlimited; otherwise the maximum simultaneous jobs. Checked
+  by `/jobs join` and the browse GUI.
+- `auto-join-jobs`: joined on login if not already in them.
+- `world-join-restriction`: reject joining while in a payout disabled-world.
+
+## `database.yml`
+
+MySQL only, four pool sections (`payable`, `timed-boost`, `progression`,
+`upgrades`). Identical `jdbc-url` + `username` sections share one Hikari pool.
+See the [database guide](../../guides/database/).
+
+```yaml
+payable:
+  type: mysql
+  jdbc-url: jdbc:mysql://127.0.0.1:3306/modularjobs
+  username: modularjobs
+  password: change-me
+  maximum-pool-size: 10
+```
+
+## Starter content files
+
+| File | Content |
+| --- | --- |
+| `jobs.yml` | Job catalog: display-name (MiniMessage), description, max-level, upgrade-level, leveling-curve, payable-curves, perk-unlocks |
+| `job_tasks.yml` | Task payables: `<job> → <action> → <context> → experience/economy` |
+| `job_tasks.csv` | Row per payable: `job_key,action_type_key,context_key,payable_type_key,amount,currency`; seeds an empty task table |
+| `boost_sources_default.json` | 19 starter boost sources with rule priority / conditions / boost |
+| `upgrade_trees/*.json` | Skill-tree graphs (see the [skill trees guide](../../guides/skill-trees/)) |
+| `exploit-config.yml` | Anti-farm protections (see the [anti-exploit guide](../../guides/anti-exploit/)) |
+
+<Callout type="warn" title="Task data ownership">
+`job_tasks.csv` seeds only an **empty** task table. Changing the packaged CSV
+does not overwrite live task data — apply task changes through the
+[editor](../../guides/editor/) or an explicit reviewed SQL operation.
+</Callout>

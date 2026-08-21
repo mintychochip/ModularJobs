@@ -1,0 +1,111 @@
+---
+title: API contracts
+description: The public net.aincraft API — services, registries, and extension points.
+icon: BookOpen
+---
+
+The `api` module (`net.aincraft.*`) is the integration surface for dependent
+plugins. It has no Paper dependency. Integrators start with the `Bridge`
+facade, which is populated when the plugin enables.
+
+## Bridge
+
+```java
+Bridge.bridge() // throws IllegalStateException when plugin is not enabled
+```
+
+Exposes: `registryContainer()`, `conditionFactory()`, `boostFactory()`,
+`timedBoostDataService()`, `economy(): Optional<EconomyProvider>`,
+`jobService()`, `professionService()`, `recipeService()`, `buffService()`,
+`stationService()`, `nodeHarvestService()`, `eventBus()`.
+
+Example:
+
+```java
+var jobs = Bridge.bridge().jobService().jobs();
+var xp = Bridge.bridge().eventBus();
+```
+
+## Core models
+
+| Type | What it is |
+| --- | --- |
+| `Job` | Keyed contract: `displayName()`, `getPlainName()`, `description()`, `levelingCurve()`, `payableCurves()`, `maxLevel()`, `upgradeLevel()`, `perkUnlocks()` |
+| `JobTask` | Record: `jobKey`, `actionTypeKey`, `contextKey`, `payables`; `key()` → composite `TaskKey` (`action|context`) |
+| `JobProgressionView` | Read-only: `job()`, `playerId()`, `experience()`, `level()`, `experienceForLevel(int)` |
+| `JobProgression` | Extends view with immutable-snapshot `setExperience(BigDecimal)` / `addExperience(BigDecimal)` |
+| `LevelingCurve` | Pure deterministic `evaluate(Parameters)` — the custom leveling math extension point |
+| `PayableCurve` | Pure deterministic payout scaling `evaluate(Parameters)` |
+
+<Callout type="info" title="Purity rules">
+Curves must be deterministic pure functions of their parameters. Progression
+updates return snapshot-style values — treat returned progressions as
+immutable.
+</Callout>
+
+## Payables
+
+| Type | What it is |
+| --- | --- |
+| `Payable` | Record: `type()`, `amount()`, `asComponent()` |
+| `PayableType` | Keyed, registry-backed; `handler()` provides payout logic |
+| `PayableTypes` | Built-ins: `EXPERIENCE`, `ECONOMY` |
+| `PayableHandler` | **Primary payout extension point** — `pay(PayableContext)` |
+| `PayableAmount` | Sealed: `value()` + optional `currency()` |
+| `Currency` | `modularjobs:…` namespace presets via `of(identifier, symbol)` |
+| `EconomyProvider` | `isCurrencySupported(Currency)` + `deposit(...)` — the ledger bridge |
+
+Custom payable types are **registry entries**, not direct interface
+implementations: register a `PayableType` whose handler performs the payout.
+
+## Actions & contexts
+
+| Type | What it is |
+| --- | --- |
+| `ActionType` | Keyed, `@NonExtendable`; registry-backed |
+| `ActionTypes` | 20+ built-ins: `block_place`, `block_break`, `tnt_break`, `kill`, `dye`, `strip_log`, `craft`, `fish`, `smelt`, `brew`, `enchant`, `repair`, `breed`, `tame`, `shear`, `milk`, `explore`, `eat`, `collect`, `bake`, `bucket`, `brush`, `wax`, `villager_trade` |
+| `Context` | Sealed task-input records: `BlockContext`, `ItemContext`, `EntityContext`, `DyeContext`, `EnchantmentContext`, `PotionContext`, `ChunkContext` (+ deprecated `MaterialContext`) |
+
+Contexts and actions are sealed/`@NonExtendable` by design — the registry is
+the extension mechanism.
+
+## Registries
+
+| Type | What it is |
+| --- | --- |
+| `RegistryView<T>` | Read-only: `get(Key)`, `getOrThrow(Key)`, `isRegistered`, `stream` |
+| `Registry<T>` | Adds `register(T)` (replacement by Adventure key) |
+| `RegistryKey<T>` | Typed registry bucket identifier |
+| `RegistryContainer` | `hasRegistry` / `getRegistry` / `editRegistry` |
+| `RegistryKeys` | `JOBS`, `PAYABLE_TYPES`, `ACTION_TYPES`, `TRANSIENT_BOOST_SOURCES` |
+
+```java
+Bridge.bridge().registryContainer()
+    .editRegistry(RegistryKeys.TRANSIENT_BOOST_SOURCES, reg -> reg.register(mySource));
+```
+
+## Upgrades
+
+| Type | What it is |
+| --- | --- |
+| `SkillTree` | Immutable v2 graph: nodes, availability, purchase gating, exclusions, spend/cost math |
+| `SkillNode` | Record: kind (`ROOT`/`SKILL`/`MAJOR`), levels, prerequisites, requirements, exclusions, position |
+| `UpgradeService` | Tree/player data retrieval, node unlock/purchase, reset lifecycle |
+| `NodeEffect` | Sealed v2 effects: boosts, ruled boosts, permissions, recipes, capabilities, state writes |
+| `PerkPolicy` | `MAX` (highest unlocked level) vs `ADDITIVE` |
+| `PlayerUpgradeData` | Persisted state: skill points, node levels, perks |
+
+Integrators normally consume `UpgradeService` and `UpgradeBoostDataService`;
+declarative node/effect/requirement implementations are where the API is
+sealed, so prefer composition via `Bridge`.
+
+## Profession catalog
+
+| Type | What it is |
+| --- | --- |
+| `ProfessionCatalog` | Closed built-in catalog: `tracks()`, `byId()`, `byStorageKey()`, `resolve()`, `isCanonicalTrack()` |
+| `ProfessionDefinition` | `id`, `storageKey`, `category`, `displayName` (normalized lowercase) |
+| `ProfessionCategory` | `GATHERING`, `PROCESSING`, `CRAFTING` |
+| `RecipeDefinition` | `id`, `professionId`, `requiredLevel`, `tier` (validated 1..5) |
+
+Use catalog resolution in config/UI — do not extend the closed catalog.

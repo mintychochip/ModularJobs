@@ -1,0 +1,88 @@
+---
+title: Database
+description: MySQL 8 provisioning, connection pooling, and schema ownership rules.
+icon: Database
+---
+
+## MySQL 8 only
+
+ModularJobs supports **MySQL 8 only**. SQLite, PostgreSQL, MariaDB, and Mongo
+providers are not supported and were removed.
+
+## Schema ownership
+
+| Store | Who creates tables? | Who only connects? |
+| --- | --- | --- |
+| **MySQL** | Ops / CI / script **once** | Paper plugin + `web/rest-api` |
+
+**Neither process ever runs DDL.** That is intentional: multi-instance servers,
+least privilege, reviewable migrations, backups, and upgrades do not belong in
+`onEnable` or the API request path.
+
+- Source of truth: `paper/src/main/resources/sql/mysql.sql`
+- Apply: `./scripts/apply-mysql-schema.sh`
+- Missing tables → fail-fast at plugin enable / API boot (`SchemaPresence`)
+
+## Tables
+
+| Table | Purpose |
+| --- | --- |
+| `job_progression` | Player / job level and experience |
+| `archive_job_progression` | Archived (left) progression |
+| `payable_records` | Task payables by job / action / context / type |
+| `job_tasks` + `job_task_payables` | Task records with DECIMAL payables |
+| `time_boost_identity` + `time_boosts` | Timed boosts (target, source, expiry) |
+| `player_upgrades` | Skill points, unlocked nodes, node levels |
+| `editor_sessions` | Secure editor payloads (REST authority) |
+
+Durable money/XP amounts are `DECIMAL`; key-bearing identifiers use bounded
+`VARCHAR` columns.
+
+## Identical pools are shared
+
+Pools with the same `jdbc-url` + `username` share one HikariCP connection pool,
+so pointing every section at one database costs a single pool:
+
+```yaml
+payable:
+  type: mysql
+  jdbc-url: jdbc:mysql://127.0.0.1:3306/modularjobs
+  username: modularjobs
+  password: change-me
+  maximum-pool-size: 10
+```
+
+## Provision MySQL 8
+
+```bash
+# Local / CI
+export DATABASE_URL=mysql://user:pass@host:3306/modularjobs
+./scripts/apply-mysql-schema.sh
+
+# Or, with the MySQL client configured for the target database
+mysql --host=host --port=3306 --user=user --password modularjobs \
+  < paper/src/main/resources/sql/mysql.sql
+```
+
+For local development, run MySQL 8 externally (Docker/Podman) and apply the
+schema before starting either process.
+
+## Startup behavior
+
+1. Open Hikari pool to MySQL.
+2. Verify required tables exist (`job_progression`, `job_tasks`, …).
+3. If any table is missing → **fail enable** pointing at
+   `scripts/apply-mysql-schema.sh`.
+
+## Task data import
+
+`job_tasks.csv` is the authoritative seed file **when the task table is empty**.
+Startup intentionally skips import when MySQL already contains tasks — changing
+the packaged CSV does not overwrite live task data.
+
+<Callout type="warn" title="Live task changes">
+Apply task changes through the editor / repository path or an explicit reviewed
+SQL operation. Never clear a live task table without a backup and re-import
+plan. The `fisher` → `fisherman` job-key rename likewise requires an
+operator-managed data update before deploying the renamed catalog.
+</Callout>

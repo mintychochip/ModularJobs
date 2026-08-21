@@ -1,0 +1,56 @@
+---
+title: Economy
+description: Optional Mint integration, the blackhole default, and the fail policy.
+icon: CircleDollarSign
+---
+
+## How payables work
+
+Job tasks award typed **payables** — experience and money are the built-in
+types (`modularjobs:experience`, `modularjobs:economy`). Money deposits go
+through an `EconomyProvider` bridge so the payment pipeline stays independent
+of a specific ledger implementation.
+
+## Mint is optional
+
+Mint is resolved **reflectively at runtime** — there is zero compile-time
+dependency, and it is loaded lazily per deposit because its Bukkit service may
+register asynchronously. The plugin starts fine without Mint.
+
+```yaml
+# config.yml
+economy:
+  required: false
+  missing-provider: blackhole # blackhole | fail
+```
+
+### `missing-provider: blackhole` (default)
+
+Servers without an economy provider keep running. Positive currency payables
+are accepted and **discarded** (no balance change); invalid amounts return
+false. Logging happens once at provider selection, never per reward.
+
+### `missing-provider: fail`
+
+Fails plugin enable when Mint is unavailable, with an actionable configuration
+message. Use this when real currency rewards are mandatory.
+
+### `required: true` compatibility
+
+Maps to `fail` only when no explicit `missing-provider` value is present.
+
+## Guarantees and limits
+
+- Mint resolves lazily per deposit; failures return `false` and are logged by
+  the adapter — the payment pipeline does **not** retry after an unknown
+  outcome.
+- Deposit uses fresh idempotency keys per call today; a timeout has unknown
+  outcome and must not trigger an automatic retry.
+- Currency namespaces are explicit (`modularjobs:…`); no ad-hoc strings.
+- The current pipeline has no durable payout identifiers — true at-most-once
+  payment semantics are a future item.
+
+<Callout type="info" title="Experience payables">
+Experience is awarded by the plugin itself and never needs an economy
+provider. Only the `economy` payable type depends on Mint.
+</Callout>

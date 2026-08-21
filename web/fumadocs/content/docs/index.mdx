@@ -1,19 +1,17 @@
 ---
 title: ModularJobs
 description: Paper job progression, payables, boosts, and operator configuration.
+icon: Boxes
 ---
 
-## Overview
+<Callout type="info" title="What is ModularJobs?">
+Extensible job progression for PaperMC servers — players join jobs, perform
+actions, earn experience and payables, unlock skill trees, and optionally face
+profession-gated world interactions. Configure everything from a secure web
+editor or plain YAML/JSON files.
+</Callout>
 
-ModularJobs is a Paper plugin for configurable jobs and progression. Operators
-define task actions, experience curves, optional economy payables, boosts, and
-upgrade trees in the plugin data directory.
-
-The bundled YAML, JSON, and CSV files are generic starter content. Replace or
-extend them rather than treating the shipped amounts as a universal economy or
-progression balance.
-
-## Operator path
+## Quick start
 
 1. Apply the MySQL 8 schema out of band.
 2. Configure the `database.yml` connection sections.
@@ -21,14 +19,125 @@ progression balance.
 4. Install only the optional integrations the server uses.
 5. Restart after configuration changes.
 
-See the [configuration reference](./reference/configuration/) for the active
-keys and the [operations guide](./guides/operations/) for release and session
-workflow notes.
+<Cards>
+  <Card
+    title="Getting started"
+    description="Install, provision the database, and configure your first jobs."
+    href="guides/getting-started/"
+    icon="Rocket"
+  />
+  <Card
+    title="Configuration reference"
+    description="Every active key in config.yml and database.yml."
+    href="reference/configuration/"
+    icon="Settings2"
+  />
+  <Card
+    title="Commands & permissions"
+    description="The full /jobs command tree and permission nodes."
+    href="reference/commands/"
+    icon="Terminal"
+  />
+</Cards>
+
+## Operator guide
+
+<Cards>
+  <Card
+    title="Database"
+    description="MySQL 8 provisioning, pooling, and schema ownership."
+    href="guides/database/"
+    icon="Database"
+  />
+  <Card
+    title="Economy"
+    description="Optional Mint integration and the blackhole / fail policies."
+    href="guides/economy/"
+    icon="CircleDollarSign"
+  />
+  <Card
+    title="Boosts"
+    description="Timed, item, and upgrade boosts — conditions and evaluation."
+    href="guides/boosts/"
+    icon="Zap"
+  />
+  <Card
+    title="Skill trees"
+    description="JSON-driven job upgrade graphs and skill points."
+    href="guides/skill-trees/"
+    icon="GitBranch"
+  />
+  <Card
+    title="Anti-exploit"
+    description="Place-break, hopper, piston, and monster-damage protection."
+    href="guides/anti-exploit/"
+    icon="ShieldCheck"
+  />
+  <Card
+    title="Secure editor"
+    description="REST API, React editor, and the export / apply workflow."
+    href="guides/editor/"
+    icon="Lock"
+  />
+  <Card
+    title="Placeholders"
+    description="The modular PlaceholderAPI expansion set."
+    href="guides/placeholders/"
+    icon="Braces"
+  />
+</Cards>
+
+## For developers
+
+<Cards>
+  <Card
+    title="Architecture"
+    description="Modules, composition root, and where each layer lives."
+    href="develop/architecture/"
+    icon="Layers"
+  />
+  <Card
+    title="API contracts"
+    description="The public net.aincraft API — services, events, registries."
+    href="develop/api/"
+    icon="BookOpen"
+  />
+  <Card
+    title="Events"
+    description="Lifecycle, XP, and payment events on the EventBus."
+    href="develop/events/"
+    icon="Radio"
+  />
+  <Card
+    title="Conditions & boosts"
+    description="Player predicates, databags, and the boost engine."
+    href="develop/conditions-boosts/"
+    icon="Binary"
+  />
+  <Card
+    title="Persistence"
+    description="Repositories, MySQL-only schema, and DDL policy."
+    href="develop/persistence/"
+    icon="Server"
+  />
+  <Card
+    title="Build & test"
+    description="Gradle, quality gates, CI, and session stack commands."
+    href="develop/contributing/"
+    icon="Wrench"
+  />
+</Cards>
 
 ## Distribution boundary
 
-The Paper target is general-purpose, but the current UI is backed by Craftux,
-which remains an explicitly deferred dependency-removal task. Mint and the
-external Preferences plugin are not required to compile or start the base
-plugin. The editor is disabled until an operator supplies an external REST API
-and web URL.
+<Callout type="warn" title="Deferred dependency">
+The Paper target is general-purpose, but the current UI is backed by
+**Craftux**, which remains an explicitly deferred dependency-removal task.
+Mint and the external Preferences plugin are not required to compile or start
+the base plugin. The editor is disabled until an operator supplies an external
+REST API and web URL.
+</Callout>
+
+The bundled YAML, JSON, and CSV files are **generic starter content**. Replace
+or extend them rather than treating the shipped amounts as a universal economy
+or progression balance.

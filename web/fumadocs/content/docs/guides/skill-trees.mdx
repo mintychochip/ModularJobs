@@ -1,0 +1,94 @@
+---
+title: Skill trees
+description: JSON-driven job upgrade graphs, skill points, nodes, and requirements.
+icon: GitBranch
+---
+
+## How trees work
+
+Each job can own a **JSON-driven skill-node graph**. Java owns the system
+(loading, unlock rules, persistence, effect application); JSON owns content
+(topology, costs, requirements, effects, path conflicts). “Blacksmith →
+Weaponsmith” is content, not special-cased Java.
+
+Players earn **skill points per job level** and spend them on nodes. Node
+levels are the authoritative purchased state; effects are **derived** from
+persisted levels (recalculated on reset / leave / reload) — not one-shot
+unreproducible mutations. Leaving a job clears that job's tree state.
+
+<Callout type="info" title="Majors are permanent">
+Major node choices are not freely respeccable in normal play. Reset via
+`/jobs upgrade <job> reset` clears all upgrades for that job.
+</Callout>
+
+## Tree file format
+
+Trees live in `upgrade_trees/*.json`. Structure:
+
+```json
+{
+  "version": 2,
+  "job": "miner",
+  "skill_points_per_level": 1,
+  "root": "mining_basics",
+  "nodes": {
+    "mining_basics": {
+      "kind": "root",
+      "name": "Mining Basics",
+      "description": "The foundation of every miner's toolkit",
+      "position": { "x": 4, "y": 1 }
+    },
+    "nether_lava_immunity": {
+      "kind": "skill",
+      "name": "Nether Lava Immunity",
+      "description": "Grants immunity to lava damage",
+      "prerequisites": ["mining_basics"],
+      "position": { "x": 2, "y": 0 },
+      "levels": [ { "cost": 1, "effects": [] } ]
+    }
+  }
+}
+```
+
+### Node kinds
+
+| Kind | Meaning |
+| --- | --- |
+| `root` | Entry node; no cost or prerequisites |
+| `skill` | Regular spendable node with levels |
+| `major` | Advancement node: cost, prerequisites, `excludes` path locking, requirements |
+
+### Requirements
+
+Requirement trees combine with `all` / `any` / `not`. Requirement kinds cover
+declarative checks (level, job, points, …).
+
+### Effects
+
+Node effects include boosts, ruled boosts, permissions, recipes, capabilities,
+and state writes (`SET` / `REMOVE`). `level_effect_mode` defaults to `REPLACE`;
+use `cumulative` when each level should stack.
+
+## Player commands
+
+| Command | Effect |
+| --- | --- |
+| `/jobs upgrade <job>` | Open the job's upgrade tree GUI (if a tree exists) |
+| `/jobs upgrade <job> unlock <node>` | Unlock a node, enforcing skill-point and prerequisite rules |
+| `/jobs upgrade <job> reset` | Reset your upgrades for that job |
+
+## Admin tree editor
+
+| Command | Effect |
+| --- | --- |
+| `/jobs treeeditor <job>` | Open the existing tree editor (loads from file, falls back to in-memory) |
+| `/jobs treeeditor new <job>` | Open the editor to create a new tree |
+
+Requires `jobs.command.admin.treeeditor` (op by default).
+
+## Spent points invariant
+
+Spent points = **sum of actual level costs**, never
+`unlockedNodes.size()`. The `node_levels` map on `player_upgrades` is the
+authoritative source when present; the legacy unlocked set may still exist
+during migration.

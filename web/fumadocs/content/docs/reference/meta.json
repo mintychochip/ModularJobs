@@ -1,5 +1,5 @@
 {
   "title": "Reference",
   "defaultOpen": true,
-  "pages": ["configuration"]
+  "pages": ["configuration", "commands"]
 }

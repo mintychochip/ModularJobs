@@ -1,6 +1,19 @@
 @import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-ui/css/neutral.css';
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * ModularJobs brand theme
+ * Matches the marketing homepage palette: warm paper light / near-black dark
+ * with a gold accent (#d4a017 ≈ plugin default primary color).
+ * ───────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  --font-sans: 'Geist Sans', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, monospace;
+}
 
 html {
   scrollbar-gutter: stable;
@@ -9,4 +22,70 @@ html {
 html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* Light */
+:root {
+  --color-fd-background: #f7f7f5;
+  --color-fd-foreground: #1a1a1a;
+  --color-fd-muted: #ededea;
+  --color-fd-muted-foreground: #6b6b6b;
+  --color-fd-popover: #ffffff;
+  --color-fd-popover-foreground: #1a1a1a;
+  --color-fd-card: #ffffff;
+  --color-fd-card-foreground: #1a1a1a;
+  --color-fd-border: #e5e5e0;
+  --color-fd-primary: #b8860b;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-secondary: #f5f0e0;
+  --color-fd-secondary-foreground: #4a3c00;
+  --color-fd-accent: #f5f0e0;
+  --color-fd-accent-foreground: #4a3c00;
+  --color-fd-ring: #d4a017;
+}
+
+/* Dark */
+.dark {
+  --color-fd-background: #121212;
+  --color-fd-foreground: #ededed;
+  --color-fd-muted: #1f1f1f;
+  --color-fd-muted-foreground: #a3a3a3;
+  --color-fd-popover: #1a1a1a;
+  --color-fd-popover-foreground: #ededed;
+  --color-fd-card: #1a1a1a;
+  --color-fd-card-foreground: #ededed;
+  --color-fd-border: #2a2a2a;
+  --color-fd-primary: #d4a017;
+  --color-fd-primary-foreground: #121212;
+  --color-fd-secondary: #2b2512;
+  --color-fd-secondary-foreground: #f0d98a;
+  --color-fd-accent: #2b2512;
+  --color-fd-accent-foreground: #f0d98a;
+  --color-fd-ring: #d4a017;
+}
+
+.dark body {
+  background-image: linear-gradient(
+      rgba(212, 160, 23, 0.06),
+      transparent 24rem,
+      transparent
+    );
+  background-repeat: no-repeat;
+}
+
+/* Inline code */
+:root {
+  --fd-code-bg: #ededea;
+  --fd-code-text: #b8860b;
+}
+.dark {
+  --fd-code-bg: #242424;
+  --fd-code-text: #d4a017;
+}
+
+code:not(pre code) {
+  background: var(--fd-code-bg);
+  color: var(--fd-code-text);
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.375rem;
 }
