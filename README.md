@@ -1,5 +1,10 @@
 # ModularJobs
 
+[![Build](https://img.shields.io/github/actions/workflow/status/aincraft-org/modularjobs/ci.yml?branch=master&label=build)](https://github.com/aincraft-org/modularjobs/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/aincraft-org/modularjobs)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/aincraft-org/modularjobs)](https://github.com/aincraft-org/modularjobs/releases/latest)
+![Platform](https://img.shields.io/badge/Paper-26.2-blue)
+
 Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 
 ## Modules
@@ -37,7 +42,7 @@ Git hooks (once per clone):
 # SKIP_PRECOMMIT=1 git commit ...  # emergency bypass
 ```
 
-CI: `.github/workflows/ci.yml` — Java 25 + MySQL 8 (`check` + shadow jar), Rust rest-api, React session-editor.
+CI: `.github/workflows/ci.yml` — Java 25 + MySQL 8 (`./gradlew clean check` + shadow jar), Rust rest-api, React session-editor. Nightly Paper jar: `.github/workflows/nightly.yml`.
 
 ## Operator quick start
 

@@ -1,6 +1,6 @@
 # ModularJobs — agent notes
 
-PaperMC job progression plugin (Java 21 / 25 toolchain, Gradle multi-module) plus
+PaperMC job progression plugin (Java 25 toolchain, Gradle multi-module) plus
 MySQL-backed REST API (Rust) and React secure session editor.
 
 ## Modules
@@ -16,8 +16,8 @@ MySQL-backed REST API (Rust) and React secure session editor.
 Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-<version>-all.jar`, e.g. `paper-26.8.11.1-all.jar`).
 Unit tests: `./gradlew :api:test :common:test :paper:test`.  
 Static analysis (Error Prone on compile; Checkstyle/PMD/SpotBugs on `check`):  
-`./gradlew check` — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
-Enforce fail-on-findings: `./gradlew check -Pquality.fail=true`.  
+`./gradlew clean check` is the CI gate — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
+Wave 1 analyzers are report-only; enforce fail-on-findings: `./gradlew check -Pquality.fail=true`.  
 Configs: `config/checkstyle/`, `config/pmd/`, `config/spotbugs/`.  
 Rust API: `cd web/rest-api && cargo test` / `cargo run --release`.  
 React editor: `cd web/session-editor && npm test && npm run build`.
@@ -29,8 +29,9 @@ React editor: `cd web/session-editor && npm test && npm run build`.
   `cargo check` for `web/rest-api`, `npm test` for `web/session-editor`.  
   Skip once: `SKIP_PRECOMMIT=1 git commit ...`
 - **GitHub Actions**: `.github/workflows/ci.yml`  
-  - `java` — JDK 25, MySQL 8 service, `./gradlew check`, shadow jar + report artifacts
+  - `java` — JDK 25, MySQL 8 service, `./gradlew clean check`, shadow jar + report artifacts
   - `rest-api` — Rust stable + MySQL 8, `cargo test`
+- **Nightly**: `.github/workflows/nightly.yml` — rolling `nightly` pre-release of the Paper shadow jar
 
 ## Database schema ownership (important)
 
