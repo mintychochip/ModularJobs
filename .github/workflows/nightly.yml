@@ -137,28 +137,10 @@ jobs:
           chmod +x gradlew
           ./gradlew publishAllPublicationsToLocalBuildRepoRepository --console=plain --no-daemon
 
-      - name: Checkout conditions dependency
-        uses: actions/checkout@v7
-        with:
-          repository: aincraft-org/conditions
-          ref: 7d30d892b66b7ab440edd881105b1c4ad4ab4c0e
-          path: conditions
-          fetch-depth: 1
-
-      - name: Link conditions local Maven repository
-        run: ln -s "$GITHUB_WORKSPACE/conditions" "$GITHUB_WORKSPACE/../conditions"
-
-      - name: Publish conditions local Maven artifacts
-        working-directory: conditions
-        run: |
-          chmod +x gradlew
-          ./gradlew publishAllPublicationsToLocalBuildRepoRepository --console=plain --no-daemon
-
       - name: Verify required local dependency artifacts
         run: |
           test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
           test -n "$(find ../databag/build/maven-repo/dev/mintychochip/databag/databag-api -name 'databag-api-*.pom' -print -quit)"
-          test -n "$(find ../conditions/build/maven-repo/dev/conditions/api/0.0.0-SNAPSHOT -name 'api-*.pom' -print -quit)"
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

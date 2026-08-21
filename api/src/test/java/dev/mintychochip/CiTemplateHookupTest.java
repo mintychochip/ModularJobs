@@ -46,6 +46,15 @@ class CiTemplateHookupTest {
     assertTrue(
         ci.contains("dev/mintychochip/databag/databag-api"),
         "CI must verify the mintychochip databag-api GAV, not the legacy dev.databag artifact");
+    assertFalse(
+        ci.contains("aincraft-org/conditions"),
+        "ModularJobs no longer consumes dev.conditions; publishing that sibling compiles against legacy dev.databag and fails CI");
+    String nightly =
+        Files.readString(
+            Path.of(requiredProperty("project.root")).resolve(".github/workflows/nightly.yml"));
+    assertFalse(
+        nightly.contains("aincraft-org/conditions"),
+        "nightly must not publish the unused conditions sibling");
   }
 
   @Test
