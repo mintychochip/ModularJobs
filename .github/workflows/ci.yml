@@ -40,6 +40,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Checkout databag dependency
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: mintychochip/databag
+          ref: 373f7d0991e121afbcccf32015105010cafab2be
+          path: databag
+          fetch-depth: 1
+
+      - name: Link databag local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/databag" "$GITHUB_WORKSPACE/../databag"
+
+      - name: Publish databag local Maven artifacts
+        working-directory: databag
+        run: |
+          chmod +x gradlew
+          ./gradlew publishAllPublicationsToLocalBuildRepoRepository --console=plain --no-daemon
+
       - name: Checkout conditions dependency
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
