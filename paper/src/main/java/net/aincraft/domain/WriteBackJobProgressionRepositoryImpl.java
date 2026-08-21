@@ -2,7 +2,8 @@ package net.aincraft.domain;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.math.BigDecimal;import java.time.Duration;
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.aincraft.domain.model.JobProgressionRecord;
@@ -38,11 +40,10 @@ import org.jetbrains.annotations.Nullable;
  * (up to {@value #FLUSH_LOCK_WAIT_MS} ms) for any in-flight flush and rethrows delegate
  * failures so shutdown can fail loudly rather than silently dropping data.
  *
- * <p>Failure semantics: during a normal flush a delegate failure is logged and the
- * failed batch is re-queued (with a monotonic max-experience merge so a newer staged
- * value is not clobbered); during {@link #flushPending()} the failure is propagated.
- * Staged writes therefore survive transient DB failures unless the plugin stops
- * without a successful flush.
+ * <p>Failure semantics: pending operations remain queued until the delegate completes
+ * the entire batch successfully. A normal scheduled flush logs a typed write-back failure;
+ * {@link #flushPending()} propagates it. Staged writes therefore survive transient database
+ * failures unless the plugin stops without a successful flush.
  *
  * <p>Nullability: {@link #load(String, String)} returns {@code null} when the key is
  * staged for delete or absent from pending state and the delegate returns {@code null}.
@@ -69,6 +70,7 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   private final Map<Key, JobProgressionRecord> pendingUpserts = new ConcurrentHashMap<>();
   private final Set<Key> pendingDeletes = ConcurrentHashMap.newKeySet();
   private final AtomicBoolean flushing = new AtomicBoolean(false);
+  private final ReentrantLock flushLock = new ReentrantLock();
   private final int upsertBatchSize;
   private final int deleteBatchSize;
 
@@ -90,7 +92,7 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
    * @param rateUnit        flush period unit
    * @return a repository with a scheduled flush started
    */
-  public static WriteBackJobProgressionRepositoryImpl create(
+  static WriteBackJobProgressionRepositoryImpl create(
       Plugin plugin,
       JobProgressionRepository delegate,
       int upsertBatchSize,
@@ -126,7 +128,7 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
    * Drain all pending progression writes before ConnectionSource shutdown.
    * Waits with sleep (not busy-spin) for an in-flight scheduled flush.
    */
-  public void flushPending() {
+  void flushPending() {
     long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(FLUSH_LOCK_WAIT_MS);
     while (!flushing.compareAndSet(false, true)) {
       if (System.nanoTime() >= deadline) {
@@ -151,49 +153,50 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   }
 
   /**
+   * Applies one batch of pending deletes and upserts to the delegate.
+   *
    * @param rethrow if true, propagate delegate failures (disable path); scheduled flush logs
    * @return true if any work was flushed
    */
   private boolean flushOnce(boolean rethrow) {
-    Set<Key> batchDeletes = new HashSet<>();
-    Iterator<Key> deleteIterator = pendingDeletes.iterator();
-    while (deleteIterator.hasNext() && batchDeletes.size() < deleteBatchSize) {
-      Key key = deleteIterator.next();
-      if (pendingDeletes.remove(key)) {
-        batchDeletes.add(key);
-      }
-    }
-    Map<Key, JobProgressionRecord> batchUpserts = new HashMap<>();
-    Iterator<Entry<Key, JobProgressionRecord>> iterator = pendingUpserts.entrySet().iterator();
-    while (iterator.hasNext() && batchUpserts.size() < upsertBatchSize) {
-      Entry<Key, JobProgressionRecord> entry = iterator.next();
-      Key key = entry.getKey();
-      JobProgressionRecord value = entry.getValue();
-      if (pendingUpserts.remove(key, value)) {
-        batchUpserts.put(key, value);
-      }
-    }
-    if (batchDeletes.isEmpty() && batchUpserts.isEmpty()) {
-      return false;
-    }
+    flushLock.lock();
     try {
-      for (Key key : batchDeletes) {
-        delegate.delete(key.playerId(), key.jobKey());
+      Set<Key> batchDeletes = new HashSet<>();
+      Iterator<Key> deleteIterator = pendingDeletes.iterator();
+      while (deleteIterator.hasNext() && batchDeletes.size() < deleteBatchSize) {
+        batchDeletes.add(deleteIterator.next());
       }
-      batchUpserts.forEach((__, record) -> delegate.save(record));
-      return true;
-    } catch (Throwable t) {
-      requeueFailedBatch(batchUpserts, batchDeletes);
-      if (rethrow) {
-        throw t;
+      Map<Key, JobProgressionRecord> batchUpserts = new HashMap<>();
+      Iterator<Entry<Key, JobProgressionRecord>> iterator = pendingUpserts.entrySet().iterator();
+      while (iterator.hasNext() && batchUpserts.size() < upsertBatchSize) {
+        Entry<Key, JobProgressionRecord> entry = iterator.next();
+        batchUpserts.put(entry.getKey(), entry.getValue());
       }
-      LOGGER.log(
-          Level.SEVERE,
-          "Progression write-back flush failed; re-queued "
-              + batchUpserts.size() + " upsert(s) and "
-              + batchDeletes.size() + " delete(s)",
-          t);
+      if (batchDeletes.isEmpty() && batchUpserts.isEmpty()) {
+        return false;
+      }
+      try {
+        for (Key key : batchDeletes) {
+          delegate.delete(key.playerId(), key.jobKey());
+        }
+        batchUpserts.forEach((ignored, record) -> delegate.save(record));
+      } catch (net.aincraft.repository.WriteBackException failure) {
+        if (rethrow) {
+          throw failure;
+        }
+        LOGGER.log(
+            Level.SEVERE,
+            "Progression write-back flush failed; retained "
+                + batchUpserts.size() + " upsert(s) and "
+                + batchDeletes.size() + " delete(s)",
+            failure);
+        return true;
+      }
+      batchDeletes.forEach(pendingDeletes::remove);
+      batchUpserts.forEach((key, value) -> pendingUpserts.remove(key, value));
       return true;
+    } finally {
+      flushLock.unlock();
     }
   }
 
@@ -226,16 +229,20 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
 
   @Override
   public boolean save(JobProgressionRecord record) {
-    Key key = new Key(record.playerId(), record.jobRecord().jobKey());
-    pendingDeletes.remove(key);
-    pendingUpserts.put(key, record);
-    readCache.put(key, record);
-    return true;
+    flushLock.lock();
+    try {
+      Key key = new Key(record.playerId(), record.jobRecord().jobKey());
+      pendingDeletes.remove(key);
+      pendingUpserts.put(key, record);
+      readCache.put(key, record);
+      return true;
+    } finally {
+      flushLock.unlock();
+    }
   }
 
   @Override
-  public @Nullable JobProgressionRecord load(String playerId, String jobKey)
-      throws IllegalArgumentException {
+  public @Nullable JobProgressionRecord load(String playerId, String jobKey) {
     Key key = new Key(playerId, jobKey);
     if (pendingDeletes.contains(key)) {
       return null;
@@ -244,12 +251,11 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
     if (record != null) {
       return record;
     }
-    return readCache.get(key, __ -> delegate.load(playerId, jobKey));
+    return readCache.get(key, ignored -> delegate.load(playerId, jobKey));
   }
 
   @Override
-  public List<JobProgressionRecord> loadAllForJob(String jobKey, int limit)
-      throws IllegalArgumentException {
+  public List<JobProgressionRecord> loadAllForJob(String jobKey, int limit) {
     List<JobProgressionRecord> base = delegate.loadAllForJob(jobKey, limit);
     Map<Key, JobProgressionRecord> merged = new HashMap<>();
     for (JobProgressionRecord record : base) {
@@ -280,8 +286,7 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
   }
 
   @Override
-  public List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit)
-      throws IllegalArgumentException {
+  public List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit) {
     List<JobProgressionRecord> base = delegate.loadAllForPlayer(playerId, limit);
     Map<Key, JobProgressionRecord> merged = new HashMap<>();
     for (JobProgressionRecord record : base) {
@@ -314,10 +319,15 @@ final class WriteBackJobProgressionRepositoryImpl implements JobProgressionRepos
 
   @Override
   public boolean delete(String playerId, String jobKey) {
-    Key key = new Key(playerId, jobKey);
-    pendingUpserts.remove(key);
-    pendingDeletes.add(key);
-    readCache.invalidate(key);
-    return true;
+    flushLock.lock();
+    try {
+      Key key = new Key(playerId, jobKey);
+      pendingUpserts.remove(key);
+      pendingDeletes.add(key);
+      readCache.invalidate(key);
+      return true;
+    } finally {
+      flushLock.unlock();
+    }
   }
 }

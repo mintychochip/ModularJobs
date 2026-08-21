@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ class PluginResourcesLifecycleTest {
     PluginResources resources = new PluginResources();
     ConnectionSource payable = resources.track(new TrackingSource(new ArrayList<>()));
     ConnectionSource timed = resources.track(new TrackingSource(new ArrayList<>()));
-    ConnectionSource upgrades = resources.track(new TrackingSource(new ArrayList<>()));
+    final ConnectionSource upgrades = resources.track(new TrackingSource(new ArrayList<>()));
 
     assertEquals(3, resources.sourceCount());
     assertFalse(payable.isClosed());
@@ -43,7 +44,7 @@ class PluginResourcesLifecycleTest {
   void flushHooksRunBeforeSourcesClose() throws Exception {
     PluginResources resources = new PluginResources();
     List<String> order = new ArrayList<>();
-    TrackingSource source = resources.track(new TrackingSource(order));
+    final TrackingSource source = resources.track(new TrackingSource(order));
     resources.onFlush(() -> order.add("flush-a"));
     resources.onFlush(() -> order.add("flush-b"));
 
@@ -62,9 +63,9 @@ class PluginResourcesLifecycleTest {
     assertThrows(IllegalStateException.class, () -> {
       try {
         throw new IllegalStateException("simulated composition failure after opening sources");
-      } catch (Throwable t) {
+      } catch (IllegalStateException failure) {
         resources.closeQuietly();
-        throw t;
+        throw failure;
       }
     });
 
@@ -76,7 +77,7 @@ class PluginResourcesLifecycleTest {
   void shutdownIsIdempotent() throws Exception {
     PluginResources resources = new PluginResources();
     AtomicInteger flushes = new AtomicInteger();
-    ConnectionSource source = resources.track(new TrackingSource(new ArrayList<>()));
+    final ConnectionSource source = resources.track(new TrackingSource(new ArrayList<>()));
     resources.onFlush(flushes::incrementAndGet);
 
     resources.shutdown();
@@ -112,7 +113,7 @@ class PluginResourcesLifecycleTest {
     }
 
     @Override
-    public java.sql.Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
       throw new UnsupportedOperationException();
     }
 

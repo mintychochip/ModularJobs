@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +27,7 @@ public final class WriteBackRepositoryImpl<K, V> {
   private final Map<K, V> pendingUpserts = new ConcurrentHashMap<>();
   private final Set<K> pendingDeletes = ConcurrentHashMap.newKeySet();
   private final int maxBatch = 50;
+  private final ReentrantLock flushLock = new ReentrantLock();
 
   private final AtomicBoolean flushing = new AtomicBoolean(false);
 
@@ -36,7 +38,7 @@ public final class WriteBackRepositoryImpl<K, V> {
     this.delegate = delegate;
   }
 
-  public static <K, V> WriteBackRepositoryImpl<K,V> create(Plugin plugin, RelationalRepositoryImpl<K,V> delegate, long periodSeconds) {
+  public static <K, V> WriteBackRepositoryImpl<K, V> create(Plugin plugin, RelationalRepositoryImpl<K, V> delegate, long periodSeconds) {
     WriteBackRepositoryImpl<K, V> writeBehindRepository = new WriteBackRepositoryImpl<>(delegate);
     Bukkit.getAsyncScheduler().runAtFixedRate(plugin, task -> writeBehindRepository.flush(), 0L, periodSeconds, TimeUnit.SECONDS);
     return writeBehindRepository;
@@ -54,16 +56,26 @@ public final class WriteBackRepositoryImpl<K, V> {
   }
 
   public boolean save(K key, V value) {
-    pendingDeletes.remove(key);
-    pendingUpserts.put(key, value);
-    readCache.put(key, value);
-    return true;
+    flushLock.lock();
+    try {
+      pendingDeletes.remove(key);
+      pendingUpserts.put(key, value);
+      readCache.put(key, value);
+      return true;
+    } finally {
+      flushLock.unlock();
+    }
   }
 
   public void delete(K key) {
-    pendingUpserts.remove(key);
-    pendingDeletes.add(key);
-    readCache.invalidate(key);
+    flushLock.lock();
+    try {
+      pendingUpserts.remove(key);
+      pendingDeletes.add(key);
+      readCache.invalidate(key);
+    } finally {
+      flushLock.unlock();
+    }
   }
 
   private void flush() {
@@ -106,45 +118,38 @@ public final class WriteBackRepositoryImpl<K, V> {
   }
 
   private boolean flushOnce() {
-    // Process deletes first to ensure clean state before upserts
-    // This prevents desync when a key is deleted and quickly re-created
-    List<K> deletes = new ArrayList<>();
-    Iterator<K> keyIterator = this.pendingDeletes.iterator();
-    while (keyIterator.hasNext() && deletes.size() < maxBatch) {
-      K deletedKey = keyIterator.next();
-      if (pendingDeletes.remove(deletedKey)) {
-        deletes.add(deletedKey);
-      }
-    }
-
-    Map<K, V> upserts = new LinkedHashMap<>();
-    Iterator<Entry<K, V>> iterator = pendingUpserts.entrySet().iterator();
-    while (iterator.hasNext() && upserts.size() < maxBatch) {
-      Entry<K, V> element = iterator.next();
-      K key = element.getKey();
-      V value = element.getValue();
-      if (pendingUpserts.remove(key, value)) {
-        upserts.put(key, value);
-      }
-    }
-
-    if (deletes.isEmpty() && upserts.isEmpty()) {
-      return false;
-    }
-
+    flushLock.lock();
     try {
-      // Execute deletes before upserts to ensure proper cleanup
+      // Snapshot pending operations while blocking concurrent save/delete calls. Entries stay
+      // queued until every delegate operation succeeds, so unchecked failures are lossless.
+      List<K> deletes = new ArrayList<>();
+      Iterator<K> keyIterator = this.pendingDeletes.iterator();
+      while (keyIterator.hasNext() && deletes.size() < maxBatch) {
+        deletes.add(keyIterator.next());
+      }
+
+      Map<K, V> upserts = new LinkedHashMap<>();
+      Iterator<Entry<K, V>> iterator = pendingUpserts.entrySet().iterator();
+      while (iterator.hasNext() && upserts.size() < maxBatch) {
+        Entry<K, V> element = iterator.next();
+        upserts.put(element.getKey(), element.getValue());
+      }
+
+      if (deletes.isEmpty() && upserts.isEmpty()) {
+        return false;
+      }
+
       for (K deletedKey : deletes) {
         delegate.delete(deletedKey);
       }
       if (!upserts.isEmpty()) {
         upserts.forEach(delegate::save);
       }
+      deletes.forEach(pendingDeletes::remove);
+      upserts.forEach((key, value) -> pendingUpserts.remove(key, value));
       return true;
-    } catch (Throwable t) {
-      upserts.forEach(this.pendingUpserts::putIfAbsent);
-      this.pendingDeletes.addAll(deletes);
-      throw t;
+    } finally {
+      flushLock.unlock();
     }
   }
 }

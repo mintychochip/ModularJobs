@@ -54,6 +54,8 @@ public final class RelationalJobTaskRepositoryImpl {
       .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE).build();
 
   /**
+   * Creates a repository that reads and writes job tasks through the given connection source.
+   *
    * @param connectionSource the source of database connections for all operations
    */
   public RelationalJobTaskRepositoryImpl(ConnectionSource connectionSource) {
@@ -93,7 +95,7 @@ public final class RelationalJobTaskRepositoryImpl {
         return taskRecord;
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -165,7 +167,7 @@ public final class RelationalJobTaskRepositoryImpl {
         throw e;
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -219,7 +221,7 @@ public final class RelationalJobTaskRepositoryImpl {
         throw e;
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -252,7 +254,7 @@ public final class RelationalJobTaskRepositoryImpl {
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
 
     Map<String, List<JobTaskRecord>> records = new LinkedHashMap<>();
@@ -264,17 +266,6 @@ public final class RelationalJobTaskRepositoryImpl {
       records.put(actionTypeKey, taskRecords);
     }
     return records;
-  }
-
-  /** Builds a {@link JobTaskRecord} while accumulating its payable rows across result rows. */
-  private static final class TaskRecordAccumulator {
-
-    private final String contextKey;
-    private final List<PayableRecord> payables = new ArrayList<>();
-
-    private TaskRecordAccumulator(String contextKey) {
-      this.contextKey = contextKey;
-    }
   }
 
   /**
@@ -298,7 +289,7 @@ public final class RelationalJobTaskRepositoryImpl {
       }
       return records;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -314,6 +305,17 @@ public final class RelationalJobTaskRepositoryImpl {
       all.addAll(records);
     }
     return all;
+  }
+
+  /** Builds a {@link JobTaskRecord} while accumulating its payable rows across result rows. */
+  private static final class TaskRecordAccumulator {
+
+    private final String contextKey;
+    private final List<PayableRecord> payables = new ArrayList<>();
+
+    private TaskRecordAccumulator(String contextKey) {
+      this.contextKey = contextKey;
+    }
   }
 
   /** Builds the cache key for a task's key tuple. */

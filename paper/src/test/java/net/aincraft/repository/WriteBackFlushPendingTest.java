@@ -9,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import net.aincraft.test.TestMysql;
+import net.aincraft.test.MysqlTestSupport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -27,9 +27,8 @@ class WriteBackFlushPendingTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    TestMysql.assumeAvailable();
-    Connection raw = TestMysql.open();
-    connection = NonClosableConnection.create(raw);
+    MysqlTestSupport.assumeAvailable();
+    connection = NonClosableConnection.create(MysqlTestSupport.open());
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS kv_writeback_test");
       st.execute("CREATE TABLE kv_writeback_test (k VARCHAR(191) PRIMARY KEY, v VARCHAR(191) NOT NULL)");
@@ -48,8 +47,8 @@ class WriteBackFlushPendingTest {
       } catch (SQLException ignored) {
         // best-effort
       }
-      if (connection instanceof NonClosableConnection nc) {
-        nc.shutdown();
+      if (connection instanceof NonClosableConnection) {
+        ((NonClosableConnection) connection).shutdown();
       }
     }
   }
@@ -85,7 +84,7 @@ class WriteBackFlushPendingTest {
   @Test
   void pluginResourcesFlushThenShutdownOrder() throws Exception {
     PluginResources resources = new PluginResources();
-    ConnectionSource source = resources.track(new FixedSource(connection) {
+    final ConnectionSource source = resources.track(new FixedSource(connection) {
       private boolean closed;
 
       @Override

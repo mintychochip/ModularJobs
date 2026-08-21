@@ -46,7 +46,7 @@ public final class RelationalRepositoryImpl<K, V> {
           return rs.next() ? context.mapResult(rs, key) : null;
         }
       } catch (SQLException e) {
-        throw new RuntimeException(e);
+        throw new WriteBackException("Relational repository operation failed", e);
       }
     });
   }
@@ -63,7 +63,7 @@ public final class RelationalRepositoryImpl<K, V> {
       readCache.put(key, value);
       return ps.executeUpdate() > 0;
     } catch (SQLException e) {
-      throw new RuntimeException("failed to save entity for jobKey: " + key, e);
+      throw new WriteBackException("Failed to save entity for key: " + key, e);
     }
   }
 
@@ -76,7 +76,7 @@ public final class RelationalRepositoryImpl<K, V> {
         readCache.invalidate(key);
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to delete entity for jobKey: " + key, e);
+      throw new WriteBackException("Failed to delete entity for key: " + key, e);
     }
   }
 }

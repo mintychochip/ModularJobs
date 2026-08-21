@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
-import net.aincraft.domain.MemoryJobRepositoryImpl;
 import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.SqlStatements;
@@ -96,7 +95,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return false;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -125,7 +124,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
         return progressionRecord;
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -157,7 +156,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return records;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -189,7 +188,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return records;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 
@@ -205,7 +204,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return false;
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new net.aincraft.repository.WriteBackException("Relational repository operation failed", e);
     }
   }
 }
