@@ -45,6 +45,8 @@ final class HikariConfigProvider {
     hikariConfig.setJdbcUrl(jdbcUrl);
     hikariConfig.setUsername(username);
     hikariConfig.setPassword(password);
+    hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
+    hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
 
     String driverClass = databaseType.getClassName();
     if (driverClass != null && !driverClass.isBlank()) {
