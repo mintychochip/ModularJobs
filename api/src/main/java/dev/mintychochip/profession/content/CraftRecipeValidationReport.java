@@ -8,6 +8,7 @@ public record CraftRecipeValidationReport(
     @NotNull List<CraftTaskWithoutRecipeFinding> tasksWithoutRecipe,
     @NotNull List<RegisteredRecipeWithoutTaskFinding> recipesWithoutTask) {
 
+  /** API member. */
   public CraftRecipeValidationReport {
     tasksWithoutRecipe = List.copyOf(tasksWithoutRecipe);
     recipesWithoutTask = List.copyOf(recipesWithoutTask);

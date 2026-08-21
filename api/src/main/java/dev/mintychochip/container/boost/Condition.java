@@ -4,9 +4,8 @@ import dev.mintychochip.Bridge;
 import dev.mintychochip.container.BoostContext;
 import dev.mintychochip.container.boost.factories.ConditionFactory;
 
-/**
- * Predicate evaluated against a {@link BoostContext}.
- */
+/** Predicate evaluated against a {@link BoostContext}. */
+@FunctionalInterface
 public interface Condition {
 
   /**
@@ -18,8 +17,8 @@ public interface Condition {
   boolean applies(BoostContext context);
 
   /**
-   * Lazy factory access — must not run at class-init time (unit tests load
-   * {@link Condition} without a live Bukkit server / Bridge).
+   * Lazy factory access — must not run at class-init time (unit tests load {@link Condition}
+   * without a live Bukkit server / Bridge).
    */
   private static ConditionFactory factory() {
     return Bridge.bridge().conditionFactory();
@@ -44,57 +43,75 @@ public interface Condition {
     return factory().world(worldName);
   }
 
-  static Condition playerResource(PlayerResourceType type, double expected,
-      RelationalOperator operator) {
+  /** Player resource. */
+  static Condition playerResource(
+      PlayerResourceType type, double expected, RelationalOperator operator) {
     return factory().playerResource(type, expected, operator);
   }
 
+  /** Sneaking. */
   static Condition sneaking(boolean state) {
     return factory().sneaking(state);
   }
 
+  /** Sprinting. */
   static Condition sprinting(boolean state) {
     return factory().sprinting(state);
   }
 
   /**
+   * Creates a liquid condition.
+   *
    * @param materialKey liquid material name or key ({@code water}/{@code lava})
    */
-  static Condition liquid(String materialKey) throws IllegalArgumentException {
+  static Condition liquid(String materialKey) {
     return factory().liquid(materialKey);
   }
 
   /**
-   * @param potionEffectTypeKey effect id or namespaced key (e.g. {@code speed}, {@code minecraft:strength})
+   * Creates a potion type condition.
+   *
+   * @param potionEffectTypeKey effect id or namespaced key (e.g. {@code speed}, {@code
+   *     minecraft:strength})
    */
   static Condition potionType(String potionEffectTypeKey) {
     return factory().potionType(potionEffectTypeKey);
   }
 
   /**
+   * Creates a potion intensity condition.
+   *
    * @param potionEffectTypeKey effect id or namespaced key
    */
-  static Condition potion(String potionEffectTypeKey, int expected,
-      PotionConditionType conditionType, RelationalOperator operator) {
+  static Condition potion(
+      String potionEffectTypeKey,
+      int expected,
+      PotionConditionType conditionType,
+      RelationalOperator operator) {
     return factory().potion(potionEffectTypeKey, expected, conditionType, operator);
   }
 
+  /** Weather. */
   static Condition weather(WeatherState state) {
     return factory().weather(state);
   }
 
+  /** And. */
   default Condition and(Condition other) {
     return compose(other, LogicalOperator.AND);
   }
 
+  /** Or. */
   default Condition or(Condition other) {
     return compose(other, LogicalOperator.OR);
   }
 
+  /** Negate. */
   default Condition negate() {
     return factory().negate(this);
   }
 
+  /** Compose. */
   default Condition compose(Condition other, LogicalOperator operator) {
     return factory().compose(this, other, operator);
   }

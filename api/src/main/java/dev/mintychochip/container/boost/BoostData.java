@@ -1,17 +1,15 @@
 package dev.mintychochip.container.boost;
 
-import java.time.Duration;
-import java.util.BitSet;
-import java.util.Optional;
 import dev.mintychochip.container.BoostSource;
 import dev.mintychochip.container.boost.BoostData.SerializableBoostData;
 import dev.mintychochip.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
 import dev.mintychochip.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
+import java.time.Duration;
+import java.util.BitSet;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Data describing the source and persistence-related state of a boost.
- */
+/** Data describing the source and persistence-related state of a boost. */
 public sealed interface BoostData permits SerializableBoostData {
 
   /**
@@ -22,11 +20,9 @@ public sealed interface BoostData permits SerializableBoostData {
   @NotNull
   BoostSource boostSource();
 
-  /**
-   * Boost data whose state can be serialized.
-   */
-  sealed interface SerializableBoostData extends BoostData permits PassiveBoostData,
-      ConsumableBoostData {
+  /** Boost data whose state can be serialized. */
+  sealed interface SerializableBoostData extends BoostData
+      permits PassiveBoostData, ConsumableBoostData {
 
     /**
      * Serializable data for a boost that can be consumed for a duration.
@@ -34,9 +30,8 @@ public sealed interface BoostData permits SerializableBoostData {
      * @param boostSource source of the boost
      * @param duration duration for which the boost is active
      */
-    record ConsumableBoostData(@NotNull BoostSource boostSource,
-                               @NotNull Duration duration) implements TimedBoostData,
-        SerializableBoostData {
+    record ConsumableBoostData(@NotNull BoostSource boostSource, @NotNull Duration duration)
+        implements TimedBoostData, SerializableBoostData {
 
       /**
        * Returns this boost's configured duration.
@@ -55,15 +50,12 @@ public sealed interface BoostData permits SerializableBoostData {
      * @param boostSource source of the boost
      * @param slotSet slots associated with the passive boost
      */
-    record PassiveBoostData(@NotNull BoostSource boostSource, @NotNull BitSet slotSet) implements
-        SerializableBoostData {
-
-    }
+    record PassiveBoostData(@NotNull BoostSource boostSource, @NotNull BitSet slotSet)
+        implements SerializableBoostData {}
   }
 
-  /**
-   * Data that exposes an optional active duration.
-   */
+  /** Data that exposes an optional active duration. */
+  @FunctionalInterface
   interface TimedBoostData {
 
     /**
@@ -73,5 +65,4 @@ public sealed interface BoostData permits SerializableBoostData {
      */
     Optional<Duration> getDuration();
   }
-
 }

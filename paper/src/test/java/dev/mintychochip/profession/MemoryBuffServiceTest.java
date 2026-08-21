@@ -4,18 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.service.BuffService.BuffSlot;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import dev.mintychochip.service.BuffService.BuffSlot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link MemoryBuffService} exclusive slot rules (P6 consumables).
- */
+/** Drives shipped {@link MemoryBuffService} exclusive slot rules (P6 consumables). */
 class MemoryBuffServiceTest {
 
   private static final UUID PLAYER = UUID.fromString("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");

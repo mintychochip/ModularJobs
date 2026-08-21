@@ -3,10 +3,6 @@ package dev.mintychochip.profession.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.JobTask;
@@ -17,6 +13,10 @@ import dev.mintychochip.container.ActionType;
 import dev.mintychochip.container.Context;
 import dev.mintychochip.profession.content.CraftTaskSnapshot;
 import dev.mintychochip.service.JobService;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.Test;
@@ -32,24 +32,27 @@ class CraftRecipeContentValidatorTest {
   void collectCraftTasksFlattensAllJobsAndFiltersCraftAction() {
     Job blacksmith = new StubJob(Key.key("modularjobs", "blacksmith"));
     Job miner = new StubJob(Key.key("modularjobs", "miner"));
-    JobTask craftTask = new JobTask(
-        Key.key("modularjobs", "blacksmith"),
-        Key.key("modularjobs", "craft"),
-        Key.key("minecraft", "iron_sword"),
-        List.of());
-    JobTask smeltTask = new JobTask(
-        Key.key("modularjobs", "blacksmith"),
-        Key.key("modularjobs", "smelt"),
-        Key.key("minecraft", "iron_ingot"),
-        List.of());
+    JobTask craftTask =
+        new JobTask(
+            Key.key("modularjobs", "blacksmith"),
+            Key.key("modularjobs", "craft"),
+            Key.key("minecraft", "iron_sword"),
+            List.of());
+    JobTask smeltTask =
+        new JobTask(
+            Key.key("modularjobs", "blacksmith"),
+            Key.key("modularjobs", "smelt"),
+            Key.key("minecraft", "iron_ingot"),
+            List.of());
 
-    JobService jobService = new StubJobService(
-        List.of(blacksmith, miner),
-        Map.of(
-            blacksmith,
-            Map.of(CRAFT, List.of(craftTask), SMELT, List.of(smeltTask)),
-            miner,
-            Map.of()));
+    JobService jobService =
+        new StubJobService(
+            List.of(blacksmith, miner),
+            Map.of(
+                blacksmith,
+                Map.of(CRAFT, List.of(craftTask), SMELT, List.of(smeltTask)),
+                miner,
+                Map.of()));
 
     List<CraftTaskSnapshot> snapshots = CraftRecipeContentValidator.collectCraftTasks(jobService);
 
@@ -62,10 +65,10 @@ class CraftRecipeContentValidatorTest {
   @Test
   void summaryLineReportsCounts() {
     Key output = Key.key("minecraft", "stone_bricks");
-    var report = dev.mintychochip.profession.content.CraftRecipeContentValidation.validate(
-        List.of(new CraftTaskSnapshot(
-            Key.key("modularjobs", "artisan"), output, output)),
-        List.of());
+    var report =
+        dev.mintychochip.profession.content.CraftRecipeContentValidation.validate(
+            List.of(new CraftTaskSnapshot(Key.key("modularjobs", "artisan"), output, output)),
+            List.of());
 
     String summary = CraftRecipeContentValidator.summaryLine(report);
     assertTrue(summary.contains("1 craft task(s) without recipe metadata"));

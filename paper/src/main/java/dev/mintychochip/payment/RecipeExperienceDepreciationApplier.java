@@ -1,20 +1,19 @@
 package dev.mintychochip.payment;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.UUID;
 import dev.mintychochip.container.Context;
 import dev.mintychochip.profession.RecipeDefinition;
 import dev.mintychochip.profession.RecipeExperienceDepreciation;
 import dev.mintychochip.profession.RecipeExperienceDepreciationPolicy;
 import dev.mintychochip.service.ProfessionService;
 import dev.mintychochip.service.RecipeService;
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Scales craft experience payables when a registered recipe is below the player's profession
- * level.
+ * Scales craft experience payables when a registered recipe is below the player's profession level.
  */
 public final class RecipeExperienceDepreciationApplier {
 
@@ -22,6 +21,7 @@ public final class RecipeExperienceDepreciationApplier {
   private final RecipeService recipeService;
   private final ProfessionService professionService;
 
+  /** Recipe experience depreciation applier. */
   public RecipeExperienceDepreciationApplier(
       @NotNull RecipeExperienceDepreciationPolicy policy,
       @NotNull RecipeService recipeService,
@@ -50,8 +50,7 @@ public final class RecipeExperienceDepreciationApplier {
       return amount;
     }
     RecipeDefinition recipe = definition.get();
-    int professionLevel =
-        professionService.level(playerId, recipe.professionId()).orElse(0);
+    int professionLevel = professionService.level(playerId, recipe.professionId()).orElse(0);
     BigDecimal multiplier =
         RecipeExperienceDepreciation.experienceMultiplier(
             policy, professionLevel, recipe.requiredLevel());

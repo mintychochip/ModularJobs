@@ -7,8 +7,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.popcraft.bolt.BoltAPI;
 
 /**
- * Manufacturing a {@link BlockProtectionAdapter} by probing the runtime for a
- * Bolt integration, returning {@code null} when none is available/enabled.
+ * Manufacturing a {@link BlockProtectionAdapter} by probing the runtime for a Bolt integration,
+ * returning {@code null} when none is available/enabled.
  */
 public final class BlockProtectionAdapterProvider {
 
@@ -18,14 +18,14 @@ public final class BlockProtectionAdapterProvider {
   }
 
   /**
-   * Returns a Bolt-backed adapter when the Bolt plugin is enabled and registered
-   * as a services-manager provider; otherwise returns null.
+   * Returns a Bolt-backed adapter when the Bolt plugin is enabled and registered as a
+   * services-manager provider; otherwise returns null.
    */
   BlockProtectionAdapter get() {
     Plugin boltPlugin = Bukkit.getPluginManager().getPlugin("Bolt");
     if (boltPlugin != null && boltPlugin.isEnabled()) {
-      RegisteredServiceProvider<BoltAPI> registration = Bukkit.getServicesManager()
-          .getRegistration(BoltAPI.class);
+      RegisteredServiceProvider<BoltAPI> registration =
+          Bukkit.getServicesManager().getRegistration(BoltAPI.class);
       if (registration != null) {
         BoltAPI bolt = registration.getProvider();
         return boltAdapter(bolt);
@@ -35,8 +35,8 @@ public final class BlockProtectionAdapterProvider {
   }
 
   /**
-   * Builds a Bolt-backed {@link BlockProtectionAdapter} resolving the owner of
-   * each block's protection, or empty when no protection exists.
+   * Builds a Bolt-backed {@link BlockProtectionAdapter} resolving the owner of each block's
+   * protection, or empty when no protection exists.
    */
   public static BlockProtectionAdapter boltAdapter(BoltAPI bolt) {
     return block -> {

@@ -9,16 +9,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Payment rule knobs loaded from {@code config.yml}.
- */
+/** Payment rule knobs loaded from {@code config.yml}. */
 public record PaymentSettings(
     boolean payInCreative,
     boolean payWhileRiding,
     @NotNull Set<String> disabledWorlds,
     double killContributionCutoff,
-    double furnaceMaxDistance
-) {
+    double furnaceMaxDistance) {
 
   public static final double DEFAULT_KILL_CONTRIBUTION_CUTOFF = 0.5;
   public static final double DEFAULT_FURNACE_MAX_DISTANCE = 25.0;
@@ -29,12 +26,7 @@ public record PaymentSettings(
    */
   public static PaymentSettings defaults() {
     return new PaymentSettings(
-        true,
-        false,
-        Set.of(),
-        DEFAULT_KILL_CONTRIBUTION_CUTOFF,
-        DEFAULT_FURNACE_MAX_DISTANCE
-    );
+        true, false, Set.of(), DEFAULT_KILL_CONTRIBUTION_CUTOFF, DEFAULT_FURNACE_MAX_DISTANCE);
   }
 
   /**
@@ -54,21 +46,25 @@ public record PaymentSettings(
       }
     }
 
-    double cutoff = config.getDouble(
-        "kill-contribution-cutoff", DEFAULT_KILL_CONTRIBUTION_CUTOFF);
+    double cutoff = config.getDouble("kill-contribution-cutoff", DEFAULT_KILL_CONTRIBUTION_CUTOFF);
     if (cutoff < 0.0 || cutoff > 1.0) {
-      plugin.getSLF4JLogger().warn(
-          "kill-contribution-cutoff must be between 0 and 1 (got {}); using default {}",
-          cutoff, DEFAULT_KILL_CONTRIBUTION_CUTOFF);
+      plugin
+          .getSLF4JLogger()
+          .warn(
+              "kill-contribution-cutoff must be between 0 and 1 (got {}); using default {}",
+              cutoff,
+              DEFAULT_KILL_CONTRIBUTION_CUTOFF);
       cutoff = DEFAULT_KILL_CONTRIBUTION_CUTOFF;
     }
 
-    double furnaceDistance = config.getDouble(
-        "furnace-max-distance", DEFAULT_FURNACE_MAX_DISTANCE);
+    double furnaceDistance = config.getDouble("furnace-max-distance", DEFAULT_FURNACE_MAX_DISTANCE);
     if (furnaceDistance < 0.0) {
-      plugin.getSLF4JLogger().warn(
-          "furnace-max-distance must be >= 0 (got {}); using default {}",
-          furnaceDistance, DEFAULT_FURNACE_MAX_DISTANCE);
+      plugin
+          .getSLF4JLogger()
+          .warn(
+              "furnace-max-distance must be >= 0 (got {}); using default {}",
+              furnaceDistance,
+              DEFAULT_FURNACE_MAX_DISTANCE);
       furnaceDistance = DEFAULT_FURNACE_MAX_DISTANCE;
     }
 
@@ -77,8 +73,7 @@ public record PaymentSettings(
         payWhileRiding,
         Collections.unmodifiableSet(disabled),
         cutoff,
-        furnaceDistance
-    );
+        furnaceDistance);
   }
 
   /**
@@ -90,9 +85,7 @@ public record PaymentSettings(
     return disabledWorlds.contains(worldName.toLowerCase(Locale.ROOT));
   }
 
-  /**
-   * Squared distance for furnace proximity checks (avoids sqrt).
-   */
+  /** Squared distance for furnace proximity checks (avoids sqrt). */
   public double furnaceMaxDistanceSquared() {
     return furnaceMaxDistance * furnaceMaxDistance;
   }

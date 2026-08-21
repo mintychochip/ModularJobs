@@ -4,14 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.service.NodeHarvestService.HarvestResult;
 import java.util.List;
 import java.util.UUID;
-import dev.mintychochip.service.NodeHarvestService.HarvestResult;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives P6 stubs: {@link StubStationService}, {@link StubNodeHarvestService}.
- */
+/** Drives P6 stubs: {@link StubStationService}, {@link StubNodeHarvestService}. */
 class StubStationAndHarvestTest {
 
   private static final UUID PLAYER = UUID.fromString("cccccccc-dddd-eeee-ffff-000000000001");

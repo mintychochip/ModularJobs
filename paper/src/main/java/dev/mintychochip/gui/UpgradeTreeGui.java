@@ -6,14 +6,6 @@ import dev.craftux.api.inventory.ItemSpec;
 import dev.craftux.api.inventory.Slot;
 import dev.craftux.api.inventory.SlotPixelIntent;
 import dev.craftux.common.inventory.InventoryRuntime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.gui.craftux.CraftuxItems;
 import dev.mintychochip.gui.craftux.CraftuxUiHost;
@@ -30,6 +22,14 @@ import dev.mintychochip.upgrade.UpgradeService.PurchaseResult;
 import dev.mintychochip.upgrade.UpgradeService.UnlockResult;
 import dev.mintychochip.upgrade.UpgradeTree;
 import dev.mintychochip.util.Messages;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -42,8 +42,8 @@ import org.bukkit.entity.Player;
 /**
  * Job upgrade tree GUI via craftux {@link InventoryRuntime}.
  *
- * <p>Presentation is rebuilt into an {@link InventoryView} on each open/refresh.
- * Click side-effects are host actions registered under {@link CraftuxUiHost}.
+ * <p>Presentation is rebuilt into an {@link InventoryView} on each open/refresh. Click side-effects
+ * are host actions registered under {@link CraftuxUiHost}.
  */
 public final class UpgradeTreeGui {
 
@@ -53,7 +53,8 @@ public final class UpgradeTreeGui {
   private static final int CONTROL_ROW_START = 45;
   private static final int CONFIRM_SLOT = 52;
   private static final String MENU_ID = "upgrade_tree";
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
   private final InventoryRuntime inventory;
   private final UpgradeService upgradeService;
@@ -65,7 +66,7 @@ public final class UpgradeTreeGui {
     final SkillTree skillTree;
     String pendingMajorKey;
     int scrollOffset;
-    /** Slot → node key for action dispatch. */
+
     Map<Integer, String> slotNodes = Map.of();
 
     GuiSession(Job job, UpgradeTree tree, SkillTree skillTree) {
@@ -88,8 +89,8 @@ public final class UpgradeTreeGui {
   }
 
   /**
-   * Opens (or replaces) the upgrade-tree view for {@code player}, resolving the
-   * active skill tree and resetting scroll/pending state. Bukkit thread.
+   * Opens (or replaces) the upgrade-tree view for {@code player}, resolving the active skill tree
+   * and resetting scroll/pending state. Bukkit thread.
    */
   public void open(Player player, Job job, UpgradeTree tree) {
     String jobKey = job.key().value();
@@ -115,9 +116,9 @@ public final class UpgradeTreeGui {
   }
 
   /**
-   * Host action handler for {@link CraftuxUiHost#ACTION_UPGRADE_NODE}: unlocks/
-   * purchases the clicked node, staging permanent "major" choices for confirm.
-   * Runs on the Bukkit thread via the craftux runtime.
+   * Host action handler for {@link CraftuxUiHost#ACTION_UPGRADE_NODE}: unlocks/ purchases the
+   * clicked node, staging permanent "major" choices for confirm. Runs on the Bukkit thread via the
+   * craftux runtime.
    */
   public void onNodeClick(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
@@ -189,13 +190,19 @@ public final class UpgradeTreeGui {
         if (slot < 0 || slot >= CONTROL_ROW_START) {
           continue;
         }
-        NodeStatus status = getNodeStatus(node, data.unlockedNodes(), session.tree.getAvailableNodes(data.unlockedNodes(), data));
+        NodeStatus status =
+            getNodeStatus(
+                node,
+                data.unlockedNodes(),
+                session.tree.getAvailableNodes(data.unlockedNodes(), data));
         String key = getShortKey(node);
-        slots.put(slot, Slot.button(
-            "node." + sanitize(key),
-            nodeItem(node, status, data, session.tree),
-            CraftuxUiHost.ACTION_UPGRADE_NODE,
-            SlotPixelIntent.UNVALIDATED));
+        slots.put(
+            slot,
+            Slot.button(
+                "node." + sanitize(key),
+                nodeItem(node, status, data, session.tree),
+                CraftuxUiHost.ACTION_UPGRADE_NODE,
+                SlotPixelIntent.UNVALIDATED));
         slotNodes.put(slot, key);
       }
     } else {
@@ -206,11 +213,13 @@ public final class UpgradeTreeGui {
         }
         NodeStatus status = v2Status(session.skillTree, state, node);
         String key = node.key().value();
-        slots.put(slot, Slot.button(
-            "node." + sanitize(key),
-            v2NodeItem(node, status, state, session.skillTree),
-            CraftuxUiHost.ACTION_UPGRADE_NODE,
-            SlotPixelIntent.UNVALIDATED));
+        slots.put(
+            slot,
+            Slot.button(
+                "node." + sanitize(key),
+                v2NodeItem(node, status, state, session.skillTree),
+                CraftuxUiHost.ACTION_UPGRADE_NODE,
+                SlotPixelIntent.UNVALIDATED));
         slotNodes.put(slot, key);
       }
     }
@@ -238,19 +247,20 @@ public final class UpgradeTreeGui {
 
   private void placeControls(
       Map<Integer, Slot> slots, GuiSession session, PlayerUpgradeData data, SkillTreeState state) {
-    int maxY = session.isV2()
-        ? session.skillTree.nodes().stream()
-            .map(SkillNode::position)
-            .filter(pos -> pos != null)
-            .mapToInt(Position::y)
-            .max()
-            .orElse(0)
-        : session.tree.allNodes().stream()
-            .map(UpgradeNode::position)
-            .filter(pos -> pos != null)
-            .mapToInt(Position::y)
-            .max()
-            .orElse(0);
+    int maxY =
+        session.isV2()
+            ? session.skillTree.nodes().stream()
+                .map(SkillNode::position)
+                .filter(pos -> pos != null)
+                .mapToInt(Position::y)
+                .max()
+                .orElse(0)
+            : session.tree.allNodes().stream()
+                .map(UpgradeNode::position)
+                .filter(pos -> pos != null)
+                .mapToInt(Position::y)
+                .max()
+                .orElse(0);
     int maxScroll = Math.max(0, maxY - GUI_ROWS + 1);
     boolean canScrollUp = session.scrollOffset > 0;
     boolean canScrollDown = session.scrollOffset < maxScroll;
@@ -260,52 +270,62 @@ public final class UpgradeTreeGui {
       slots.put(i, Slot.decorative(controlBg));
     }
 
-    Material upMat = canScrollUp ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE;
+    Material upMat =
+        canScrollUp ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE;
     String upLabel = canScrollUp ? "Scroll Up" : "Scroll Up (At Top)";
     if (canScrollUp) {
-      slots.put(CONTROL_ROW_START, Slot.navigation(
-          "scroll_up",
-          CraftuxItems.of(upMat, upLabel),
-          CraftuxUiHost.ACTION_UPGRADE_SCROLL_UP,
-          SlotPixelIntent.UNVALIDATED));
+      slots.put(
+          CONTROL_ROW_START,
+          Slot.navigation(
+              "scroll_up",
+              CraftuxItems.of(upMat, upLabel),
+              CraftuxUiHost.ACTION_UPGRADE_SCROLL_UP,
+              SlotPixelIntent.UNVALIDATED));
     } else {
       slots.put(CONTROL_ROW_START, Slot.decorative(CraftuxItems.of(upMat, upLabel)));
     }
 
-    Material downMat = canScrollDown ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE;
+    Material downMat =
+        canScrollDown ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE;
     String downLabel = canScrollDown ? "Scroll Down" : "Scroll Down (At Bottom)";
     if (canScrollDown) {
-      slots.put(CONTROL_ROW_START + 8, Slot.navigation(
-          "scroll_down",
-          CraftuxItems.of(downMat, downLabel),
-          CraftuxUiHost.ACTION_UPGRADE_SCROLL_DOWN,
-          SlotPixelIntent.UNVALIDATED));
+      slots.put(
+          CONTROL_ROW_START + 8,
+          Slot.navigation(
+              "scroll_down",
+              CraftuxItems.of(downMat, downLabel),
+              CraftuxUiHost.ACTION_UPGRADE_SCROLL_DOWN,
+              SlotPixelIntent.UNVALIDATED));
     } else {
       slots.put(CONTROL_ROW_START + 8, Slot.decorative(CraftuxItems.of(downMat, downLabel)));
     }
 
-    slots.put(CONTROL_ROW_START + 4, Slot.decorative(
-        session.isV2() ? v2InfoItem(session.skillTree, state) : infoItem(session.tree, data)));
+    slots.put(
+        CONTROL_ROW_START + 4,
+        Slot.decorative(
+            session.isV2() ? v2InfoItem(session.skillTree, state) : infoItem(session.tree, data)));
 
     if (session.pendingMajorKey != null) {
-      String pendingName = session.skillTree.node(session.pendingMajorKey)
-          .map(SkillNode::name).orElse(session.pendingMajorKey);
-      List<String> lore = List.of(
-          pendingName,
-          "Permanent choice - cannot be refunded",
-          "Click to confirm");
-      slots.put(CONFIRM_SLOT, Slot.button(
-          "confirm_major",
-          CraftuxItems.of(Material.GOLD_INGOT, "Confirm Major?", lore),
-          CraftuxUiHost.ACTION_UPGRADE_CONFIRM,
-          SlotPixelIntent.UNVALIDATED));
+      String pendingName =
+          session
+              .skillTree
+              .node(session.pendingMajorKey)
+              .map(SkillNode::name)
+              .orElse(session.pendingMajorKey);
+      List<String> lore =
+          List.of(pendingName, "Permanent choice - cannot be refunded", "Click to confirm");
+      slots.put(
+          CONFIRM_SLOT,
+          Slot.button(
+              "confirm_major",
+              CraftuxItems.of(Material.GOLD_INGOT, "Confirm Major?", lore),
+              CraftuxUiHost.ACTION_UPGRADE_CONFIRM,
+              SlotPixelIntent.UNVALIDATED));
     }
   }
 
   private void renderConnections(
-      Map<Integer, Slot> slots,
-      GuiSession session,
-      Set<String> unlocked) {
+      Map<Integer, Slot> slots, GuiSession session, Set<String> unlocked) {
     Set<GridPoint> allPathPoints = new HashSet<>();
     for (Position p : session.tree.paths()) {
       allPathPoints.add(new GridPoint(p.x(), p.y()));
@@ -333,7 +353,7 @@ public final class UpgradeTreeGui {
       while (!queue.isEmpty()) {
         GridPoint current = queue.poll();
         for (int[] dir : directions) {
-          GridPoint neighbor = new GridPoint(current.x + dir[0], current.y + dir[1]);
+          GridPoint neighbor = new GridPoint(current.column + dir[0], current.row + dir[1]);
           if (visited.contains(neighbor)) {
             continue;
           }
@@ -357,13 +377,17 @@ public final class UpgradeTreeGui {
     }
 
     for (GridPoint pathPoint : allPathPoints) {
-      int screenY = pathPoint.y - session.scrollOffset;
-      if (screenY < 0 || screenY >= GUI_ROWS || pathPoint.x < 0 || pathPoint.x >= GUI_COLS) {
+      int screenY = pathPoint.row - session.scrollOffset;
+      if (screenY < 0
+          || screenY >= GUI_ROWS
+          || pathPoint.column < 0
+          || pathPoint.column >= GUI_COLS) {
         continue;
       }
       boolean isLit = litPathPoints.contains(pathPoint);
-      Material material = isLit ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE;
-      int slot = screenY * GUI_COLS + pathPoint.x;
+      Material material =
+          isLit ? Material.CYAN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE;
+      int slot = screenY * GUI_COLS + pathPoint.column;
       if (slot >= 0 && slot < CONTROL_ROW_START) {
         slots.put(slot, Slot.decorative(CraftuxItems.pane(material)));
       }
@@ -390,7 +414,8 @@ public final class UpgradeTreeGui {
     return excluded ? NodeStatus.EXCLUDED : NodeStatus.LOCKED;
   }
 
-  private NodeStatus getNodeStatus(UpgradeNode node, Set<String> unlocked, Set<UpgradeNode> available) {
+  private NodeStatus getNodeStatus(
+      UpgradeNode node, Set<String> unlocked, Set<UpgradeNode> available) {
     String shortKey = getShortKey(node);
     if (unlocked.contains(shortKey)) {
       return NodeStatus.UNLOCKED;
@@ -418,7 +443,8 @@ public final class UpgradeTreeGui {
     return y * GUI_COLS + x;
   }
 
-  private ItemSpec nodeItem(UpgradeNode node, NodeStatus status, PlayerUpgradeData data, UpgradeTree tree) {
+  private ItemSpec nodeItem(
+      UpgradeNode node, NodeStatus status, PlayerUpgradeData data, UpgradeTree tree) {
     List<String> lore = new ArrayList<>();
     if (node.description() != null && !node.description().isEmpty()) {
       for (String line : node.description().split("\n")) {
@@ -442,38 +468,46 @@ public final class UpgradeTreeGui {
       }
     }
     lore.add("");
-    lore.add(switch (status) {
-      case UNLOCKED -> "✔ Unlocked!";
-      case AVAILABLE -> data.availableSkillPoints() >= node.cost() ? "Click to unlock" : "Not enough SP!";
-      case LOCKED -> "Locked";
-      case EXCLUDED -> "✘ Path Locked (Exclusive Choice)";
-    });
+    lore.add(
+        switch (status) {
+          case UNLOCKED -> "✔ Unlocked!";
+          case AVAILABLE ->
+              data.availableSkillPoints() >= node.cost() ? "Click to unlock" : "Not enough SP!";
+          case LOCKED -> "Locked";
+          case EXCLUDED -> "✘ Path Locked (Exclusive Choice)";
+        });
     if (status == NodeStatus.EXCLUDED && !node.exclusive().isEmpty()) {
-      List<String> exclusiveNames = node.exclusive().stream()
-          .map(tree::getNode)
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .map(UpgradeNode::name)
-          .toList();
+      List<String> exclusiveNames =
+          node.exclusive().stream()
+              .map(tree::getNode)
+              .filter(Optional::isPresent)
+              .map(Optional::get)
+              .map(UpgradeNode::name)
+              .toList();
       lore.add("Blocked by: " + String.join(", ", exclusiveNames));
     }
-    Material material = switch (status) {
-      case UNLOCKED -> materialFromName(node.unlockedIcon());
-      case AVAILABLE -> materialFromName(node.icon());
-      case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE;
-      case EXCLUDED -> Material.RED_STAINED_GLASS_PANE;
-    };
-    NamedTextColor nameColor = switch (status) {
-      case UNLOCKED -> NamedTextColor.GREEN;
-      case AVAILABLE -> NamedTextColor.YELLOW;
-      case LOCKED -> NamedTextColor.GRAY;
-      case EXCLUDED -> NamedTextColor.RED;
-    };
-    return CraftuxItems.of(material, plain(Component.text(node.name(), nameColor)
-        .decoration(TextDecoration.ITALIC, false)), lore);
+    Material material =
+        switch (status) {
+          case UNLOCKED -> materialFromName(node.unlockedIcon());
+          case AVAILABLE -> materialFromName(node.icon());
+          case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE;
+          case EXCLUDED -> Material.RED_STAINED_GLASS_PANE;
+        };
+    NamedTextColor nameColor =
+        switch (status) {
+          case UNLOCKED -> NamedTextColor.GREEN;
+          case AVAILABLE -> NamedTextColor.YELLOW;
+          case LOCKED -> NamedTextColor.GRAY;
+          case EXCLUDED -> NamedTextColor.RED;
+        };
+    return CraftuxItems.of(
+        material,
+        plain(Component.text(node.name(), nameColor).decoration(TextDecoration.ITALIC, false)),
+        lore);
   }
 
-  private ItemSpec v2NodeItem(SkillNode node, NodeStatus status, SkillTreeState state, SkillTree tree) {
+  private ItemSpec v2NodeItem(
+      SkillNode node, NodeStatus status, SkillTreeState state, SkillTree tree) {
     String key = node.key().value();
     int owned = state.levelOf(key);
     List<String> lore = new ArrayList<>();
@@ -520,41 +554,47 @@ public final class UpgradeTreeGui {
     } else {
       lore.add("Locked");
     }
-    Material material = switch (status) {
-      case UNLOCKED -> materialFromName(node.unlockedIcon());
-      case AVAILABLE -> materialFromName(node.lockedIcon());
-      case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE;
-      case EXCLUDED -> Material.RED_STAINED_GLASS_PANE;
-    };
-    NamedTextColor nameColor = switch (status) {
-      case UNLOCKED -> NamedTextColor.GREEN;
-      case AVAILABLE -> NamedTextColor.YELLOW;
-      case LOCKED -> NamedTextColor.GRAY;
-      case EXCLUDED -> NamedTextColor.RED;
-    };
-    return CraftuxItems.of(material, plain(Component.text(node.name(), nameColor)
-        .decoration(TextDecoration.ITALIC, false)), lore);
+    Material material =
+        switch (status) {
+          case UNLOCKED -> materialFromName(node.unlockedIcon());
+          case AVAILABLE -> materialFromName(node.lockedIcon());
+          case LOCKED -> Material.LIGHT_GRAY_STAINED_GLASS_PANE;
+          case EXCLUDED -> Material.RED_STAINED_GLASS_PANE;
+        };
+    NamedTextColor nameColor =
+        switch (status) {
+          case UNLOCKED -> NamedTextColor.GREEN;
+          case AVAILABLE -> NamedTextColor.YELLOW;
+          case LOCKED -> NamedTextColor.GRAY;
+          case EXCLUDED -> NamedTextColor.RED;
+        };
+    return CraftuxItems.of(
+        material,
+        plain(Component.text(node.name(), nameColor).decoration(TextDecoration.ITALIC, false)),
+        lore);
   }
 
   private ItemSpec infoItem(UpgradeTree tree, PlayerUpgradeData data) {
-    List<String> lore = List.of(
-        "Available SP: " + data.availableSkillPoints(),
-        "Total SP: " + data.totalSkillPoints(),
-        "Unlocked: " + data.unlockedNodes().size() + "/" + tree.allNodes().size(),
-        "",
-        "SP per level: " + tree.skillPointsPerLevel());
+    List<String> lore =
+        List.of(
+            "Available SP: " + data.availableSkillPoints(),
+            "Total SP: " + data.totalSkillPoints(),
+            "Unlocked: " + data.unlockedNodes().size() + "/" + tree.allNodes().size(),
+            "",
+            "SP per level: " + tree.skillPointsPerLevel());
     return CraftuxItems.of(Material.BOOK, "Skill Tree Info", lore);
   }
 
   private ItemSpec v2InfoItem(SkillTree tree, SkillTreeState state) {
     long unlockedCount = state.nodeLevels().values().stream().filter(l -> l > 0).count();
-    List<String> lore = List.of(
-        "Available SP: " + tree.availablePoints(state),
-        "Total SP: " + state.totalSkillPoints(),
-        "Unlocked: " + unlockedCount + "/" + tree.nodes().size(),
-        "",
-        "Job Level: " + state.jobLevel(),
-        "SP per level: " + tree.skillPointsPerLevel());
+    List<String> lore =
+        List.of(
+            "Available SP: " + tree.availablePoints(state),
+            "Total SP: " + state.totalSkillPoints(),
+            "Unlocked: " + unlockedCount + "/" + tree.nodes().size(),
+            "",
+            "Job Level: " + state.jobLevel(),
+            "SP per level: " + tree.skillPointsPerLevel());
     return CraftuxItems.of(Material.BOOK, "Skill Tree Info", lore);
   }
 
@@ -571,7 +611,8 @@ public final class UpgradeTreeGui {
       case NodeEffect.RecipeUnlockEffect recipe ->
           String.format("Recipe: %s", recipe.recipeKey().asString());
       case NodeEffect.CapabilityEffect capability ->
-          String.format("Capability: %s (schema %d)", capability.key().asString(), capability.schema());
+          String.format(
+              "Capability: %s (schema %d)", capability.key().asString(), capability.schema());
       case NodeEffect.StateSetEffect stateSet ->
           stateSet.remove()
               ? String.format("Removes %s", stateSet.key().asString())
@@ -598,7 +639,8 @@ public final class UpgradeTreeGui {
     return colonIndex >= 0 ? full.substring(colonIndex + 1) : full;
   }
 
-  private void handleV2NodeClick(Player player, GuiSession session, String nodeKey, String playerId, String jobKey) {
+  private void handleV2NodeClick(
+      Player player, GuiSession session, String nodeKey, String playerId, String jobKey) {
     SkillNode node = session.skillTree.node(nodeKey).orElse(null);
     if (node != null && node.isMajor()) {
       if (session.pendingMajorKey != null && !session.pendingMajorKey.equals(nodeKey)) {
@@ -636,15 +678,21 @@ public final class UpgradeTreeGui {
 
     switch (result) {
       case PurchaseResult.Success success -> {
-        Messages.send(player, "<accent>Chosen: <primary>" + success.node().name()
-            + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
+        Messages.send(
+            player,
+            "<accent>Chosen: <primary>"
+                + success.node().name()
+                + " <neutral>(<secondary>"
+                + success.remainingPoints()
+                + " SP remaining<neutral>)");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
         refresh(player);
       }
       case PurchaseResult.AlreadyOwned _ ->
           player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f);
       case PurchaseResult.ExcludedByChoice ec -> {
-        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        Messages.send(
+            player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.RequirementsNotMet _ -> {
@@ -652,12 +700,17 @@ public final class UpgradeTreeGui {
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.PrerequisitesNotMet pn -> {
-        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pn.missing()));
+        Messages.send(
+            player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pn.missing()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.InsufficientPoints ip -> {
-        Messages.send(player, "<error>Not enough SP! Need <secondary>" + ip.required()
-            + "<error>, have <secondary>" + ip.available());
+        Messages.send(
+            player,
+            "<error>Not enough SP! Need <secondary>"
+                + ip.required()
+                + "<error>, have <secondary>"
+                + ip.available());
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.NodeNotFound nf -> {
@@ -677,15 +730,21 @@ public final class UpgradeTreeGui {
   private void handleSkillPurchase(Player player, PurchaseResult result) {
     switch (result) {
       case PurchaseResult.Success success -> {
-        Messages.send(player, "<accent>Unlocked: <primary>" + success.node().name()
-            + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
+        Messages.send(
+            player,
+            "<accent>Unlocked: <primary>"
+                + success.node().name()
+                + " <neutral>(<secondary>"
+                + success.remainingPoints()
+                + " SP remaining<neutral>)");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
         refresh(player);
       }
       case PurchaseResult.AlreadyOwned _ ->
           player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f);
       case PurchaseResult.ExcludedByChoice ec -> {
-        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        Messages.send(
+            player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.RequirementsNotMet _ -> {
@@ -693,12 +752,17 @@ public final class UpgradeTreeGui {
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.PrerequisitesNotMet pn -> {
-        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pn.missing()));
+        Messages.send(
+            player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pn.missing()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.InsufficientPoints ip -> {
-        Messages.send(player, "<error>Not enough SP! Need <secondary>" + ip.required()
-            + "<error>, have <secondary>" + ip.available());
+        Messages.send(
+            player,
+            "<error>Not enough SP! Need <secondary>"
+                + ip.required()
+                + "<error>, have <secondary>"
+                + ip.available());
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case PurchaseResult.NodeNotFound nf -> {
@@ -716,22 +780,33 @@ public final class UpgradeTreeGui {
     UnlockResult result = upgradeService.unlock(playerId, jobKey, nodeKey);
     switch (result) {
       case UnlockResult.Success success -> {
-        Messages.send(player, "<accent>Unlocked: <primary>" + success.node().name()
-            + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
+        Messages.send(
+            player,
+            "<accent>Unlocked: <primary>"
+                + success.node().name()
+                + " <neutral>(<secondary>"
+                + success.remainingPoints()
+                + " SP remaining<neutral>)");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
         refresh(player);
       }
       case UnlockResult.InsufficientPoints ip -> {
-        Messages.send(player, "<error>Not enough SP! Need <secondary>" + ip.required()
-            + "<error>, have <secondary>" + ip.available());
+        Messages.send(
+            player,
+            "<error>Not enough SP! Need <secondary>"
+                + ip.required()
+                + "<error>, have <secondary>"
+                + ip.available());
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.PrerequisitesNotMet pm -> {
-        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
+        Messages.send(
+            player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.ExcludedByChoice ec -> {
-        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        Messages.send(
+            player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.AlreadyUnlocked _ ->
@@ -748,19 +823,20 @@ public final class UpgradeTreeGui {
   }
 
   private void handleScroll(Player player, GuiSession session, String action) {
-    int maxY = session.isV2()
-        ? session.skillTree.nodes().stream()
-            .map(SkillNode::position)
-            .filter(pos -> pos != null)
-            .mapToInt(Position::y)
-            .max()
-            .orElse(0)
-        : session.tree.allNodes().stream()
-            .map(UpgradeNode::position)
-            .filter(pos -> pos != null)
-            .mapToInt(Position::y)
-            .max()
-            .orElse(0);
+    int maxY =
+        session.isV2()
+            ? session.skillTree.nodes().stream()
+                .map(SkillNode::position)
+                .filter(pos -> pos != null)
+                .mapToInt(Position::y)
+                .max()
+                .orElse(0)
+            : session.tree.allNodes().stream()
+                .map(UpgradeNode::position)
+                .filter(pos -> pos != null)
+                .mapToInt(Position::y)
+                .max()
+                .orElse(0);
     int maxScroll = Math.max(0, maxY - GUI_ROWS + 1);
 
     if ("up".equals(action) && session.scrollOffset > 0) {
@@ -782,7 +858,10 @@ public final class UpgradeTreeGui {
   }
 
   private enum NodeStatus {
-    UNLOCKED, AVAILABLE, LOCKED, EXCLUDED
+    UNLOCKED,
+    AVAILABLE,
+    LOCKED,
+    EXCLUDED
   }
 
   private static Material materialFromName(String name) {
@@ -798,12 +877,12 @@ public final class UpgradeTreeGui {
   }
 
   private static final class GridPoint {
-    final int x;
-    final int y;
+    final int column;
+    final int row;
 
-    GridPoint(int x, int y) {
-      this.x = x;
-      this.y = y;
+    GridPoint(int column, int row) {
+      this.column = column;
+      this.row = row;
     }
 
     @Override
@@ -814,12 +893,12 @@ public final class UpgradeTreeGui {
       if (!(o instanceof GridPoint that)) {
         return false;
       }
-      return x == that.x && y == that.y;
+      return column == that.column && row == that.row;
     }
 
     @Override
     public int hashCode() {
-      return 31 * x + y;
+      return 31 * column + row;
     }
   }
 }

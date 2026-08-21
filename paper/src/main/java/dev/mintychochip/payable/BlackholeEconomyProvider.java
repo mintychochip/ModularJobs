@@ -1,9 +1,9 @@
 package dev.mintychochip.payable;
 
-import java.math.BigDecimal;
-import java.util.UUID;
 import dev.mintychochip.container.EconomyProvider;
 import dev.mintychochip.container.PayableAmount;
+import java.math.BigDecimal;
+import java.util.UUID;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,10 +21,12 @@ public final class BlackholeEconomyProvider implements EconomyProvider {
    * discarded.
    */
   public BlackholeEconomyProvider(@NotNull Plugin plugin) {
-    plugin.getLogger().warning(
-        "No economy provider is available; positive modularjobs:economy rewards will be "
-            + "discarded. Install Mint or set economy.missing-provider: fail if currency rewards "
-            + "are mandatory.");
+    plugin
+        .getLogger()
+        .warning(
+            "No economy provider is available; positive modularjobs:economy rewards will be"
+                + " discarded. Install Mint or set economy.missing-provider: fail if currency"
+                + " rewards are mandatory.");
   }
 
   @Override

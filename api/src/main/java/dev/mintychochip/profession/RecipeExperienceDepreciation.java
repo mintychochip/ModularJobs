@@ -4,28 +4,25 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * Pure recipe experience scaling: lower-tier recipes credit less (or no) profession experience
- * once the player outlevels them.
+ * Pure recipe experience scaling: lower-tier recipes credit less (or no) profession experience once
+ * the player outlevels them.
  */
 public final class RecipeExperienceDepreciation {
 
   private static final int MULTIPLIER_SCALE = 4;
 
-  private RecipeExperienceDepreciation() {
-  }
+  private RecipeExperienceDepreciation() {}
 
   /**
    * Returns an experience multiplier in {@code [0, 1]} for crafting a recipe at the given
    * profession level.
    *
-   * <p>Full credit while {@code professionLevel <= requiredLevel + graceLevels}. When
-   * {@code windowLevels > 0}, credit linearly falls to zero over the next {@code windowLevels}.
-   * When {@code windowLevels == 0}, credit drops to zero immediately after the grace band.
+   * <p>Full credit while {@code professionLevel <= requiredLevel + graceLevels}. When {@code
+   * windowLevels > 0}, credit linearly falls to zero over the next {@code windowLevels}. When
+   * {@code windowLevels == 0}, credit drops to zero immediately after the grace band.
    */
   public static BigDecimal experienceMultiplier(
-      RecipeExperienceDepreciationPolicy policy,
-      int professionLevel,
-      int recipeRequiredLevel) {
+      RecipeExperienceDepreciationPolicy policy, int professionLevel, int recipeRequiredLevel) {
     if (policy == null || !policy.enabled()) {
       return BigDecimal.ONE;
     }

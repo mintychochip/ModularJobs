@@ -2,22 +2,24 @@ package dev.mintychochip.domain;
 
 import dev.mintychochip.Job;
 import dev.mintychochip.service.JobService;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+/** Job resolver. */
 public final class JobResolver {
 
   private final JobService jobService;
 
+  /** Job resolver. */
   public JobResolver(JobService jobService) {
     this.jobService = jobService;
   }
 
+  /** Resolve. */
   public @Nullable Job resolve(@NotNull String identifier) {
     // Check if full namespacedkey format (contains ':')
     if (identifier.contains(":")) {
@@ -36,6 +38,7 @@ public final class JobResolver {
         .orElse(null);
   }
 
+  /** Resolve in namespace. */
   public @Nullable Job resolveInNamespace(@NotNull String plainName, @NotNull String namespace) {
     // Try exact namespacedkey first
     String fullKey = namespace + ":" + plainName.toLowerCase(Locale.ROOT);
@@ -57,6 +60,7 @@ public final class JobResolver {
         .orElse(null);
   }
 
+  /** Suggest similar. */
   public @NotNull List<String> suggestSimilar(@NotNull String input, int maxSuggestions) {
     String normalizedInput = input.toLowerCase(Locale.ROOT);
 
@@ -70,22 +74,15 @@ public final class JobResolver {
   }
 
   public @NotNull List<String> getPlainNames() {
-    return jobService.getJobs().stream()
-        .map(Job::getPlainName)
-        .collect(Collectors.toList());
+    return jobService.getJobs().stream().map(Job::getPlainName).collect(Collectors.toList());
   }
 
   /**
-   * Calculate similarity score between input and job name.
-   * Higher score = better match.
+   * Calculate similarity score between input and job name. Higher score = better match.
    *
-   * <p>
-   * Scoring system:
-   * - Exact match: 1000 points
-   * - Prefix match: 500 + bonus for length similarity
-   * - Contains match: 250 points
-   * - Levenshtein distance: 100 - (distance * 10), capped at 0
-   * - Very dissimilar matches (distance > length/2): 0 points (filtered out)
+   * <p>Scoring system: - Exact match: 1000 points - Prefix match: 500 + bonus for length similarity
+   * - Contains match: 250 points - Levenshtein distance: 100 - (distance * 10), capped at 0 - Very
+   * dissimilar matches (distance > length/2): 0 points (filtered out)
    */
   private int calculateSimilarity(String input, String jobName) {
     String normalizedJobName = jobName.toLowerCase(Locale.ROOT);
@@ -121,9 +118,8 @@ public final class JobResolver {
   /**
    * Calculate Levenshtein distance between two strings.
    *
-   * <p>
-   * The Levenshtein distance is the minimum number of single-character edits
-   * (insertions, deletions, or substitutions) required to change one string into the other.
+   * <p>The Levenshtein distance is the minimum number of single-character edits (insertions,
+   * deletions, or substitutions) required to change one string into the other.
    *
    * @param a First string
    * @param b Second string
@@ -144,19 +140,19 @@ public final class JobResolver {
     for (int i = 1; i <= a.length(); i++) {
       for (int j = 1; j <= b.length(); j++) {
         int cost = (a.charAt(i - 1) == b.charAt(j - 1)) ? 0 : 1;
-        dp[i][j] = Math.min(
-            Math.min(dp[i - 1][j] + 1,      // Deletion
-                dp[i][j - 1] + 1),           // Insertion
-            dp[i - 1][j - 1] + cost          // Substitution
-        );
+        dp[i][j] =
+            Math.min(
+                Math.min(
+                    dp[i - 1][j] + 1, // Deletion
+                    dp[i][j - 1] + 1), // Insertion
+                dp[i - 1][j - 1] + cost // Substitution
+                );
       }
     }
 
     return dp[a.length()][b.length()];
   }
 
-  /**
-   * Internal record for pairing jobs with their similarity scores during fuzzy matching.
-   */
+  /** Internal record for pairing jobs with their similarity scores during fuzzy matching. */
   private record ScoredJob(Job job, int score) {}
 }

@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.gson.Gson;
+import dev.mintychochip.boost.BoostFactoryImpl;
+import dev.mintychochip.container.boost.factories.BoostFactory;
+import dev.mintychochip.editor.json.GsonProvider;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,14 +17,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-import dev.mintychochip.boost.BoostFactoryImpl;
-import dev.mintychochip.container.boost.factories.BoostFactory;
-import dev.mintychochip.editor.json.GsonProvider;
 import org.junit.jupiter.api.Test;
 
-/**
- * Proves Guice was removed and manual composition entry points still work.
- */
+/** Proves Guice was removed and manual composition entry points still work. */
 class NoGuiceWiringTest {
 
   @Test
@@ -31,20 +29,22 @@ class NoGuiceWiringTest {
 
     List<String> offenders = new ArrayList<>();
     try (Stream<Path> walk = Files.walk(root)) {
-      walk.filter(p -> p.toString().endsWith(".java")).forEach(path -> {
-        try {
-          String text = Files.readString(path);
-          if (text.contains("com.google.inject")
-              || text.contains("javax.inject")
-              || text.contains("@Inject")
-              || text.contains("AbstractModule")
-              || text.contains("Guice.createInjector")) {
-            offenders.add(root.relativize(path).toString());
-          }
-        } catch (IOException e) {
-          fail("Failed reading " + path + ": " + e.getMessage());
-        }
-      });
+      walk.filter(p -> p.toString().endsWith(".java"))
+          .forEach(
+              path -> {
+                try {
+                  String text = Files.readString(path);
+                  if (text.contains("com.google.inject")
+                      || text.contains("javax.inject")
+                      || text.contains("@Inject")
+                      || text.contains("AbstractModule")
+                      || text.contains("Guice.createInjector")) {
+                    offenders.add(root.relativize(path).toString());
+                  }
+                } catch (IOException e) {
+                  fail("Failed reading " + path + ": " + e.getMessage());
+                }
+              });
     }
 
     assertTrue(offenders.isEmpty(), "Guice remnants remain in: " + offenders);
@@ -58,8 +58,8 @@ class NoGuiceWiringTest {
     assertFalse(text.contains("Guice"));
     assertFalse(text.contains("Injector"));
     assertFalse(text.contains("PluginModule"));
-    assertTrue(text.contains("PluginContext.create"),
-        "Bootstrap must use PluginContext composition root");
+    assertTrue(
+        text.contains("PluginContext.create"), "Bootstrap must use PluginContext composition root");
   }
 
   @Test
@@ -67,7 +67,8 @@ class NoGuiceWiringTest {
     Path context = locateJobsCoreMainJava().resolve("dev/mintychochip/PluginContext.java");
     assertTrue(Files.isRegularFile(context), "PluginContext.java must exist");
     String text = Files.readString(context);
-    assertTrue(text.contains("public static PluginContext create"),
+    assertTrue(
+        text.contains("public static PluginContext create"),
         "PluginContext must expose create(...) composition entry point");
     assertFalse(text.contains("com.google.inject"));
     assertFalse(text.contains("javax.inject"));
@@ -79,29 +80,32 @@ class NoGuiceWiringTest {
   void pluginContextWiresProfessionApis() throws IOException {
     Path context = locateJobsCoreMainJava().resolve("dev/mintychochip/PluginContext.java");
     String text = Files.readString(context);
-    assertTrue(text.contains("ProfessionWiring"),
+    assertTrue(
+        text.contains("ProfessionWiring"),
         "PluginContext must compose ProfessionWiring for P6 APIs");
-    assertTrue(text.contains("ProfessionWiring.create(plugin"),
+    assertTrue(
+        text.contains("ProfessionWiring.create(plugin"),
         "PluginContext must pass plugin so recipe definitions load from recipes.yml");
-    assertTrue(text.contains("professionService"),
-        "Bridge construction must receive professionService");
+    assertTrue(
+        text.contains("professionService"), "Bridge construction must receive professionService");
     assertTrue(text.contains("recipeService"));
     assertTrue(text.contains("buffService"));
   }
 
-
   @Test
   void professionWiringLoadsRecipeDefinitions() throws IOException {
-    Path wiring = locateJobsCoreMainJava().resolve("dev/mintychochip/profession/ProfessionWiring.java");
+    Path wiring =
+        locateJobsCoreMainJava().resolve("dev/mintychochip/profession/ProfessionWiring.java");
     String wiringText = Files.readString(wiring);
-    assertTrue(wiringText.contains("YamlRecipeDefinitionLoader.load"),
+    assertTrue(
+        wiringText.contains("YamlRecipeDefinitionLoader.load"),
         "ProfessionWiring must load recipe definitions at startup");
 
-    Path loader = locateJobsCoreMainJava().resolve(
-        "dev/mintychochip/profession/config/YamlRecipeDefinitionLoader.java");
+    Path loader =
+        locateJobsCoreMainJava()
+            .resolve("dev/mintychochip/profession/config/YamlRecipeDefinitionLoader.java");
     String loaderText = Files.readString(loader);
-    assertTrue(loaderText.contains("recipes.yml"),
-        "Recipe loader must reference recipes.yml");
+    assertTrue(loaderText.contains("recipes.yml"), "Recipe loader must reference recipes.yml");
   }
 
   @Test
@@ -143,7 +147,8 @@ class NoGuiceWiringTest {
     assertTrue(Files.isRegularFile(coreBuild));
     assertFalse(Files.readString(catalog).contains("guice"));
     assertFalse(Files.readString(coreBuild).contains("guice"));
-    assertTrue(Files.readString(coreBuild).contains("libs.guava")
+    assertTrue(
+        Files.readString(coreBuild).contains("libs.guava")
             || Files.readString(coreBuild).contains("guava"),
         "Guava should replace Guice-transitive Guava usage");
   }

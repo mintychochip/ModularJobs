@@ -1,7 +1,5 @@
 package dev.mintychochip.domain;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import dev.mintychochip.config.YamlConfiguration;
 import dev.mintychochip.container.ActionType;
 import dev.mintychochip.container.PayableType;
@@ -15,11 +13,11 @@ import dev.mintychochip.service.JobService;
 import dev.mintychochip.service.JoinGate;
 import dev.mintychochip.service.YamlJobTaskLoader;
 import dev.mintychochip.util.KeyResolver;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.bukkit.plugin.Plugin;
 
-/**
- * Manual composition for domain-layer services (replaces Guice DomainModule).
- */
+/** Manual composition for domain-layer services (replaces Guice DomainModule). */
 public final class DomainWiring {
 
   public static final String LIVE_REPOSITORY = "job_progression";
@@ -48,7 +46,7 @@ public final class DomainWiring {
    * Composes domain services, loading job definitions and wiring progression write-back stores.
    *
    * @param connectionSource shared payable DB source (already tracked by {@code resources})
-   * @param resources        registers progression write-back flush hooks for disable
+   * @param resources registers progression write-back flush hooks for disable
    */
   public static DomainWiring create(
       Plugin plugin,
@@ -64,35 +62,45 @@ public final class DomainWiring {
 
     YamlJobTaskLoader taskLoader = new YamlJobTaskLoader(plugin, connectionSource);
     taskLoader.loadIfEmpty();
-    RelationalJobTaskRepositoryImpl jobTaskRepository = new RelationalJobTaskRepositoryImpl(connectionSource);
+    RelationalJobTaskRepositoryImpl jobTaskRepository =
+        new RelationalJobTaskRepositoryImpl(connectionSource);
 
     // Reuse the composition-owned payable ConnectionSource for progression tables
     // (same DB section as before; avoids untracked extra pools).
-    WriteBackJobProgressionRepositoryImpl live = WriteBackJobProgressionRepositoryImpl.create(
-        plugin,
-        RelationalJobProgressionRepositoryImpl.create(
-            jobRepository, connectionSource, LIVE_REPOSITORY),
-        50, 50, 10, TimeUnit.SECONDS);
-    WriteBackJobProgressionRepositoryImpl archive = WriteBackJobProgressionRepositoryImpl.create(
-        plugin,
-        RelationalJobProgressionRepositoryImpl.create(
-            jobRepository, connectionSource, ARCHIVE_REPOSITORY),
-        50, 50, 10, TimeUnit.SECONDS);
+    WriteBackJobProgressionRepositoryImpl live =
+        WriteBackJobProgressionRepositoryImpl.create(
+            plugin,
+            RelationalJobProgressionRepositoryImpl.create(
+                jobRepository, connectionSource, LIVE_REPOSITORY),
+            50,
+            50,
+            10,
+            TimeUnit.SECONDS);
+    WriteBackJobProgressionRepositoryImpl archive =
+        WriteBackJobProgressionRepositoryImpl.create(
+            plugin,
+            RelationalJobProgressionRepositoryImpl.create(
+                jobRepository, connectionSource, ARCHIVE_REPOSITORY),
+            50,
+            50,
+            10,
+            TimeUnit.SECONDS);
     resources.onFlush(live::flushPending);
     resources.onFlush(archive::flushPending);
 
     JobProgressionRepository liveView = live;
     JobProgressionRepository archiveView = archive;
     ProgressionService progressionService = new ProgressionService(liveView, archiveView);
-    JobService jobService = new JobServiceImpl(
-        actionTypeRegistry,
-        payableTypeRegistry,
-        jobTaskRepository,
-        keyResolver,
-        jobRepository,
-        progressionService,
-        joinGate,
-        plugin);
+    JobService jobService =
+        new JobServiceImpl(
+            actionTypeRegistry,
+            payableTypeRegistry,
+            jobTaskRepository,
+            keyResolver,
+            jobRepository,
+            progressionService,
+            joinGate,
+            plugin);
     JobResolver jobResolver = new JobResolver(jobService);
     return new DomainWiring(
         jobRepository, jobTaskRepository, progressionService, jobService, jobResolver);

@@ -6,23 +6,23 @@ import java.sql.SQLException;
 /**
  * Supplies database connections and reports the configured database lifecycle.
  *
- * <p>The application connects to an existing schema; schema creation and migration are
- * performed externally rather than by this abstraction.
+ * <p>The application connects to an existing schema; schema creation and migration are performed
+ * externally rather than by this abstraction.
  */
 public interface ConnectionSource {
 
-  /** Closes the underlying connection pool or source. */
+  /** Shutdown. */
   void shutdown() throws SQLException;
 
-  /** Returns the configured database dialect. */
+  /** Returns the type. */
   DatabaseType getType();
 
-  /** Returns whether the underlying source has been closed. */
+  /** Returns whether closed. */
   boolean isClosed();
 
-  /** Obtains a connection that the caller must close. */
+  /** Returns the connection. */
   Connection getConnection() throws SQLException;
 
-  /** Returns whether the connection source has completed setup. */
+  /** Returns whether setup. */
   boolean isSetup();
 }

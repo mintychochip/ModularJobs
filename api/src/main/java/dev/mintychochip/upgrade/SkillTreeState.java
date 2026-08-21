@@ -9,10 +9,9 @@ import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Immutable snapshot of a player's progress in one job's skill tree.
- * Only {@link #totalSkillPoints()} and {@link #nodeLevels()} are persisted;
- * the state map is a derived view. Job-level and permission suppliers are
- * runtime evaluation context and are never persisted.
+ * Immutable snapshot of a player's progress in one job's skill tree. Only {@link
+ * #totalSkillPoints()} and {@link #nodeLevels()} are persisted; the state map is a derived view.
+ * Job-level and permission suppliers are runtime evaluation context and are never persisted.
  */
 public record SkillTreeState(
     @NotNull String playerId,
@@ -21,13 +20,14 @@ public record SkillTreeState(
     @NotNull Map<String, Integer> nodeLevels,
     @NotNull Map<Key, String> state,
     @NotNull IntSupplier currentJobLevel,
-    @NotNull Predicate<String> permissionCheck
-) {
+    @NotNull Predicate<String> permissionCheck) {
+  /** Copies node level and state maps. */
   public SkillTreeState {
     nodeLevels = Collections.unmodifiableMap(new HashMap<>(nodeLevels));
     state = Collections.unmodifiableMap(new HashMap<>(state));
   }
 
+  /** Skill tree state. */
   public SkillTreeState(
       String playerId,
       String jobKey,
@@ -37,18 +37,22 @@ public record SkillTreeState(
     this(playerId, jobKey, totalSkillPoints, nodeLevels, state, () -> 0, k -> false);
   }
 
+  /** Level of. */
   public int levelOf(@NotNull String nodeKey) {
     return nodeLevels.getOrDefault(nodeKey, 0);
   }
 
+  /** Returns whether has unlocked. */
   public boolean hasUnlocked(@NotNull String nodeKey) {
     return levelOf(nodeKey) > 0;
   }
 
+  /** Job level. */
   public int jobLevel() {
     return currentJobLevel.getAsInt();
   }
 
+  /** Returns whether has permission. */
   public boolean hasPermission(@NotNull String permission) {
     return permissionCheck.test(permission);
   }

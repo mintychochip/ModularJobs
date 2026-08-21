@@ -8,8 +8,14 @@ import dev.craftux.api.inventory.ItemSpec;
 import dev.craftux.api.inventory.Slot;
 import dev.craftux.api.inventory.SlotPixelIntent;
 import dev.craftux.common.inventory.InventoryRuntime;
-import java.util.EnumSet;
+import dev.mintychochip.gui.craftux.CraftuxItems;
+import dev.mintychochip.gui.craftux.CraftuxUiHost;
+import dev.mintychochip.upgrade.Position;
+import dev.mintychochip.upgrade.UpgradeTree;
+import dev.mintychochip.upgrade.config.UpgradeTreeLoader;
+import dev.mintychochip.util.Messages;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,12 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import dev.mintychochip.gui.craftux.CraftuxItems;
-import dev.mintychochip.gui.craftux.CraftuxUiHost;
-import dev.mintychochip.upgrade.Position;
-import dev.mintychochip.upgrade.UpgradeTree;
-import dev.mintychochip.upgrade.config.UpgradeTreeLoader;
-import dev.mintychochip.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -34,8 +34,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Upgrade tree visual editor using craftux inventory sessions.
  *
- * <p>Toolbar controls live in the bottom inventory row (craftux top-window only).
- * Sub-editors (node/settings) are separate craftux views opened by host actions.
+ * <p>Toolbar controls live in the bottom inventory row (craftux top-window only). Sub-editors
+ * (node/settings) are separate craftux views opened by host actions.
  */
 public final class TreeEditorGui {
 
@@ -58,6 +58,7 @@ public final class TreeEditorGui {
   private final Map<UUID, Map<Integer, String>> slotNodes = new HashMap<>();
   private final Map<UUID, Map<Integer, String>> slotControls = new HashMap<>();
 
+  /** Tree editor gui. */
   public TreeEditorGui(
       Plugin plugin,
       InventoryRuntime inventory,
@@ -78,10 +79,12 @@ public final class TreeEditorGui {
     settingsGui.setMainEditor(this);
   }
 
+  /** Open. */
   public void open(@NotNull Player player, @NotNull UpgradeTree tree) {
     openEditor(player, EditorTree.fromUpgradeTree(tree));
   }
 
+  /** Open new. */
   public void openNew(@NotNull Player player, @NotNull String jobKey) {
     openEditor(player, EditorTree.createBlank(jobKey));
   }
@@ -95,6 +98,7 @@ public final class TreeEditorGui {
     inventory.open(playerId, buildView(player, session));
   }
 
+  /** Refresh. */
   public void refresh(@NotNull Player player) {
     UUID playerId = player.getUniqueId();
     EditorSession session = sessions.get(playerId);
@@ -104,10 +108,12 @@ public final class TreeEditorGui {
     inventory.refresh(playerId, buildView(player, session));
   }
 
+  /** Returns the session. */
   public Optional<EditorSession> getSession(@NotNull Player player) {
     return Optional.ofNullable(sessions.get(player.getUniqueId()));
   }
 
+  /** Reopen for. */
   public void reopenFor(Player player) {
     UUID playerId = player.getUniqueId();
     EditorSession session = sessions.get(playerId);
@@ -117,6 +123,7 @@ public final class TreeEditorGui {
     inventory.open(playerId, buildView(player, session));
   }
 
+  /** On canvas click. */
   public void onCanvasClick(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     EditorSession session = sessions.get(audience);
@@ -126,6 +133,7 @@ public final class TreeEditorGui {
     handleEmptySlotClick(player, session, click.slot());
   }
 
+  /** On node click. */
   public void onNodeClick(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     EditorSession session = sessions.get(audience);
@@ -147,6 +155,7 @@ public final class TreeEditorGui {
     handleNodeClick(player, session, nodeOpt.get(), click);
   }
 
+  /** On control click. */
   public void onControlClick(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     EditorSession session = sessions.get(audience);
@@ -175,11 +184,13 @@ public final class TreeEditorGui {
 
     ItemSpec empty = CraftuxItems.pane(Material.BLACK_STAINED_GLASS_PANE);
     for (int i = 0; i < CANVAS_SLOTS; i++) {
-      slots.put(i, Slot.button(
-          "canvas_" + i,
-          empty,
-          CraftuxUiHost.ACTION_EDITOR_CANVAS,
-          SlotPixelIntent.UNVALIDATED));
+      slots.put(
+          i,
+          Slot.button(
+              "canvas_" + i,
+              empty,
+              CraftuxUiHost.ACTION_EDITOR_CANVAS,
+              SlotPixelIntent.UNVALIDATED));
     }
 
     // Path points
@@ -190,11 +201,13 @@ public final class TreeEditorGui {
         continue;
       }
       int slot = sy * GUI_COLS + sx;
-      slots.put(slot, Slot.button(
-          "canvas_" + slot,
-          CraftuxItems.pane(Material.GRAY_STAINED_GLASS_PANE),
-          CraftuxUiHost.ACTION_EDITOR_CANVAS,
-          SlotPixelIntent.UNVALIDATED));
+      slots.put(
+          slot,
+          Slot.button(
+              "canvas_" + slot,
+              CraftuxItems.pane(Material.GRAY_STAINED_GLASS_PANE),
+              CraftuxUiHost.ACTION_EDITOR_CANVAS,
+              SlotPixelIntent.UNVALIDATED));
     }
 
     // Nodes
@@ -215,11 +228,13 @@ public final class TreeEditorGui {
       List<String> lore = new ArrayList<>();
       lore.add("ID: " + node.id());
       lore.add("Left: select | Right: edit | Shift: link | Q: delete");
-      slots.put(slot, Slot.button(
-          "node." + sanitize(node.id()),
-          CraftuxItems.of(mat, label, lore),
-          CraftuxUiHost.ACTION_EDITOR_NODE,
-          SlotPixelIntent.UNVALIDATED));
+      slots.put(
+          slot,
+          Slot.button(
+              "node." + sanitize(node.id()),
+              CraftuxItems.of(mat, label, lore),
+              CraftuxUiHost.ACTION_EDITOR_NODE,
+              SlotPixelIntent.UNVALIDATED));
       nodes.put(slot, node.id());
     }
 
@@ -233,15 +248,19 @@ public final class TreeEditorGui {
     if (title.length() > 128) {
       title = title.substring(0, 128);
     }
-    InventoryView.Builder builder = InventoryView.builder(MENU_ID, GUI_ROWS)
-        .title(title)
-        .interactionPolicy(new InteractionPolicy(
-            EnumSet.of(
-                ClickKind.LEFT, ClickKind.RIGHT,
-                ClickKind.SHIFT_LEFT, ClickKind.SHIFT_RIGHT,
-                ClickKind.DROP),
-            true,
-            true));
+    InventoryView.Builder builder =
+        InventoryView.builder(MENU_ID, GUI_ROWS)
+            .title(title)
+            .interactionPolicy(
+                new InteractionPolicy(
+                    EnumSet.of(
+                        ClickKind.LEFT,
+                        ClickKind.RIGHT,
+                        ClickKind.SHIFT_LEFT,
+                        ClickKind.SHIFT_RIGHT,
+                        ClickKind.DROP),
+                    true,
+                    true));
     for (int i = 0; i < GUI_SIZE; i++) {
       Slot s = slots.get(i);
       if (s != null) {
@@ -253,7 +272,8 @@ public final class TreeEditorGui {
     return builder.build();
   }
 
-  private void placeToolbar(Map<Integer, Slot> slots, Map<Integer, String> controls, EditorSession session) {
+  private void placeToolbar(
+      Map<Integer, Slot> slots, Map<Integer, String> controls, EditorSession session) {
     putControl(slots, controls, TOOLBAR_START, Material.ARROW, "scroll_up", "Scroll Up");
     putControl(slots, controls, TOOLBAR_START + 1, Material.ARROW, "scroll_down", "Scroll Down");
     putControl(slots, controls, TOOLBAR_START + 2, Material.EMERALD, "add_node", "Add Node");
@@ -263,8 +283,10 @@ public final class TreeEditorGui {
     Material pathMat = session.isPathEditMode() ? Material.LEAD : Material.STRING;
     String pathLabel = session.isPathEditMode() ? "PATH MODE (Active)" : "Edit Paths";
     putControl(slots, controls, TOOLBAR_START + 6, pathMat, "path_edit", pathLabel);
-    putControl(slots, controls, TOOLBAR_START + 7, Material.REDSTONE_TORCH, "settings", "Tree Settings");
-    slots.put(TOOLBAR_START + 8, Slot.decorative(CraftuxItems.pane(Material.GRAY_STAINED_GLASS_PANE)));
+    putControl(
+        slots, controls, TOOLBAR_START + 7, Material.REDSTONE_TORCH, "settings", "Tree Settings");
+    slots.put(
+        TOOLBAR_START + 8, Slot.decorative(CraftuxItems.pane(Material.GRAY_STAINED_GLASS_PANE)));
   }
 
   private void putControl(
@@ -274,15 +296,18 @@ public final class TreeEditorGui {
       Material material,
       String action,
       String label) {
-    slots.put(index, Slot.navigation(
-        "ctrl." + action,
-        CraftuxItems.of(material, label),
-        CraftuxUiHost.ACTION_EDITOR_CONTROL,
-        SlotPixelIntent.UNVALIDATED));
+    slots.put(
+        index,
+        Slot.navigation(
+            "ctrl." + action,
+            CraftuxItems.of(material, label),
+            CraftuxUiHost.ACTION_EDITOR_CONTROL,
+            SlotPixelIntent.UNVALIDATED));
     controls.put(index, action);
   }
 
-  private void handleNodeClick(Player player, EditorSession session, EditorNode node, InventoryClick click) {
+  private void handleNodeClick(
+      Player player, EditorSession session, EditorNode node, InventoryClick click) {
     EditorTree tree = session.tree();
     var kind = click.policyKind();
 
@@ -309,8 +334,7 @@ public final class TreeEditorGui {
       return;
     }
 
-    if (kind == ClickKind.SHIFT_LEFT
-        || kind == ClickKind.SHIFT_RIGHT) {
+    if (kind == ClickKind.SHIFT_LEFT || kind == ClickKind.SHIFT_RIGHT) {
       String selectedId = session.selectedNodeId();
       if (selectedId == null || selectedId.equals(node.id())) {
         Messages.send(player, "<error>Select a different node first!");
@@ -325,7 +349,8 @@ public final class TreeEditorGui {
       if (selected.children().contains(node.id())) {
         selected.children().remove(node.id());
         node.prerequisites().remove(selectedId);
-        Messages.send(player, "<accent>Removed link: <secondary>" + selectedId + " -> " + node.id());
+        Messages.send(
+            player, "<accent>Removed link: <secondary>" + selectedId + " -> " + node.id());
       } else {
         selected.children().add(node.id());
         node.prerequisites().add(selectedId);
@@ -381,8 +406,13 @@ public final class TreeEditorGui {
         String json = exporter.exportSingle(tree);
         String treeId = tree.treeId();
         if (treeLoader.saveTree(treeId, json)) {
-          Messages.send(player, "<success>Saved tree '<secondary>" + treeId
-              + "<success>' to <primary>upgrade_trees/" + treeId + ".json");
+          Messages.send(
+              player,
+              "<success>Saved tree '<secondary>"
+                  + treeId
+                  + "<success>' to <primary>upgrade_trees/"
+                  + treeId
+                  + ".json");
           player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_YES, 0.5f, 1.0f);
         } else {
           Messages.send(player, "<error>Failed to save tree. Check server logs.");
@@ -395,13 +425,14 @@ public final class TreeEditorGui {
       }
       case "path_edit" -> {
         session.setPathEditMode(!session.isPathEditMode());
-        Messages.send(player, session.isPathEditMode()
-            ? "<accent>Path edit mode <success>enabled"
-            : "<accent>Path edit mode <error>disabled");
+        Messages.send(
+            player,
+            session.isPathEditMode()
+                ? "<accent>Path edit mode <success>enabled"
+                : "<accent>Path edit mode <error>disabled");
         refresh(player);
       }
-      default -> {
-      }
+      default -> {}
     }
   }
 
@@ -452,8 +483,15 @@ public final class TreeEditorGui {
       if (selectedOpt.isPresent()) {
         session.saveSnapshot();
         selectedOpt.get().setPosition(newPos);
-        Messages.send(player, "<accent>Moved <secondary>" + selectedId
-            + " <accent>to (" + worldX + ", " + worldY + ")");
+        Messages.send(
+            player,
+            "<accent>Moved <secondary>"
+                + selectedId
+                + " <accent>to ("
+                + worldX
+                + ", "
+                + worldY
+                + ")");
         refresh(player);
       }
     }
@@ -476,7 +514,8 @@ public final class TreeEditorGui {
       player.getInventory().clear();
       player.getInventory().setContents(saved);
       player.updateInventory();
-      Messages.send(player, "<accent>Closed tree editor. Use <secondary>/jobs treeeditor<accent> to reopen.");
+      Messages.send(
+          player, "<accent>Closed tree editor. Use <secondary>/jobs treeeditor<accent> to reopen.");
     }
   }
 

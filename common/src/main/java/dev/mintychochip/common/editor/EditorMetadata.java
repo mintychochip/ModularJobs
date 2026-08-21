@@ -5,27 +5,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Metadata about the editor export operation.
- * Includes timestamp, player info, and session verification data.
+ * Metadata about the editor export operation. Includes timestamp, player info, and session
+ * verification data.
  *
- * @param exportedAt   ISO 8601 timestamp
- * @param exportedBy   player UUID as string
+ * @param exportedAt ISO 8601 timestamp
+ * @param exportedBy player UUID as string
  * @param sessionToken session verification token
- * @param serverName   optional server identifier
+ * @param serverName optional server identifier
  */
 public record EditorMetadata(
-    @SerializedName("exportedAt")
-    @NotNull String exportedAt,
-
-    @SerializedName("exportedBy")
-    @NotNull String exportedBy,
-
-    @SerializedName("sessionToken")
-    @NotNull String sessionToken,
-
-    @SerializedName("serverName")
-    @Nullable String serverName
-) {
+    @SerializedName("exportedAt") @NotNull String exportedAt,
+    @SerializedName("exportedBy") @NotNull String exportedBy,
+    @SerializedName("sessionToken") @NotNull String sessionToken,
+    @SerializedName("serverName") @Nullable String serverName) {
 
   /**
    * Creates metadata for an export operation.

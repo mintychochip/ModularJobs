@@ -5,67 +5,57 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents a player's upgrade data for a specific job.
- * Tracks unlocked nodes and available skill points.
+ * Represents a player's upgrade data for a specific job. Tracks unlocked nodes and available skill
+ * points.
  */
 public interface PlayerUpgradeData {
 
-  /**
-   * The player's UUID as string.
-   */
-  @NotNull String playerId();
+  /** The player's UUID as string. */
+  @NotNull
+  String playerId();
 
-  /**
-   * The job key this data belongs to.
-   */
-  @NotNull String jobKey();
+  /** The job key this data belongs to. */
+  @NotNull
+  String jobKey();
 
-  /**
-   * Total skill points earned (from leveling).
-   */
+  /** Total skill points. */
   int totalSkillPoints();
 
-  /**
-   * Skill points currently available to spend.
-   */
+  /** Available skill points. */
   int availableSkillPoints();
 
-  /**
-   * Skill points already spent on upgrades.
-   */
+  /** Spent skill points. */
   int spentSkillPoints();
 
-  /**
-   * The full skill tree state backing this data (v2 format).
-   */
-  @NotNull SkillTreeState state();
+  /** The full skill tree state backing this data (v2 format). */
+  @NotNull
+  SkillTreeState state();
 
   /**
-   * Map of node key -> purchased level (v2 format).
-   * Only contains nodes that have been unlocked (level >= 1).
+   * Map of node key -> purchased level (v2 format). Only contains nodes that have been unlocked
+   * (level >= 1).
    */
   default @NotNull Map<String, Integer> nodeLevels() {
     return state().nodeLevels();
   }
 
-  /**
-   * Set of unlocked node keys.
-   */
-  @NotNull Set<String> unlockedNodes();
+  /** Set of unlocked node keys. */
+  @NotNull
+  Set<String> unlockedNodes();
 
-  /**
-   * Check if a specific node is unlocked.
-   */
+  /** Returns whether has unlocked. */
   boolean hasUnlocked(@NotNull String nodeKey);
 
   /**
-   * Map of perk levels (perkId -> max level unlocked).
-   * Only contains perks that have been unlocked (level >= 1).
+   * Map of perk levels (perkId -> max level unlocked). Only contains perks that have been unlocked
+   * (level >= 1).
    */
-  @NotNull Map<String, Integer> perkLevels();
+  @NotNull
+  Map<String, Integer> perkLevels();
 
   /**
    * Get the current level of a perk.
+   *
    * @return perk level (0 if not unlocked, else the max level unlocked)
    */
   default int getPerkLevel(@NotNull String perkId) {
@@ -73,8 +63,9 @@ public interface PlayerUpgradeData {
   }
 
   /**
-   * Get the maximum level for a perk in this job's upgrade tree.
-   * This is determined by the upgrade tree configuration (max_level on nodes).
+   * Get the maximum level for a perk in this job's upgrade tree. This is determined by the upgrade
+   * tree configuration (max_level on nodes).
+   *
    * @param perkId the perk ID to check
    * @return max level achievable for this perk, or 1 if unknown
    */
@@ -82,6 +73,7 @@ public interface PlayerUpgradeData {
 
   /**
    * Check if a perk is at its maximum level.
+   *
    * @param perkId the perk ID to check
    * @return true if perk level equals max level, false otherwise
    */

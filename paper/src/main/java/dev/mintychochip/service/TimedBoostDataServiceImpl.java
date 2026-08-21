@@ -1,16 +1,16 @@
 package dev.mintychochip.service;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import dev.mintychochip.container.boost.BoostData.SerializableBoostData;
 import dev.mintychochip.container.boost.BoostData.TimedBoostData;
 import dev.mintychochip.container.boost.TimedBoostDataService;
 import dev.mintychochip.container.boost.TimedBoostDataService.Target.GlobalTarget;
 import dev.mintychochip.container.boost.TimedBoostDataService.Target.PlayerTarget;
 import dev.mintychochip.repository.TimedBoostRepository;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * {@link TimedBoostDataService} backed by a {@link TimedBoostRepository}.
@@ -25,6 +25,7 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
 
   private final TimedBoostRepository timedBoostRepository;
 
+  /** Timed boost data service impl. */
   public TimedBoostDataServiceImpl(TimedBoostRepository timedBoostRepository) {
     this.timedBoostRepository = timedBoostRepository;
   }
@@ -64,14 +65,15 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
   @Override
   public <T extends TimedBoostData & SerializableBoostData> void addData(T data, Target target) {
     String targetIdentifier =
-        target instanceof PlayerTarget playerTarget ? playerTarget.playerId().toString()
+        target instanceof PlayerTarget playerTarget
+            ? playerTarget.playerId().toString()
             : GLOBAL_IDENTIFIER;
     String sourceIdentifier = data.boostSource().key().toString();
     Instant timestamp = Instant.now();
     Duration duration = data.getDuration().orElse(null);
     timedBoostRepository.addBoost(
-        new ActiveBoostData(targetIdentifier, sourceIdentifier, timestamp, duration,
-            data.boostSource()));
+        new ActiveBoostData(
+            targetIdentifier, sourceIdentifier, timestamp, duration, data.boostSource()));
   }
 
   /**
@@ -81,9 +83,10 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
    */
   @Override
   public boolean removeBoost(Target target, String sourceIdentifier) {
-    String targetIdentifier = target instanceof PlayerTarget playerTarget
-        ? playerTarget.playerId().toString()
-        : GLOBAL_IDENTIFIER;
+    String targetIdentifier =
+        target instanceof PlayerTarget playerTarget
+            ? playerTarget.playerId().toString()
+            : GLOBAL_IDENTIFIER;
 
     ActiveBoostData existing = timedBoostRepository.findBoost(targetIdentifier, sourceIdentifier);
     if (existing == null) {

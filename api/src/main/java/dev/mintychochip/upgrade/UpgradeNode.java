@@ -8,26 +8,26 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Represents a single ability node in a job's upgrade tree.
- * Connectors are purely a client rendering concern (see {@link ConnectorNode}).
+ * Represents a single ability node in a job's upgrade tree. Connectors are purely a client
+ * rendering concern (see {@link ConnectorNode}).
  *
- * @param key              unique identifier (e.g., "miner:efficiency_1")
- * @param name             display name shown in UI
- * @param description      description of what this upgrade does
- * @param icon             material name to display when locked (e.g. "DIAMOND_PICKAXE")
- * @param unlockedIcon     material name to display when unlocked
- * @param itemModel        item model namespace:key when locked (null = none)
+ * @param key unique identifier (e.g., "miner:efficiency_1")
+ * @param name display name shown in UI
+ * @param description description of what this upgrade does
+ * @param icon material name to display when locked (e.g. "DIAMOND_PICKAXE")
+ * @param unlockedIcon material name to display when unlocked
+ * @param itemModel item model namespace:key when locked (null = none)
  * @param unlockedItemModel item model namespace:key when unlocked (null = none)
- * @param cost             skill point cost to unlock
- * @param prerequisites    node keys that must be unlocked first
+ * @param cost skill point cost to unlock
+ * @param prerequisites node keys that must be unlocked first
  * @param maxedPrerequisites node keys that must be at MAX level
- * @param exclusive        node keys that become locked if this is chosen
- * @param children         node keys that this node leads to
- * @param effects          list of effects granted by this upgrade
- * @param position         optional position for UI rendering (x, y)
- * @param pathPoints       explicit path points from this node back to its parent (empty for root)
- * @param perkId           perk identifier (e.g., "crit_chance", "fortune_spec")
- * @param level            perk level (1, 2, 3...)
+ * @param exclusive node keys that become locked if this is chosen
+ * @param children node keys that this node leads to
+ * @param effects list of effects granted by this upgrade
+ * @param position optional position for UI rendering (x, y)
+ * @param pathPoints explicit path points from this node back to its parent (empty for root)
+ * @param perkId perk identifier (e.g., "crit_chance", "fortune_spec")
+ * @param level perk level (1, 2, 3...)
  */
 public record UpgradeNode(
     @NotNull Key key,
@@ -46,19 +46,17 @@ public record UpgradeNode(
     @Nullable Position position,
     @NotNull List<Position> pathPoints,
     @NotNull String perkId,
-    int level
-) implements Keyed {
+    int level)
+    implements Keyed {
 
-  /**
-   * Check if this node is a root node (no prerequisites).
-   */
+  /** Check if this node is a root node (no prerequisites). */
   public boolean isRoot() {
     return prerequisites.isEmpty() && maxedPrerequisites.isEmpty();
   }
 
   /**
-   * Check if this node is an ability (grants effects).
-   * All UpgradeNode instances are abilities - use this for generic filtering.
+   * Check if this node is an ability (grants effects). All UpgradeNode instances are abilities -
+   * use this for generic filtering.
    */
   public boolean isAbility() {
     return true;

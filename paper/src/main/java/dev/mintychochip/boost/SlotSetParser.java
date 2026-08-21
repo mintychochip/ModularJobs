@@ -2,32 +2,19 @@ package dev.mintychochip.boost;
 
 import java.util.BitSet;
 
-/**
- * Utility for parsing slot set specifications.
- */
+/** Utility for parsing slot set specifications. */
 public final class SlotSetParser {
 
-  private SlotSetParser() {
-  }
+  private SlotSetParser() {}
 
   /**
    * Parse a slot specification string into a BitSet.
    *
-   * <p>
-   * Supported formats:
-   * - "all" - all slots (0-40)
-   * - "mainhand" - main hand slot (36)
-   * - "offhand" - off hand slot (40)
-   * - "helmet" - helmet slot (39)
-   * - "chestplate" - chestplate slot (38)
-   * - "leggings" - leggings slot (37)
-   * - "boots" - boots slot (36)
-   * - "armor" - all armor slots (36-39)
-   * - "hotbar" - hotbar slots (0-8)
-   * - "inventory" - main inventory slots (9-35)
-   * - "5" - single slot
-   * - "0-8" - range of slots
-   * - "0,9,36" - comma-separated slots
+   * <p>Supported formats: - "all" - all slots (0-40) - "mainhand" - main hand slot (36) - "offhand"
+   * - off hand slot (40) - "helmet" - helmet slot (39) - "chestplate" - chestplate slot (38) -
+   * "leggings" - leggings slot (37) - "boots" - boots slot (36) - "armor" - all armor slots (36-39)
+   * - "hotbar" - hotbar slots (0-8) - "inventory" - main inventory slots (9-35) - "5" - single slot
+   * - "0-8" - range of slots - "0,9,36" - comma-separated slots
    *
    * @param spec the slot specification
    * @return the parsed BitSet

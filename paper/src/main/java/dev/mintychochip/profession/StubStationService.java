@@ -1,14 +1,12 @@
 package dev.mintychochip.profession;
 
+import dev.mintychochip.service.StationService;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.service.StationService;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * In-memory station tier defaults for configured station types.
- */
+/** In-memory station tier defaults for configured station types. */
 public final class StubStationService implements StationService {
 
   public static final int DEFAULT_TIER = 5;
@@ -16,10 +14,12 @@ public final class StubStationService implements StationService {
   private final Map<String, Integer> tiers = new ConcurrentHashMap<>();
   private final int defaultTier;
 
+  /** Stub station service. */
   public StubStationService() {
     this(DEFAULT_TIER);
   }
 
+  /** Stub station service. */
   public StubStationService(int defaultTier) {
     this.defaultTier = defaultTier;
   }
@@ -31,9 +31,7 @@ public final class StubStationService implements StationService {
 
   @Override
   public boolean canUseStation(
-      @NotNull UUID playerId,
-      @NotNull String stationType,
-      int requiredTier) {
+      @NotNull UUID playerId, @NotNull String stationType, int requiredTier) {
     return getStationTier(stationType) >= requiredTier;
   }
 

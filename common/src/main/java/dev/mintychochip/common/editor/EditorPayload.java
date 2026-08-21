@@ -15,25 +15,13 @@ import org.jetbrains.annotations.NotNull;
  * @param registeredPayableTypes available payable type keys
  */
 public record EditorPayload(
-    @SerializedName("version")
-    int version,
+    @SerializedName("version") int version,
+    @SerializedName("metadata") @NotNull EditorMetadata metadata,
+    @SerializedName("jobs") @NotNull Map<String, JobData> jobs,
+    @SerializedName("registeredActionTypes") @NotNull List<String> registeredActionTypes,
+    @SerializedName("registeredPayableTypes") @NotNull List<String> registeredPayableTypes) {
 
-    @SerializedName("metadata")
-    @NotNull EditorMetadata metadata,
-
-    @SerializedName("jobs")
-    @NotNull Map<String, JobData> jobs,
-
-    @SerializedName("registeredActionTypes")
-    @NotNull List<String> registeredActionTypes,
-
-    @SerializedName("registeredPayableTypes")
-    @NotNull List<String> registeredPayableTypes
-) {
-
-  /**
-   * Current schema version.
-   */
+  /** Current schema version. */
   public static final int CURRENT_VERSION = 1;
 
   /**
@@ -50,7 +38,7 @@ public record EditorPayload(
       @NotNull Map<String, JobData> jobs,
       @NotNull List<String> registeredActionTypes,
       @NotNull List<String> registeredPayableTypes) {
-    return new EditorPayload(CURRENT_VERSION, metadata, jobs, registeredActionTypes,
-        registeredPayableTypes);
+    return new EditorPayload(
+        CURRENT_VERSION, metadata, jobs, registeredActionTypes, registeredPayableTypes);
   }
 }

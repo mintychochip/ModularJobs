@@ -8,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.BitSet;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link SlotSetParser#parse} named sets, ranges, and lists.
- */
+/** Drives shipped {@link SlotSetParser#parse} named sets, ranges, and lists. */
 class SlotSetParserTest {
 
   @Test

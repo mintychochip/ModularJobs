@@ -1,21 +1,21 @@
 package dev.mintychochip.upgrade.wynncraft;
 
+import dev.mintychochip.upgrade.Position;
 import java.util.List;
 import java.util.Optional;
-import dev.mintychochip.upgrade.Position;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A single item in a Wynncraft-style skill tree layout.
- * Can be either an ability node or a connector node.
+ * A single item in a Wynncraft-style skill tree layout. Can be either an ability node or a
+ * connector node.
  *
- * @param id            unique identifier for this item
- * @param type          whether this is an ability or connector
- * @param coordinates   position in the GUI grid
- * @param meta          metadata (either AbilityMeta or ConnectorMeta)
- * @param archetypeRef  optional reference to an archetype ID
- * @param family        optional list of related node IDs (for grouping)
+ * @param id unique identifier for this item
+ * @param type whether this is an ability or connector
+ * @param coordinates position in the GUI grid
+ * @param meta metadata (either AbilityMeta or ConnectorMeta)
+ * @param archetypeRef optional reference to an archetype ID
+ * @param family optional list of related node IDs (for grouping)
  */
 public record LayoutItem(
     @NotNull String id,
@@ -23,11 +23,8 @@ public record LayoutItem(
     @NotNull Position coordinates,
     @NotNull LayoutItemMeta meta,
     @Nullable String archetypeRef,
-    @Nullable List<String> family
-) {
-  /**
-   * Get the ability metadata if this is an ability node.
-   */
+    @Nullable List<String> family) {
+  /** Get the ability metadata if this is an ability node. */
   public Optional<AbilityMeta> abilityMeta() {
     return meta instanceof AbilityMeta am ? Optional.of(am) : Optional.empty();
   }
@@ -35,7 +32,8 @@ public record LayoutItem(
   /**
    * Get the connector metadata if this is a connector node.
    *
-   * @deprecated Connector nodes are deprecated. Use {@code path_from_parent} on ability nodes instead.
+   * @deprecated Connector nodes are deprecated. Use {@code path_from_parent} on ability nodes
+   *     instead.
    */
   @Deprecated(since = "1.0", forRemoval = true)
   public Optional<ConnectorMeta> connectorMeta() {

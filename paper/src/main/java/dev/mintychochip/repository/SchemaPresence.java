@@ -8,20 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Fail-fast check that required tables exist. Does not create them.
- */
+/** Fail-fast check that required tables exist. Does not create them. */
 public final class SchemaPresence {
 
   /** Core tables the plugin depends on. */
-  public static final List<String> REQUIRED_TABLES = List.of(
-      "job_progression",
-      "job_tasks",
-      "job_task_payables",
-      "payable_records",
-      "time_boosts",
-      "player_upgrades"
-  );
+  public static final List<String> REQUIRED_TABLES =
+      List.of(
+          "job_progression",
+          "job_tasks",
+          "job_task_payables",
+          "payable_records",
+          "time_boosts",
+          "player_upgrades");
 
   /** Session API table (same MySQL store). Optional for pure game-only pools. */
   public static final String EDITOR_SESSIONS = "editor_sessions";
@@ -36,9 +34,8 @@ public final class SchemaPresence {
    * @throws SchemaMissingException if any table is absent
    */
   public static void requireTables(
-      @NotNull Connection connection,
-      @NotNull DatabaseType type,
-      @NotNull List<String> required) throws SQLException {
+      @NotNull Connection connection, @NotNull DatabaseType type, @NotNull List<String> required)
+      throws SQLException {
     List<String> missing = new ArrayList<>();
     for (String table : required) {
       if (!tableExists(connection, type, table)) {
@@ -50,6 +47,7 @@ public final class SchemaPresence {
     }
   }
 
+  /** Table exists. */
   public static boolean tableExists(
       @NotNull Connection connection, @NotNull DatabaseType type, @NotNull String table)
       throws SQLException {
@@ -64,14 +62,13 @@ public final class SchemaPresence {
     }
   }
 
-  /**
-   * Thrown when schema was not provisioned. Message points operators at the SQL script.
-   */
+  /** Thrown when schema was not provisioned. Message points operators at the SQL script. */
   public static final class SchemaMissingException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     private final DatabaseType type;
     private final List<String> missingTables;
 
+    /** Schema missing exception. */
     public SchemaMissingException(DatabaseType type, List<String> missingTables) {
       super(buildMessage(type, missingTables));
       this.type = type;
@@ -87,7 +84,10 @@ public final class SchemaPresence {
     }
 
     private static String buildMessage(DatabaseType type, List<String> missing) {
-      return "Database schema not provisioned for " + type + ". Missing tables: " + missing
+      return "Database schema not provisioned for "
+          + type
+          + ". Missing tables: "
+          + missing
           + ". The plugin does not create tables. Apply "
           + "paper/src/main/resources/sql/mysql.sql out-of-band "
           + "(see scripts/apply-mysql-schema.sh).";

@@ -1,17 +1,10 @@
 package dev.mintychochip.boost;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.BitSet;
-import java.util.List;
 import dev.mintychochip.boost.conditions.SnapshotCondition;
 import dev.mintychochip.common.boost.BoostDataDocument;
 import dev.mintychochip.common.boost.BoostDataDocument.BoostDocument;
 import dev.mintychochip.common.boost.BoostDataDocument.RuleDocument;
 import dev.mintychochip.common.boost.BoostDataDocument.SourceDocument;
-import dev.mintychochip.databag.ConditionSerializer;
 import dev.mintychochip.container.Boost;
 import dev.mintychochip.container.BoostSource;
 import dev.mintychochip.container.boost.BoostData.SerializableBoostData;
@@ -20,25 +13,28 @@ import dev.mintychochip.container.boost.BoostData.SerializableBoostData.PassiveB
 import dev.mintychochip.container.boost.RuledBoostSource;
 import dev.mintychochip.container.boost.RuledBoostSource.Rule;
 import dev.mintychochip.container.boost.factories.BoostFactory;
+import dev.mintychochip.databag.ConditionSerializer;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.BitSet;
+import java.util.List;
 import net.kyori.adventure.key.Key;
 
-/**
- * JSON codec for {@link SerializableBoostData}. Conditions are serializer bytes
- * on each rule.
- */
+/** JSON codec for {@link SerializableBoostData}. Conditions are serializer bytes on each rule. */
 public final class BoostDataCodec {
 
   private final ConditionSerializer conditions;
   private final BoostFactory boosts;
 
+  /** Boost data codec. */
   public BoostDataCodec(ConditionSerializer conditions, BoostFactory boosts) {
     this.conditions = conditions;
     this.boosts = boosts;
   }
 
-  /**
-   * Encodes {@code data} as UTF-8 JSON bytes.
-   */
+  /** Encodes {@code data} as UTF-8 JSON bytes. */
   public byte[] write(SerializableBoostData data) {
     String kind;
     String slots = null;
@@ -56,9 +52,7 @@ public final class BoostDataCodec {
         new BoostDataDocument(kind, slots, duration, toSource(data.boostSource())));
   }
 
-  /**
-   * Decodes UTF-8 JSON bytes into {@link SerializableBoostData}.
-   */
+  /** Decodes UTF-8 JSON bytes into {@link SerializableBoostData}. */
   public SerializableBoostData read(byte[] bytes) {
     BoostDataDocument document = BoostDataDocument.fromJson(bytes);
     BoostSource source = fromSource(document.source());
@@ -69,12 +63,14 @@ public final class BoostDataCodec {
       }
       return new PassiveBoostData(source, slotSet);
     }
-    Duration duration = document.duration() == null || document.duration().isBlank()
-        ? Duration.ZERO
-        : Duration.parse(document.duration());
+    Duration duration =
+        document.duration() == null || document.duration().isBlank()
+            ? Duration.ZERO
+            : Duration.parse(document.duration());
     return new ConsumableBoostData(source, duration);
   }
 
+  /** Read source. */
   public BoostSource readSource(byte[] bytes) {
     return fromSource(BoostDataDocument.fromJson(bytes).source());
   }
@@ -100,18 +96,17 @@ public final class BoostDataCodec {
         rules.add(new Rule(condition, rule.priority(), fromBoost(rule.boost())));
       }
     }
-    return new RuledBoostSourceImpl(
-        rules, Key.key(document.key()), document.description());
+    return new RuledBoostSourceImpl(rules, Key.key(document.key()), document.description());
   }
 
   private static BoostDocument toBoost(Boost boost) {
     return switch (boost) {
       case MultiplicativeBoostImpl mult ->
           new BoostDocument("multiplicative", mult.amount().doubleValue());
-      case AdditiveBoostImpl add ->
-          new BoostDocument("additive", add.amount().doubleValue());
-      default -> throw new IllegalArgumentException(
-          "Cannot serialize boost type: " + boost.getClass().getName());
+      case AdditiveBoostImpl add -> new BoostDocument("additive", add.amount().doubleValue());
+      default ->
+          throw new IllegalArgumentException(
+              "Cannot serialize boost type: " + boost.getClass().getName());
     };
   }
 

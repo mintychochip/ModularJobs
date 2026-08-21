@@ -5,11 +5,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import dev.mintychochip.upgrade.PerkPolicy;
 import dev.mintychochip.upgrade.Position;
 import dev.mintychochip.upgrade.wynncraft.AbilityMeta;
@@ -21,15 +16,22 @@ import dev.mintychochip.upgrade.wynncraft.IconConfig;
 import dev.mintychochip.upgrade.wynncraft.LayoutItem;
 import dev.mintychochip.upgrade.wynncraft.LayoutItemType;
 import dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Custom Gson deserializer for WynncraftTreeConfig.
- * Handles the polymorphic meta field in LayoutItem.
+ * Custom Gson deserializer for WynncraftTreeConfig. Handles the polymorphic meta field in
+ * LayoutItem.
  */
-public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<WynncraftTreeConfig> {
+public final class WynncraftTreeConfigDeserializer
+    implements JsonDeserializer<WynncraftTreeConfig> {
 
   @Override
-  public WynncraftTreeConfig deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+  public WynncraftTreeConfig deserialize(
+      JsonElement json, Type typeOfT, JsonDeserializationContext context) {
     JsonObject root = json.getAsJsonObject();
 
     final String treeId = getString(root, "tree_id");
@@ -43,15 +45,17 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       JsonObject metadata = root.getAsJsonObject("metadata");
       job = getString(metadata, "job");
       description = metadata.has("description") ? metadata.get("description").getAsString() : null;
-      skillPointsPerLevel = metadata.has("skill_points_per_level")
-          ? metadata.get("skill_points_per_level").getAsInt() : 1;
+      skillPointsPerLevel =
+          metadata.has("skill_points_per_level")
+              ? metadata.get("skill_points_per_level").getAsInt()
+              : 1;
       rootId = getString(metadata, "root");
     } else {
       // Fallback to top-level fields
       job = getString(root, "job");
       description = root.has("description") ? root.get("description").getAsString() : null;
-      skillPointsPerLevel = root.has("skill_points_per_level")
-          ? root.get("skill_points_per_level").getAsInt() : 1;
+      skillPointsPerLevel =
+          root.has("skill_points_per_level") ? root.get("skill_points_per_level").getAsInt() : 1;
       rootId = getString(root, "root");
     }
 
@@ -62,11 +66,9 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
     if (root.has("archetypes")) {
       for (JsonElement elem : root.getAsJsonArray("archetypes")) {
         JsonObject archObj = elem.getAsJsonObject();
-        archetypes.add(new Archetype(
-            getString(archObj, "id"),
-            getString(archObj, "name"),
-            getString(archObj, "color")
-        ));
+        archetypes.add(
+            new Archetype(
+                getString(archObj, "id"), getString(archObj, "name"), getString(archObj, "color")));
       }
     }
 
@@ -94,14 +96,21 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
     if (root.has("paths")) {
       for (JsonElement elem : root.getAsJsonArray("paths")) {
         JsonObject posObj = elem.getAsJsonObject();
-        paths.add(new Position(
-            posObj.get("x").getAsInt(),
-            posObj.get("y").getAsInt()
-        ));
+        paths.add(new Position(posObj.get("x").getAsInt(), posObj.get("y").getAsInt()));
       }
     }
 
-    return new WynncraftTreeConfig(treeId, displayName, description, job, skillPointsPerLevel, rootId, paths, archetypes, layout, perkPolicies);
+    return new WynncraftTreeConfig(
+        treeId,
+        displayName,
+        description,
+        job,
+        skillPointsPerLevel,
+        rootId,
+        paths,
+        archetypes,
+        layout,
+        perkPolicies);
   }
 
   private LayoutItem deserializeLayoutItem(JsonObject itemObj) {
@@ -111,10 +120,8 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
 
     // Parse coordinates
     JsonObject coordsObj = itemObj.getAsJsonObject("coordinates");
-    final Position coordinates = new Position(
-        coordsObj.get("x").getAsInt(),
-        coordsObj.get("y").getAsInt()
-    );
+    final Position coordinates =
+        new Position(coordsObj.get("x").getAsInt(), coordsObj.get("y").getAsInt());
 
     // Parse optional archetype_refs (array) or archetype_ref (string)
     String archetypeRef = null;
@@ -147,7 +154,13 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       throw new IllegalArgumentException("Unknown layout item type: " + type);
     }
 
-    return new LayoutItem(id, type, coordinates, (dev.mintychochip.upgrade.wynncraft.LayoutItemMeta) metaObj, archetypeRef, family);
+    return new LayoutItem(
+        id,
+        type,
+        coordinates,
+        (dev.mintychochip.upgrade.wynncraft.LayoutItemMeta) metaObj,
+        archetypeRef,
+        family);
   }
 
   private AbilityMeta deserializeAbilityMeta(JsonObject meta) {
@@ -162,22 +175,22 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       JsonObject lockedObj = iconObj.getAsJsonObject("locked");
       JsonObject unlockedObj = iconObj.getAsJsonObject("unlocked");
 
-      IconConfig locked = new IconConfig(
-          getString(lockedObj, "id"),
-          lockedObj.has("item_model") ? lockedObj.get("item_model").getAsString() : null
-      );
-      IconConfig unlocked = new IconConfig(
-          getString(unlockedObj, "id"),
-          unlockedObj.has("item_model") ? unlockedObj.get("item_model").getAsString() : null
-      );
+      IconConfig locked =
+          new IconConfig(
+              getString(lockedObj, "id"),
+              lockedObj.has("item_model") ? lockedObj.get("item_model").getAsString() : null);
+      IconConfig unlocked =
+          new IconConfig(
+              getString(unlockedObj, "id"),
+              unlockedObj.has("item_model") ? unlockedObj.get("item_model").getAsString() : null);
 
       icons = new AbilityMeta.AbilityIcons(locked, unlocked);
     } else {
       // Legacy format: single icon for both states
-      IconConfig singleIcon = new IconConfig(
-          getString(iconObj, "id"),
-          iconObj.has("item_model") ? iconObj.get("item_model").getAsString() : null
-      );
+      IconConfig singleIcon =
+          new IconConfig(
+              getString(iconObj, "id"),
+              iconObj.has("item_model") ? iconObj.get("item_model").getAsString() : null);
       icons = new AbilityMeta.AbilityIcons(singleIcon, singleIcon);
     }
 
@@ -229,7 +242,19 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       level = meta.get("level").getAsInt();
     }
 
-    return new AbilityMeta(name, icons, cost, description, prerequisites, List.of(), exclusiveWith, effects, required, major, perkId, level);
+    return new AbilityMeta(
+        name,
+        icons,
+        cost,
+        description,
+        prerequisites,
+        List.of(),
+        exclusiveWith,
+        effects,
+        required,
+        major,
+        perkId,
+        level);
   }
 
   private EffectConfig deserializeEffectConfig(JsonObject effectObj) {
@@ -245,16 +270,10 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
 
         // Parse boost
         JsonObject boostObj = ruleObj.getAsJsonObject("boost");
-        BoostConfig boost = new BoostConfig(
-            getString(boostObj, "type"),
-            boostObj.get("amount").getAsDouble()
-        );
+        BoostConfig boost =
+            new BoostConfig(getString(boostObj, "type"), boostObj.get("amount").getAsDouble());
 
-        rules.add(new RuleConfig(
-            ruleObj.get("priority").getAsInt(),
-            conditions,
-            boost
-        ));
+        rules.add(new RuleConfig(ruleObj.get("priority").getAsInt(), conditions, boost));
       }
     }
 
@@ -279,8 +298,7 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
         effectObj.has("unlock_key") ? getString(effectObj, "unlock_key") : null,
         effectObj.has("permission") ? getString(effectObj, "permission") : null,
         permissions,
-        rules
-    );
+        rules);
   }
 
   private String getString(JsonObject obj, String memberName) {

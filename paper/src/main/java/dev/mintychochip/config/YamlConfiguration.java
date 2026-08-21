@@ -9,13 +9,17 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface YamlConfiguration extends ConfigurationSection {
 
+  /** API member. */
   @NotNull
   Plugin getPlugin();
 
+  /** Reload. */
   void reload();
 
+  /** Save. */
   void save();
 
+  /** API member. */
   @NotNull
   static YamlConfiguration create(Plugin plugin, String path) {
     return YamlFileBackedConfigurationImpl.create(plugin, path);

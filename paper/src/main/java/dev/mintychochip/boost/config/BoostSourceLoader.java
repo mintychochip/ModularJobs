@@ -3,21 +3,19 @@ package dev.mintychochip.boost.config;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.boost.factories.BoostFactory;
+import dev.mintychochip.container.boost.factories.ConditionFactory;
+import dev.mintychochip.registry.Registry;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
-import dev.mintychochip.container.BoostSource;
-import dev.mintychochip.container.boost.factories.BoostFactory;
-import dev.mintychochip.container.boost.factories.ConditionFactory;
-import dev.mintychochip.registry.Registry;
 import org.bukkit.plugin.Plugin;
 
-/**
- * Loads boost sources from JSON configuration file.
- */
+/** Loads boost sources from JSON configuration file. */
 public final class BoostSourceLoader {
 
   private static final String CONFIG_FILE = "boost_sources.json";
@@ -37,8 +35,7 @@ public final class BoostSourceLoader {
       Gson gson,
       ConditionFactory conditionFactory,
       BoostFactory boostFactory,
-      Registry<BoostSource> registry
-  ) {
+      Registry<BoostSource> registry) {
     this.plugin = plugin;
     this.gson = gson;
     this.parser = new BoostSourceConfigParser(conditionFactory, boostFactory);
@@ -46,8 +43,7 @@ public final class BoostSourceLoader {
   }
 
   /**
-   * Load boost sources from configuration file.
-   * Creates default config if it doesn't exist.
+   * Load boost sources from configuration file. Creates default config if it doesn't exist.
    *
    * @return number of boost sources loaded
    */
@@ -95,9 +91,9 @@ public final class BoostSourceLoader {
         registry.register(boostSource);
         count++;
       } catch (IllegalArgumentException | JsonSyntaxException e) {
-        plugin.getLogger().warning(
-            "Failed to parse boost source '" + entry.getKey() + "': " + e.getMessage()
-        );
+        plugin
+            .getLogger()
+            .warning("Failed to parse boost source '" + entry.getKey() + "': " + e.getMessage());
       }
     }
 
@@ -122,7 +118,8 @@ public final class BoostSourceLoader {
       }
 
       // If no default resource, create minimal config
-      String defaultJson = """
+      String defaultJson =
+          """
           {
             "boost_sources": {
               "example_boost": {

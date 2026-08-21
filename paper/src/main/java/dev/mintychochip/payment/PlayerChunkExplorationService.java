@@ -14,15 +14,16 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Tracks which players have explored which chunks, persisted as JSON in each chunk's
- * {@link PersistentDataContainer}. The empty set is represented by deleting the tag, so
- * unexplored chunks carry no data.
+ * Tracks which players have explored which chunks, persisted as JSON in each chunk's {@link
+ * PersistentDataContainer}. The empty set is represented by deleting the tag, so unexplored chunks
+ * carry no data.
  */
 public final class PlayerChunkExplorationService {
 
   private static final NamespacedKey CHUNK_KEY = new NamespacedKey("jobs", "chunk");
 
-  private static final PersistentDataType<String, PersistentChunkData> DATA_TYPE = new PersistentChunkDataType();
+  private static final PersistentDataType<String, PersistentChunkData> DATA_TYPE =
+      new PersistentChunkDataType();
 
   /**
    * Reports whether this player has explored {@code chunk}.
@@ -77,8 +78,8 @@ public final class PlayerChunkExplorationService {
     }
   }
 
-  private static final class PersistentChunkDataType implements
-      PersistentDataType<String, PersistentChunkData> {
+  private static final class PersistentChunkDataType
+      implements PersistentDataType<String, PersistentChunkData> {
 
     private static final Gson GSON = new Gson();
 
@@ -93,14 +94,14 @@ public final class PlayerChunkExplorationService {
     }
 
     @Override
-    public @NotNull String toPrimitive(@NotNull PersistentChunkData complex,
-        @NotNull PersistentDataAdapterContext context) {
+    public @NotNull String toPrimitive(
+        @NotNull PersistentChunkData complex, @NotNull PersistentDataAdapterContext context) {
       return GSON.toJson(complex);
     }
 
     @Override
-    public @NotNull PersistentChunkData fromPrimitive(@NotNull String primitive,
-        @NotNull PersistentDataAdapterContext context) {
+    public @NotNull PersistentChunkData fromPrimitive(
+        @NotNull String primitive, @NotNull PersistentDataAdapterContext context) {
       return GSON.fromJson(primitive, PersistentChunkData.class);
     }
   }

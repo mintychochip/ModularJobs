@@ -8,21 +8,19 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.test.MysqlTestSupport;
+import dev.mintychochip.upgrade.PlayerUpgradeDataImpl;
+import dev.mintychochip.upgrade.PlayerUpgradeRepository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
-import dev.mintychochip.test.MysqlTestSupport;
-import dev.mintychochip.upgrade.PlayerUpgradeDataImpl;
-import dev.mintychochip.upgrade.PlayerUpgradeRepository;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link SqlStatements} DML through the production Hikari pool.
- */
+/** Drives shipped {@link SqlStatements} DML through the production Hikari pool. */
 class SqlStatementsHikariRepositoryTest {
 
   private static final String PLAYER_ID = "sql-statements-hikari-player";
@@ -36,8 +34,8 @@ class SqlStatementsHikariRepositoryTest {
       return;
     }
     try (Connection connection = hikari.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            SqlStatements.load("player_upgrades/delete.sql"))) {
+        PreparedStatement ps =
+            connection.prepareStatement(SqlStatements.load("player_upgrades/delete.sql"))) {
       ps.setString(1, PLAYER_ID);
       ps.setString(2, JOB_KEY);
       ps.executeUpdate();
@@ -53,9 +51,8 @@ class SqlStatementsHikariRepositoryTest {
     assertFalse(select.isBlank());
     assertTrue(select.contains("player_upgrades"));
     assertTrue(SqlStatements.load("job_progression/save.sql").contains("{table}"));
-    IllegalStateException missing = assertThrows(
-        IllegalStateException.class,
-        () -> SqlStatements.load("does-not-exist.sql"));
+    IllegalStateException missing =
+        assertThrows(IllegalStateException.class, () -> SqlStatements.load("does-not-exist.sql"));
     assertTrue(missing.getMessage().contains("missing SQL resource"));
   }
 
@@ -72,8 +69,8 @@ class SqlStatementsHikariRepositoryTest {
     }
 
     PlayerUpgradeRepository upgrades = new PlayerUpgradeRepository(hikari);
-    PlayerUpgradeDataImpl stored = new PlayerUpgradeDataImpl(
-        PLAYER_ID, JOB_KEY, 9, Set.of("node-a", "node-b"));
+    PlayerUpgradeDataImpl stored =
+        new PlayerUpgradeDataImpl(PLAYER_ID, JOB_KEY, 9, Set.of("node-a", "node-b"));
     upgrades.savePlayerData(stored);
 
     PlayerUpgradeDataImpl loaded = upgrades.loadPlayerData(PLAYER_ID, JOB_KEY);
@@ -105,13 +102,13 @@ class SqlStatementsHikariRepositoryTest {
     config.set("password", MysqlTestSupport.password());
     config.set("maximum-pool-size", 2);
     config.set("minimum-idle", 0);
-    ConnectionSource source = new HikariSourceImpl(
-        new HikariConfigProvider(config, DatabaseType.MYSQL).create(),
-        DatabaseType.MYSQL);
+    ConnectionSource source =
+        new HikariSourceImpl(
+            new HikariConfigProvider(config, DatabaseType.MYSQL).create(), DatabaseType.MYSQL);
     try (Connection connection = source.getConnection()) {
       MysqlTestSupport.applyShippedSchema(connection);
-      try (PreparedStatement ps = connection.prepareStatement(
-          SqlStatements.load("player_upgrades/delete.sql"))) {
+      try (PreparedStatement ps =
+          connection.prepareStatement(SqlStatements.load("player_upgrades/delete.sql"))) {
         ps.setString(1, PLAYER_ID);
         ps.setString(2, JOB_KEY);
         ps.executeUpdate();

@@ -8,8 +8,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * A read-only view over a registry of keyed objects.
  *
- * <p>Objects are addressed by their Adventure {@link Key}; iterating the view
- * yields the registered objects in an implementation-defined order.</p>
+ * <p>Objects are addressed by their Adventure {@link Key}; iterating the view yields the registered
+ * objects in an implementation-defined order.
  *
  * @param <T> the element type of the registry
  */
@@ -22,6 +22,7 @@ public interface RegistryView<T> extends Iterable<T> {
    */
   @NotNull
   Optional<T> get(Key key);
+
   /**
    * Returns the object registered under the given key.
    *
@@ -30,7 +31,7 @@ public interface RegistryView<T> extends Iterable<T> {
    * @throws IllegalArgumentException if no object is registered under the key
    */
   @NotNull
-  T getOrThrow(Key key) throws IllegalArgumentException;
+  T getOrThrow(Key key);
 
   /**
    * Tests whether an object is registered under the given key.

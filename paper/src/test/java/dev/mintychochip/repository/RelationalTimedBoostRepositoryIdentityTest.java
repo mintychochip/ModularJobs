@@ -6,6 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.boost.BoostDataCodec;
+import dev.mintychochip.boost.BoostFactoryImpl;
+import dev.mintychochip.boost.MultiplicativeBoostImpl;
+import dev.mintychochip.boost.RuledBoostSourceImpl;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.boost.RuledBoostSource.Rule;
+import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
+import dev.mintychochip.service.TimedBoostDataServiceImpl;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,15 +24,6 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import dev.mintychochip.boost.MultiplicativeBoostImpl;
-import dev.mintychochip.boost.RuledBoostSourceImpl;
-import dev.mintychochip.boost.BoostDataCodec;
-import dev.mintychochip.boost.BoostFactoryImpl;
-import dev.mintychochip.databag.gson.GsonConditionSerializer;
-import dev.mintychochip.container.BoostSource;
-import dev.mintychochip.container.boost.RuledBoostSource.Rule;
-import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
-import dev.mintychochip.service.TimedBoostDataServiceImpl;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -31,9 +31,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Exercises shipped {@link RelationalTimedBoostRepositoryImpl} SQL identity:
- * pure {@code target_id} in the DB (not composite write-back key), so
- * findAllBoosts(target) and delete(target, source) work after persistence.
+ * Exercises shipped {@link RelationalTimedBoostRepositoryImpl} SQL identity: pure {@code target_id}
+ * in the DB (not composite write-back key), so findAllBoosts(target) and delete(target, source)
+ * work after persistence.
  */
 class RelationalTimedBoostRepositoryIdentityTest {
 
@@ -50,7 +50,8 @@ class RelationalTimedBoostRepositoryIdentityTest {
     connection = NonClosableConnection.create(dev.mintychochip.test.MysqlTestSupport.open());
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS time_boosts");
-      st.execute("""
+      st.execute(
+          """
           CREATE TABLE time_boosts (
             target_id    VARCHAR(191) NOT NULL,
             source_id    VARCHAR(191) NOT NULL,
@@ -63,16 +64,20 @@ class RelationalTimedBoostRepositoryIdentityTest {
     }
 
     ConnectionSource connectionSource = new FixedConnectionSource(connection);
-    repository = RelationalTimedBoostRepositoryImpl.createSynchronous(
-        connectionSource,
-        new BoostDataCodec(GsonConditionSerializer.gson(), BoostFactoryImpl.INSTANCE));
+    repository =
+        RelationalTimedBoostRepositoryImpl.createSynchronous(
+            connectionSource,
+            new BoostDataCodec(GsonConditionSerializer.gson(), BoostFactoryImpl.INSTANCE));
 
-    source = new RuledBoostSourceImpl(
-        List.of(new Rule(BoostFactoryImpl.INSTANCE.sneaking(false), 1,
-            new MultiplicativeBoostImpl(new BigDecimal("2.0")))),
-        Key.key("modularjobs", "timed_test"),
-        "test"
-    );
+    source =
+        new RuledBoostSourceImpl(
+            List.of(
+                new Rule(
+                    BoostFactoryImpl.INSTANCE.sneaking(false),
+                    1,
+                    new MultiplicativeBoostImpl(new BigDecimal("2.0")))),
+            Key.key("modularjobs", "timed_test"),
+            "test");
   }
 
   @AfterEach
@@ -93,26 +98,23 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
   @Test
   void saveStoresPureTargetIdNotCompositeCacheKey() throws SQLException {
-    ActiveBoostData boost = new ActiveBoostData(
-        TARGET,
-        SOURCE_ID,
-        Instant.now(),
-        Duration.ofHours(1),
-        source
-    );
+    ActiveBoostData boost =
+        new ActiveBoostData(TARGET, SOURCE_ID, Instant.now(), Duration.ofHours(1), source);
     repository.addBoost(boost);
 
-    try (PreparedStatement ps = connection.prepareStatement(
-        "SELECT target_id, source_id FROM time_boosts");
+    try (PreparedStatement ps =
+            connection.prepareStatement("SELECT target_id, source_id FROM time_boosts");
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {
         throw new AssertionError("expected result row");
       }
-      assertEquals(TARGET, rs.getString("target_id"),
+      assertEquals(
+          TARGET,
+          rs.getString("target_id"),
           "DB target_id must be pure player/global id, not composite cache key");
       assertEquals(SOURCE_ID, rs.getString("source_id"));
-      assertFalse(rs.getString("target_id").contains(SOURCE_ID),
-          "target_id must not embed source id");
+      assertFalse(
+          rs.getString("target_id").contains(SOURCE_ID), "target_id must not embed source id");
       boolean hasExtraRow = rs.next();
       assertFalse(hasExtraRow);
     }
@@ -120,13 +122,8 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
   @Test
   void saveFindAllDeleteRoundTripWithPureTargetId() throws SQLException {
-    ActiveBoostData boost = new ActiveBoostData(
-        TARGET,
-        SOURCE_ID,
-        Instant.now(),
-        Duration.ofHours(1),
-        source
-    );
+    ActiveBoostData boost =
+        new ActiveBoostData(TARGET, SOURCE_ID, Instant.now(), Duration.ofHours(1), source);
     repository.addBoost(boost);
 
     List<ActiveBoostData> found = repository.findAllBoosts(TARGET);
@@ -143,8 +140,7 @@ class RelationalTimedBoostRepositoryIdentityTest {
     assertTrue(repository.findAllBoosts(TARGET).isEmpty());
     assertNull(repository.findBoost(TARGET, SOURCE_ID));
 
-    try (PreparedStatement ps = connection.prepareStatement(
-        "SELECT COUNT(*) FROM time_boosts");
+    try (PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) FROM time_boosts");
         ResultSet rs = ps.executeQuery()) {
       if (!rs.next()) {
         throw new AssertionError("expected result row");
@@ -156,31 +152,22 @@ class RelationalTimedBoostRepositoryIdentityTest {
   @Test
   void serviceExpiryCleanupDeletesRealSqlRow() throws SQLException {
     Instant started = Instant.now().minus(Duration.ofHours(2));
-    ActiveBoostData expired = new ActiveBoostData(
-        TARGET,
-        SOURCE_ID,
-        started,
-        Duration.ofMinutes(5),
-        source
-    );
+    ActiveBoostData expired =
+        new ActiveBoostData(TARGET, SOURCE_ID, started, Duration.ofMinutes(5), source);
     repository.addBoost(expired);
 
     // Player target needs Player — use global path via findApplicableBoosts after forcing
     // target as global for this check: re-insert under "global"
     repository.delete(TARGET, SOURCE_ID);
-    ActiveBoostData globalExpired = new ActiveBoostData(
-        "global",
-        SOURCE_ID,
-        started,
-        Duration.ofMinutes(5),
-        source
-    );
+    ActiveBoostData globalExpired =
+        new ActiveBoostData("global", SOURCE_ID, started, Duration.ofMinutes(5), source);
     repository.addBoost(globalExpired);
     assertEquals(1, countRows());
     TimedBoostDataServiceImpl service = new TimedBoostDataServiceImpl(repository);
 
-    List<ActiveBoostData> applicable = service.findApplicableBoosts(
-        new dev.mintychochip.container.boost.TimedBoostDataService.Target.GlobalTarget());
+    List<ActiveBoostData> applicable =
+        service.findApplicableBoosts(
+            new dev.mintychochip.container.boost.TimedBoostDataService.Target.GlobalTarget());
     assertTrue(applicable.isEmpty());
     assertEquals(0, countRows(), "expired cleanup must DELETE real SQL row");
   }
@@ -209,8 +196,7 @@ class RelationalTimedBoostRepositoryIdentityTest {
     }
 
     @Override
-    public void shutdown() {
-    }
+    public void shutdown() {}
 
     @Override
     public boolean isClosed() {

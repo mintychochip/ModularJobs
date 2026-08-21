@@ -5,23 +5,23 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import dev.mintychochip.Job;
+import dev.mintychochip.domain.ProgressionService;
+import dev.mintychochip.domain.model.JobProgressionRecord;
+import dev.mintychochip.service.JobService;
 import dev.mintychochip.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import java.math.BigDecimal;
-import dev.mintychochip.Job;
-import dev.mintychochip.domain.ProgressionService;
-import dev.mintychochip.domain.model.JobProgressionRecord;
-import dev.mintychochip.service.JobService;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * {@code /jobs experience} admin command: sets, adds, or subtracts experience for a player
- * in a job (requiring the {@code modularjobs.admin} permission).
+ * {@code /jobs experience} admin command: sets, adds, or subtracts experience for a player in a job
+ * (requiring the {@code modularjobs.admin} permission).
  */
 public final class ExperienceCommand implements JobsCommand {
 
@@ -44,56 +44,90 @@ public final class ExperienceCommand implements JobsCommand {
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("experience")
         .requires(source -> source.getSender().hasPermission("modularjobs.admin"))
-        .then(Commands.literal("set")
-            .then(Commands.argument("player", ArgumentTypes.player())
-                .then(Commands.argument("job", StringArgumentType.string())
-                    .suggests((context, builder) -> {
-                      jobService.getJobs().stream()
-                          .map(job -> job.key().value())
-                          .forEach(builder::suggest);
-                      return builder.buildFuture();
-                    })
-                    .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0))
-                        .executes(context -> executeSet(
-                            context.getSource(),
-                            context.getArgument("player", PlayerSelectorArgumentResolver.class),
-                            context.getArgument("job", String.class),
-                            context.getArgument("amount", Double.class)))))))
-        .then(Commands.literal("add")
-            .then(Commands.argument("player", ArgumentTypes.player())
-                .then(Commands.argument("job", StringArgumentType.string())
-                    .suggests((context, builder) -> {
-                      jobService.getJobs().stream()
-                          .map(job -> job.key().value())
-                          .forEach(builder::suggest);
-                      return builder.buildFuture();
-                    })
-                    .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0))
-                        .executes(context -> executeAdd(
-                            context.getSource(),
-                            context.getArgument("player", PlayerSelectorArgumentResolver.class),
-                            context.getArgument("job", String.class),
-                            context.getArgument("amount", Double.class)))))))
-        .then(Commands.literal("subtract")
-            .then(Commands.argument("player", ArgumentTypes.player())
-                .then(Commands.argument("job", StringArgumentType.string())
-                    .suggests((context, builder) -> {
-                      jobService.getJobs().stream()
-                          .map(job -> job.key().value())
-                          .forEach(builder::suggest);
-                      return builder.buildFuture();
-                    })
-                    .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0))
-                        .executes(context -> executeSubtract(
-                            context.getSource(),
-                            context.getArgument("player", PlayerSelectorArgumentResolver.class),
-                            context.getArgument("job", String.class),
-                            context.getArgument("amount", Double.class)))))));
+        .then(
+            Commands.literal("set")
+                .then(
+                    Commands.argument("player", ArgumentTypes.player())
+                        .then(
+                            Commands.argument("job", StringArgumentType.string())
+                                .suggests(
+                                    (context, builder) -> {
+                                      jobService.getJobs().stream()
+                                          .map(job -> job.key().value())
+                                          .forEach(builder::suggest);
+                                      return builder.buildFuture();
+                                    })
+                                .then(
+                                    Commands.argument("amount", DoubleArgumentType.doubleArg(0))
+                                        .executes(
+                                            context ->
+                                                executeSet(
+                                                    context.getSource(),
+                                                    context.getArgument(
+                                                        "player",
+                                                        PlayerSelectorArgumentResolver.class),
+                                                    context.getArgument("job", String.class),
+                                                    context.getArgument(
+                                                        "amount", Double.class)))))))
+        .then(
+            Commands.literal("add")
+                .then(
+                    Commands.argument("player", ArgumentTypes.player())
+                        .then(
+                            Commands.argument("job", StringArgumentType.string())
+                                .suggests(
+                                    (context, builder) -> {
+                                      jobService.getJobs().stream()
+                                          .map(job -> job.key().value())
+                                          .forEach(builder::suggest);
+                                      return builder.buildFuture();
+                                    })
+                                .then(
+                                    Commands.argument("amount", DoubleArgumentType.doubleArg(0))
+                                        .executes(
+                                            context ->
+                                                executeAdd(
+                                                    context.getSource(),
+                                                    context.getArgument(
+                                                        "player",
+                                                        PlayerSelectorArgumentResolver.class),
+                                                    context.getArgument("job", String.class),
+                                                    context.getArgument(
+                                                        "amount", Double.class)))))))
+        .then(
+            Commands.literal("subtract")
+                .then(
+                    Commands.argument("player", ArgumentTypes.player())
+                        .then(
+                            Commands.argument("job", StringArgumentType.string())
+                                .suggests(
+                                    (context, builder) -> {
+                                      jobService.getJobs().stream()
+                                          .map(job -> job.key().value())
+                                          .forEach(builder::suggest);
+                                      return builder.buildFuture();
+                                    })
+                                .then(
+                                    Commands.argument("amount", DoubleArgumentType.doubleArg(0))
+                                        .executes(
+                                            context ->
+                                                executeSubtract(
+                                                    context.getSource(),
+                                                    context.getArgument(
+                                                        "player",
+                                                        PlayerSelectorArgumentResolver.class),
+                                                    context.getArgument("job", String.class),
+                                                    context.getArgument(
+                                                        "amount", Double.class)))))));
   }
 
   /** Sets the selected player's experience in the given job to the supplied amount. */
-  private int executeSet(CommandSourceStack source, PlayerSelectorArgumentResolver playerResolver,
-      String jobKeyValue, double amount) throws CommandSyntaxException {
+  private int executeSet(
+      CommandSourceStack source,
+      PlayerSelectorArgumentResolver playerResolver,
+      String jobKeyValue,
+      double amount)
+      throws CommandSyntaxException {
     CommandSender sender = source.getSender();
     Player targetPlayer = playerResolver.resolve(source).getFirst();
 
@@ -107,7 +141,8 @@ public final class ExperienceCommand implements JobsCommand {
     try {
       job = jobService.getJob(jobKey.toString());
     } catch (IllegalArgumentException e) {
-      Messages.send(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
+      Messages.send(
+          sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
       return 0;
     }
 
@@ -115,30 +150,52 @@ public final class ExperienceCommand implements JobsCommand {
     JobProgressionRecord currentRecord = progressionService.load(playerId, jobKey.toString());
 
     if (currentRecord == null) {
-      Messages.send(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
+      Messages.send(
+          sender,
+          "<secondary>"
+              + targetPlayer.getName()
+              + "</secondary> <error>is not in job</error> <accent>"
+              + job.getPlainName()
+              + "</accent>");
       return 0;
     }
 
     BigDecimal newExperience = BigDecimal.valueOf(amount);
-    JobProgressionRecord newRecord = new JobProgressionRecord(
-        playerId,
-        currentRecord.jobRecord(),
-        newExperience
-    );
+    JobProgressionRecord newRecord =
+        new JobProgressionRecord(playerId, currentRecord.jobRecord(), newExperience);
 
     if (progressionService.save(newRecord)) {
-      Messages.send(sender, "<primary>✓ Set</primary> <secondary>" + targetPlayer.getName() + "</secondary><primary>'s experience in</primary> <accent>" + job.getPlainName() + "</accent> <primary>to</primary> <secondary>" + String.format("%.2f", amount) + "</secondary>");
-      Messages.send(targetPlayer, "<primary>✓ Your experience in</primary> <accent>" + job.getPlainName() + "</accent> <primary>has been set to</primary> <secondary>" + String.format("%.2f", amount) + "</secondary>");
+      Messages.send(
+          sender,
+          "<primary>✓ Set</primary> <secondary>"
+              + targetPlayer.getName()
+              + "</secondary><primary>'s experience in</primary> <accent>"
+              + job.getPlainName()
+              + "</accent> <primary>to</primary> <secondary>"
+              + String.format("%.2f", amount)
+              + "</secondary>");
+      Messages.send(
+          targetPlayer,
+          "<primary>✓ Your experience in</primary> <accent>"
+              + job.getPlainName()
+              + "</accent> <primary>has been set to</primary> <secondary>"
+              + String.format("%.2f", amount)
+              + "</secondary>");
       return Command.SINGLE_SUCCESS;
     } else {
-      Messages.send(sender, "<error>Failed to update progression. Please check server logs.</error>");
+      Messages.send(
+          sender, "<error>Failed to update progression. Please check server logs.</error>");
       return 0;
     }
   }
 
   /** Adds the supplied experience amount to the selected player's job progression. */
-  private int executeAdd(CommandSourceStack source, PlayerSelectorArgumentResolver playerResolver,
-      String jobKeyValue, double amount) throws CommandSyntaxException {
+  private int executeAdd(
+      CommandSourceStack source,
+      PlayerSelectorArgumentResolver playerResolver,
+      String jobKeyValue,
+      double amount)
+      throws CommandSyntaxException {
     CommandSender sender = source.getSender();
     Player targetPlayer = playerResolver.resolve(source).getFirst();
 
@@ -152,7 +209,8 @@ public final class ExperienceCommand implements JobsCommand {
     try {
       job = jobService.getJob(jobKey.toString());
     } catch (IllegalArgumentException e) {
-      Messages.send(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
+      Messages.send(
+          sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
       return 0;
     }
 
@@ -160,30 +218,59 @@ public final class ExperienceCommand implements JobsCommand {
     JobProgressionRecord currentRecord = progressionService.load(playerId, jobKey.toString());
 
     if (currentRecord == null) {
-      Messages.send(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
+      Messages.send(
+          sender,
+          "<secondary>"
+              + targetPlayer.getName()
+              + "</secondary> <error>is not in job</error> <accent>"
+              + job.getPlainName()
+              + "</accent>");
       return 0;
     }
 
     BigDecimal newExperience = currentRecord.experience().add(BigDecimal.valueOf(amount));
-    JobProgressionRecord newRecord = new JobProgressionRecord(
-        playerId,
-        currentRecord.jobRecord(),
-        newExperience
-    );
+    JobProgressionRecord newRecord =
+        new JobProgressionRecord(playerId, currentRecord.jobRecord(), newExperience);
 
     if (progressionService.save(newRecord)) {
-      Messages.send(sender, "<primary>✓ Added</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>to</primary> <accent>" + targetPlayer.getName() + "</accent> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
-      Messages.send(targetPlayer, "<primary>✓ You gained</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
+      Messages.send(
+          sender,
+          "<primary>✓ Added</primary> <secondary>"
+              + String.format("%.2f", amount)
+              + " experience</secondary> <primary>to</primary> <accent>"
+              + targetPlayer.getName()
+              + "</accent> <primary>in</primary> <accent>"
+              + job.getPlainName()
+              + "</accent> <primary>(total:</primary> <secondary>"
+              + String.format("%.2f", newExperience.doubleValue())
+              + "</secondary><primary>)</primary>");
+      Messages.send(
+          targetPlayer,
+          "<primary>✓ You gained</primary> <secondary>"
+              + String.format("%.2f", amount)
+              + " experience</secondary> <primary>in</primary> <accent>"
+              + job.getPlainName()
+              + "</accent> <primary>(total:</primary> <secondary>"
+              + String.format("%.2f", newExperience.doubleValue())
+              + "</secondary><primary>)</primary>");
       return Command.SINGLE_SUCCESS;
     } else {
-      Messages.send(sender, "<error>Failed to update progression. Please check server logs.</error>");
+      Messages.send(
+          sender, "<error>Failed to update progression. Please check server logs.</error>");
       return 0;
     }
   }
 
-  /** Subtracts the supplied experience amount from the selected player's job progression (floor at zero). */
-  private int executeSubtract(CommandSourceStack source, PlayerSelectorArgumentResolver playerResolver,
-      String jobKeyValue, double amount) throws CommandSyntaxException {
+  /**
+   * Subtracts the supplied experience amount from the selected player's job progression (floor at
+   * zero).
+   */
+  private int executeSubtract(
+      CommandSourceStack source,
+      PlayerSelectorArgumentResolver playerResolver,
+      String jobKeyValue,
+      double amount)
+      throws CommandSyntaxException {
     CommandSender sender = source.getSender();
     Player targetPlayer = playerResolver.resolve(source).getFirst();
 
@@ -197,7 +284,8 @@ public final class ExperienceCommand implements JobsCommand {
     try {
       job = jobService.getJob(jobKey.toString());
     } catch (IllegalArgumentException e) {
-      Messages.send(sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
+      Messages.send(
+          sender, "<error>Invalid job:</error> <secondary>" + jobKeyValue + "</secondary>");
       return 0;
     }
 
@@ -205,7 +293,13 @@ public final class ExperienceCommand implements JobsCommand {
     JobProgressionRecord currentRecord = progressionService.load(playerId, jobKey.toString());
 
     if (currentRecord == null) {
-      Messages.send(sender, "<secondary>" + targetPlayer.getName() + "</secondary> <error>is not in job</error> <accent>" + job.getPlainName() + "</accent>");
+      Messages.send(
+          sender,
+          "<secondary>"
+              + targetPlayer.getName()
+              + "</secondary> <error>is not in job</error> <accent>"
+              + job.getPlainName()
+              + "</accent>");
       return 0;
     }
 
@@ -214,18 +308,34 @@ public final class ExperienceCommand implements JobsCommand {
       newExperience = BigDecimal.ZERO;
     }
 
-    JobProgressionRecord newRecord = new JobProgressionRecord(
-        playerId,
-        currentRecord.jobRecord(),
-        newExperience
-    );
+    JobProgressionRecord newRecord =
+        new JobProgressionRecord(playerId, currentRecord.jobRecord(), newExperience);
 
     if (progressionService.save(newRecord)) {
-      Messages.send(sender, "<primary>✗ Subtracted</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>from</primary> <accent>" + targetPlayer.getName() + "</accent> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
-      Messages.send(targetPlayer, "<primary>✗ You lost</primary> <secondary>" + String.format("%.2f", amount) + " experience</secondary> <primary>in</primary> <accent>" + job.getPlainName() + "</accent> <primary>(total:</primary> <secondary>" + String.format("%.2f", newExperience.doubleValue()) + "</secondary><primary>)</primary>");
+      Messages.send(
+          sender,
+          "<primary>✗ Subtracted</primary> <secondary>"
+              + String.format("%.2f", amount)
+              + " experience</secondary> <primary>from</primary> <accent>"
+              + targetPlayer.getName()
+              + "</accent> <primary>in</primary> <accent>"
+              + job.getPlainName()
+              + "</accent> <primary>(total:</primary> <secondary>"
+              + String.format("%.2f", newExperience.doubleValue())
+              + "</secondary><primary>)</primary>");
+      Messages.send(
+          targetPlayer,
+          "<primary>✗ You lost</primary> <secondary>"
+              + String.format("%.2f", amount)
+              + " experience</secondary> <primary>in</primary> <accent>"
+              + job.getPlainName()
+              + "</accent> <primary>(total:</primary> <secondary>"
+              + String.format("%.2f", newExperience.doubleValue())
+              + "</secondary><primary>)</primary>");
       return Command.SINGLE_SUCCESS;
     } else {
-      Messages.send(sender, "<error>Failed to update progression. Please check server logs.</error>");
+      Messages.send(
+          sender, "<error>Failed to update progression. Please check server logs.</error>");
       return 0;
     }
   }

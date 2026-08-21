@@ -1,8 +1,6 @@
 package dev.mintychochip.profession;
 
-/**
- * Built-in profession groups.
- */
+/** Built-in profession groups. */
 public enum ProfessionCategory {
   GATHERING,
   PROCESSING,

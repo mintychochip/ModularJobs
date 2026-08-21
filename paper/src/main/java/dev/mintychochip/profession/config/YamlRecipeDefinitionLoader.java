@@ -1,5 +1,8 @@
 package dev.mintychochip.profession.config;
 
+import dev.mintychochip.profession.ProfessionCatalog;
+import dev.mintychochip.profession.RecipeDefinition;
+import dev.mintychochip.service.RecipeService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,9 +11,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import dev.mintychochip.profession.ProfessionCatalog;
-import dev.mintychochip.profession.RecipeDefinition;
-import dev.mintychochip.service.RecipeService;
 import net.kyori.adventure.key.InvalidKeyException;
 import net.kyori.adventure.key.Key;
 import org.bukkit.configuration.ConfigurationSection;
@@ -45,9 +45,7 @@ public final class YamlRecipeDefinitionLoader {
     return loadFromDataFolder(plugin.getDataFolder(), recipeService, plugin.getLogger());
   }
 
-  /**
-   * Loads {@code recipes.yml} from an on-disk plugin data folder (post {@code saveResource}).
-   */
+  /** Loads {@code recipes.yml} from an on-disk plugin data folder (post {@code saveResource}). */
   static int loadFromDataFolder(
       @NotNull File dataFolder, @NotNull RecipeService recipeService, @NotNull Logger logger) {
     File configFile = new File(dataFolder, CONFIG_FILE);
@@ -66,7 +64,8 @@ public final class YamlRecipeDefinitionLoader {
       @NotNull Logger logger) {
     ConfigurationSection recipes = config.getConfigurationSection(RECIPES_SECTION);
     if (recipes == null || recipes.getKeys(false).isEmpty()) {
-      logger.info("No recipe definitions in " + CONFIG_FILE + "; craft gates and depreciation stay inert");
+      logger.info(
+          "No recipe definitions in " + CONFIG_FILE + "; craft gates and depreciation stay inert");
       return 0;
     }
 
@@ -114,10 +113,7 @@ public final class YamlRecipeDefinitionLoader {
             .orElseThrow(
                 () ->
                     new IllegalArgumentException(
-                        "unknown profession for recipe "
-                            + recipeKey
-                            + ": "
-                            + professionRaw))
+                        "unknown profession for recipe " + recipeKey + ": " + professionRaw))
             .id();
 
     int requiredLevel = entry.getInt("required-level", entry.getInt("level", 0));

@@ -1,13 +1,13 @@
 package dev.mintychochip.service;
 
-import dev.mintychochip.databag.paper.PersistentBags;
-import dev.mintychochip.databag.DataBag;
-import dev.mintychochip.databag.FormattedBytes;
-import dev.mintychochip.databag.UnknownBagFormatException;
-import java.util.Optional;
 import dev.mintychochip.boost.BoostDataCodec;
 import dev.mintychochip.boost.BoostPayloadHandler;
 import dev.mintychochip.container.boost.BoostData.SerializableBoostData;
+import dev.mintychochip.databag.DataBag;
+import dev.mintychochip.databag.FormattedBytes;
+import dev.mintychochip.databag.UnknownBagFormatException;
+import dev.mintychochip.databag.paper.PersistentBags;
+import java.util.Optional;
 import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -16,15 +16,14 @@ import org.bukkit.persistence.PersistentDataType;
 /**
  * Stores and reads boost data on {@link ItemStack}s via the Bukkit persistent data container.
  *
- * <p>The PDC tag is a Kryo {@link DataBag} {@code BYTE_ARRAY}. Boost JSON lives in the bag
- * as formatted bytes ({@link #BOOST_PAYLOAD_FORMAT}) so later encodings can migrate.
- * Condition graphs stay {@link dev.mintychochip.databag.ConditionSerializer} bytes, not Kryo
- * condition classes.
+ * <p>The PDC tag is a Kryo {@link DataBag} {@code BYTE_ARRAY}. Boost JSON lives in the bag as
+ * formatted bytes ({@link #BOOST_PAYLOAD_FORMAT}) so later encodings can migrate. Condition graphs
+ * stay {@link dev.mintychochip.databag.ConditionSerializer} bytes, not Kryo condition classes.
  */
 public final class ItemBoostDataService {
 
-  static final NamespacedKey ITEM_BOOST_DATA_KEY = NamespacedKey.fromString(
-      "modular_jobs:item_boost_data");
+  static final NamespacedKey ITEM_BOOST_DATA_KEY =
+      NamespacedKey.fromString("modular_jobs:item_boost_data");
 
   /** Bag key for the {@link SerializableBoostData} JSON payload. */
   public static final Key BOOST_PAYLOAD_KEY = BoostPayloadHandler.KEY;
@@ -34,6 +33,7 @@ public final class ItemBoostDataService {
 
   private final BoostDataCodec codec;
 
+  /** Item boost data service. */
   public ItemBoostDataService(BoostDataCodec codec) {
     this.codec = codec;
   }
@@ -88,7 +88,8 @@ public final class ItemBoostDataService {
   private Optional<SerializableBoostData> readRawJson(byte[] blob) {
     try {
       return Optional.of(codec.read(blob));
-    } catch (IllegalArgumentException | IllegalStateException
+    } catch (IllegalArgumentException
+        | IllegalStateException
         | java.time.format.DateTimeParseException ignored) {
       return Optional.empty();
     }

@@ -11,7 +11,8 @@ public class RecipeLoaderTestPlugin extends JavaPlugin {
 
   @Override
   public InputStream getResource(String filename) {
-    InputStream fromClasspath = RecipeLoaderTestPlugin.class.getClassLoader().getResourceAsStream(filename);
+    InputStream fromClasspath =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(filename);
     if (fromClasspath != null) {
       return fromClasspath;
     }

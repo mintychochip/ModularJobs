@@ -3,13 +3,9 @@ package dev.mintychochip.payment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import dev.mintychochip.boost.AdditiveBoostImpl;
+import dev.mintychochip.boost.BoostDataCodec;
+import dev.mintychochip.boost.BoostFactoryImpl;
 import dev.mintychochip.boost.MultiplicativeBoostImpl;
 import dev.mintychochip.boost.RuledBoostSourceImpl;
 import dev.mintychochip.container.Boost;
@@ -20,25 +16,29 @@ import dev.mintychochip.container.boost.Condition;
 import dev.mintychochip.container.boost.RuledBoostSource.Rule;
 import dev.mintychochip.container.boost.TimedBoostDataService;
 import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
-import java.sql.Connection;
-import java.sql.SQLException;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
 import dev.mintychochip.registry.SimpleRegistryImpl;
 import dev.mintychochip.repository.ConnectionSource;
 import dev.mintychochip.repository.DatabaseType;
-import dev.mintychochip.boost.BoostDataCodec;
-import dev.mintychochip.boost.BoostFactoryImpl;
-import dev.mintychochip.databag.gson.GsonConditionSerializer;
 import dev.mintychochip.service.ItemBoostDataService;
 import dev.mintychochip.upgrade.PlayerUpgradeRepository;
 import dev.mintychochip.upgrade.SkillTree;
 import dev.mintychochip.upgrade.UpgradeBoostDataService;
 import dev.mintychochip.upgrade.UpgradeBoostDataServiceImpl;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link BoostEngine#evaluateSources} + {@link BoostEngine#applyBoosts}
- * with controlled item/timed/upgrade sources (fakes for deps only).
+ * Drives shipped {@link BoostEngine#evaluateSources} + {@link BoostEngine#applyBoosts} with
+ * controlled item/timed/upgrade sources (fakes for deps only).
  */
 class BoostEngineAggregationTest {
 
@@ -46,40 +46,31 @@ class BoostEngineAggregationTest {
 
   @Test
   void aggregatesItemTimedAndUpgradeSources() {
-    BoostSource itemSource = ruled(
-        Key.key("modularjobs", "item_src"),
-        new MultiplicativeBoostImpl(new BigDecimal("2.0"))
-    );
-    BoostSource timedSource = ruled(
-        Key.key("modularjobs", "timed_src"),
-        new MultiplicativeBoostImpl(new BigDecimal("1.5"))
-    );
-    BoostSource upgradeSource = ruled(
-        Key.key("modularjobs", "upgrade_src"),
-        new AdditiveBoostImpl(new BigDecimal("10"))
-    );
+    BoostSource itemSource =
+        ruled(
+            Key.key("modularjobs", "item_src"), new MultiplicativeBoostImpl(new BigDecimal("2.0")));
+    BoostSource timedSource =
+        ruled(
+            Key.key("modularjobs", "timed_src"),
+            new MultiplicativeBoostImpl(new BigDecimal("1.5")));
+    BoostSource upgradeSource =
+        ruled(Key.key("modularjobs", "upgrade_src"), new AdditiveBoostImpl(new BigDecimal("10")));
 
-    BoostEngine engine = new BoostEngine(
-        unusedItemService(),
-        unusedTimedService(),
-        unusedUpgradeService()
-    );
+    BoostEngine engine =
+        new BoostEngine(unusedItemService(), unusedTimedService(), unusedUpgradeService());
 
     BoostContext context = new BoostContext(null, null, null, null, null);
-    ActiveBoostData timed = new ActiveBoostData(
-        UUID.randomUUID().toString(),
-        timedSource.key().toString(),
-        Instant.now(),
-        Duration.ofHours(1),
-        timedSource
-    );
+    ActiveBoostData timed =
+        new ActiveBoostData(
+            UUID.randomUUID().toString(),
+            timedSource.key().toString(),
+            Instant.now(),
+            Duration.ofHours(1),
+            timedSource);
 
-    Map<Key, Boost> boosts = engine.evaluateSources(
-        context,
-        List.of(itemSource),
-        List.of(timed),
-        List.of(upgradeSource)
-    );
+    Map<Key, Boost> boosts =
+        engine.evaluateSources(
+            context, List.of(itemSource), List.of(timed), List.of(upgradeSource));
 
     assertEquals(3, boosts.size());
     assertTrue(boosts.containsKey(itemSource.key()));
@@ -87,10 +78,13 @@ class BoostEngineAggregationTest {
     assertTrue(boosts.containsKey(upgradeSource.key()));
 
     BigDecimal base = new BigDecimal("100");
-    BigDecimal deterministic = applyInKeyOrder(base, boosts, List.of(
-        itemSource.key(), timedSource.key(), upgradeSource.key()));
+    BigDecimal deterministic =
+        applyInKeyOrder(
+            base, boosts, List.of(itemSource.key(), timedSource.key(), upgradeSource.key()));
     // 100 * 2 * 1.5 + 10 = 310
-    assertEquals(0, new BigDecimal("310.0").compareTo(deterministic),
+    assertEquals(
+        0,
+        new BigDecimal("310.0").compareTo(deterministic),
         "100 * 2 * 1.5 + 10 = 310, got " + deterministic);
 
     BigDecimal applied = BoostEngine.applyBoosts(base, boosts);
@@ -105,10 +99,10 @@ class BoostEngineAggregationTest {
   void multiplicativeAndAdditiveMathOnRealBoostImpls() {
     Boost multi = new MultiplicativeBoostImpl(new BigDecimal("1.25"));
     Boost add = new AdditiveBoostImpl(new BigDecimal("25"));
-    Map<Key, Boost> boosts = Map.of(
-        Key.key("a", "multi"), multi,
-        Key.key("a", "add"), add
-    );
+    Map<Key, Boost> boosts =
+        Map.of(
+            Key.key("a", "multi"), multi,
+            Key.key("a", "add"), add);
 
     BigDecimal multiFirst = add.boost(multi.boost(new BigDecimal("100")));
     BigDecimal addFirst = multi.boost(add.boost(new BigDecimal("100")));
@@ -118,8 +112,7 @@ class BoostEngineAggregationTest {
     BigDecimal applied = BoostEngine.applyBoosts(new BigDecimal("100"), boosts);
     assertTrue(
         applied.compareTo(multiFirst) == 0 || applied.compareTo(addFirst) == 0,
-        "applyBoosts must apply both boosts, got " + applied
-    );
+        "applyBoosts must apply both boosts, got " + applied);
   }
 
   private static BigDecimal applyInKeyOrder(
@@ -132,11 +125,7 @@ class BoostEngineAggregationTest {
   }
 
   private static BoostSource ruled(Key key, Boost boost) {
-    return new RuledBoostSourceImpl(
-        List.of(new Rule(ALWAYS, 1, boost)),
-        key,
-        "test"
-    );
+    return new RuledBoostSourceImpl(List.of(new Rule(ALWAYS, 1, boost)), key, "test");
   }
 
   private static ItemBoostDataService unusedItemService() {
@@ -158,9 +147,10 @@ class BoostEngineAggregationTest {
       }
 
       @Override
-      public <T extends dev.mintychochip.container.boost.BoostData.TimedBoostData
-          & SerializableBoostData> void addData(T data, Target target) {
-      }
+      public <
+              T extends
+                  dev.mintychochip.container.boost.BoostData.TimedBoostData & SerializableBoostData>
+          void addData(T data, Target target) {}
 
       @Override
       public boolean removeBoost(Target target, String sourceIdentifier) {
@@ -180,8 +170,7 @@ class BoostEngineAggregationTest {
   private static ConnectionSource unusedConnectionSource() {
     return new ConnectionSource() {
       @Override
-      public void shutdown() {
-      }
+      public void shutdown() {}
 
       @Override
       public DatabaseType getType() {

@@ -1,7 +1,7 @@
 package dev.mintychochip.repository;
 
-import java.util.List;
 import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -18,12 +18,12 @@ public interface TimedBoostRepository {
   @NotNull
   List<ActiveBoostData> findAllBoosts(String targetIdentifier);
 
-  /** Returns the active boost for the given target and source, or {@code null} if absent. */
+  /** Find boost. */
   ActiveBoostData findBoost(String targetIdentifier, String sourceIdentifier);
 
-  /** Deletes the active boost for the given target and source. */
+  /** Delete. */
   void delete(String targetIdentifier, String sourceIdentifier);
 
-  /** Persists a new active boost. */
+  /** Add boost. */
   void addBoost(ActiveBoostData boost);
 }

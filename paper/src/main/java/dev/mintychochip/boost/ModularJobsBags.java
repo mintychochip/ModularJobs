@@ -6,9 +6,9 @@ import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * ModularJobs keys and handlers on {@link DataBag}. Registers the boost-payload
- * codec; snapshot extras (job key / level) are filled at evaluation so other
- * plugins can read the same bag without a ModularJobs type.
+ * ModularJobs keys and handlers on {@link DataBag}. Registers the boost-payload codec; snapshot
+ * extras (job key / level) are filled at evaluation so other plugins can read the same bag without
+ * a ModularJobs type.
  */
 public final class ModularJobsBags {
 
@@ -22,6 +22,7 @@ public final class ModularJobsBags {
     DataHandlers.register(BoostPayloadHandler.INSTANCE);
   }
 
+  /** Extras. */
   public static DataBag extras(@Nullable String jobKey, int jobLevel) {
     DataBag bag = DataBag.create();
     if (jobKey == null || jobKey.isBlank()) {

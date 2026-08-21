@@ -3,12 +3,6 @@ package dev.mintychochip.upgrade.config;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import dev.mintychochip.container.boost.factories.BoostFactory;
 import dev.mintychochip.container.boost.factories.ConditionFactory;
 import dev.mintychochip.upgrade.NodeEffect;
@@ -20,12 +14,18 @@ import dev.mintychochip.upgrade.SkillNode;
 import dev.mintychochip.upgrade.SkillNode.LevelEffectMode;
 import dev.mintychochip.upgrade.SkillNodeKind;
 import dev.mintychochip.upgrade.SkillTree;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Parses version-2 skill tree JSON into SkillTree instances. Validates node
- * keys, requirement/effect vocabulary, and prerequisite/exclude references.
+ * Parses version-2 skill tree JSON into SkillTree instances. Validates node keys,
+ * requirement/effect vocabulary, and prerequisite/exclude references.
  */
 public final class SkillTreeConfigParser {
 
@@ -34,11 +34,13 @@ public final class SkillTreeConfigParser {
   private final SkillTreeRequirementParser requirementParser;
   private final SkillTreeEffectParser effectParser;
 
+  /** Skill tree config parser. */
   public SkillTreeConfigParser(BoostFactory boostFactory, ConditionFactory conditionFactory) {
     this.requirementParser = new SkillTreeRequirementParser();
     this.effectParser = new SkillTreeEffectParser(boostFactory, conditionFactory);
   }
 
+  /** API member. */
   @NotNull
   public SkillTree parse(@NotNull JsonObject root) {
     if (!root.has("version") || root.get("version").getAsInt() != VERSION) {
@@ -50,15 +52,18 @@ public final class SkillTreeConfigParser {
 
     final String jobKey = root.get("job").getAsString();
     final String rootNodeKey = root.get("root").getAsString();
-    final int pointsPerLevel = root.has("skill_points_per_level")
-        ? root.get("skill_points_per_level").getAsInt() : 1;
-    final String description = root.has("description") && !root.get("description").isJsonNull()
-        ? root.get("description").getAsString() : null;
+    final int pointsPerLevel =
+        root.has("skill_points_per_level") ? root.get("skill_points_per_level").getAsInt() : 1;
+    final String description =
+        root.has("description") && !root.get("description").isJsonNull()
+            ? root.get("description").getAsString()
+            : null;
 
     JsonObject nodesObj = root.getAsJsonObject("nodes");
     Map<String, SkillNode> nodes = new HashMap<>();
     for (Map.Entry<String, JsonElement> entry : nodesObj.entrySet()) {
-      nodes.put(entry.getKey(), parseNode(jobKey, entry.getKey(), entry.getValue().getAsJsonObject()));
+      nodes.put(
+          entry.getKey(), parseNode(jobKey, entry.getKey(), entry.getValue().getAsJsonObject()));
     }
 
     validateReferences(jobKey, rootNodeKey, nodes);
@@ -66,14 +71,20 @@ public final class SkillTreeConfigParser {
 
     return new SkillTree(
         Key.key("modularjobs", "upgrade_tree/" + jobKey),
-        jobKey, description, pointsPerLevel, rootNodeKey, nodes);
+        jobKey,
+        description,
+        pointsPerLevel,
+        rootNodeKey,
+        nodes);
   }
 
   private SkillNode parseNode(String jobKey, String nodeKey, JsonObject obj) {
     final SkillNodeKind kind = SkillNodeKind.valueOf(obj.get("kind").getAsString().toUpperCase());
     final String name = obj.get("name").getAsString();
-    final String description = obj.has("description") && !obj.get("description").isJsonNull()
-        ? obj.get("description").getAsString() : null;
+    final String description =
+        obj.has("description") && !obj.get("description").isJsonNull()
+            ? obj.get("description").getAsString()
+            : null;
 
     final Set<String> prerequisites = parseStringSet(obj, "prerequisites");
     final Set<String> excludes = parseStringSet(obj, "excludes");
@@ -110,7 +121,8 @@ public final class SkillTreeConfigParser {
     }
 
     LevelEffectMode mode = LevelEffectMode.REPLACE;
-    if (obj.has("level_effect_mode") && "cumulative".equalsIgnoreCase(obj.get("level_effect_mode").getAsString())) {
+    if (obj.has("level_effect_mode")
+        && "cumulative".equalsIgnoreCase(obj.get("level_effect_mode").getAsString())) {
       mode = LevelEffectMode.CUMULATIVE;
     }
 
@@ -120,12 +132,23 @@ public final class SkillTreeConfigParser {
         JsonObject stateObj = stateEl.getAsJsonObject();
         if (stateObj.has("set")) {
           JsonObject setObj = stateObj.getAsJsonObject("set");
-          setObj.entrySet().forEach(e -> stateWrites.add(new NodeStateWrite(
-              NodeStateWrite.Op.SET, parseKey(e.getKey()), e.getValue().getAsString())));
+          setObj
+              .entrySet()
+              .forEach(
+                  e ->
+                      stateWrites.add(
+                          new NodeStateWrite(
+                              NodeStateWrite.Op.SET,
+                              parseKey(e.getKey()),
+                              e.getValue().getAsString())));
         } else if (stateObj.has("remove")) {
           JsonObject removeObj = stateObj.getAsJsonObject("remove");
-          removeObj.entrySet().forEach(e -> stateWrites.add(new NodeStateWrite(
-              NodeStateWrite.Op.REMOVE, parseKey(e.getKey()), "")));
+          removeObj
+              .entrySet()
+              .forEach(
+                  e ->
+                      stateWrites.add(
+                          new NodeStateWrite(NodeStateWrite.Op.REMOVE, parseKey(e.getKey()), "")));
         }
       }
     }
@@ -137,9 +160,10 @@ public final class SkillTreeConfigParser {
     if (obj.has("icon") && !obj.get("icon").isJsonNull()) {
       String raw = obj.get("icon").getAsString().trim();
       if (!raw.isEmpty()) {
-        icon = raw.contains(":")
-            ? raw.substring(raw.indexOf(':') + 1).toUpperCase()
-            : raw.toUpperCase();
+        icon =
+            raw.contains(":")
+                ? raw.substring(raw.indexOf(':') + 1).toUpperCase()
+                : raw.toUpperCase();
       }
     }
 
@@ -150,24 +174,36 @@ public final class SkillTreeConfigParser {
     }
 
     return new SkillNode(
-        Key.key(jobKey, nodeKey), name, description,
-        icon, icon, null, null,
-        kind, cost,
+        Key.key(jobKey, nodeKey),
+        name,
+        description,
+        icon,
+        icon,
+        null,
+        null,
+        kind,
+        cost,
         kind == SkillNodeKind.SKILL ? levels.size() : 1,
-        mode, levels, requirements, prerequisites, excludes, effects,
-        position, List.of(), stateWrites);
+        mode,
+        levels,
+        requirements,
+        prerequisites,
+        excludes,
+        effects,
+        position,
+        List.of(),
+        stateWrites);
   }
 
   private void validateEffect(SkillNodeKind kind, String nodeKey, NodeEffect effect) {
     if (kind != SkillNodeKind.MAJOR && effect instanceof NodeEffect.StateSetEffect) {
-      throw new IllegalArgumentException("Only major nodes may define state-setting effects: " + nodeKey);
+      throw new IllegalArgumentException(
+          "Only major nodes may define state-setting effects: " + nodeKey);
     }
   }
 
   private void validateStateWriteConflicts(Map<String, SkillNode> nodes) {
-    List<SkillNode> majors = nodes.values().stream()
-        .filter(SkillNode::isMajor)
-        .toList();
+    List<SkillNode> majors = nodes.values().stream().filter(SkillNode::isMajor).toList();
     for (int i = 0; i < majors.size(); i++) {
       SkillNode left = majors.get(i);
       for (int j = i + 1; j < majors.size(); j++) {
@@ -194,18 +230,21 @@ public final class SkillTreeConfigParser {
 
   private void validateReferences(String jobKey, String rootNodeKey, Map<String, SkillNode> nodes) {
     if (!nodes.containsKey(rootNodeKey)) {
-      throw new IllegalArgumentException("Root node '" + rootNodeKey + "' not found in tree " + jobKey);
+      throw new IllegalArgumentException(
+          "Root node '" + rootNodeKey + "' not found in tree " + jobKey);
     }
     for (SkillNode node : nodes.values()) {
       String nodeKey = node.key().value();
       for (String prereq : node.prerequisites()) {
         if (!nodes.containsKey(prereq)) {
-          throw new IllegalArgumentException("Node '" + nodeKey + "' has unknown prerequisite '" + prereq + "'");
+          throw new IllegalArgumentException(
+              "Node '" + nodeKey + "' has unknown prerequisite '" + prereq + "'");
         }
       }
       for (String excluded : node.excludes()) {
         if (!nodes.containsKey(excluded)) {
-          throw new IllegalArgumentException("Node '" + nodeKey + "' has unknown exclude '" + excluded + "'");
+          throw new IllegalArgumentException(
+              "Node '" + nodeKey + "' has unknown exclude '" + excluded + "'");
         }
       }
     }
@@ -230,6 +269,7 @@ public final class SkillTreeConfigParser {
     if (dot > 0) {
       return Key.key(raw.substring(0, dot), raw.substring(dot + 1));
     }
-    throw new IllegalArgumentException("Namespaced key must use namespace.key or namespace:key: " + raw);
+    throw new IllegalArgumentException(
+        "Namespaced key must use namespace.key or namespace:key: " + raw);
   }
 }

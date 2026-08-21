@@ -7,22 +7,21 @@ import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents a connector node in a Wynncraft-style skill tree.
- * Connector nodes are visual path segments that connect ability nodes.
- * They have different visual states for locked and unlocked paths.
+ * Represents a connector node in a Wynncraft-style skill tree. Connector nodes are visual path
+ * segments that connect ability nodes. They have different visual states for locked and unlocked
+ * paths.
  *
- * @deprecated Connector nodes are deprecated in favor of {@code path_from_parent} on ability nodes.
- *             Use the {@code path_from_parent} field in {@code AbilityMeta} to define visual paths.
- *             This class will be removed in a future version.
- *
- * @param key            unique identifier (e.g., "miner:connector_basics_to_eff1")
- * @param name           display name (typically "Connector" or similar)
- * @param icon           locked state icon material name
- * @param unlockedIcon   unlocked state icon material name
- * @param links          node IDs that this connector connects (start and end)
- * @param position       position for UI rendering (x, y)
- * @param lockedCustomModelData   custom model data for locked state (0 if unused)
+ * @param key unique identifier (e.g., "miner:connector_basics_to_eff1")
+ * @param name display name (typically "Connector" or similar)
+ * @param icon locked state icon material name
+ * @param unlockedIcon unlocked state icon material name
+ * @param links node IDs that this connector connects (start and end)
+ * @param position position for UI rendering (x, y)
+ * @param lockedCustomModelData custom model data for locked state (0 if unused)
  * @param unlockedCustomModelData custom model data for unlocked state (0 if unused)
+ * @deprecated Connector nodes are deprecated in favor of {@code path_from_parent} on ability nodes.
+ *     Use the {@code path_from_parent} field in {@code AbilityMeta} to define visual paths. This
+ *     class will be removed in a future version.
  */
 @Deprecated(since = "1.0", forRemoval = true)
 public record ConnectorNode(
@@ -33,8 +32,8 @@ public record ConnectorNode(
     @NotNull List<String> links,
     @NotNull Position position,
     int lockedCustomModelData,
-    int unlockedCustomModelData
-) implements Keyed {
+    int unlockedCustomModelData)
+    implements Keyed {
 
   /**
    * Check if this connector connects two specific nodes.
@@ -58,8 +57,8 @@ public record ConnectorNode(
   }
 
   /**
-   * Check if connector is unlocked given a set of unlocked node keys.
-   * A connector is unlocked when BOTH linked nodes are unlocked.
+   * Check if connector is unlocked given a set of unlocked node keys. A connector is unlocked when
+   * BOTH linked nodes are unlocked.
    *
    * @param unlockedNodes set of currently unlocked node keys
    * @return true if connector should show as unlocked

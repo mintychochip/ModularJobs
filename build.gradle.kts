@@ -11,6 +11,7 @@ import org.gradle.api.publish.maven.MavenPublication
 plugins {
     alias(libs.plugins.errorprone) apply false
     alias(libs.plugins.spotbugs) apply false
+    alias(libs.plugins.spotless) apply false
 }
 
 group = "org.aincraft"
@@ -33,6 +34,7 @@ subprojects {
     apply(plugin = "checkstyle")
     apply(plugin = "pmd")
     apply(plugin = "com.github.spotbugs")
+    apply(plugin = "com.diffplug.spotless")
     apply(plugin = "net.ltgt.errorprone")
 
     val moduleName = name
@@ -103,13 +105,6 @@ subprojects {
 
     }
 
-    // Quality tools run on `check` and always write reports.
-    // Default: report-only (pre-existing findings). Enforce with -Pquality.fail=true
-    val qualityFail = providers.gradleProperty("quality.fail")
-        .map(String::toBoolean)
-        .orElse(false)
-    val qualityIgnoreFailures = qualityFail.map { !it }
-
     val qualityConfig = rootProject.layout.projectDirectory.dir("config")
 
     dependencies {
@@ -123,13 +118,13 @@ subprojects {
         }
     }
 
-    // --- Checkstyle ---
-    // configDirectory supplies ${config_loc} for SuppressionFilter in checkstyle.xml
+    // --- Checkstyle (Google Checks, fail-closed) ---
     configure<CheckstyleExtension> {
         toolVersion = rootProject.libs.versions.checkstyle.get()
-        configDirectory.set(qualityConfig.dir("checkstyle"))
-        configFile = qualityConfig.file("checkstyle/checkstyle.xml").asFile
-        isIgnoreFailures = qualityIgnoreFailures.get()
+        config = resources.text.fromUri(
+            "https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-13.11.0/src/main/resources/google_checks.xml"
+        )
+        isIgnoreFailures = false
         maxWarnings = 0
         isShowViolations = true
     }
@@ -146,7 +141,7 @@ subprojects {
         isConsoleOutput = true
         ruleSetFiles = files(qualityConfig.file("pmd/ruleset.xml"))
         ruleSets = emptyList() // use only our ruleset
-        isIgnoreFailures = qualityIgnoreFailures.get()
+        isIgnoreFailures = false
         threads = Runtime.getRuntime().availableProcessors().coerceAtMost(4)
     }
     tasks.withType<Pmd>().configureEach {
@@ -159,7 +154,7 @@ subprojects {
     // --- SpotBugs ---
     configure<SpotBugsExtension> {
         toolVersion.set(rootProject.libs.versions.spotbugs.tool)
-        ignoreFailures.set(qualityIgnoreFailures)
+        ignoreFailures.set(false)
         showStackTraces.set(true)
         showProgress.set(false)
         effort.set(Effort.MORE)
@@ -173,5 +168,19 @@ subprojects {
         reports.create("xml") {
             required.set(true)
         }
+    }
+
+    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        java {
+            googleJavaFormat("1.36.1")
+            target("src/**/*.java")
+        }
+    }
+
+    tasks.named("check") {
+        dependsOn(tasks.withType<Checkstyle>())
+        dependsOn(tasks.withType<Pmd>())
+        dependsOn(tasks.withType<SpotBugsTask>())
+        dependsOn(tasks.named("spotlessCheck"))
     }
 }

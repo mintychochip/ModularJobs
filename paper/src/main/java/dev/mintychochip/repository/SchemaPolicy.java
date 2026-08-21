@@ -7,9 +7,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Schema ownership for ModularJobs (MySQL only).
  *
- * <p>The plugin process never runs DDL. Ops provision tables from
- * {@code sql/mysql.sql} via {@code scripts/apply-mysql-schema.sh} (or equivalent).
- * On connect the plugin only verifies required tables exist.
+ * <p>The plugin process never runs DDL. Ops provision tables from {@code sql/mysql.sql} via {@code
+ * scripts/apply-mysql-schema.sh} (or equivalent). On connect the plugin only verifies required
+ * tables exist.
  *
  * <p>Config key {@code auto-schema} is ignored (logged as a misconfiguration if present).
  */

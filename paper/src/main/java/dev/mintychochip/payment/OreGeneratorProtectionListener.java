@@ -9,10 +9,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFromToEvent;
 
 /**
- * Generator-formed stone, cobblestone, and obsidian follow the configured protection policy.
- * When {@link ExploitProtectionSettings#protectOreGenerators()} is true, stone/cobble/obsidian
- * formed by generators keep PLACED protection (no quick re-break pay). When false, protection is
- * cleared so generator breaks can pay.
+ * Generator-formed stone, cobblestone, and obsidian follow the configured protection policy. When
+ * {@link ExploitProtectionSettings#protectOreGenerators()} is true, stone/cobble/obsidian formed by
+ * generators keep PLACED protection (no quick re-break pay). When false, protection is cleared so
+ * generator breaks can pay.
  */
 final class OreGeneratorProtectionListener implements Listener {
 
@@ -29,7 +29,8 @@ final class OreGeneratorProtectionListener implements Listener {
     if (mat.isAir()) {
       return;
     }
-    if (mat == Material.WATER || mat == Material.LAVA
+    if (mat == Material.WATER
+        || mat == Material.LAVA
         || event.getBlock().getType() == Material.WATER
         || event.getBlock().getType() == Material.LAVA) {
       // liquid flow itself is not a solid generator result we care about when destination is liquid

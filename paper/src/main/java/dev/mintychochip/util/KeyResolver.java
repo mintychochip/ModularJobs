@@ -1,15 +1,15 @@
 package dev.mintychochip.util;
 
+import dev.mintychochip.container.Context;
 import java.util.HashMap;
 import java.util.Map;
-import dev.mintychochip.container.Context;
 import net.kyori.adventure.key.Key;
 
 /**
  * Resolves context objects to stable keys used by task persistence.
  *
- * <p>Strategies are matched by the context's exact runtime class. Missing
- * strategies return {@code null} rather than throwing.
+ * <p>Strategies are matched by the context's exact runtime class. Missing strategies return {@code
+ * null} rather than throwing.
  */
 public final class KeyResolver {
 

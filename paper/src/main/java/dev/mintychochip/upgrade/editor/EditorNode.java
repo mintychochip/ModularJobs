@@ -1,19 +1,17 @@
 package dev.mintychochip.upgrade.editor;
 
+import dev.mintychochip.upgrade.Position;
+import dev.mintychochip.upgrade.UpgradeEffect;
+import dev.mintychochip.upgrade.UpgradeNode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import dev.mintychochip.upgrade.Position;
-import dev.mintychochip.upgrade.UpgradeEffect;
-import dev.mintychochip.upgrade.UpgradeNode;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Mutable upgrade node for editing purposes.
- */
+/** Mutable upgrade node for editing purposes. */
 public final class EditorNode {
 
   private String id;
@@ -34,6 +32,7 @@ public final class EditorNode {
   private final List<String> children = new ArrayList<>();
   private final List<EditorEffect> effects = new ArrayList<>();
 
+  /** Editor node. */
   public EditorNode() {
     this.id = "";
     this.name = "New Node";
@@ -49,9 +48,7 @@ public final class EditorNode {
     this.level = 1;
   }
 
-  /**
-   * Create from an existing UpgradeNode.
-   */
+  /** Create from an existing UpgradeNode. */
   public static EditorNode fromUpgradeNode(@NotNull UpgradeNode source) {
     EditorNode node = new EditorNode();
 
@@ -85,6 +82,7 @@ public final class EditorNode {
 
   // ========== Getters/Setters ==========
 
+  /** Id. */
   public String id() {
     return id;
   }
@@ -93,6 +91,7 @@ public final class EditorNode {
     this.id = id;
   }
 
+  /** Name. */
   public String name() {
     return name;
   }
@@ -101,22 +100,27 @@ public final class EditorNode {
     this.name = name;
   }
 
+  /** Description. */
   public String description() {
     return description;
   }
 
+  /** Sets the description. */
   public void setDescription(String description) {
     this.description = description;
   }
 
+  /** Icon. */
   public Material icon() {
     return icon;
   }
 
+  /** API member. */
   public void setIcon(Material icon) {
     this.icon = icon;
   }
 
+  /** Unlocked icon. */
   public Material unlockedIcon() {
     return unlockedIcon;
   }
@@ -125,6 +129,7 @@ public final class EditorNode {
     this.unlockedIcon = icon;
   }
 
+  /** Item model. */
   public String itemModel() {
     return itemModel;
   }
@@ -133,6 +138,7 @@ public final class EditorNode {
     this.itemModel = itemModel;
   }
 
+  /** Unlocked item model. */
   public String unlockedItemModel() {
     return unlockedItemModel;
   }
@@ -141,6 +147,7 @@ public final class EditorNode {
     this.unlockedItemModel = unlockedItemModel;
   }
 
+  /** Cost. */
   public int cost() {
     return cost;
   }
@@ -149,6 +156,7 @@ public final class EditorNode {
     this.cost = Math.max(0, cost);
   }
 
+  /** Position. */
   public Position position() {
     return position;
   }
@@ -157,6 +165,7 @@ public final class EditorNode {
     this.position = position;
   }
 
+  /** Archetype ref. */
   public String archetypeRef() {
     return archetypeRef;
   }
@@ -165,34 +174,42 @@ public final class EditorNode {
     this.archetypeRef = archetypeRef;
   }
 
+  /** Perk id. */
   public String perkId() {
     return perkId;
   }
 
+  /** Sets the perk id. */
   public void setPerkId(String perkId) {
     this.perkId = perkId;
   }
 
+  /** Level. */
   public int level() {
     return level;
   }
 
+  /** API member. */
   public void setLevel(int level) {
     this.level = Math.max(1, level);
   }
 
+  /** Prerequisites. */
   public Set<String> prerequisites() {
     return prerequisites;
   }
 
+  /** Exclusive. */
   public Set<String> exclusive() {
     return exclusive;
   }
 
+  /** Children. */
   public List<String> children() {
     return children;
   }
 
+  /** Effects. */
   public List<EditorEffect> effects() {
     return effects;
   }
@@ -207,16 +224,12 @@ public final class EditorNode {
     return material != null ? material : Material.BARRIER;
   }
 
-  /**
-   * Check if this is a root node (no prerequisites).
-   */
+  /** Check if this is a root node (no prerequisites). */
   public boolean isRoot() {
     return prerequisites.isEmpty();
   }
 
-  /**
-   * Create a deep copy of this node.
-   */
+  /** Create a deep copy of this node. */
   public EditorNode copy() {
     EditorNode copy = new EditorNode();
     copy.id = this.id;

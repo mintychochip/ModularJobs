@@ -5,10 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.JobTask;
@@ -16,15 +12,17 @@ import dev.mintychochip.container.ActionType;
 import dev.mintychochip.container.Context;
 import dev.mintychochip.math.ExpressionCurves;
 import dev.mintychochip.service.JobService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link JobResolver} plain-name / namespaced resolve and fuzzy suggest.
- */
+/** Drives shipped {@link JobResolver} plain-name / namespaced resolve and fuzzy suggest. */
 class JobResolverImplTest {
 
   private Job miner;
@@ -117,13 +115,10 @@ class JobResolverImplTest {
         ExpressionCurves.levelingCurve("level * 100"),
         Map.of(),
         30,
-        Map.of()
-    );
+        Map.of());
   }
 
-  /**
-   * Collaborator fake — SUT is JobResolver.
-   */
+  /** Collaborator fake — SUT is JobResolver. */
   private static final class FakeJobService implements JobService {
 
     private final List<Job> jobs;

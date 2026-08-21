@@ -10,8 +10,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Level-up commands configured in {@code config.yml} under {@code level-up-commands}.
  *
- * <p>Each entry is {@code {command: "...", min-level: N}}. Commands run from the console
- * when a player reaches a level at or above {@code min-level}.
+ * <p>Each entry is {@code {command: "...", min-level: N}}. Commands run from the console when a
+ * player reaches a level at or above {@code min-level}.
  */
 public record LevelUpCommandsConfig(@NotNull List<LevelUpCommand> commands) {
 

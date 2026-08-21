@@ -1,21 +1,17 @@
 package dev.mintychochip.event;
 
-import java.util.Objects;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
+import java.util.Objects;
+import java.util.UUID;
 
-/**
- * Fired when a player's job level changes.
- */
+/** Fired when a player's job level changes. */
 public final class JobLevelEvent {
 
+  /** Reason. */
   public enum Reason {
-    /** Natural level up from gaining experience */
     EXPERIENCE,
-    /** Admin command set/add/subtract */
     ADMIN_COMMAND,
-    /** Other reasons */
     OTHER
   }
 
@@ -26,11 +22,13 @@ public final class JobLevelEvent {
   private final JobProgression progression;
   private final Reason reason;
 
+  /** Job level event. */
   public JobLevelEvent(
       UUID playerId, Job job, int oldLevel, int newLevel, JobProgression progression) {
     this(playerId, job, oldLevel, newLevel, progression, Reason.EXPERIENCE);
   }
 
+  /** Job level event. */
   public JobLevelEvent(
       UUID playerId,
       Job job,
@@ -63,7 +61,9 @@ public final class JobLevelEvent {
   }
 
   /**
-   * @deprecated Use {@link #getNewLevel()} instead
+   * Returns the new level.
+   *
+   * @deprecated Use {@link #getNewLevel()} instead.
    */
   @Deprecated
   public int getLevel() {

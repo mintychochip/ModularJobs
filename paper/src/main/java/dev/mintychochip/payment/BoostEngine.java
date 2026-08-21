@@ -1,5 +1,22 @@
 package dev.mintychochip.payment;
 
+import dev.mintychochip.JobProgression;
+import dev.mintychochip.boost.ModularJobsBags;
+import dev.mintychochip.container.ActionType;
+import dev.mintychochip.container.Boost;
+import dev.mintychochip.container.BoostContext;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.Context;
+import dev.mintychochip.container.Payable;
+import dev.mintychochip.container.boost.BoostData.SerializableBoostData;
+import dev.mintychochip.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
+import dev.mintychochip.container.boost.TimedBoostDataService;
+import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
+import dev.mintychochip.container.boost.TimedBoostDataService.Target.PlayerTarget;
+import dev.mintychochip.databag.DataBag;
+import dev.mintychochip.databag.paper.PaperConditionContexts;
+import dev.mintychochip.service.ItemBoostDataService;
+import dev.mintychochip.upgrade.UpgradeBoostDataService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -9,23 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import dev.mintychochip.JobProgression;
-import dev.mintychochip.container.ActionType;
-import dev.mintychochip.container.Boost;
-import dev.mintychochip.container.BoostContext;
-import dev.mintychochip.container.BoostSource;
-import dev.mintychochip.container.Context;
-import dev.mintychochip.container.Payable;
-import dev.mintychochip.container.boost.BoostData.SerializableBoostData;
-import dev.mintychochip.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
-import dev.mintychochip.service.ItemBoostDataService;
-import dev.mintychochip.container.boost.TimedBoostDataService;
-import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
-import dev.mintychochip.container.boost.TimedBoostDataService.Target.PlayerTarget;
-import dev.mintychochip.databag.paper.PaperConditionContexts;
-import dev.mintychochip.databag.DataBag;
-import dev.mintychochip.boost.ModularJobsBags;
-import dev.mintychochip.upgrade.UpgradeBoostDataService;
 import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -33,8 +33,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 /**
- * Aggregates passive item, timed, and upgrade-tree boost sources, evaluates them
- * against a {@link BoostContext}, and returns one {@link Boost} per source key.
+ * Aggregates passive item, timed, and upgrade-tree boost sources, evaluates them against a {@link
+ * BoostContext}, and returns one {@link Boost} per source key.
  */
 public final class BoostEngine {
 
@@ -43,10 +43,10 @@ public final class BoostEngine {
   private final UpgradeBoostDataService upgradeBoostDataService;
 
   /**
-   * Composes the three boost-data services (item, timed, upgrade-tree) into the aggregation
-   * engine.
+   * Composes the three boost-data services (item, timed, upgrade-tree) into the aggregation engine.
    */
-  public BoostEngine(ItemBoostDataService boostDataService,
+  public BoostEngine(
+      ItemBoostDataService boostDataService,
       TimedBoostDataService timedBoostDataService,
       UpgradeBoostDataService upgradeBoostDataService) {
     this.boostDataService = boostDataService;
@@ -56,13 +56,17 @@ public final class BoostEngine {
 
   /**
    * Evaluates the full boost set for a player's action: aggregates the player's item-sourced,
-   * timed, and upgrade-tree boost sources, then applies them for {@code type} against
-   * {@code progression} and {@code payable}.
+   * timed, and upgrade-tree boost sources, then applies them for {@code type} against {@code
+   * progression} and {@code payable}.
    *
    * @return one boost per source key; empty when the player is offline
    */
-  public Map<Key, Boost> evaluate(OfflinePlayer player, ActionType type, Context context,
-      JobProgression progression, Payable payable) {
+  public Map<Key, Boost> evaluate(
+      OfflinePlayer player,
+      ActionType type,
+      Context context,
+      JobProgression progression,
+      Payable payable) {
     if (!player.isOnline()) {
       return Map.of();
     }
@@ -71,34 +75,34 @@ public final class BoostEngine {
       return Map.of();
     }
 
-    String jobKey = progression == null || progression.job() == null
-        ? null
-        : progression.job().key().asString();
-    DataBag extras = ModularJobsBags.extras(
-        jobKey, progression == null ? 0 : progression.level());
-    BoostContext boostContext = new BoostContext(
-        type,
-        progression,
-        onlinePlayer.getUniqueId(),
-        onlinePlayer.getWorld().getName(),
-        payable,
-        PaperConditionContexts.from(
-            onlinePlayer,
-            jobKey == null ? Set.of() : Set.of(jobKey),
-            extras));
+    String jobKey =
+        progression == null || progression.job() == null
+            ? null
+            : progression.job().key().asString();
+    DataBag extras = ModularJobsBags.extras(jobKey, progression == null ? 0 : progression.level());
+    BoostContext boostContext =
+        new BoostContext(
+            type,
+            progression,
+            onlinePlayer.getUniqueId(),
+            onlinePlayer.getWorld().getName(),
+            payable,
+            PaperConditionContexts.from(
+                onlinePlayer, jobKey == null ? Set.of() : Set.of(jobKey), extras));
     List<BoostSource> itemSources = aggregateItemSources(onlinePlayer);
-    List<ActiveBoostData> timedBoosts = timedBoostDataService.findApplicableBoosts(
-        new PlayerTarget(onlinePlayer.getUniqueId()));
-    List<BoostSource> upgradeSources = upgradeBoostDataService.getBoostSources(
-        onlinePlayer.getUniqueId(),
-        progression.job().key()
-    );
+    List<ActiveBoostData> timedBoosts =
+        timedBoostDataService.findApplicableBoosts(new PlayerTarget(onlinePlayer.getUniqueId()));
+    List<BoostSource> upgradeSources =
+        progression == null || progression.job() == null
+            ? List.of()
+            : upgradeBoostDataService.getBoostSources(
+                onlinePlayer.getUniqueId(), progression.job().key());
     return evaluateSources(boostContext, itemSources, timedBoosts, upgradeSources);
   }
 
   /**
-   * Pure evaluation path used by payment and unit tests: given already-resolved sources,
-   * evaluate each against {@code context} and flatten to one boost per source key.
+   * Pure evaluation path used by payment and unit tests: given already-resolved sources, evaluate
+   * each against {@code context} and flatten to one boost per source key.
    */
   public Map<Key, Boost> evaluateSources(
       BoostContext context,
@@ -120,9 +124,7 @@ public final class BoostEngine {
     return flatten(boostsBySource);
   }
 
-  /**
-   * Apply evaluated boosts to a base amount (same loop as payment handling).
-   */
+  /** Apply evaluated boosts to a base amount (same loop as payment handling). */
   public static BigDecimal applyBoosts(BigDecimal baseAmount, Map<Key, Boost> boosts) {
     BigDecimal boostedAmount = baseAmount;
     for (Boost boost : boosts.values()) {
@@ -146,13 +148,15 @@ public final class BoostEngine {
       if (sourceBoosts.size() == 1) {
         result.put(entry.getKey(), sourceBoosts.get(0));
       } else {
-        result.put(entry.getKey(), amount -> {
-          BigDecimal current = amount;
-          for (Boost b : sourceBoosts) {
-            current = b.boost(current);
-          }
-          return current;
-        });
+        result.put(
+            entry.getKey(),
+            amount -> {
+              BigDecimal current = amount;
+              for (Boost b : sourceBoosts) {
+                current = b.boost(current);
+              }
+              return current;
+            });
       }
     }
     return result;

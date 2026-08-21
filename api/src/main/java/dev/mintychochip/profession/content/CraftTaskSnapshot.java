@@ -5,6 +5,4 @@ import org.jetbrains.annotations.NotNull;
 
 /** Normalized craft job task for cross-validation (output key already resolved). */
 public record CraftTaskSnapshot(
-    @NotNull Key jobKey,
-    @NotNull Key contextKey,
-    @NotNull Key outputKey) {}
+    @NotNull Key jobKey, @NotNull Key contextKey, @NotNull Key outputKey) {}

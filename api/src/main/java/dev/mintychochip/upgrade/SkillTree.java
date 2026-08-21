@@ -1,11 +1,9 @@
 package dev.mintychochip.upgrade;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -15,8 +13,8 @@ import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Immutable skill graph for one base job. Children are derived from each
- * node's prerequisites; excludes are normalized to a symmetric conflict set.
+ * Immutable skill graph for one base job. Children are derived from each node's prerequisites;
+ * excludes are normalized to a symmetric conflict set.
  */
 public record SkillTree(
     @NotNull Key key,
@@ -24,18 +22,20 @@ public record SkillTree(
     String description,
     int skillPointsPerLevel,
     @NotNull String rootNodeKey,
-    @NotNull Map<String, SkillNode> nodeMap
-) implements Keyed {
+    @NotNull Map<String, SkillNode> nodeMap)
+    implements Keyed {
 
+  /** API member. */
   public SkillTree {
     nodeMap = Collections.unmodifiableMap(new HashMap<>(nodeMap));
   }
 
+  /** Node. */
   public @NotNull Optional<SkillNode> node(@NotNull String nodeKey) {
     return Optional.ofNullable(nodeMap.get(nodeKey));
   }
 
-
+  /** Nodes. */
   public @NotNull Collection<SkillNode> nodes() {
     return nodeMap.values();
   }
@@ -83,6 +83,7 @@ public record SkillTree(
     return spent;
   }
 
+  /** Available points. */
   public int availablePoints(@NotNull SkillTreeState state) {
     return state.totalSkillPoints() - spentPoints(state);
   }

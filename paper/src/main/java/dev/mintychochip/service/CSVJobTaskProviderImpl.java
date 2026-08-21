@@ -1,34 +1,34 @@
-//package dev.mintychochip.service;
+// package dev.mintychochip.service;
 //
-//import java.io.File;
-//import java.io.IOException;
-//import java.math.BigDecimal;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.util.ArrayList;
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.Optional;
-//import dev.mintychochip.Job;
-//import dev.mintychochip.JobTask;
-//import dev.mintychochip.container.ActionType;
-//import dev.mintychochip.container.Context;
-//import dev.mintychochip.container.Payable;
-//import dev.mintychochip.container.PayableAmount;
-//import dev.mintychochip.container.PayableType;
-//import dev.mintychochip.registry.RegistryContainer;
-//import dev.mintychochip.registry.RegistryKeys;
-//import dev.mintychochip.registry.RegistryView;
-//import dev.mintychochip.util.KeyResolver;
-//import net.kyori.adventure.key.Key;
-//import org.bukkit.NamespacedKey;
-//import org.bukkit.plugin.Plugin;
+// import java.io.File;
+// import java.io.IOException;
+// import java.math.BigDecimal;
+// import java.nio.file.Files;
+// import java.nio.file.Path;
+// import java.util.ArrayList;
+// import java.util.HashMap;
+// import java.util.List;
+// import java.util.Map;
+// import java.util.Optional;
+// import dev.mintychochip.Job;
+// import dev.mintychochip.JobTask;
+// import dev.mintychochip.container.ActionType;
+// import dev.mintychochip.container.Context;
+// import dev.mintychochip.container.Payable;
+// import dev.mintychochip.container.PayableAmount;
+// import dev.mintychochip.container.PayableType;
+// import dev.mintychochip.registry.RegistryContainer;
+// import dev.mintychochip.registry.RegistryKeys;
+// import dev.mintychochip.registry.RegistryView;
+// import dev.mintychochip.util.KeyResolver;
+// import net.kyori.adventure.key.Key;
+// import org.bukkit.NamespacedKey;
+// import org.bukkit.plugin.Plugin;
 //
-///**
+/// **
 // * Format: job_key,action_type_key,context_key,payable_type_key,amount
 // */
-//final class CSVJobTaskProviderImpl implements JobTaskProvider {
+// final class CSVJobTaskProviderImpl implements JobTaskProvider {
 //
 //  private static final String JOB_TASK_CSV_PATH = "job_tasks.csv";
 //
@@ -43,7 +43,8 @@
 //    this.payables = payables;
 //  }
 //
-//  public static JobTaskProvider create(Plugin plugin, KeyResolver keyResolver) throws IOException {
+//  public static JobTaskProvider create(Plugin plugin, KeyResolver keyResolver) throws IOException
+// {
 //    File dataFolder = plugin.getDataFolder();
 //    Path csvPath = dataFolder.toPath().resolve(JOB_TASK_CSV_PATH);
 //    if (!Files.exists(csvPath)) {
@@ -102,4 +103,4 @@
 //      }
 //    }
 //  }
-//}
+// }

@@ -1,5 +1,21 @@
 package dev.mintychochip.upgrade.config;
 
+import dev.mintychochip.boost.RuledBoostSourceImpl;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.boost.RuledBoostSource.Rule;
+import dev.mintychochip.container.boost.factories.BoostFactory;
+import dev.mintychochip.container.boost.factories.ConditionFactory;
+import dev.mintychochip.upgrade.Position;
+import dev.mintychochip.upgrade.UpgradeEffect;
+import dev.mintychochip.upgrade.UpgradeEffect.BoostEffect;
+import dev.mintychochip.upgrade.UpgradeEffect.PermissionEffect;
+import dev.mintychochip.upgrade.UpgradeEffect.RuledBoostEffect;
+import dev.mintychochip.upgrade.UpgradeNode;
+import dev.mintychochip.upgrade.UpgradeTree;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.EffectConfig;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.NodeConfig;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.PositionConfig;
+import dev.mintychochip.upgrade.config.UpgradeTreeConfig.RuleConfig;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,40 +23,23 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import dev.mintychochip.boost.RuledBoostSourceImpl;
-import dev.mintychochip.container.BoostSource;
-import dev.mintychochip.container.boost.RuledBoostSource.Rule;
-import dev.mintychochip.container.boost.factories.BoostFactory;
-import dev.mintychochip.container.boost.factories.ConditionFactory;
-import dev.mintychochip.upgrade.UpgradeEffect;
-import dev.mintychochip.upgrade.UpgradeEffect.BoostEffect;
-import dev.mintychochip.upgrade.UpgradeEffect.PermissionEffect;
-import dev.mintychochip.upgrade.UpgradeEffect.RuledBoostEffect;
-import dev.mintychochip.upgrade.UpgradeNode;
-import dev.mintychochip.upgrade.Position;
-import dev.mintychochip.upgrade.UpgradeTree;
-import dev.mintychochip.upgrade.config.UpgradeTreeConfig.EffectConfig;
-import dev.mintychochip.upgrade.config.UpgradeTreeConfig.NodeConfig;
-import dev.mintychochip.upgrade.config.UpgradeTreeConfig.PositionConfig;
-import dev.mintychochip.upgrade.config.UpgradeTreeConfig.RuleConfig;
 import net.kyori.adventure.key.Key;
 
 /**
- * Parses UpgradeTreeConfig from JSON into UpgradeTree instances.
- * Supports both simple boost effects and ruled boost effects with conditions.
+ * Parses UpgradeTreeConfig from JSON into UpgradeTree instances. Supports both simple boost effects
+ * and ruled boost effects with conditions.
  */
 public final class UpgradeTreeConfigParser {
 
   private final dev.mintychochip.boost.config.BoostSourceConfigParser boostSourceParser;
 
-  public UpgradeTreeConfigParser(
-      ConditionFactory conditionFactory,
-      BoostFactory boostFactory
-  ) {
-    this.boostSourceParser = new dev.mintychochip.boost.config.BoostSourceConfigParser(
-        conditionFactory, boostFactory);
+  /** Upgrade tree config parser. */
+  public UpgradeTreeConfigParser(ConditionFactory conditionFactory, BoostFactory boostFactory) {
+    this.boostSourceParser =
+        new dev.mintychochip.boost.config.BoostSourceConfigParser(conditionFactory, boostFactory);
   }
 
+  /** Parse. */
   public UpgradeTree parse(UpgradeTreeConfig config) {
     String jobKey = config.job();
     Key treeKey = Key.key("modularjobs", "upgrade_tree/" + jobKey);
@@ -59,11 +58,11 @@ public final class UpgradeTreeConfigParser {
         jobKey,
         config.description(),
         config.root(),
-        config.skill_points_per_level(),
+        config.skillPointsPerLevel(),
         nodes,
-        new HashMap<>(),   // No perk policies in legacy format
-        Set.of()          // No paths in legacy format
-    );
+        new HashMap<>(), // No perk policies in legacy format
+        Set.of() // No paths in legacy format
+        );
   }
 
   private UpgradeNode parseNode(String jobKey, String nodeKey, NodeConfig config) {
@@ -72,17 +71,13 @@ public final class UpgradeTreeConfigParser {
     // Material name string; paper GUI resolves via Material.matchMaterial (BARRIER fallback)
     final String icon = config.icon() != null ? config.icon() : "BARRIER";
 
-    final Set<String> prerequisites = config.prerequisites() != null
-        ? new HashSet<>(config.prerequisites())
-        : Set.of();
+    final Set<String> prerequisites =
+        config.prerequisites() != null ? new HashSet<>(config.prerequisites()) : Set.of();
 
-    final Set<String> exclusive = config.exclusive() != null
-        ? new HashSet<>(config.exclusive())
-        : Set.of();
+    final Set<String> exclusive =
+        config.exclusive() != null ? new HashSet<>(config.exclusive()) : Set.of();
 
-    final List<String> children = config.children() != null
-        ? config.children()
-        : List.of();
+    final List<String> children = config.children() != null ? config.children() : List.of();
 
     List<UpgradeEffect> effects = new ArrayList<>();
     if (config.effects() != null) {
@@ -130,30 +125,28 @@ public final class UpgradeTreeConfigParser {
         key,
         config.name(),
         config.description(),
-        icon,           // locked icon
-        icon,           // unlocked icon (same as locked for legacy format)
-        null,           // itemModel (not supported in legacy)
-        null,           // unlockedItemModel (not supported in legacy)
+        icon, // locked icon
+        icon, // unlocked icon (same as locked for legacy format)
+        null, // itemModel (not supported in legacy)
+        null, // unlockedItemModel (not supported in legacy)
         config.cost(),
         prerequisites,
-        Set.of(),       // maxedPrerequisites - empty for legacy format
+        Set.of(), // maxedPrerequisites - empty for legacy format
         exclusive,
         children,
         effects,
         position,
         List.of(), // pathPoints - empty for legacy format
         perkId,
-        level
-    );
+        level);
   }
 
   private UpgradeEffect parseEffect(EffectConfig config, String jobKey, String nodeKey) {
     return switch (config.type().toLowerCase()) {
       case "boost" -> {
         String target = config.target() != null ? config.target() : BoostEffect.TARGET_ALL;
-        BigDecimal amount = config.amount() != null
-            ? BigDecimal.valueOf(config.amount())
-            : BigDecimal.ONE;
+        BigDecimal amount =
+            config.amount() != null ? BigDecimal.valueOf(config.amount()) : BigDecimal.ONE;
         yield new BoostEffect(target, amount);
       }
       case "ruled_boost" -> {

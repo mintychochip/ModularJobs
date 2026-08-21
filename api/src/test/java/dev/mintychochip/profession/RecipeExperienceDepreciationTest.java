@@ -30,8 +30,8 @@ class RecipeExperienceDepreciationTest {
   void linearHalfwayThroughWindow() {
     assertEquals(
         0,
-        new BigDecimal("0.5").compareTo(
-            RecipeExperienceDepreciation.experienceMultiplier(POLICY, 30, 25)));
+        new BigDecimal("0.5")
+            .compareTo(RecipeExperienceDepreciation.experienceMultiplier(POLICY, 30, 25)));
   }
 
   @Test
@@ -47,12 +47,11 @@ class RecipeExperienceDepreciationTest {
     RecipeExperienceDepreciationPolicy grace = new RecipeExperienceDepreciationPolicy(true, 2, 10);
     assertEquals(
         0,
-        BigDecimal.ONE.compareTo(
-            RecipeExperienceDepreciation.experienceMultiplier(grace, 27, 25)));
+        BigDecimal.ONE.compareTo(RecipeExperienceDepreciation.experienceMultiplier(grace, 27, 25)));
     assertEquals(
         0,
-        new BigDecimal("0.9").compareTo(
-            RecipeExperienceDepreciation.experienceMultiplier(grace, 28, 25)));
+        new BigDecimal("0.9")
+            .compareTo(RecipeExperienceDepreciation.experienceMultiplier(grace, 28, 25)));
   }
 
   @Test
@@ -60,8 +59,7 @@ class RecipeExperienceDepreciationTest {
     RecipeExperienceDepreciationPolicy hard = new RecipeExperienceDepreciationPolicy(true, 0, 0);
     assertEquals(
         0,
-        BigDecimal.ZERO.compareTo(
-            RecipeExperienceDepreciation.experienceMultiplier(hard, 26, 25)));
+        BigDecimal.ZERO.compareTo(RecipeExperienceDepreciation.experienceMultiplier(hard, 26, 25)));
   }
 
   @Test

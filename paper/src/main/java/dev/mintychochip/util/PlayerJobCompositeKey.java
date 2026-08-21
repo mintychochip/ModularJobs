@@ -1,7 +1,7 @@
 package dev.mintychochip.util;
 
-import java.util.UUID;
 import dev.mintychochip.Job;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
 

@@ -17,8 +17,8 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Loads place→break anti-farm material durations from {@code exploit-config.yml} under
- * {@code placed}. Defaults protect a broad farm set (not STONE-only); {@code *} expands to every
+ * Loads place→break anti-farm material durations from {@code exploit-config.yml} under {@code
+ * placed}. Defaults protect a broad farm set (not STONE-only); {@code *} expands to every
  * resolvable block material plus the curated farm set.
  */
 public final class PlacedProtectionMaterials {
@@ -30,72 +30,72 @@ public final class PlacedProtectionMaterials {
    * so production is never STONE-only even if full Material scans are partial.
    */
   private static final Material[] CURATED_FARM_MATERIALS = {
-      Material.STONE,
-      Material.COBBLESTONE,
-      Material.DIRT,
-      Material.GRASS_BLOCK,
-      Material.COARSE_DIRT,
-      Material.ROOTED_DIRT,
-      Material.MUD,
-      Material.SAND,
-      Material.RED_SAND,
-      Material.GRAVEL,
-      Material.CLAY,
-      Material.NETHERRACK,
-      Material.END_STONE,
-      Material.SOUL_SAND,
-      Material.SOUL_SOIL,
-      Material.BASALT,
-      Material.BLACKSTONE,
-      Material.DEEPSLATE,
-      Material.TUFF,
-      Material.CALCITE,
-      Material.ANDESITE,
-      Material.DIORITE,
-      Material.GRANITE,
-      Material.OAK_LOG,
-      Material.SPRUCE_LOG,
-      Material.BIRCH_LOG,
-      Material.JUNGLE_LOG,
-      Material.ACACIA_LOG,
-      Material.DARK_OAK_LOG,
-      Material.MANGROVE_LOG,
-      Material.CHERRY_LOG,
-      Material.PALE_OAK_LOG,
-      Material.CRIMSON_STEM,
-      Material.WARPED_STEM,
-      Material.COAL_ORE,
-      Material.IRON_ORE,
-      Material.COPPER_ORE,
-      Material.GOLD_ORE,
-      Material.REDSTONE_ORE,
-      Material.LAPIS_ORE,
-      Material.DIAMOND_ORE,
-      Material.EMERALD_ORE,
-      Material.DEEPSLATE_COAL_ORE,
-      Material.DEEPSLATE_IRON_ORE,
-      Material.DEEPSLATE_COPPER_ORE,
-      Material.DEEPSLATE_GOLD_ORE,
-      Material.DEEPSLATE_REDSTONE_ORE,
-      Material.DEEPSLATE_LAPIS_ORE,
-      Material.DEEPSLATE_DIAMOND_ORE,
-      Material.DEEPSLATE_EMERALD_ORE,
-      Material.NETHER_GOLD_ORE,
-      Material.NETHER_QUARTZ_ORE,
-      Material.ANCIENT_DEBRIS,
-      Material.WHEAT,
-      Material.CARROTS,
-      Material.POTATOES,
-      Material.BEETROOTS,
-      Material.NETHER_WART,
-      Material.SUGAR_CANE,
-      Material.BAMBOO,
-      Material.CACTUS,
-      Material.KELP,
-      Material.MELON,
-      Material.PUMPKIN,
-      Material.COCOA,
-      Material.SWEET_BERRY_BUSH,
+    Material.STONE,
+    Material.COBBLESTONE,
+    Material.DIRT,
+    Material.GRASS_BLOCK,
+    Material.COARSE_DIRT,
+    Material.ROOTED_DIRT,
+    Material.MUD,
+    Material.SAND,
+    Material.RED_SAND,
+    Material.GRAVEL,
+    Material.CLAY,
+    Material.NETHERRACK,
+    Material.END_STONE,
+    Material.SOUL_SAND,
+    Material.SOUL_SOIL,
+    Material.BASALT,
+    Material.BLACKSTONE,
+    Material.DEEPSLATE,
+    Material.TUFF,
+    Material.CALCITE,
+    Material.ANDESITE,
+    Material.DIORITE,
+    Material.GRANITE,
+    Material.OAK_LOG,
+    Material.SPRUCE_LOG,
+    Material.BIRCH_LOG,
+    Material.JUNGLE_LOG,
+    Material.ACACIA_LOG,
+    Material.DARK_OAK_LOG,
+    Material.MANGROVE_LOG,
+    Material.CHERRY_LOG,
+    Material.PALE_OAK_LOG,
+    Material.CRIMSON_STEM,
+    Material.WARPED_STEM,
+    Material.COAL_ORE,
+    Material.IRON_ORE,
+    Material.COPPER_ORE,
+    Material.GOLD_ORE,
+    Material.REDSTONE_ORE,
+    Material.LAPIS_ORE,
+    Material.DIAMOND_ORE,
+    Material.EMERALD_ORE,
+    Material.DEEPSLATE_COAL_ORE,
+    Material.DEEPSLATE_IRON_ORE,
+    Material.DEEPSLATE_COPPER_ORE,
+    Material.DEEPSLATE_GOLD_ORE,
+    Material.DEEPSLATE_REDSTONE_ORE,
+    Material.DEEPSLATE_LAPIS_ORE,
+    Material.DEEPSLATE_DIAMOND_ORE,
+    Material.DEEPSLATE_EMERALD_ORE,
+    Material.NETHER_GOLD_ORE,
+    Material.NETHER_QUARTZ_ORE,
+    Material.ANCIENT_DEBRIS,
+    Material.WHEAT,
+    Material.CARROTS,
+    Material.POTATOES,
+    Material.BEETROOTS,
+    Material.NETHER_WART,
+    Material.SUGAR_CANE,
+    Material.BAMBOO,
+    Material.CACTUS,
+    Material.KELP,
+    Material.MELON,
+    Material.PUMPKIN,
+    Material.COCOA,
+    Material.SWEET_BERRY_BUSH,
   };
 
   private PlacedProtectionMaterials() {}
@@ -122,16 +122,12 @@ public final class PlacedProtectionMaterials {
     return Collections.unmodifiableMap(map);
   }
 
-  /**
-   * Default map: all protectable blocks with the default duration ({@code *} semantics).
-   */
+  /** Default map: all protectable blocks with the default duration ({@code *} semantics). */
   public static Map<Material, Duration> defaults() {
     return allBlocks(Duration.ofSeconds(DEFAULT_DURATION_SECONDS));
   }
 
-  /**
-   * Load from plugin's {@code exploit-config.yml} if present; otherwise defaults.
-   */
+  /** Load from plugin's {@code exploit-config.yml} if present; otherwise defaults. */
   public static Map<Material, Duration> load(@NotNull Plugin plugin) {
     plugin.saveResource("exploit-config.yml", false);
     java.io.File file = new java.io.File(plugin.getDataFolder(), "exploit-config.yml");
@@ -140,8 +136,8 @@ public final class PlacedProtectionMaterials {
   }
 
   /**
-   * Parse a configuration root that may contain a {@code placed} section.
-   * Pure enough for unit tests (pass any {@link FileConfiguration}).
+   * Parse a configuration root that may contain a {@code placed} section. Pure enough for unit
+   * tests (pass any {@link FileConfiguration}).
    */
   public static Map<Material, Duration> fromConfiguration(
       @NotNull FileConfiguration config, @NotNull Logger logger) {
@@ -153,7 +149,9 @@ public final class PlacedProtectionMaterials {
       seconds = placed.getLong("duration-seconds", DEFAULT_DURATION_SECONDS);
       if (seconds <= 0) {
         logger.warning(
-            "placed.duration-seconds must be > 0 (got " + seconds + "); using "
+            "placed.duration-seconds must be > 0 (got "
+                + seconds
+                + "); using "
                 + DEFAULT_DURATION_SECONDS);
         seconds = DEFAULT_DURATION_SECONDS;
       }
@@ -199,9 +197,7 @@ public final class PlacedProtectionMaterials {
     return Collections.unmodifiableMap(map);
   }
 
-  /**
-   * Safe block check: never throws on incomplete Material metadata (e.g. MockBukkit).
-   */
+  /** Safe block check: never throws on incomplete Material metadata (e.g. MockBukkit). */
   static boolean isProtectableBlock(Material material) {
     if (material == null) {
       return false;

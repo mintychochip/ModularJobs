@@ -4,15 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.editor.EditorConfig;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import dev.mintychochip.editor.EditorConfig;
 import org.junit.jupiter.api.Test;
 
-/**
- * Structural proof of disable lifecycle and profession service gating in shipped sources.
- */
+/** Structural proof of disable lifecycle and profession service gating in shipped sources. */
 class BootstrapLifecycleTest {
 
   @Test
@@ -76,7 +74,8 @@ class BootstrapLifecycleTest {
     String text = Files.readString(writeBack, StandardCharsets.UTF_8);
     assertTrue(text.contains("Thread.sleep"), "flushPending must sleep while waiting for lock");
     assertFalse(text.contains("onSpinWait"), "flushPending must not busy-spin");
-    assertTrue(text.contains("preferHigherExperience") || text.contains("merge("),
+    assertTrue(
+        text.contains("preferHigherExperience") || text.contains("merge("),
         "flush failure re-queue must merge XP safely");
     assertTrue(text.contains("key.jobKey()"), "loadAllForJob must compare job key");
   }
@@ -101,8 +100,7 @@ class BootstrapLifecycleTest {
 
   private static Path locate(String relativeUnderAincraft) {
     Path root = Path.of("").toAbsolutePath();
-    Path candidate =
-        root.resolve("paper/src/main/java/dev/mintychochip/" + relativeUnderAincraft);
+    Path candidate = root.resolve("paper/src/main/java/dev/mintychochip/" + relativeUnderAincraft);
     if (Files.isRegularFile(candidate)) {
       return candidate;
     }
@@ -110,7 +108,6 @@ class BootstrapLifecycleTest {
     if (Files.isRegularFile(candidate)) {
       return candidate;
     }
-    throw new IllegalStateException(
-        "Cannot find " + relativeUnderAincraft + " from " + root);
+    throw new IllegalStateException("Cannot find " + relativeUnderAincraft + " from " + root);
   }
 }

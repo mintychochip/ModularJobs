@@ -2,9 +2,7 @@ package dev.mintychochip;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- * Paper-only access to the ModularJobs {@link JavaPlugin} instance for schedulers and similar.
- */
+/** Paper-only access to the ModularJobs {@link JavaPlugin} instance for schedulers and similar. */
 public final class PluginProvider {
 
   private static JavaPlugin plugin;

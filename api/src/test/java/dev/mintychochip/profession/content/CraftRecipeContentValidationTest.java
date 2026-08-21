@@ -12,16 +12,11 @@ class CraftRecipeContentValidationTest {
   @Test
   void matchedCraftTaskAndRecipeProduceNoFindings() {
     Key ironSword = Key.key("minecraft", "iron_sword");
-    CraftRecipeValidationReport report = CraftRecipeContentValidation.validate(
-        List.of(new CraftTaskSnapshot(
-            Key.key("modularjobs", "blacksmith"),
-            ironSword,
-            ironSword)),
-        List.of(new RegisteredRecipeSnapshot(
-            ironSword,
-            ironSword,
-            "weaponsmithing",
-            10)));
+    CraftRecipeValidationReport report =
+        CraftRecipeContentValidation.validate(
+            List.of(
+                new CraftTaskSnapshot(Key.key("modularjobs", "blacksmith"), ironSword, ironSword)),
+            List.of(new RegisteredRecipeSnapshot(ironSword, ironSword, "weaponsmithing", 10)));
 
     assertTrue(report.tasksWithoutRecipe().isEmpty());
     assertTrue(report.recipesWithoutTask().isEmpty());
@@ -30,12 +25,11 @@ class CraftRecipeContentValidationTest {
   @Test
   void craftTaskWithoutRecipeMetadataIsReported() {
     Key stoneBricks = Key.key("minecraft", "stone_bricks");
-    CraftRecipeValidationReport report = CraftRecipeContentValidation.validate(
-        List.of(new CraftTaskSnapshot(
-            Key.key("modularjobs", "artisan"),
-            stoneBricks,
-            stoneBricks)),
-        List.of());
+    CraftRecipeValidationReport report =
+        CraftRecipeContentValidation.validate(
+            List.of(
+                new CraftTaskSnapshot(Key.key("modularjobs", "artisan"), stoneBricks, stoneBricks)),
+            List.of());
 
     assertEquals(1, report.tasksWithoutRecipe().size());
     assertTrue(report.tasksWithoutRecipe().get(0).message().contains("recipes.yml"));
@@ -45,13 +39,10 @@ class CraftRecipeContentValidationTest {
   @Test
   void registeredRecipeWithoutCraftTaskIsReported() {
     Key ironSword = Key.key("minecraft", "iron_sword");
-    CraftRecipeValidationReport report = CraftRecipeContentValidation.validate(
-        List.of(),
-        List.of(new RegisteredRecipeSnapshot(
-            ironSword,
-            ironSword,
-            "weaponsmithing",
-            10)));
+    CraftRecipeValidationReport report =
+        CraftRecipeContentValidation.validate(
+            List.of(),
+            List.of(new RegisteredRecipeSnapshot(ironSword, ironSword, "weaponsmithing", 10)));
 
     assertTrue(report.tasksWithoutRecipe().isEmpty());
     assertEquals(1, report.recipesWithoutTask().size());
@@ -62,16 +53,11 @@ class CraftRecipeContentValidationTest {
   void outputKeyMatchUsesCraftOutputKeyNotRecipeId() {
     Key recipeId = Key.key("modularjobs", "masterwork_iron_sword");
     Key ironSword = Key.key("minecraft", "iron_sword");
-    CraftRecipeValidationReport report = CraftRecipeContentValidation.validate(
-        List.of(new CraftTaskSnapshot(
-            Key.key("modularjobs", "blacksmith"),
-            ironSword,
-            ironSword)),
-        List.of(new RegisteredRecipeSnapshot(
-            recipeId,
-            ironSword,
-            "weaponsmithing",
-            25)));
+    CraftRecipeValidationReport report =
+        CraftRecipeContentValidation.validate(
+            List.of(
+                new CraftTaskSnapshot(Key.key("modularjobs", "blacksmith"), ironSword, ironSword)),
+            List.of(new RegisteredRecipeSnapshot(recipeId, ironSword, "weaponsmithing", 25)));
 
     assertTrue(report.tasksWithoutRecipe().isEmpty());
     assertTrue(report.recipesWithoutTask().isEmpty());

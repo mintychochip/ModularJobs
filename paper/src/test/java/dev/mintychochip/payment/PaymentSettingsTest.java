@@ -21,8 +21,8 @@ class PaymentSettingsTest {
 
   @Test
   void worldDisabledIsCaseInsensitive() {
-    PaymentSettings settings = new PaymentSettings(
-        true, false, java.util.Set.of("world_nether"), 0.5, 25.0);
+    PaymentSettings settings =
+        new PaymentSettings(true, false, java.util.Set.of("world_nether"), 0.5, 25.0);
     assertTrue(settings.isWorldDisabled("world_nether"));
     assertTrue(settings.isWorldDisabled("WORLD_NETHER"));
     assertFalse(settings.isWorldDisabled("world"));

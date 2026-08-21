@@ -3,16 +3,16 @@ package dev.mintychochip.domain;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.domain.model.JobProgressionRecord;
+import dev.mintychochip.domain.model.JobRecord;
+import dev.mintychochip.domain.repository.JobProgressionRepository;
+import dev.mintychochip.domain.repository.JobProgressionRepository.Key;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.domain.model.JobProgressionRecord;
-import dev.mintychochip.domain.model.JobRecord;
-import dev.mintychochip.domain.repository.JobProgressionRepository;
-import dev.mintychochip.domain.repository.JobProgressionRepository.Key;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,9 @@ class WriteBackJobProgressionIntegrityTest {
     writeBack.requeueFailedBatch(batch, Set.of());
 
     JobProgressionRecord loaded = writeBack.load("player-1", job.jobKey());
-    assertEquals(0, new BigDecimal("150").compareTo(loaded.experience()),
+    assertEquals(
+        0,
+        new BigDecimal("150").compareTo(loaded.experience()),
         "re-queue must not putAll older XP over newer pending");
   }
 
@@ -57,8 +59,8 @@ class WriteBackJobProgressionIntegrityTest {
     Map<Key, JobProgressionRecord> batch = new HashMap<>();
     batch.put(key, only);
     writeBack.requeueFailedBatch(batch, Set.of());
-    assertEquals(0, new BigDecimal("40").compareTo(
-        writeBack.load("player-1", job.jobKey()).experience()));
+    assertEquals(
+        0, new BigDecimal("40").compareTo(writeBack.load("player-1", job.jobKey()).experience()));
   }
 
   @Test
@@ -89,26 +91,25 @@ class WriteBackJobProgressionIntegrityTest {
   }
 
   private static JobRecord job(String key) {
-    return new JobRecord(
-        key, key, "desc", 100, "x", Map.of(), 0, Map.of());
+    return new JobRecord(key, key, "desc", 100, "x", Map.of(), 0, Map.of());
   }
 
   private static final class MemoryDelegate implements JobProgressionRepository {
     private final Map<String, JobProgressionRecord> store = new ConcurrentHashMap<>();
 
-    private static String k(String playerId, String jobKey) {
+    private static String cacheKey(String playerId, String jobKey) {
       return playerId + "\0" + jobKey;
     }
 
     @Override
     public boolean save(JobProgressionRecord record) {
-      store.put(k(record.playerId(), record.jobRecord().jobKey()), record);
+      store.put(cacheKey(record.playerId(), record.jobRecord().jobKey()), record);
       return true;
     }
 
     @Override
     public @Nullable JobProgressionRecord load(String playerId, String jobKey) {
-      return store.get(k(playerId, jobKey));
+      return store.get(cacheKey(playerId, jobKey));
     }
 
     @Override
@@ -129,7 +130,7 @@ class WriteBackJobProgressionIntegrityTest {
 
     @Override
     public boolean delete(String playerId, String jobKey) {
-      return store.remove(k(playerId, jobKey)) != null;
+      return store.remove(cacheKey(playerId, jobKey)) != null;
     }
   }
 }

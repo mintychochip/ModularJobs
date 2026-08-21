@@ -1,11 +1,17 @@
 package dev.mintychochip.boost.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import dev.mintychochip.boost.AdditiveBoostImpl;
 import dev.mintychochip.boost.MultiplicativeBoostImpl;
 import dev.mintychochip.boost.conditions.SnapshotCondition;
+import dev.mintychochip.boost.config.BoostSourceConfig.BoostConfig;
+import dev.mintychochip.boost.config.BoostSourceConfig.ConditionConfig;
+import dev.mintychochip.boost.config.BoostSourceConfig.RuleConfig;
+import dev.mintychochip.container.Boost;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.boost.Condition;
+import dev.mintychochip.container.boost.RelationalOperator;
+import dev.mintychochip.container.boost.RuledBoostSource;
+import dev.mintychochip.container.boost.RuledBoostSource.Rule;
 import dev.mintychochip.databag.AllOfCondition;
 import dev.mintychochip.databag.AlwaysCondition;
 import dev.mintychochip.databag.AnyOfCondition;
@@ -20,21 +26,15 @@ import dev.mintychochip.databag.SneakingCondition;
 import dev.mintychochip.databag.SprintingCondition;
 import dev.mintychochip.databag.WeatherCondition;
 import dev.mintychochip.databag.WorldCondition;
-import dev.mintychochip.boost.config.BoostSourceConfig.BoostConfig;
-import dev.mintychochip.boost.config.BoostSourceConfig.ConditionConfig;
-import dev.mintychochip.boost.config.BoostSourceConfig.RuleConfig;
-import dev.mintychochip.container.Boost;
-import dev.mintychochip.container.BoostSource;
-import dev.mintychochip.container.boost.Condition;
-import dev.mintychochip.container.boost.RelationalOperator;
-import dev.mintychochip.container.boost.RuledBoostSource;
-import dev.mintychochip.container.boost.RuledBoostSource.Rule;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Serializes runtime {@link BoostSource}/{@link Condition} graphs back to
- * {@link BoostSourceConfig} JSON models for editor export / round-trip.
+ * Serializes runtime {@link BoostSource}/{@link Condition} graphs back to {@link BoostSourceConfig}
+ * JSON models for editor export / round-trip.
  */
 public final class BoostSourceConfigSerializer {
 
@@ -55,9 +55,7 @@ public final class BoostSourceConfigSerializer {
     return new BoostSourceConfig(key, description, null, rules);
   }
 
-  /**
-   * Serialize only the rules list (for upgrade effect export).
-   */
+  /** Serialize only the rules list (for upgrade effect export). */
   public static List<RuleConfig> serializeRules(@NotNull BoostSource source) {
     if (source instanceof RuledBoostSource ruled) {
       List<RuleConfig> rules = new ArrayList<>();
@@ -72,10 +70,7 @@ public final class BoostSourceConfigSerializer {
   /** Serializes a single boost rule into its JSON configuration model. */
   public static RuleConfig serializeRule(@NotNull Rule rule) {
     return new RuleConfig(
-        rule.priority(),
-        serializeCondition(rule.condition()),
-        serializeBoost(rule.boost())
-    );
+        rule.priority(), serializeCondition(rule.condition()), serializeBoost(rule.boost()));
   }
 
   /**
@@ -87,10 +82,10 @@ public final class BoostSourceConfigSerializer {
     return switch (boost) {
       case MultiplicativeBoostImpl mult ->
           new BoostConfig("multiplicative", mult.amount().doubleValue());
-      case AdditiveBoostImpl add ->
-          new BoostConfig("additive", add.amount().doubleValue());
-      default -> throw new IllegalArgumentException(
-          "Cannot serialize boost type: " + boost.getClass().getName());
+      case AdditiveBoostImpl add -> new BoostConfig("additive", add.amount().doubleValue());
+      default ->
+          throw new IllegalArgumentException(
+              "Cannot serialize boost type: " + boost.getClass().getName());
     };
   }
 
@@ -107,71 +102,116 @@ public final class BoostSourceConfigSerializer {
     return serializeDataBag(snapshot.delegate());
   }
 
-  private static ConditionConfig serializeDataBag(
-      dev.mintychochip.databag.Condition condition) {
+  private static ConditionConfig serializeDataBag(dev.mintychochip.databag.Condition condition) {
     return switch (condition) {
       case AlwaysCondition ignored -> always();
       case AllOfCondition all -> {
         if (all.terms().isEmpty()) {
           yield always();
         }
-        List<ConditionConfig> children = all.terms().stream()
-            .map(BoostSourceConfigSerializer::serializeDataBag)
-            .toList();
+        List<ConditionConfig> children =
+            all.terms().stream().map(BoostSourceConfigSerializer::serializeDataBag).toList();
         yield new ConditionConfig(
             "and", null, null, null, children, null, null, null, null, null, null, null);
       }
       case AnyOfCondition any -> {
-        List<ConditionConfig> children = any.terms().stream()
-            .map(BoostSourceConfigSerializer::serializeDataBag)
-            .toList();
+        List<ConditionConfig> children =
+            any.terms().stream().map(BoostSourceConfigSerializer::serializeDataBag).toList();
         yield new ConditionConfig(
             "or", null, null, null, children, null, null, null, null, null, null, null);
       }
-      case InvertedCondition inverted -> new ConditionConfig(
-          "not", null, null, null, null, serializeDataBag(inverted.term()),
-          null, null, null, null, null, null);
+      case InvertedCondition inverted ->
+          new ConditionConfig(
+              "not",
+              null,
+              null,
+              null,
+              null,
+              serializeDataBag(inverted.term()),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null);
       case SneakingCondition sneak -> simple("sneaking", sneak.expected());
       case SprintingCondition sprint -> simple("sprinting", sprint.expected());
       case BiomeCondition biome -> simple("biome", biome.biomeKey().asString());
       case WorldCondition world -> simple("world", preferredWorldName(world.worldName()));
       case WeatherCondition weather ->
           simple("weather", weather.state().name().toLowerCase(Locale.ROOT));
-      case FluidCondition fluid -> new ConditionConfig(
-          "liquid", null, fluid.fluidKey().asString(), null, null, null,
-          null, null, null, null, null, true);
-      case PlayerResourceCondition resource -> new ConditionConfig(
-          "player_resource",
-          operatorName(mapOperator(resource.operator())),
-          resource.expected(),
-          null, null, null,
-          resource.type().name().toLowerCase(Locale.ROOT),
-          null, null, null, null, null);
-      case PotionPresentCondition potion -> new ConditionConfig(
-          "potion_effect", null, null, null, null, null, null,
-          stripMinecraft(potion.effectKey().asString()),
-          null, null, null, null);
-      case PotionAmplifierCondition potion -> new ConditionConfig(
-          "potion_effect",
-          operatorName(mapOperator(potion.operator())),
-          null, null, null, null, null,
-          stripMinecraft(potion.effectKey().asString()),
-          potion.expected(),
-          null, null, null);
+      case FluidCondition fluid ->
+          new ConditionConfig(
+              "liquid",
+              null,
+              fluid.fluidKey().asString(),
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              true);
+      case PlayerResourceCondition resource ->
+          new ConditionConfig(
+              "player_resource",
+              operatorName(mapOperator(resource.operator())),
+              resource.expected(),
+              null,
+              null,
+              null,
+              resource.type().name().toLowerCase(Locale.ROOT),
+              null,
+              null,
+              null,
+              null,
+              null);
+      case PotionPresentCondition potion ->
+          new ConditionConfig(
+              "potion_effect",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              stripMinecraft(potion.effectKey().asString()),
+              null,
+              null,
+              null,
+              null);
+      case PotionAmplifierCondition potion ->
+          new ConditionConfig(
+              "potion_effect",
+              operatorName(mapOperator(potion.operator())),
+              null,
+              null,
+              null,
+              null,
+              null,
+              stripMinecraft(potion.effectKey().asString()),
+              potion.expected(),
+              null,
+              null,
+              null);
       case JobCondition job -> {
         List<String> keys = new ArrayList<>(job.jobKeys());
         if (keys.size() == 1) {
           yield simple("job", stripJobNamespace(keys.getFirst()));
         }
-        List<Object> values = keys.stream()
-            .map(BoostSourceConfigSerializer::stripJobNamespace)
-            .map(s -> (Object) s)
-            .toList();
+        List<Object> values =
+            keys.stream()
+                .map(BoostSourceConfigSerializer::stripJobNamespace)
+                .map(s -> (Object) s)
+                .toList();
         yield new ConditionConfig(
             "job", null, null, values, null, null, null, null, null, null, null, null);
       }
-      default -> throw new IllegalArgumentException(
-          "Cannot serialize condition type: " + condition.getClass().getName());
+      default ->
+          throw new IllegalArgumentException(
+              "Cannot serialize condition type: " + condition.getClass().getName());
     };
   }
 
@@ -205,8 +245,7 @@ public final class BoostSourceConfigSerializer {
 
   private static ConditionConfig simple(String type, @Nullable Object value) {
     return new ConditionConfig(
-        type, null, value, null, null, null, null, null, null, null, null, null
-    );
+        type, null, value, null, null, null, null, null, null, null, null, null);
   }
 
   private static String operatorName(RelationalOperator operator) {
@@ -226,5 +265,4 @@ public final class BoostSourceConfigSerializer {
     }
     return jobKey;
   }
-
 }

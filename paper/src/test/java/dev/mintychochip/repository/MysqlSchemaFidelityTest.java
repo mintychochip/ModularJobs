@@ -21,12 +21,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Applies the shipped {@code sql/mysql.sql} DDL and verifies write→read fidelity for
- * job-task / payable / progression fields against a real MySQL instance.
+ * Applies the shipped {@code sql/mysql.sql} DDL and verifies write→read fidelity for job-task /
+ * payable / progression fields against a real MySQL instance.
  *
- * <p>Connection defaults to {@code jdbc:mysql://localhost:13306/modularjobs} (user/password
- * {@code test}). Override with env {@code MODULARJOBS_TEST_MYSQL_URL},
- * {@code MODULARJOBS_TEST_MYSQL_USER}, {@code MODULARJOBS_TEST_MYSQL_PASSWORD}.
+ * <p>Connection defaults to {@code jdbc:mysql://localhost:13306/modularjobs} (user/password {@code
+ * test}). Override with env {@code MODULARJOBS_TEST_MYSQL_URL}, {@code
+ * MODULARJOBS_TEST_MYSQL_USER}, {@code MODULARJOBS_TEST_MYSQL_PASSWORD}.
  */
 class MysqlSchemaFidelityTest {
 
@@ -49,7 +49,7 @@ class MysqlSchemaFidelityTest {
     try {
       Class.forName(DatabaseType.MYSQL.getClassName());
       try (Connection c = DriverManager.getConnection(jdbcUrl, user, password);
-           Statement st = c.createStatement()) {
+          Statement st = c.createStatement()) {
         st.execute("SELECT 1");
         mysqlAvailable = true;
       }
@@ -90,7 +90,7 @@ class MysqlSchemaFidelityTest {
 
   @Test
   void shippedMysqlDdlUsesMysqlTypes() {
-    String[] statements = DatabaseType.MYSQL.getSQLTables();
+    String[] statements = DatabaseType.MYSQL.getSqlTables();
     assertTrue(statements.length > 0, "mysql.sql must produce statements");
     String joined = String.join("\n", statements).toUpperCase();
     assertFalse(joined.contains("SERIAL"), "MySQL DDL must not use SERIAL");
@@ -104,9 +104,10 @@ class MysqlSchemaFidelityTest {
     requireMysql();
     // Insert task
     int taskId;
-    try (PreparedStatement ps = connection.prepareStatement(
-        "INSERT INTO job_tasks (job_key, action_type_key, context_key) VALUES (?, ?, ?)",
-        Statement.RETURN_GENERATED_KEYS)) {
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            "INSERT INTO job_tasks (job_key, action_type_key, context_key) VALUES (?, ?, ?)",
+            Statement.RETURN_GENERATED_KEYS)) {
       ps.setString(1, "modularjobs:miner");
       ps.setString(2, "modularjobs:block_break");
       ps.setString(3, "minecraft:diamond_ore");
@@ -120,9 +121,11 @@ class MysqlSchemaFidelityTest {
     assertTrue(taskId > 0);
 
     BigDecimal amount = new BigDecimal("1234.5678901234");
-    try (PreparedStatement ps = connection.prepareStatement(
-        "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount, currency_identifier) "
-            + "VALUES (?, ?, ?, ?)")) {
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            "INSERT INTO job_task_payables (job_task_id, payable_type_key, amount,"
+                + " currency_identifier) "
+                + "VALUES (?, ?, ?, ?)")) {
       ps.setInt(1, taskId);
       ps.setString(2, "modularjobs:experience");
       ps.setBigDecimal(3, amount);
@@ -130,8 +133,9 @@ class MysqlSchemaFidelityTest {
       assertEquals(1, ps.executeUpdate());
     }
 
-    try (PreparedStatement ps = connection.prepareStatement(
-        """
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            """
             SELECT t.job_key, t.action_type_key, t.context_key,
                    p.payable_type_key, p.amount, p.currency_identifier
             FROM job_tasks t
@@ -148,8 +152,13 @@ class MysqlSchemaFidelityTest {
         assertEquals("modularjobs:experience", rs.getString("payable_type_key"));
         BigDecimal readAmount = rs.getBigDecimal("amount");
         assertNotNull(readAmount);
-        assertEquals(0, amount.compareTo(readAmount),
-            "DECIMAL amount must round-trip without loss; expected " + amount + " got " + readAmount);
+        assertEquals(
+            0,
+            amount.compareTo(readAmount),
+            "DECIMAL amount must round-trip without loss; expected "
+                + amount
+                + " got "
+                + readAmount);
         assertNull(rs.getString("currency_identifier"));
         boolean hasExtraRow = rs.next();
         assertFalse(hasExtraRow);
@@ -161,8 +170,9 @@ class MysqlSchemaFidelityTest {
   void payableRecordsCompositeKeyAndCurrencyRoundTrip() throws SQLException {
     requireMysql();
     BigDecimal amount = new BigDecimal("99.1250000000");
-    try (PreparedStatement ps = connection.prepareStatement(
-        """
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            """
             INSERT INTO payable_records
               (job_key, action_type_key, context_key, payable_type_key, amount, currency)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -176,8 +186,9 @@ class MysqlSchemaFidelityTest {
       assertEquals(1, ps.executeUpdate());
     }
 
-    try (PreparedStatement ps = connection.prepareStatement(
-        """
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            """
             SELECT amount, currency FROM payable_records
             WHERE job_key = ? AND action_type_key = ? AND context_key = ? AND payable_type_key = ?
             """)) {
@@ -198,16 +209,18 @@ class MysqlSchemaFidelityTest {
   void progressionExperienceRoundTrip() throws SQLException {
     requireMysql();
     BigDecimal exp = new BigDecimal("5000.2500000000");
-    try (PreparedStatement ps = connection.prepareStatement(
-        "INSERT INTO job_progression (player_id, job_key, experience) VALUES (?, ?, ?)")) {
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            "INSERT INTO job_progression (player_id, job_key, experience) VALUES (?, ?, ?)")) {
       ps.setString(1, "11111111-2222-3333-4444-555555555555");
       ps.setString(2, "modularjobs:miner");
       ps.setBigDecimal(3, exp);
       assertEquals(1, ps.executeUpdate());
     }
 
-    try (PreparedStatement ps = connection.prepareStatement(
-        "SELECT experience FROM job_progression WHERE player_id = ? AND job_key = ?")) {
+    try (PreparedStatement ps =
+        connection.prepareStatement(
+            "SELECT experience FROM job_progression WHERE player_id = ? AND job_key = ?")) {
       ps.setString(1, "11111111-2222-3333-4444-555555555555");
       ps.setString(2, "modularjobs:miner");
       try (ResultSet rs = ps.executeQuery()) {
@@ -219,7 +232,7 @@ class MysqlSchemaFidelityTest {
   }
 
   private static void applyShippedSchema(Connection connection) throws SQLException {
-    String[] tables = DatabaseType.MYSQL.getSQLTables();
+    String[] tables = DatabaseType.MYSQL.getSqlTables();
     assertNotNull(tables);
     assertTrue(tables.length > 0);
     try (Statement st = connection.createStatement()) {
@@ -232,16 +245,17 @@ class MysqlSchemaFidelityTest {
   private static void cleanTables(Connection connection) throws SQLException {
     try (Statement st = connection.createStatement()) {
       // order matters for FKs
-      for (String table : Arrays.asList(
-          "job_task_payables",
-          "job_tasks",
-          "payable_records",
-          "job_progression",
-          "archive_job_progression",
-          "time_boosts",
-          "time_boost_identity",
-          "player_upgrades",
-          "editor_sessions")) {
+      for (String table :
+          Arrays.asList(
+              "job_task_payables",
+              "job_tasks",
+              "payable_records",
+              "job_progression",
+              "archive_job_progression",
+              "time_boosts",
+              "time_boost_identity",
+              "player_upgrades",
+              "editor_sessions")) {
         st.execute("DELETE FROM " + table);
       }
     }

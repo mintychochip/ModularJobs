@@ -1,16 +1,16 @@
 package dev.mintychochip.registry;
 
-import java.util.function.Consumer;
 import dev.mintychochip.Bridge;
+import java.util.function.Consumer;
 import net.kyori.adventure.key.Keyed;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Provides access to the registries owned by the running plugin.
  *
- * <p>Registries are addressed by their {@link RegistryKey}; an unknown key causes
- * the lookup and mutation methods to throw {@link IllegalArgumentException}, which
- * callers may use to detect whether a registry exists.</p>
+ * <p>Registries are addressed by their {@link RegistryKey}; an unknown key causes the lookup and
+ * mutation methods to throw {@link IllegalArgumentException}, which callers may use to detect
+ * whether a registry exists.
  */
 public interface RegistryContainer {
 
@@ -39,17 +39,18 @@ public interface RegistryContainer {
    * @throws IllegalArgumentException if no registry exists under the key
    */
   @NotNull
-  <T> RegistryView<T> getRegistry(RegistryKey<T> key) throws IllegalArgumentException;
+  <T> RegistryView<T> getRegistry(RegistryKey<T> key);
 
   /**
    * Applies the given consumer to the mutable registry identified by the given key.
    *
-   * <p>Mutations made by the consumer are applied to the backing registry, e.g. to
-   * register new entries.</p>
+   * <p>Mutations made by the consumer are applied to the backing registry, e.g. to register new
+   * entries.
    *
    * @param key the registry key; must not be {@code null}
-   * @param registryConsumer the consumer applying mutations to the registry; must not be {@code null}
+   * @param registryConsumer the consumer applying mutations to the registry; must not be {@code
+   *     null}
    * @throws IllegalArgumentException if no registry exists under the key
    */
-  <T extends Keyed> void editRegistry(RegistryKey<T> key, Consumer<Registry<T>> registryConsumer) throws IllegalArgumentException;
+  <T extends Keyed> void editRegistry(RegistryKey<T> key, Consumer<Registry<T>> registryConsumer);
 }

@@ -7,23 +7,17 @@ import com.google.gson.JsonObject;
 import dev.mintychochip.upgrade.Position;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Exports EditorTree to JSON in the Wynncraft format.
- */
+/** Exports EditorTree to JSON in the Wynncraft format. */
 public final class TreeEditorExporter {
 
   private final Gson gson;
 
+  /** Tree editor exporter. */
   public TreeEditorExporter() {
-    this.gson = new GsonBuilder()
-        .setPrettyPrinting()
-        .disableHtmlEscaping()
-        .create();
+    this.gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
   }
 
-  /**
-   * Export the tree to JSON in Wynncraft format.
-   */
+  /** Export the tree to JSON in Wynncraft format. */
   public String export(@NotNull EditorTree tree) {
     JsonObject root = new JsonObject();
     JsonObject treeObj = exportTree(tree);
@@ -36,9 +30,7 @@ public final class TreeEditorExporter {
     return gson.toJson(root);
   }
 
-  /**
-   * Export a single tree to JSON.
-   */
+  /** Export a single tree to JSON. */
   public String exportSingle(@NotNull EditorTree tree) {
     return gson.toJson(exportTree(tree));
   }

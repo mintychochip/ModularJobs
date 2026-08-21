@@ -6,6 +6,9 @@ import dev.craftux.api.inventory.ItemSpec;
 import dev.craftux.api.inventory.Slot;
 import dev.craftux.api.inventory.SlotPixelIntent;
 import dev.craftux.common.inventory.InventoryRuntime;
+import dev.mintychochip.JobProgression;
+import dev.mintychochip.gui.craftux.CraftuxItems;
+import dev.mintychochip.gui.craftux.CraftuxUiHost;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -13,24 +16,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import dev.mintychochip.JobProgression;
-import dev.mintychochip.gui.craftux.CraftuxItems;
-import dev.mintychochip.gui.craftux.CraftuxUiHost;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-/**
- * Job statistics inventory view via craftux (replaces Paper {@code Dialog} UI).
- */
+/** Job statistics inventory view via craftux (replaces Paper {@code Dialog} UI). */
 public final class StatsGui {
 
   private static final int JOBS_PER_PAGE = 5;
   private static final int GUI_ROWS = 6;
   private static final String MENU_ID = "job_stats";
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
   private final InventoryRuntime inventory;
   private final Map<UUID, Session> sessions = new HashMap<>();
@@ -52,8 +51,8 @@ public final class StatsGui {
    *
    * <p>This method is expected on the Bukkit thread because it opens a player inventory.
    */
-
-  public void open(Player viewer, OfflinePlayer target, List<JobProgression> progressions, int page) {
+  public void open(
+      Player viewer, OfflinePlayer target, List<JobProgression> progressions, int page) {
     int totalPages = calculateTotalPages(progressions);
     int safePage = Math.max(1, Math.min(page, totalPages));
     sessions.put(viewer.getUniqueId(), new Session(target, List.copyOf(progressions), safePage));
@@ -70,6 +69,7 @@ public final class StatsGui {
     open(player, session.target(), session.progressions(), session.page() - 1);
   }
 
+  /** On next. */
   public void onNext(UUID audience, InventoryClick click) {
     Session session = sessions.get(audience);
     Player player = Bukkit.getPlayer(audience);
@@ -109,10 +109,13 @@ public final class StatsGui {
       content.put(i, Slot.decorative(pane));
     }
 
-    content.put(4, Slot.decorative(CraftuxItems.of(
-        Material.BOOK,
-        "Job Statistics",
-        List.of("Player: " + targetName, "Jobs: " + progressions.size()))));
+    content.put(
+        4,
+        Slot.decorative(
+            CraftuxItems.of(
+                Material.BOOK,
+                "Job Statistics",
+                List.of("Player: " + targetName, "Jobs: " + progressions.size()))));
 
     int start = (page - 1) * JOBS_PER_PAGE;
     int end = Math.min(start + JOBS_PER_PAGE, progressions.size());
@@ -124,20 +127,26 @@ public final class StatsGui {
     }
 
     if (page > 1) {
-      content.put(45, Slot.navigation(
-          "stats_prev",
-          CraftuxItems.of(Material.ARROW, "Previous", List.of("Page " + (page - 1))),
-          CraftuxUiHost.ACTION_STATS_PREV,
-          SlotPixelIntent.UNVALIDATED));
+      content.put(
+          45,
+          Slot.navigation(
+              "stats_prev",
+              CraftuxItems.of(Material.ARROW, "Previous", List.of("Page " + (page - 1))),
+              CraftuxUiHost.ACTION_STATS_PREV,
+              SlotPixelIntent.UNVALIDATED));
     }
-    content.put(49, Slot.decorative(CraftuxItems.of(
-        Material.PAPER, "Page " + page + "/" + totalPages, List.of())));
+    content.put(
+        49,
+        Slot.decorative(
+            CraftuxItems.of(Material.PAPER, "Page " + page + "/" + totalPages, List.of())));
     if (page < totalPages) {
-      content.put(53, Slot.navigation(
-          "stats_next",
-          CraftuxItems.of(Material.ARROW, "Next", List.of("Page " + (page + 1))),
-          CraftuxUiHost.ACTION_STATS_NEXT,
-          SlotPixelIntent.UNVALIDATED));
+      content.put(
+          53,
+          Slot.navigation(
+              "stats_next",
+              CraftuxItems.of(Material.ARROW, "Next", List.of("Page " + (page + 1))),
+              CraftuxUiHost.ACTION_STATS_NEXT,
+              SlotPixelIntent.UNVALIDATED));
     }
 
     InventoryView.Builder builder = InventoryView.builder(MENU_ID, GUI_ROWS).title(title);
@@ -154,8 +163,10 @@ public final class StatsGui {
     lore.add("Level: " + level);
     lore.add("XP: " + xp.setScale(1, RoundingMode.HALF_UP).toPlainString());
     try {
-      BigDecimal next = prog.job().levelingCurve()
-          .evaluate(new dev.mintychochip.LevelingCurve.Parameters(level + 1));
+      BigDecimal next =
+          prog.job()
+              .levelingCurve()
+              .evaluate(new dev.mintychochip.LevelingCurve.Parameters(level + 1));
       lore.add("Next level: " + next.setScale(1, RoundingMode.HALF_UP).toPlainString());
     } catch (IllegalArgumentException | ArithmeticException ignored) {
       // curve may not support level+1

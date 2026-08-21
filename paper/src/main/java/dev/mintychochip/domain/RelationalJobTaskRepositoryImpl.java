@@ -2,6 +2,10 @@ package dev.mintychochip.domain;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import dev.mintychochip.domain.model.JobTaskRecord;
+import dev.mintychochip.domain.model.PayableRecord;
+import dev.mintychochip.repository.ConnectionSource;
+import dev.mintychochip.repository.SqlStatements;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,35 +17,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import dev.mintychochip.domain.model.JobTaskRecord;
-import dev.mintychochip.domain.model.PayableRecord;
-import dev.mintychochip.repository.ConnectionSource;
-import dev.mintychochip.repository.SqlStatements;
 
 /**
- * SQL-backed repository for job task records, keyed by the tuple
- * {@code (jobKey, actionTypeKey, contextKey)}. Reads are serviced through an LRU-style
- * Caffeine cache (10-minute TTL, 10k entry cap) that is invalidated on deletion and
- * refreshed on successful saves; writes run in transactions against the shared
- * {@link ConnectionSource}.
+ * SQL-backed repository for job task records, keyed by the tuple {@code (jobKey, actionTypeKey,
+ * contextKey)}. Reads are serviced through an LRU-style Caffeine cache (10-minute TTL, 10k entry
+ * cap) that is invalidated on deletion and refreshed on successful saves; writes run in
+ * transactions against the shared {@link ConnectionSource}.
  */
 public final class RelationalJobTaskRepositoryImpl {
 
   private static final Duration CACHE_TIME_TO_LIVE = Duration.ofMinutes(10);
   private static final int CACHE_MAXIMUM_SIZE = 10_000;
 
-  private static final String SELECT_PAYABLES =
-      SqlStatements.load("job_tasks/select-payables.sql");
-  private static final String SELECT_TASK_ID =
-      SqlStatements.load("job_tasks/select-task-id.sql");
-  private static final String INSERT_TASK =
-      SqlStatements.load("job_tasks/insert-task.sql");
-  private static final String DELETE_PAYABLES =
-      SqlStatements.load("job_tasks/delete-payables.sql");
-  private static final String INSERT_PAYABLE =
-      SqlStatements.load("job_tasks/insert-payable.sql");
-  private static final String DELETE_TASK =
-      SqlStatements.load("job_tasks/delete-task.sql");
+  private static final String SELECT_PAYABLES = SqlStatements.load("job_tasks/select-payables.sql");
+  private static final String SELECT_TASK_ID = SqlStatements.load("job_tasks/select-task-id.sql");
+  private static final String INSERT_TASK = SqlStatements.load("job_tasks/insert-task.sql");
+  private static final String DELETE_PAYABLES = SqlStatements.load("job_tasks/delete-payables.sql");
+  private static final String INSERT_PAYABLE = SqlStatements.load("job_tasks/insert-payable.sql");
+  private static final String DELETE_TASK = SqlStatements.load("job_tasks/delete-task.sql");
   private static final String SELECT_CONTEXT_KEYS =
       SqlStatements.load("job_tasks/select-context-keys.sql");
   private static final String SELECT_RECORDS_MAP =
@@ -50,8 +43,11 @@ public final class RelationalJobTaskRepositoryImpl {
   private final ConnectionSource connectionSource;
 
   /** Read-through cache keyed by (jobKey, actionTypeKey, contextKey). */
-  private final Cache<String, JobTaskRecord> readCache = Caffeine.newBuilder()
-      .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE).build();
+  private final Cache<String, JobTaskRecord> readCache =
+      Caffeine.newBuilder()
+          .expireAfterWrite(CACHE_TIME_TO_LIVE)
+          .maximumSize(CACHE_MAXIMUM_SIZE)
+          .build();
 
   /**
    * Creates a repository that reads and writes job tasks through the given connection source.
@@ -63,8 +59,9 @@ public final class RelationalJobTaskRepositoryImpl {
   }
 
   /**
-   * Loads the task record for the given key tuple, consulting the cache first and
-   * populating it on a cache miss. An absent task row yields a record with no payables.
+   * Loads the task record for the given key tuple, consulting the cache first and populating it on
+   * a cache miss. An absent task row yields a record with no payables.
+   *
    * @param jobKey the job key
    * @param actionTypeKey the action type key
    * @param contextKey the context key
@@ -95,13 +92,15 @@ public final class RelationalJobTaskRepositoryImpl {
         return taskRecord;
       }
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
   /**
-   * Persists a task record transactionally: inserts the task row when absent, otherwise
-   * replaces its payables, then refreshes the cache with the stored record.
+   * Persists a task record transactionally: inserts the task row when absent, otherwise replaces
+   * its payables, then refreshes the cache with the stored record.
+   *
    * @param record the record to store
    * @return {@code true} if the record was persisted
    */
@@ -125,8 +124,8 @@ public final class RelationalJobTaskRepositoryImpl {
 
         if (taskId == null) {
           // Insert new task
-          try (PreparedStatement ps = connection.prepareStatement(
-              INSERT_TASK, PreparedStatement.RETURN_GENERATED_KEYS)) {
+          try (PreparedStatement ps =
+              connection.prepareStatement(INSERT_TASK, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, record.jobKey());
             ps.setString(2, record.actionTypeKey());
             ps.setString(3, record.contextKey());
@@ -167,13 +166,15 @@ public final class RelationalJobTaskRepositoryImpl {
         throw e;
       }
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
   /**
-   * Deletes the task and its payables (children first to satisfy the foreign key)
-   * in a transaction, invalidating the cache entry.
+   * Deletes the task and its payables (children first to satisfy the foreign key) in a transaction,
+   * invalidating the cache entry.
+   *
    * @param jobKey the job key
    * @param actionTypeKey the action type key
    * @param contextKey the context key
@@ -221,13 +222,15 @@ public final class RelationalJobTaskRepositoryImpl {
         throw e;
       }
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
   /**
-   * Loads all task records for a job, grouped by action type key (map order follows
-   * action type ordering).
+   * Loads all task records for a job, grouped by action type key (map order follows action type
+   * ordering).
+   *
    * @param jobKey the job key to match
    * @return a map of action type key to its task records
    */
@@ -244,25 +247,30 @@ public final class RelationalJobTaskRepositoryImpl {
           BigDecimal amount = rs.getBigDecimal("amount");
           String currency = rs.getString("currency_identifier");
           String contextKey = rs.getString("context_key");
-          Map<Integer, TaskRecordAccumulator> taskMap = actionTypeTaskMap.computeIfAbsent(
-              actionTypeKey, ignored -> new LinkedHashMap<>());
-          TaskRecordAccumulator accumulator = taskMap.computeIfAbsent(taskId,
-              ignored -> new TaskRecordAccumulator(contextKey));
+          Map<Integer, TaskRecordAccumulator> taskMap =
+              actionTypeTaskMap.computeIfAbsent(actionTypeKey, ignored -> new LinkedHashMap<>());
+          TaskRecordAccumulator accumulator =
+              taskMap.computeIfAbsent(taskId, ignored -> new TaskRecordAccumulator(contextKey));
           if (payableTypeKey != null) {
             accumulator.payables.add(new PayableRecord(payableTypeKey, amount, currency));
           }
         }
       }
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
 
     Map<String, List<JobTaskRecord>> records = new LinkedHashMap<>();
     for (Entry<String, Map<Integer, TaskRecordAccumulator>> entry : actionTypeTaskMap.entrySet()) {
       String actionTypeKey = entry.getKey();
-      List<JobTaskRecord> taskRecords = entry.getValue().values().stream()
-          .map(a -> new JobTaskRecord(jobKey, actionTypeKey, a.contextKey, List.copyOf(a.payables)))
-          .toList();
+      List<JobTaskRecord> taskRecords =
+          entry.getValue().values().stream()
+              .map(
+                  a ->
+                      new JobTaskRecord(
+                          jobKey, actionTypeKey, a.contextKey, List.copyOf(a.payables)))
+              .toList();
       records.put(actionTypeKey, taskRecords);
     }
     return records;
@@ -270,6 +278,7 @@ public final class RelationalJobTaskRepositoryImpl {
 
   /**
    * Loads all task records for a single action type of a job.
+   *
    * @param jobKey the job key
    * @param actionTypeKey the action type key
    * @return the matching task records
@@ -289,12 +298,14 @@ public final class RelationalJobTaskRepositoryImpl {
       }
       return records;
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
   /**
    * Loads every task record for a job across all action types.
+   *
    * @param jobKey the job key to match
    * @return all task records for the job
    */

@@ -1,17 +1,15 @@
 package dev.mintychochip.profession;
 
+import dev.mintychochip.profession.config.YamlRecipeDefinitionLoader;
 import dev.mintychochip.service.BuffService;
 import dev.mintychochip.service.JobService;
 import dev.mintychochip.service.NodeHarvestService;
 import dev.mintychochip.service.ProfessionService;
 import dev.mintychochip.service.RecipeService;
 import dev.mintychochip.service.StationService;
-import dev.mintychochip.profession.config.YamlRecipeDefinitionLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- * Manual composition for the profession service surfaces.
- */
+/** Manual composition for the profession service surfaces. */
 public final class ProfessionWiring {
 
   public final ProfessionService professionService;
@@ -33,6 +31,7 @@ public final class ProfessionWiring {
     this.nodeHarvestService = nodeHarvestService;
   }
 
+  /** Create. */
   public static ProfessionWiring create(JavaPlugin plugin, JobService jobService) {
     MemoryRecipeService recipeService = new MemoryRecipeService();
     YamlRecipeDefinitionLoader.load(plugin, recipeService);
@@ -41,7 +40,6 @@ public final class ProfessionWiring {
         recipeService,
         new MemoryBuffService(),
         new StubStationService(),
-        new StubNodeHarvestService()
-    );
+        new StubNodeHarvestService());
   }
 }

@@ -14,13 +14,12 @@ import org.jetbrains.annotations.NotNull;
  */
 final class HikariConfigProvider {
 
-  @NotNull
-  private final ConfigurationSection configuration;
+  @NotNull private final ConfigurationSection configuration;
 
-  @NotNull
-  private final DatabaseType databaseType;
+  @NotNull private final DatabaseType databaseType;
 
-  HikariConfigProvider(@NotNull ConfigurationSection configuration, @NotNull DatabaseType databaseType) {
+  HikariConfigProvider(
+      @NotNull ConfigurationSection configuration, @NotNull DatabaseType databaseType) {
     this.configuration = configuration;
     this.databaseType = databaseType;
   }

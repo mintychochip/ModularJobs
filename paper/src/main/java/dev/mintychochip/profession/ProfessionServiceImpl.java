@@ -1,22 +1,21 @@
 package dev.mintychochip.profession;
 
+import dev.mintychochip.JobProgression;
+import dev.mintychochip.service.JobService;
+import dev.mintychochip.service.ProfessionService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
-import dev.mintychochip.JobProgression;
-import dev.mintychochip.service.JobService;
-import dev.mintychochip.service.ProfessionService;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Facade: §8.1 catalog + {@link JobService} progression (storage keys).
- */
+/** Facade: §8.1 catalog + {@link JobService} progression (storage keys). */
 public final class ProfessionServiceImpl implements ProfessionService {
 
   private final JobService jobService;
 
+  /** Profession service impl. */
   public ProfessionServiceImpl(JobService jobService) {
     this.jobService = jobService;
   }
@@ -39,7 +38,8 @@ public final class ProfessionServiceImpl implements ProfessionService {
   }
 
   @Override
-  public Optional<BigDecimal> experience(@NotNull UUID playerId, @NotNull String professionIdOrAlias) {
+  public Optional<BigDecimal> experience(
+      @NotNull UUID playerId, @NotNull String professionIdOrAlias) {
     return progression(playerId, professionIdOrAlias).map(JobProgression::experience);
   }
 

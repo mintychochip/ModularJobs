@@ -8,9 +8,7 @@ import dev.mintychochip.container.boost.Condition;
 import dev.mintychochip.container.boost.LogicalOperator;
 import org.junit.jupiter.api.Test;
 
-/**
- * Pure condition composition / negation without requiring a live Player or World.
- */
+/** Pure condition composition / negation without requiring a live Player or World. */
 class ComposableConditionTest {
 
   private static final Condition ALWAYS = ctx -> true;
@@ -60,9 +58,7 @@ class ComposableConditionTest {
     assertFalse(factoryNot.applies(EMPTY_CONTEXT));
   }
 
-  /**
-   * Thin access to the production DataBag adapter.
-   */
+  /** Thin access to the production DataBag adapter. */
   private static final class BoostFactoryCompose {
     static Condition compose(Condition a, Condition b, LogicalOperator op) {
       return dev.mintychochip.boost.BoostFactoryImpl.INSTANCE.compose(a, b, op);

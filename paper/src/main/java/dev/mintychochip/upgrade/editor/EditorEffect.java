@@ -1,16 +1,17 @@
 package dev.mintychochip.upgrade.editor;
 
+import dev.mintychochip.upgrade.UpgradeEffect;
 import java.util.ArrayList;
 import java.util.List;
-import dev.mintychochip.upgrade.UpgradeEffect;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Mutable effect data for editing purposes.
- * Supports all effect types: boost, passive, permission, ruled_boost.
+ * Mutable effect data for editing purposes. Supports all effect types: boost, passive, permission,
+ * ruled_boost.
  */
 public final class EditorEffect {
 
+  /** Effect type. */
   public enum EffectType {
     BOOST,
     PASSIVE,
@@ -21,11 +22,11 @@ public final class EditorEffect {
   private EffectType type;
 
   // Boost fields
-  private String target;       // "xp", "money"
-  private double amount;       // multiplier (e.g., 1.1 for 10%)
+  private String target; // "xp", "money"
+  private double amount; // multiplier (e.g., 1.1 for 10%)
 
   // Passive fields
-  private String ability;      // ability identifier
+  private String ability; // ability identifier
   private String passiveDescription;
 
   // Permission fields
@@ -37,6 +38,7 @@ public final class EditorEffect {
   // Full ruled boost config stored as JSON string for now
   private String ruledConfigJson;
 
+  /** Editor effect. */
   public EditorEffect() {
     this.type = EffectType.BOOST;
     this.target = "xp";
@@ -44,9 +46,7 @@ public final class EditorEffect {
     this.permissions = new ArrayList<>();
   }
 
-  /**
-   * Create from an existing UpgradeEffect.
-   */
+  /** Create from an existing UpgradeEffect. */
   public static EditorEffect fromUpgradeEffect(@NotNull UpgradeEffect source) {
     EditorEffect effect = new EditorEffect();
 
@@ -75,6 +75,7 @@ public final class EditorEffect {
 
   // ========== Getters/Setters ==========
 
+  /** Type. */
   public EffectType type() {
     return type;
   }
@@ -83,22 +84,27 @@ public final class EditorEffect {
     this.type = type;
   }
 
+  /** Target. */
   public String target() {
     return target;
   }
 
+  /** Sets the target. */
   public void setTarget(String target) {
     this.target = target;
   }
 
+  /** Amount. */
   public double amount() {
     return amount;
   }
 
+  /** API member. */
   public void setAmount(double amount) {
     this.amount = amount;
   }
 
+  /** Ability. */
   public String ability() {
     return ability;
   }
@@ -107,6 +113,7 @@ public final class EditorEffect {
     this.ability = ability;
   }
 
+  /** Passive description. */
   public String passiveDescription() {
     return passiveDescription;
   }
@@ -115,6 +122,7 @@ public final class EditorEffect {
     this.passiveDescription = desc;
   }
 
+  /** Permission. */
   public String permission() {
     return permission;
   }
@@ -123,6 +131,7 @@ public final class EditorEffect {
     this.permission = permission;
   }
 
+  /** Permissions. */
   public List<String> permissions() {
     return permissions;
   }
@@ -131,6 +140,7 @@ public final class EditorEffect {
     this.permissions = permissions != null ? permissions : new ArrayList<>();
   }
 
+  /** Ruled description. */
   public String ruledDescription() {
     return ruledDescription;
   }
@@ -139,6 +149,7 @@ public final class EditorEffect {
     this.ruledDescription = desc;
   }
 
+  /** Ruled config json. */
   public String ruledConfigJson() {
     return ruledConfigJson;
   }
@@ -149,9 +160,7 @@ public final class EditorEffect {
 
   // ========== Display Helpers ==========
 
-  /**
-   * Get a human-readable description of this effect.
-   */
+  /** Get a human-readable description of this effect. */
   public String getDisplayDescription() {
     return switch (type) {
       case BOOST -> String.format("+%.0f%% %s", (amount - 1) * 100, target);
@@ -171,9 +180,7 @@ public final class EditorEffect {
     };
   }
 
-  /**
-   * Create a deep copy of this effect.
-   */
+  /** Create a deep copy of this effect. */
   public EditorEffect copy() {
     EditorEffect copy = new EditorEffect();
     copy.type = this.type;

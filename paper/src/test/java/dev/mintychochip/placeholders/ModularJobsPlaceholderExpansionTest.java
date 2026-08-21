@@ -2,12 +2,12 @@ package dev.mintychochip.placeholders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.service.JobService;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,8 @@ class ModularJobsPlaceholderExpansionTest {
 
   @Test
   void exposesJoinedJobCountAndJobList() {
-    JobService service = serviceWith(progression("miner", 7, "150"), progression("farmer", 3, "50"));
+    JobService service =
+        serviceWith(progression("miner", 7, "150"), progression("farmer", 3, "50"));
     ModularJobsPlaceholderExpansion expansion = new ModularJobsPlaceholderExpansion(service);
     assertEquals("2", expansion.onRequest(offlinePlayer(), "joinedjobcount"));
     assertEquals("miner,farmer", expansion.onRequest(offlinePlayer(), "jobs"));
@@ -33,7 +34,8 @@ class ModularJobsPlaceholderExpansionTest {
 
   @Test
   void exposesTotalLevels() {
-    JobService service = serviceWith(progression("miner", 7, "150"), progression("farmer", 3, "50"));
+    JobService service =
+        serviceWith(progression("miner", 7, "150"), progression("farmer", 3, "50"));
     ModularJobsPlaceholderExpansion expansion = new ModularJobsPlaceholderExpansion(service);
     assertEquals("10", expansion.onRequest(offlinePlayer(), "totallevels"));
   }
@@ -89,33 +91,35 @@ class ModularJobsPlaceholderExpansionTest {
   }
 
   private static JobService serviceWith(JobProgression... progressions) {
-    return (JobService) java.lang.reflect.Proxy.newProxyInstance(
-        Thread.currentThread().getContextClassLoader(), new Class<?>[] {JobService.class},
-        (proxy, method, args) -> {
-          switch (method.getName()) {
-            case "getJobs" -> {
-              return jobsOf(progressions);
-            }
-            case "getProgressions" -> {
-              return List.of(progressions);
-            }
-            case "getArchivedProgressions" -> {
-              return List.of(progressions.length > 0 ? progressions[0] : null);
-            }
-            case "getProgression" -> {
-              String jobKey = (String) args[1];
-              for (JobProgression p : progressions) {
-                if (p.job().key().toString().endsWith(jobKey)) {
-                  return p;
+    return (JobService)
+        java.lang.reflect.Proxy.newProxyInstance(
+            Thread.currentThread().getContextClassLoader(),
+            new Class<?>[] {JobService.class},
+            (proxy, method, args) -> {
+              switch (method.getName()) {
+                case "getJobs" -> {
+                  return jobsOf(progressions);
+                }
+                case "getProgressions" -> {
+                  return List.of(progressions);
+                }
+                case "getArchivedProgressions" -> {
+                  return List.of(progressions.length > 0 ? progressions[0] : null);
+                }
+                case "getProgression" -> {
+                  String jobKey = (String) args[1];
+                  for (JobProgression p : progressions) {
+                    if (p.job().key().toString().endsWith(jobKey)) {
+                      return p;
+                    }
+                  }
+                  return null;
+                }
+                default -> {
+                  return defaultValue(method.getReturnType());
                 }
               }
-              return null;
-            }
-            default -> {
-              return defaultValue(method.getReturnType());
-            }
-          }
-        });
+            });
   }
 
   private static List<Job> jobsOf(JobProgression... progressions) {
@@ -128,62 +132,69 @@ class ModularJobsPlaceholderExpansionTest {
 
   private static JobProgression progression(String name, int level, String exp) {
     Job job = job(name);
-    return (JobProgression) java.lang.reflect.Proxy.newProxyInstance(
-        Thread.currentThread().getContextClassLoader(), new Class<?>[] {JobProgression.class},
-        (proxy, method, args) -> {
-          switch (method.getName()) {
-            case "job" -> {
-              return job;
-            }
-            case "level" -> {
-              return level;
-            }
-            case "experience" -> {
-              return new BigDecimal(exp);
-            }
-            case "experienceForLevel" -> {
-              return new BigDecimal("100").multiply(BigDecimal.valueOf((Integer) args[0]));
-            }
-            default -> {
-              return defaultValue(method.getReturnType());
-            }
-          }
-        });
+    return (JobProgression)
+        java.lang.reflect.Proxy.newProxyInstance(
+            Thread.currentThread().getContextClassLoader(),
+            new Class<?>[] {JobProgression.class},
+            (proxy, method, args) -> {
+              switch (method.getName()) {
+                case "job" -> {
+                  return job;
+                }
+                case "level" -> {
+                  return level;
+                }
+                case "experience" -> {
+                  return new BigDecimal(exp);
+                }
+                case "experienceForLevel" -> {
+                  return new BigDecimal("100").multiply(BigDecimal.valueOf((Integer) args[0]));
+                }
+                default -> {
+                  return defaultValue(method.getReturnType());
+                }
+              }
+            });
   }
 
   private static Job job(String name) {
-    return (Job) java.lang.reflect.Proxy.newProxyInstance(
-        Thread.currentThread().getContextClassLoader(), new Class<?>[] {Job.class},
-        (proxy, method, args) -> {
-          switch (method.getName()) {
-            case "getPlainName" -> {
-              return name;
-            }
-            case "key" -> {
-              return Key.key("modularjobs", name);
-            }
-            case "maxLevel" -> {
-              return 100;
-            }
-            case "displayName" -> {
-              return net.kyori.adventure.text.Component.text(name);
-            }
-            case "description" -> {
-              return net.kyori.adventure.text.Component.text("Mines ores");
-            }
-            default -> {
-              return defaultValue(method.getReturnType());
-            }
-          }
-        });
+    return (Job)
+        java.lang.reflect.Proxy.newProxyInstance(
+            Thread.currentThread().getContextClassLoader(),
+            new Class<?>[] {Job.class},
+            (proxy, method, args) -> {
+              switch (method.getName()) {
+                case "getPlainName" -> {
+                  return name;
+                }
+                case "key" -> {
+                  return Key.key("modularjobs", name);
+                }
+                case "maxLevel" -> {
+                  return 100;
+                }
+                case "displayName" -> {
+                  return net.kyori.adventure.text.Component.text(name);
+                }
+                case "description" -> {
+                  return net.kyori.adventure.text.Component.text("Mines ores");
+                }
+                default -> {
+                  return defaultValue(method.getReturnType());
+                }
+              }
+            });
   }
 
   private static org.bukkit.OfflinePlayer offlinePlayer() {
-    return (org.bukkit.OfflinePlayer) java.lang.reflect.Proxy.newProxyInstance(
-        Thread.currentThread().getContextClassLoader(),
-        new Class<?>[] {org.bukkit.OfflinePlayer.class},
-        (proxy, method, args) ->
-            method.getName().equals("getUniqueId") ? PLAYER : defaultValue(method.getReturnType()));
+    return (org.bukkit.OfflinePlayer)
+        java.lang.reflect.Proxy.newProxyInstance(
+            Thread.currentThread().getContextClassLoader(),
+            new Class<?>[] {org.bukkit.OfflinePlayer.class},
+            (proxy, method, args) ->
+                method.getName().equals("getUniqueId")
+                    ? PLAYER
+                    : defaultValue(method.getReturnType()));
   }
 
   private static Object defaultValue(Class<?> type) {

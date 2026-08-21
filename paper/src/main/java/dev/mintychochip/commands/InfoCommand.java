@@ -4,13 +4,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobTask;
 import dev.mintychochip.container.ActionType;
@@ -20,6 +13,13 @@ import dev.mintychochip.gui.JobInfoGui;
 import dev.mintychochip.service.JobService;
 import dev.mintychochip.service.PreferencesService;
 import dev.mintychochip.util.Messages;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -42,6 +42,7 @@ public class InfoCommand implements JobsCommand {
   private final JobInfoGui jobInfoGui;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
+  /** Info command. */
   public InfoCommand(
       JobService jobService,
       JobResolver jobResolver,
@@ -56,47 +57,90 @@ public class InfoCommand implements JobsCommand {
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("info")
-        .then(Commands.literal("chat")
-            .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
-              jobResolver.getPlainNames().forEach(builder::suggest);
-              return builder.buildFuture();
-            })
-                .executes(context -> executeChatCommand(context.getSource(),
-                    context.getArgument("job", String.class), 1))
-                .then(Commands.argument("pageNumber", IntegerArgumentType.integer(1))
-                    .executes(context -> executeChatCommand(context.getSource(),
-                        context.getArgument("job", String.class),
-                        IntegerArgumentType.getInteger(context, "pageNumber"))))))
-        .then(Commands.literal("gui")
-            .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
-              jobResolver.getPlainNames().forEach(builder::suggest);
-              return builder.buildFuture();
-            })
-                .executes(context -> executeGuiCommand(context.getSource(),
-                    context.getArgument("job", String.class), 1))
-                .then(Commands.argument("pageNumber", IntegerArgumentType.integer(1))
-                    .executes(context -> executeGuiCommand(context.getSource(),
-                        context.getArgument("job", String.class),
-                        IntegerArgumentType.getInteger(context, "pageNumber"))))))
-        .then(Commands.literal("preference")
-            .then(Commands.literal("entries")
-                .then(Commands.argument("count", IntegerArgumentType.integer(1, 50))
-                    .executes(context -> setEntriesPreference(context.getSource(),
-                        IntegerArgumentType.getInteger(context, "count")))))
-            .then(Commands.literal("gui")
-                .executes(context -> setGuiModePreference(context.getSource(), true)))
-            .then(Commands.literal("chat")
-                .executes(context -> setGuiModePreference(context.getSource(), false))))
-        .then(Commands.argument("job", StringArgumentType.string()).suggests((context, builder) -> {
-          jobResolver.getPlainNames().forEach(builder::suggest);
-          return builder.buildFuture();
-        })
-            .executes(context -> executeCommand(context.getSource(),
-                context.getArgument("job", String.class), 1))
-            .then(Commands.argument("pageNumber", IntegerArgumentType.integer(1))
-                .executes(context -> executeCommand(context.getSource(),
-                    context.getArgument("job", String.class),
-                    IntegerArgumentType.getInteger(context, "pageNumber")))));
+        .then(
+            Commands.literal("chat")
+                .then(
+                    Commands.argument("job", StringArgumentType.string())
+                        .suggests(
+                            (context, builder) -> {
+                              jobResolver.getPlainNames().forEach(builder::suggest);
+                              return builder.buildFuture();
+                            })
+                        .executes(
+                            context ->
+                                executeChatCommand(
+                                    context.getSource(),
+                                    context.getArgument("job", String.class),
+                                    1))
+                        .then(
+                            Commands.argument("pageNumber", IntegerArgumentType.integer(1))
+                                .executes(
+                                    context ->
+                                        executeChatCommand(
+                                            context.getSource(),
+                                            context.getArgument("job", String.class),
+                                            IntegerArgumentType.getInteger(
+                                                context, "pageNumber"))))))
+        .then(
+            Commands.literal("gui")
+                .then(
+                    Commands.argument("job", StringArgumentType.string())
+                        .suggests(
+                            (context, builder) -> {
+                              jobResolver.getPlainNames().forEach(builder::suggest);
+                              return builder.buildFuture();
+                            })
+                        .executes(
+                            context ->
+                                executeGuiCommand(
+                                    context.getSource(),
+                                    context.getArgument("job", String.class),
+                                    1))
+                        .then(
+                            Commands.argument("pageNumber", IntegerArgumentType.integer(1))
+                                .executes(
+                                    context ->
+                                        executeGuiCommand(
+                                            context.getSource(),
+                                            context.getArgument("job", String.class),
+                                            IntegerArgumentType.getInteger(
+                                                context, "pageNumber"))))))
+        .then(
+            Commands.literal("preference")
+                .then(
+                    Commands.literal("entries")
+                        .then(
+                            Commands.argument("count", IntegerArgumentType.integer(1, 50))
+                                .executes(
+                                    context ->
+                                        setEntriesPreference(
+                                            context.getSource(),
+                                            IntegerArgumentType.getInteger(context, "count")))))
+                .then(
+                    Commands.literal("gui")
+                        .executes(context -> setGuiModePreference(context.getSource(), true)))
+                .then(
+                    Commands.literal("chat")
+                        .executes(context -> setGuiModePreference(context.getSource(), false))))
+        .then(
+            Commands.argument("job", StringArgumentType.string())
+                .suggests(
+                    (context, builder) -> {
+                      jobResolver.getPlainNames().forEach(builder::suggest);
+                      return builder.buildFuture();
+                    })
+                .executes(
+                    context ->
+                        executeCommand(
+                            context.getSource(), context.getArgument("job", String.class), 1))
+                .then(
+                    Commands.argument("pageNumber", IntegerArgumentType.integer(1))
+                        .executes(
+                            context ->
+                                executeCommand(
+                                    context.getSource(),
+                                    context.getArgument("job", String.class),
+                                    IntegerArgumentType.getInteger(context, "pageNumber")))));
   }
 
   private int executeCommand(CommandSourceStack source, String jobName, int page) {
@@ -198,6 +242,7 @@ public class InfoCommand implements JobsCommand {
     return Command.SINGLE_SUCCESS;
   }
 
+  /** Calculate total pages. */
   public int calculateTotalPages(Map<ActionType, List<JobTask>> tasks, int entriesPerPage) {
     return jobInfoGui.calculateTotalPages(tasks, entriesPerPage);
   }
@@ -209,10 +254,11 @@ public class InfoCommand implements JobsCommand {
     String jobDisplayName = serializePlain(job.displayName());
 
     Messages.send(player, "");
-    Messages.send(player,
-        "<neutral>━━━━━━━━━ <primary>Job Info: " + jobDisplayName + " <neutral>━━━━━━━━━");
+    Messages.send(
+        player, "<neutral>━━━━━━━━━ <primary>Job Info: " + jobDisplayName + " <neutral>━━━━━━━━━");
     Messages.send(player, "");
-    player.sendMessage(Component.text("  ").append(job.description().color(TextColor.color(0xAEB4BF))));
+    player.sendMessage(
+        Component.text("  ").append(job.description().color(TextColor.color(0xAEB4BF))));
     Messages.send(player, "<neutral>  Max Level: <secondary>" + job.maxLevel());
     Messages.send(player, "");
 
@@ -234,42 +280,55 @@ public class InfoCommand implements JobsCommand {
   }
 
   private void displayActionTypeSectionChat(Player player, ActionType type, List<JobTask> tasks) {
-    Messages.send(player, "<neutral>  ━━ <accent>"
-        + formatActionTypeName(type.name()) + "<neutral> ━━");
+    Messages.send(
+        player, "<neutral>  ━━ <accent>" + formatActionTypeName(type.name()) + "<neutral> ━━");
     for (JobTask task : tasks) {
-      player.sendMessage(Component.text()
-          .append(Component.text("    ● ", TextColor.color(0xAEB4BF)))
-          .append(Component.text(formatContextKey(task.contextKey()), TextColor.color(0xA1E0E0)))
-          .append(Component.text(" → ", TextColor.color(0xAEB4BF)))
-          .append(buildPayableComponent(task.payables()))
-          .build());
+      player.sendMessage(
+          Component.text()
+              .append(Component.text("    ● ", TextColor.color(0xAEB4BF)))
+              .append(
+                  Component.text(formatContextKey(task.contextKey()), TextColor.color(0xA1E0E0)))
+              .append(Component.text(" → ", TextColor.color(0xAEB4BF)))
+              .append(buildPayableComponent(task.payables()))
+              .build());
     }
   }
 
   private Component buildPaginationControls(String jobName, int currentPage, int totalPages) {
     Component controls = Component.text("  ");
     if (currentPage > 1) {
-      controls = controls.append(Component.text("[◀ Previous]", TextColor.color(0xAEFFC1))
-          .clickEvent(ClickEvent.runCommand("/jobs info chat " + jobName + " " + (currentPage - 1)))
-          .hoverEvent(HoverEvent.showText(Component.text("Go to page " + (currentPage - 1)))));
+      controls =
+          controls.append(
+              Component.text("[◀ Previous]", TextColor.color(0xAEFFC1))
+                  .clickEvent(
+                      ClickEvent.runCommand("/jobs info chat " + jobName + " " + (currentPage - 1)))
+                  .hoverEvent(
+                      HoverEvent.showText(Component.text("Go to page " + (currentPage - 1)))));
     } else {
       controls = controls.append(Component.text("[◀ Previous]", TextColor.color(0x555555)));
     }
     controls = controls.append(Component.text(" "));
-    controls = controls.append(Component.text("Page " + currentPage + "/" + totalPages,
-        TextColor.color(0xAEB4BF)));
+    controls =
+        controls.append(
+            Component.text("Page " + currentPage + "/" + totalPages, TextColor.color(0xAEB4BF)));
     controls = controls.append(Component.text(" "));
     if (currentPage < totalPages) {
-      controls = controls.append(Component.text("[Next ▶]", TextColor.color(0xAEFFC1))
-          .clickEvent(ClickEvent.runCommand("/jobs info chat " + jobName + " " + (currentPage + 1)))
-          .hoverEvent(HoverEvent.showText(Component.text("Go to page " + (currentPage + 1)))));
+      controls =
+          controls.append(
+              Component.text("[Next ▶]", TextColor.color(0xAEFFC1))
+                  .clickEvent(
+                      ClickEvent.runCommand("/jobs info chat " + jobName + " " + (currentPage + 1)))
+                  .hoverEvent(
+                      HoverEvent.showText(Component.text("Go to page " + (currentPage + 1)))));
     } else {
       controls = controls.append(Component.text("[Next ▶]", TextColor.color(0x555555)));
     }
     controls = controls.append(Component.text("  "));
-    controls = controls.append(Component.text("[GUI]", TextColor.color(0x3FB3D5))
-        .clickEvent(ClickEvent.runCommand("/jobs info gui " + jobName + " " + currentPage))
-        .hoverEvent(HoverEvent.showText(Component.text("View in GUI mode"))));
+    controls =
+        controls.append(
+            Component.text("[GUI]", TextColor.color(0x3FB3D5))
+                .clickEvent(ClickEvent.runCommand("/jobs info gui " + jobName + " " + currentPage))
+                .hoverEvent(HoverEvent.showText(Component.text("View in GUI mode"))));
     return controls;
   }
 

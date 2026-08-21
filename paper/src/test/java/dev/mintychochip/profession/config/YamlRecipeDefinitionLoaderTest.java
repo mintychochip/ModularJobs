@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.profession.MemoryRecipeService;
+import dev.mintychochip.profession.RecipeDefinition;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -12,12 +14,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
-import org.junit.jupiter.api.io.TempDir;
-import dev.mintychochip.profession.MemoryRecipeService;
-import dev.mintychochip.profession.RecipeDefinition;
 import net.kyori.adventure.key.Key;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class YamlRecipeDefinitionLoaderTest {
 
@@ -50,15 +50,11 @@ class YamlRecipeDefinitionLoaderTest {
     config.set("recipes.minecraft:iron_sword.tier", 2);
 
     int loaded =
-        YamlRecipeDefinitionLoader.loadFromConfiguration(
-            config, recipes, Logger.getGlobal());
+        YamlRecipeDefinitionLoader.loadFromConfiguration(config, recipes, Logger.getGlobal());
 
     assertEquals(1, loaded);
     assertTrue(recipes.definition(Key.key("minecraft", "iron_sword")).isPresent());
-    assertTrue(
-        recipes
-            .definitionForCraftOutput(Key.key("minecraft", "iron_sword"))
-            .isPresent());
+    assertTrue(recipes.definitionForCraftOutput(Key.key("minecraft", "iron_sword")).isPresent());
   }
 
   @Test
@@ -70,9 +66,7 @@ class YamlRecipeDefinitionLoaderTest {
 
     assertThrows(
         IllegalArgumentException.class,
-        () ->
-            YamlRecipeDefinitionLoader.parseAll(
-                config.getConfigurationSection("recipes")));
+        () -> YamlRecipeDefinitionLoader.parseAll(config.getConfigurationSection("recipes")));
   }
 
   @Test
@@ -81,8 +75,7 @@ class YamlRecipeDefinitionLoaderTest {
     YamlConfiguration config = new YamlConfiguration();
 
     int loaded =
-        YamlRecipeDefinitionLoader.loadFromConfiguration(
-            config, recipes, Logger.getGlobal());
+        YamlRecipeDefinitionLoader.loadFromConfiguration(config, recipes, Logger.getGlobal());
 
     assertEquals(0, loaded);
   }
@@ -95,15 +88,13 @@ class YamlRecipeDefinitionLoaderTest {
         Thread.currentThread().getContextClassLoader().getResourceAsStream("recipes.yml")) {
       assertNotNull(in, "bundled recipes.yml must be on test classpath");
       config =
-          YamlConfiguration.loadConfiguration(
-              new InputStreamReader(in, StandardCharsets.UTF_8));
-    } catch (Exception failure) {
+          YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+    } catch (java.io.IOException failure) {
       throw new AssertionError("failed to read bundled recipes.yml", failure);
     }
 
     int loaded =
-        YamlRecipeDefinitionLoader.loadFromConfiguration(
-            config, recipes, Logger.getGlobal());
+        YamlRecipeDefinitionLoader.loadFromConfiguration(config, recipes, Logger.getGlobal());
 
     assertEquals(6, loaded);
     assertTrue(recipes.definitionForCraftOutput(Key.key("minecraft", "iron_sword")).isPresent());

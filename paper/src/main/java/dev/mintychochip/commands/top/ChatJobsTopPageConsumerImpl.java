@@ -1,10 +1,10 @@
 package dev.mintychochip.commands.top;
 
-import dev.mintychochip.util.Messages;
-import java.util.List;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.commands.Page;
 import dev.mintychochip.commands.components.PlayerComponent;
+import dev.mintychochip.util.Messages;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -18,22 +18,29 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * Renders leaderboard entries as chat messages, including the viewer's rank,
- * highlighted rows for the viewer, and clickable previous/next navigation.
+ * Renders leaderboard entries as chat messages, including the viewer's rank, highlighted rows for
+ * the viewer, and clickable previous/next navigation.
  */
 public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
 
   private static final String ENTRY_FORMAT = "<rank>. <player>: <level>";
 
   @Override
-  public void consume(Component jobName, Page<JobProgression> page, CommandSender sender,
-      int maxPages, List<JobProgression> allEntries) {
+  public void consume(
+      Component jobName,
+      Page<JobProgression> page,
+      CommandSender sender,
+      int maxPages,
+      List<JobProgression> allEntries) {
     String jobNameText = PlainTextComponentSerializer.plainText().serialize(jobName);
     int pageNumber = page.pageNumber();
 
     Messages.send(sender, "");
-    Messages.send(sender, "<neutral>━━━━━━ <primary>Jobs Top </primary><accent>"
-        + jobNameText + "</accent> <neutral>━━━━━━");
+    Messages.send(
+        sender,
+        "<neutral>━━━━━━ <primary>Jobs Top </primary><accent>"
+            + jobNameText
+            + "</accent> <neutral>━━━━━━");
     Messages.send(sender, "<neutral>Page " + pageNumber + " of " + maxPages);
 
     if (sender instanceof Player player) {
@@ -43,8 +50,8 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
       }
     }
 
-    Messages.send(sender, "<neutral>Showing top <accent>" + allEntries.size()
-        + "<neutral> players");
+    Messages.send(
+        sender, "<neutral>Showing top <accent>" + allEntries.size() + "<neutral> players");
     Messages.send(sender, "");
 
     Component body = Component.empty();
@@ -53,14 +60,20 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     for (int i = 0; i < data.size(); i++) {
       JobProgression progression = data.get(i);
       OfflinePlayer progressionPlayer = Bukkit.getOfflinePlayer(progression.playerId());
-      boolean isViewer = sender instanceof Player player
-          && progression.playerId().equals(player.getUniqueId());
+      boolean isViewer =
+          sender instanceof Player player && progression.playerId().equals(player.getUniqueId());
 
-      Component row = MiniMessage.miniMessage().deserialize(ENTRY_FORMAT, TagResolver.builder()
-          .tag("rank", Tag.inserting(Component.text(i + 1 + (pageNumber - 1) * pageSize)))
-          .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))
-          .tag("level", Tag.inserting(LevelComponent.of(progression)))
-          .build());
+      Component row =
+          MiniMessage.miniMessage()
+              .deserialize(
+                  ENTRY_FORMAT,
+                  TagResolver.builder()
+                      .tag(
+                          "rank",
+                          Tag.inserting(Component.text(i + 1 + (pageNumber - 1) * pageSize)))
+                      .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))
+                      .tag("level", Tag.inserting(LevelComponent.of(progression)))
+                      .build());
 
       if (isViewer) {
         row = Component.text("→ ", NamedTextColor.GOLD).append(row.color(NamedTextColor.YELLOW));
@@ -81,10 +94,11 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     Component nav = Component.empty();
 
     if (currentPage > 1) {
-      Component prevButton = Component.text("[< Previous]")
-          .color(NamedTextColor.GREEN)
-          .clickEvent(ClickEvent.runCommand("/jobs top " + jobName + " " + (currentPage - 1)))
-          .hoverEvent(Component.text("Click to go to page " + (currentPage - 1)));
+      Component prevButton =
+          Component.text("[< Previous]")
+              .color(NamedTextColor.GREEN)
+              .clickEvent(ClickEvent.runCommand("/jobs top " + jobName + " " + (currentPage - 1)))
+              .hoverEvent(Component.text("Click to go to page " + (currentPage - 1)));
       nav = nav.append(prevButton);
     } else {
       nav = nav.append(Component.text("[< Previous]").color(NamedTextColor.DARK_GRAY));
@@ -93,10 +107,11 @@ public final class ChatJobsTopPageConsumerImpl implements JobsTopPageConsumer {
     nav = nav.append(Component.text("  ").color(NamedTextColor.GRAY));
 
     if (currentPage < maxPages) {
-      Component nextButton = Component.text("[Next >]")
-          .color(NamedTextColor.GREEN)
-          .clickEvent(ClickEvent.runCommand("/jobs top " + jobName + " " + (currentPage + 1)))
-          .hoverEvent(Component.text("Click to go to page " + (currentPage + 1)));
+      Component nextButton =
+          Component.text("[Next >]")
+              .color(NamedTextColor.GREEN)
+              .clickEvent(ClickEvent.runCommand("/jobs top " + jobName + " " + (currentPage + 1)))
+              .hoverEvent(Component.text("Click to go to page " + (currentPage + 1)));
       nav = nav.append(nextButton);
     } else {
       nav = nav.append(Component.text("[Next >]").color(NamedTextColor.DARK_GRAY));

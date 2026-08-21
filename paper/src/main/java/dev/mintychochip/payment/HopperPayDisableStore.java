@@ -1,8 +1,8 @@
 package dev.mintychochip.payment;
 
+import dev.mintychochip.util.LocationKey;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.util.LocationKey;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 

@@ -9,12 +9,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.junit.jupiter.api.Test;
 
-/**
- * Verifies the shipped {@link Messages} themed MiniMessage tags (replacing Mint messaging).
- */
+/** Verifies the shipped {@link Messages} themed MiniMessage tags (replacing Mint messaging). */
 class MessagesTest {
 
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
   /** Verifies null and empty strings produce empty components. */
   @Test
@@ -53,8 +52,9 @@ class MessagesTest {
   /** Verifies nested theme tags resolve completely in plain text. */
   @Test
   void componentNestedThemeTagsSerializeFully() {
-    String plain = PLAIN.serialize(
-        Messages.component("<neutral>━━ <primary>Jobs Top</primary> <accent>#1</accent> ━━"));
+    String plain =
+        PLAIN.serialize(
+            Messages.component("<neutral>━━ <primary>Jobs Top</primary> <accent>#1</accent> ━━"));
     assertEquals("━━ Jobs Top #1 ━━", plain);
     assertFalse(plain.contains("<"), "tags must be resolved, not left as literal text");
   }

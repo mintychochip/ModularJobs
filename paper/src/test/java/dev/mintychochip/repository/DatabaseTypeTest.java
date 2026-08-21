@@ -31,7 +31,8 @@ class DatabaseTypeTest {
     for (String id : new String[] {"postgres", "postgresql", "sqlite", "mariadb", "mongo", "h2"}) {
       IllegalArgumentException ex =
           assertThrows(IllegalArgumentException.class, () -> DatabaseType.fromIdentifier(id));
-      assertTrue(ex.getMessage().toLowerCase().contains("mysql"),
+      assertTrue(
+          ex.getMessage().toLowerCase().contains("mysql"),
           "message should mention mysql-only for " + id + ": " + ex.getMessage());
     }
   }

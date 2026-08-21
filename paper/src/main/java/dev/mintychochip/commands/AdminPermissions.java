@@ -3,9 +3,7 @@ package dev.mintychochip.commands;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 
-/**
- * Central helper for the plugin's admin permission checks.
- */
+/** Central helper for the plugin's admin permission checks. */
 public final class AdminPermissions {
 
   /** Root admin node declared in {@code plugin.yml}. */

@@ -2,22 +2,20 @@ package dev.mintychochip.commands;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.time.Duration;
-import java.util.List;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.service.JobService;
+import java.time.Duration;
+import java.util.List;
 import net.kyori.adventure.key.Key;
 
-/**
- * Provides paginated job leaderboard entries with a short-lived read cache.
- */
+/** Provides paginated job leaderboard entries with a short-lived read cache. */
 public final class JobTopPageProvider {
 
   private static final int ENTRIES_PER_QUERY = 100;
 
   private final JobService jobService;
-  private final Cache<Key, List<JobProgression>> readCache = Caffeine.newBuilder()
-      .expireAfterWrite(Duration.ofMinutes(10)).build();
+  private final Cache<Key, List<JobProgression>> readCache =
+      Caffeine.newBuilder().expireAfterWrite(Duration.ofMinutes(10)).build();
 
   /**
    * Creates the page provider backed by the job service.
@@ -29,17 +27,17 @@ public final class JobTopPageProvider {
   }
 
   /**
-   * Returns the requested page of a job's leaderboard, backed by a short-lived
-   * cache of the most recent {@value ENTRIES_PER_QUERY} progressions.
+   * Returns the requested page of a job's leaderboard, backed by a short-lived cache of the most
+   * recent {@value ENTRIES_PER_QUERY} progressions.
    *
-   * @param jobKey     job whose leaderboard is requested
+   * @param jobKey job whose leaderboard is requested
    * @param pageNumber 1-based requested page, clamped to the available range
-   * @param pageSize   maximum entries per page
+   * @param pageSize maximum entries per page
    * @return the page; an empty first page if the job has no progressions
    */
   public Page<JobProgression> getPage(Key jobKey, int pageNumber, int pageSize) {
-    List<JobProgression> progressions = readCache.get(jobKey,
-        ignoredKey -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
+    List<JobProgression> progressions =
+        readCache.get(jobKey, ignoredKey -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
 
     if (progressions == null || progressions.isEmpty()) {
       return new Page<>(List.of(), 1, pageSize);
@@ -63,8 +61,8 @@ public final class JobTopPageProvider {
    * @return the cached progressions, or an empty list if none are available
    */
   public List<JobProgression> getAllEntries(Key jobKey) {
-    List<JobProgression> progressions = readCache.get(jobKey,
-        ignoredKey -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
+    List<JobProgression> progressions =
+        readCache.get(jobKey, ignoredKey -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
     return progressions != null ? progressions : List.of();
   }
 }

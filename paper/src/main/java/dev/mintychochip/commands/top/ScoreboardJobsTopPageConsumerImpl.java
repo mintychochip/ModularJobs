@@ -1,10 +1,10 @@
 package dev.mintychochip.commands.top;
 
-import java.util.List;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.commands.Page;
 import dev.mintychochip.commands.TextScoreboard;
 import dev.mintychochip.commands.components.PlayerComponent;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
@@ -15,9 +15,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * Renders leaderboard entries onto a player's side scoreboard. Only renders
- * when the sender is a player; other senders (console, command blocks) are
- * silently ignored.
+ * Renders leaderboard entries onto a player's side scoreboard. Only renders when the sender is a
+ * player; other senders (console, command blocks) are silently ignored.
  */
 public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsumer {
 
@@ -35,7 +34,11 @@ public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsu
   }
 
   @Override
-  public void consume(Component jobName, Page<JobProgression> page, CommandSender sender, int maxPages,
+  public void consume(
+      Component jobName,
+      Page<JobProgression> page,
+      CommandSender sender,
+      int maxPages,
       List<JobProgression> allEntries) {
     if (!(sender instanceof Player player)) {
       return;
@@ -46,11 +49,17 @@ public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsu
     for (int i = 0; i < data.size(); i++) {
       JobProgression progression = data.get(i);
       OfflinePlayer progressionPlayer = Bukkit.getOfflinePlayer(progression.playerId());
-      Component row = MiniMessage.miniMessage().deserialize(ENTRY_FORMAT, TagResolver.builder()
-          .tag("rank", Tag.inserting(Component.text(i + 1 + (pageNumber - 1) * pageSize)))
-          .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))
-          .tag("level", Tag.inserting(LevelComponent.of(progression)))
-          .build());
+      Component row =
+          MiniMessage.miniMessage()
+              .deserialize(
+                  ENTRY_FORMAT,
+                  TagResolver.builder()
+                      .tag(
+                          "rank",
+                          Tag.inserting(Component.text(i + 1 + (pageNumber - 1) * pageSize)))
+                      .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))
+                      .tag("level", Tag.inserting(LevelComponent.of(progression)))
+                      .build());
       scoreBoard.setLine(i, row, Component.empty());
     }
     scoreBoard.setCurrent(player);

@@ -1,20 +1,18 @@
 package dev.mintychochip.profession;
 
-import java.util.Collections;
+import dev.mintychochip.service.RecipeService;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.service.RecipeService;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * In-memory learned-recipe store.
- */
+/** In-memory learned-recipe store. */
 public final class MemoryRecipeService implements RecipeService {
 
   private final Map<UUID, Set<Key>> known = new ConcurrentHashMap<>();
@@ -73,6 +71,7 @@ public final class MemoryRecipeService implements RecipeService {
   public Optional<RecipeDefinition> definition(@NotNull Key recipeId) {
     return Optional.ofNullable(definitions.get(recipeId));
   }
+
   @Override
   public @NotNull Collection<RecipeDefinition> registeredDefinitions() {
     if (definitions.isEmpty()) {
@@ -80,7 +79,6 @@ public final class MemoryRecipeService implements RecipeService {
     }
     return Collections.unmodifiableCollection(definitions.values());
   }
-
 
   @Override
   public Optional<RecipeDefinition> definitionForCraftOutput(@NotNull Key outputMaterialKey) {

@@ -1,23 +1,23 @@
 package dev.mintychochip.payment;
 
 import com.google.common.cache.CacheLoader;
+import dev.mintychochip.container.boost.TimedBoostDataService;
+import dev.mintychochip.payment.ExploitService.ExploitProtectionType;
+import dev.mintychochip.profession.RecipeExperienceDepreciationPolicy;
+import dev.mintychochip.protection.BlockOwnershipService;
+import dev.mintychochip.service.ExploitProtectionStore;
+import dev.mintychochip.service.ItemBoostDataService;
+import dev.mintychochip.service.JobService;
+import dev.mintychochip.service.ProfessionService;
+import dev.mintychochip.service.RecipeService;
+import dev.mintychochip.upgrade.UpgradeBoostDataService;
+import dev.mintychochip.util.LocationKey;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import dev.mintychochip.service.ItemBoostDataService;
-import dev.mintychochip.container.boost.TimedBoostDataService;
-import dev.mintychochip.payment.ExploitService.ExploitProtectionType;
-import dev.mintychochip.profession.RecipeExperienceDepreciationPolicy;
-import dev.mintychochip.protection.BlockOwnershipService;
-import dev.mintychochip.service.ExploitProtectionStore;
-import dev.mintychochip.service.JobService;
-import dev.mintychochip.service.ProfessionService;
-import dev.mintychochip.service.RecipeService;
-import dev.mintychochip.upgrade.UpgradeBoostDataService;
-import dev.mintychochip.util.LocationKey;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -26,9 +26,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Manual composition for payment / exploit / damage tracking (replaces Guice PaymentModule).
- */
+/** Manual composition for payment / exploit / damage tracking (replaces Guice PaymentModule). */
 public final class PaymentWiring {
 
   public final BoostEngine boostEngine;
@@ -74,8 +72,8 @@ public final class PaymentWiring {
 
   /**
    * Composes the payment object graph (settings, boost engine, damage tracking, exploit
-   * protections, and all payment listeners). When both recipe and profession services are
-   * supplied, a {@link CraftRecipeGateListener} is also wired in.
+   * protections, and all payment listeners). When both recipe and profession services are supplied,
+   * a {@link CraftRecipeGateListener} is also wired in.
    */
   public static PaymentWiring create(
       Plugin plugin,
@@ -89,8 +87,8 @@ public final class PaymentWiring {
     PaymentSettings paymentSettings = PaymentSettings.fromPlugin(plugin);
     PaymentEligibility eligibility = new PaymentEligibility(paymentSettings);
 
-    BoostEngine boostEngine = new BoostEngine(
-        itemBoostDataService, timedBoostDataService, upgradeBoostDataService);
+    BoostEngine boostEngine =
+        new BoostEngine(itemBoostDataService, timedBoostDataService, upgradeBoostDataService);
     PlayerChunkExplorationService chunkExploration = new PlayerChunkExplorationService();
     MobDamageTrackerStore damageStore = new MobDamageTrackerStore();
     EntityValidationService entityValidation = new EntityValidationService(plugin);
@@ -110,15 +108,16 @@ public final class PaymentWiring {
 
     List<Listener> listeners = new ArrayList<>();
     listeners.add(new MobDamageTrackerController(damageStore));
-    listeners.add(new JobPaymentListener(
-        blockOwnershipService,
-        mobDamageTracker,
-        paymentHandler,
-        entityValidation,
-        exploitService,
-        chunkExploration,
-        eligibility,
-        hopperStore));
+    listeners.add(
+        new JobPaymentListener(
+            blockOwnershipService,
+            mobDamageTracker,
+            paymentHandler,
+            entityValidation,
+            exploitService,
+            chunkExploration,
+            eligibility,
+            hopperStore));
     listeners.add(new MobTagController(entityValidation));
     listeners.add(new ExploitStoreController(exploitService));
     listeners.add(new PistonProtectionListener(exploitService));
@@ -139,9 +138,7 @@ public final class PaymentWiring {
     return createExploitService(placedMaterials, settings);
   }
 
-  /**
-   * Package-visible for tests: build exploit service with an explicit placed material map.
-   */
+  /** Package-visible for tests: build exploit service with an explicit placed material map. */
   static ExploitService createExploitService(Map<Material, Duration> placedMaterials) {
     return createExploitService(placedMaterials, ExploitProtectionSettings.defaults());
   }
@@ -149,38 +146,47 @@ public final class PaymentWiring {
   static ExploitService createExploitService(
       Map<Material, Duration> placedMaterials, ExploitProtectionSettings settings) {
     Map<Key, ExploitProtectionStore<?>> providers = new HashMap<>();
-    providers.put(ExploitProtectionType.WAX.key(),
+    providers.put(
+        ExploitProtectionType.WAX.key(),
         new MemoryExploitProtectionStoreImpl<>(
             toTemporal(settings.waxMaterials()),
             Block::getType,
             CacheLoader.from(
-                block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
-                    block.getZ()))));
-    Map<Material, java.time.temporal.TemporalAmount> placedTemporal = new EnumMap<>(placedMaterials);
-    providers.put(ExploitProtectionType.PLACED.key(),
+                block ->
+                    new LocationKey(
+                        block.getWorld().getName(), block.getX(), block.getY(), block.getZ()))));
+    Map<Material, java.time.temporal.TemporalAmount> placedTemporal =
+        new EnumMap<>(placedMaterials);
+    providers.put(
+        ExploitProtectionType.PLACED.key(),
         new MemoryExploitProtectionStoreImpl<Block, Material>(
             placedTemporal,
             Block::getType,
             CacheLoader.from(
-                (Block block) -> new LocationKey(block.getWorld().getName(), block.getX(),
-                    block.getY(), block.getZ()))));
-    providers.put(ExploitProtectionType.DYE_ENTITY.key(),
+                (Block block) ->
+                    new LocationKey(
+                        block.getWorld().getName(), block.getX(), block.getY(), block.getZ()))));
+    providers.put(
+        ExploitProtectionType.DYE_ENTITY.key(),
         new MemoryExploitProtectionStoreImpl<>(
             toTemporal(settings.dyeEntities()),
             Entity::getType,
             CacheLoader.from(Entity::getUniqueId)));
-    providers.put(ExploitProtectionType.MILK.key(),
+    providers.put(
+        ExploitProtectionType.MILK.key(),
         new MemoryExploitProtectionStoreImpl<>(
             toTemporal(settings.milkEntities()),
             Entity::getType,
             CacheLoader.from(Entity::getUniqueId)));
-    providers.put(ExploitProtectionType.STRIP.key(),
+    providers.put(
+        ExploitProtectionType.STRIP.key(),
         new MemoryExploitProtectionStoreImpl<>(
             toTemporal(settings.stripMaterials()),
             Block::getType,
             CacheLoader.from(
-                block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
-                    block.getZ()))));
+                block ->
+                    new LocationKey(
+                        block.getWorld().getName(), block.getX(), block.getY(), block.getZ()))));
     return new ExploitService(providers, settings);
   }
 

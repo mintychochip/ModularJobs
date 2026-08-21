@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
-import java.util.List;
 import dev.mintychochip.boost.BoostFactoryImpl;
 import dev.mintychochip.boost.MultiplicativeBoostImpl;
 import dev.mintychochip.boost.RuledBoostSourceImpl;
@@ -18,6 +16,8 @@ import dev.mintychochip.container.BoostSource;
 import dev.mintychochip.container.boost.Condition;
 import dev.mintychochip.container.boost.LogicalOperator;
 import dev.mintychochip.container.boost.RuledBoostSource.Rule;
+import java.math.BigDecimal;
+import java.util.List;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,12 +34,13 @@ class BoostSourceConfigSerializerTest {
 
   @Test
   void serializeAlwaysAndMultiplicative() {
-    Rule rule = new Rule(
-        SnapshotCondition.wrap(dev.mintychochip.databag.Conditions.always()),
-        10,
-        new MultiplicativeBoostImpl(BigDecimal.valueOf(1.25)));
-    BoostSource source = new RuledBoostSourceImpl(
-        List.of(rule), Key.key("modularjobs", "test"), "test desc");
+    Rule rule =
+        new Rule(
+            SnapshotCondition.wrap(dev.mintychochip.databag.Conditions.always()),
+            10,
+            new MultiplicativeBoostImpl(BigDecimal.valueOf(1.25)));
+    BoostSource source =
+        new RuledBoostSourceImpl(List.of(rule), Key.key("modularjobs", "test"), "test desc");
 
     BoostSourceConfig config = BoostSourceConfigSerializer.serialize(source);
     assertEquals("modularjobs:test", config.key());
@@ -59,8 +60,9 @@ class BoostSourceConfigSerializerTest {
     Condition sneak = BoostFactoryImpl.INSTANCE.sneaking(true);
     Condition and = BoostFactoryImpl.INSTANCE.compose(world, sneak, LogicalOperator.AND);
     Rule rule = new Rule(and, 100, new MultiplicativeBoostImpl(BigDecimal.valueOf(3.0)));
-    BoostSource source = new RuledBoostSourceImpl(
-        List.of(rule), Key.key("modularjobs", "mining_boost"), "nether sneak");
+    BoostSource source =
+        new RuledBoostSourceImpl(
+            List.of(rule), Key.key("modularjobs", "mining_boost"), "nether sneak");
 
     BoostSourceConfig serialized = BoostSourceConfigSerializer.serialize(source);
     BoostSource reparsed = parser.parse(serialized);
@@ -93,10 +95,11 @@ class BoostSourceConfigSerializerTest {
   void serializeFlattenedAnd() {
     Condition a = BoostFactoryImpl.INSTANCE.sneaking(true);
     Condition b = BoostFactoryImpl.INSTANCE.sprinting(false);
-    Condition c = BoostFactoryImpl.INSTANCE.weather(
-        dev.mintychochip.container.boost.WeatherState.RAINING);
-    Condition composite = BoostFactoryImpl.INSTANCE.compose(
-        BoostFactoryImpl.INSTANCE.compose(a, b, LogicalOperator.AND), c, LogicalOperator.AND);
+    Condition c =
+        BoostFactoryImpl.INSTANCE.weather(dev.mintychochip.container.boost.WeatherState.RAINING);
+    Condition composite =
+        BoostFactoryImpl.INSTANCE.compose(
+            BoostFactoryImpl.INSTANCE.compose(a, b, LogicalOperator.AND), c, LogicalOperator.AND);
 
     ConditionConfig config = BoostSourceConfigSerializer.serializeCondition(composite);
     assertEquals("and", config.type());
@@ -106,25 +109,37 @@ class BoostSourceConfigSerializerTest {
 
   @Test
   void defaultMiningBoostRoundTripFromParserShape() {
-    ConditionConfig nether = new ConditionConfig(
-        "world", null, "world_nether", null, null, null, null, null, null, null, null, null);
-    ConditionConfig sneak = new ConditionConfig(
-        "sneaking", null, true, null, null, null, null, null, null, null, null, null);
-    ConditionConfig and = new ConditionConfig(
-        "and", null, null, null, List.of(nether, sneak), null, null, null, null, null, null, null);
+    ConditionConfig nether =
+        new ConditionConfig(
+            "world", null, "world_nether", null, null, null, null, null, null, null, null, null);
+    ConditionConfig sneak =
+        new ConditionConfig(
+            "sneaking", null, true, null, null, null, null, null, null, null, null, null);
+    ConditionConfig and =
+        new ConditionConfig(
+            "and",
+            null,
+            null,
+            null,
+            List.of(nether, sneak),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
     BoostConfig mult = new BoostConfig("multiplicative", 3.0);
     RuleConfig high = new RuleConfig(100, and, mult);
 
-    ConditionConfig always = new ConditionConfig(
-        "always", null, null, null, null, null, null, null, null, null, null, null);
+    ConditionConfig always =
+        new ConditionConfig(
+            "always", null, null, null, null, null, null, null, null, null, null, null);
     RuleConfig base = new RuleConfig(10, always, new BoostConfig("multiplicative", 1.25));
 
-    BoostSourceConfig original = new BoostSourceConfig(
-        "modularjobs:mining_boost",
-        "Enhanced mining",
-        null,
-        List.of(high, base)
-    );
+    BoostSourceConfig original =
+        new BoostSourceConfig(
+            "modularjobs:mining_boost", "Enhanced mining", null, List.of(high, base));
 
     BoostSource parsed = parser.parse(original);
     BoostSourceConfig again = BoostSourceConfigSerializer.serialize(parsed);

@@ -1,14 +1,10 @@
 package dev.mintychochip;
 
 import com.google.gson.Gson;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import dev.mintychochip.boost.BoostDataCodec;
 import dev.mintychochip.boost.BoostFactoryImpl;
-import dev.mintychochip.boost.ModularJobsBags;
 import dev.mintychochip.boost.ConsumableBoostController;
+import dev.mintychochip.boost.ModularJobsBags;
 import dev.mintychochip.boost.config.BoostSourceLoader;
 import dev.mintychochip.commands.ApplyEditsCommand;
 import dev.mintychochip.commands.ArchiveCommand;
@@ -17,9 +13,9 @@ import dev.mintychochip.commands.BrowseCommand;
 import dev.mintychochip.commands.EditorCommand;
 import dev.mintychochip.commands.ExperienceCommand;
 import dev.mintychochip.commands.InfoCommand;
-import dev.mintychochip.commands.JoinCommand;
-import dev.mintychochip.commands.JobsCommand;
 import dev.mintychochip.commands.JobTopPageProvider;
+import dev.mintychochip.commands.JobsCommand;
+import dev.mintychochip.commands.JoinCommand;
 import dev.mintychochip.commands.LeaveCommand;
 import dev.mintychochip.commands.LevelCommand;
 import dev.mintychochip.commands.ListCommand;
@@ -27,25 +23,23 @@ import dev.mintychochip.commands.StatsCommand;
 import dev.mintychochip.commands.TopCommand;
 import dev.mintychochip.commands.TreeEditorCommand;
 import dev.mintychochip.commands.UpgradesCommand;
-import dev.mintychochip.config.YamlConfiguration;
 import dev.mintychochip.config.LevelUpCommandsConfig;
 import dev.mintychochip.config.ProgressionLimitsConfig;
+import dev.mintychochip.config.YamlConfiguration;
 import dev.mintychochip.container.ActionType;
 import dev.mintychochip.container.BoostSource;
 import dev.mintychochip.container.PayableType;
-import dev.mintychochip.service.ItemBoostDataService;
-import dev.mintychochip.service.JoinGate;
-import dev.mintychochip.service.LevelUpCommandExecutor;
 import dev.mintychochip.container.boost.TimedBoostDataService;
 import dev.mintychochip.container.boost.factories.BoostFactory;
 import dev.mintychochip.container.boost.factories.ConditionFactory;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
 import dev.mintychochip.domain.DomainWiring;
-import dev.mintychochip.event.EventBus;
-import dev.mintychochip.editor.RestSessionClient;
 import dev.mintychochip.editor.EditorConfig;
 import dev.mintychochip.editor.EditorService;
 import dev.mintychochip.editor.EditorSessionStore;
+import dev.mintychochip.editor.RestSessionClient;
 import dev.mintychochip.editor.json.GsonProvider;
+import dev.mintychochip.event.EventBus;
 import dev.mintychochip.gui.JobBrowseGui;
 import dev.mintychochip.gui.JobInfoGui;
 import dev.mintychochip.gui.StatsGui;
@@ -58,9 +52,9 @@ import dev.mintychochip.payable.PayableWiring;
 import dev.mintychochip.payment.PaymentSettings;
 import dev.mintychochip.payment.PaymentWiring;
 import dev.mintychochip.placeholders.PlaceholderExpansionHandle;
+import dev.mintychochip.profession.ProfessionWiring;
 import dev.mintychochip.profession.config.CraftRecipeContentValidationSettings;
 import dev.mintychochip.profession.config.CraftRecipeContentValidator;
-import dev.mintychochip.profession.ProfessionWiring;
 import dev.mintychochip.protection.BlockOwnershipService;
 import dev.mintychochip.protection.BlockProtectionAdapter;
 import dev.mintychochip.protection.BlockProtectionAdapterProvider;
@@ -72,23 +66,24 @@ import dev.mintychochip.registry.SimpleRegistryImpl;
 import dev.mintychochip.repository.ConnectionSource;
 import dev.mintychochip.repository.DatabaseConfigSections;
 import dev.mintychochip.repository.PluginResources;
-import dev.mintychochip.repository.SharedConnectionSources;
 import dev.mintychochip.repository.RelationalTimedBoostRepositoryImpl;
-import dev.mintychochip.boost.BoostDataCodec;
-import dev.mintychochip.databag.gson.GsonConditionSerializer;
-import dev.mintychochip.service.PreferencesServiceImpl;
+import dev.mintychochip.repository.SharedConnectionSources;
+import dev.mintychochip.service.ItemBoostDataService;
+import dev.mintychochip.service.JoinGate;
+import dev.mintychochip.service.LevelUpCommandExecutor;
 import dev.mintychochip.service.PreferencesService;
+import dev.mintychochip.service.PreferencesServiceImpl;
 import dev.mintychochip.service.TimedBoostDataServiceImpl;
 import dev.mintychochip.upgrade.PlayerUpgradeRepository;
 import dev.mintychochip.upgrade.SkillTree;
 import dev.mintychochip.upgrade.UpgradeBoostDataService;
 import dev.mintychochip.upgrade.UpgradeBoostDataServiceImpl;
-import dev.mintychochip.upgrade.UpgradeServiceImpl;
 import dev.mintychochip.upgrade.UpgradeEffectApplier;
 import dev.mintychochip.upgrade.UpgradeLevelUpListener;
 import dev.mintychochip.upgrade.UpgradePermissionManager;
 import dev.mintychochip.upgrade.UpgradePermissionRestoreListener;
 import dev.mintychochip.upgrade.UpgradeService;
+import dev.mintychochip.upgrade.UpgradeServiceImpl;
 import dev.mintychochip.upgrade.UpgradeTree;
 import dev.mintychochip.upgrade.config.UpgradeTreeLoader;
 import dev.mintychochip.upgrade.editor.TreeEditorExporter;
@@ -97,27 +92,32 @@ import dev.mintychochip.upgrade.editor.TreeEditorNodeGui;
 import dev.mintychochip.upgrade.editor.TreeEditorSettingsGui;
 import dev.mintychochip.util.KeyResolver;
 import dev.mintychochip.util.KeyResolvers;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Manual composition root for ModularJobs (constructor wiring; no DI framework).
- */
+/** Manual composition root for ModularJobs (constructor wiring; no DI framework). */
 public final class PluginContext {
 
   public final Bridge bridge;
+
   /** Primary payable ConnectionSource (also first entry in {@link #resources}). */
   public final ConnectionSource connectionSource;
+
   /** All DB sources + write-back flush hooks owned by this composition. */
   public final PluginResources resources;
+
   public final UpgradeTreeLoader upgradeTreeLoader;
   public final Set<Listener> listeners;
   public final Set<JobsCommand> commands;
-  @Nullable
-  public final PlaceholderExpansionHandle placeholderExpansion;
+  @Nullable public final PlaceholderExpansionHandle placeholderExpansion;
 
   private PluginContext(
       Bridge bridge,
@@ -137,13 +137,14 @@ public final class PluginContext {
   }
 
   /**
-   * Flush write-backs and shut down every tracked ConnectionSource.
-   * Same path bootstrap uses on disable.
+   * Flush write-backs and shut down every tracked ConnectionSource. Same path bootstrap uses on
+   * disable.
    */
   public void shutdown() throws SQLException {
     resources.shutdown();
   }
 
+  /** Create. */
   public static PluginContext create(JavaPlugin plugin) {
     PluginResources resources = new PluginResources();
     boolean created = false;
@@ -159,8 +160,8 @@ public final class PluginContext {
   }
 
   /**
-   * Composition body. Sources are tracked on {@code resources} as they open so callers
-   * (and {@link #create}) can clean up on failure.
+   * Composition body. Sources are tracked on {@code resources} as they open so callers (and {@link
+   * #create}) can clean up on failure.
    */
   static PluginContext createInto(JavaPlugin plugin, PluginResources resources) {
     final YamlConfiguration databaseConfig = YamlConfiguration.create(plugin, "database.yml");
@@ -175,7 +176,8 @@ public final class PluginContext {
     final KeyResolver keyResolver = KeyResolvers.create();
     final BoostFactory boostFactory = BoostFactoryImpl.INSTANCE;
     final ConditionFactory conditionFactory = BoostFactoryImpl.INSTANCE;
-    final BoostDataCodec boostDataCodec = new BoostDataCodec(GsonConditionSerializer.gson(), boostFactory);
+    final BoostDataCodec boostDataCodec =
+        new BoostDataCodec(GsonConditionSerializer.gson(), boostFactory);
     final Gson gson = GsonProvider.create();
 
     final Registry<ActionType> actionTypeRegistry = ActionTypeRegistryProvider.create(plugin);
@@ -186,16 +188,18 @@ public final class PluginContext {
 
     final ProgressionLimitsConfig progressionLimits = ProgressionLimitsConfig.fromPlugin(plugin);
     final PaymentSettings paymentSettingsForJoin = PaymentSettings.fromPlugin(plugin);
-    final JoinGate joinGate = new JoinGate(progressionLimits, paymentSettingsForJoin.disabledWorlds());
+    final JoinGate joinGate =
+        new JoinGate(progressionLimits, paymentSettingsForJoin.disabledWorlds());
 
-    final DomainWiring domain = DomainWiring.create(
-        plugin,
-        connectionSource,
-        resources,
-        actionTypeRegistry,
-        payableTypeRegistry,
-        keyResolver,
-        joinGate);
+    final DomainWiring domain =
+        DomainWiring.create(
+            plugin,
+            connectionSource,
+            resources,
+            actionTypeRegistry,
+            payableTypeRegistry,
+            keyResolver,
+            joinGate);
 
     // Craftux inventory + text surfaces (scoreboard / boss bar) for all plugin UIs
     final CraftuxUiHost craftuxUi = CraftuxUiHost.create(plugin);
@@ -211,8 +215,8 @@ public final class PluginContext {
     ConfigurationSection timedBoostSection =
         DatabaseConfigSections.requireSection(databaseConfig, "timed-boost");
     ConnectionSource timedBoostSource = sharedSources.getOrCreate(timedBoostSection);
-    RelationalTimedBoostRepositoryImpl timedBoostRepository = new RelationalTimedBoostRepositoryImpl(
-        plugin, timedBoostSource, boostDataCodec);
+    RelationalTimedBoostRepositoryImpl timedBoostRepository =
+        new RelationalTimedBoostRepositoryImpl(plugin, timedBoostSource, boostDataCodec);
     resources.onFlush(timedBoostRepository::flushPending);
     final TimedBoostDataService timedBoostDataService =
         new TimedBoostDataServiceImpl(timedBoostRepository);
@@ -220,16 +224,17 @@ public final class PluginContext {
 
     final PreferencesService preferencesService = new PreferencesServiceImpl(plugin);
 
-    ConfigurationSection upgradesSection = DatabaseConfigSections.sectionOrFallback(
-        databaseConfig, "upgrades", payableSection);
+    ConfigurationSection upgradesSection =
+        DatabaseConfigSections.sectionOrFallback(databaseConfig, "upgrades", payableSection);
     ConnectionSource upgradeConnection = sharedSources.getOrCreate(upgradesSection);
     PlayerUpgradeRepository playerUpgradeRepository =
         new PlayerUpgradeRepository(upgradeConnection);
 
     Registry<UpgradeTree> upgradeTreeRegistry = new SimpleRegistryImpl<>();
     Registry<SkillTree> skillTreeRegistry = new SimpleRegistryImpl<>();
-    UpgradeTreeLoader upgradeTreeLoader = new UpgradeTreeLoader(
-        plugin, gson, upgradeTreeRegistry, skillTreeRegistry, conditionFactory, boostFactory);
+    UpgradeTreeLoader upgradeTreeLoader =
+        new UpgradeTreeLoader(
+            plugin, gson, upgradeTreeRegistry, skillTreeRegistry, conditionFactory, boostFactory);
     upgradeTreeLoader.load();
 
     final ProfessionWiring professions = ProfessionWiring.create(plugin, domain.jobService);
@@ -239,67 +244,83 @@ public final class PluginContext {
         professions.recipeService,
         CraftRecipeContentValidationSettings.fromPlugin(plugin));
 
-
     final UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
     UpgradeEffectApplier effectApplier =
         new UpgradeEffectApplier(permissionManager, professions.recipeService);
     final UpgradeBoostDataService upgradeBoostDataService =
         new UpgradeBoostDataServiceImpl(
             playerUpgradeRepository, upgradeTreeRegistry, skillTreeRegistry);
-    UpgradeService upgradeService = new UpgradeServiceImpl(
-        upgradeTreeRegistry,
-        skillTreeRegistry,
-        playerUpgradeRepository,
-        domain.jobService,
-        effectApplier);
+    UpgradeService upgradeService =
+        new UpgradeServiceImpl(
+            upgradeTreeRegistry,
+            skillTreeRegistry,
+            playerUpgradeRepository,
+            domain.jobService,
+            effectApplier);
 
     final UpgradeTreeGui upgradeTreeGui = new UpgradeTreeGui(craftuxUi.inventory(), upgradeService);
     TreeEditorExporter treeEditorExporter = new TreeEditorExporter();
     TreeEditorNodeGui treeEditorNodeGui = new TreeEditorNodeGui(plugin, craftuxUi.inventory());
-    TreeEditorSettingsGui treeEditorSettingsGui = new TreeEditorSettingsGui(plugin, craftuxUi.inventory());
-    TreeEditorGui treeEditorGui = new TreeEditorGui(
-        plugin, craftuxUi.inventory(), treeEditorExporter, upgradeTreeLoader,
-        treeEditorNodeGui, treeEditorSettingsGui);
+    TreeEditorSettingsGui treeEditorSettingsGui =
+        new TreeEditorSettingsGui(plugin, craftuxUi.inventory());
+    TreeEditorGui treeEditorGui =
+        new TreeEditorGui(
+            plugin,
+            craftuxUi.inventory(),
+            treeEditorExporter,
+            upgradeTreeLoader,
+            treeEditorNodeGui,
+            treeEditorSettingsGui);
 
     craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_NODE, upgradeTreeGui::onNodeClick);
-    craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_SCROLL_UP, upgradeTreeGui::onScrollUp);
-    craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_SCROLL_DOWN, upgradeTreeGui::onScrollDown);
+    craftuxUi
+        .actions()
+        .register(CraftuxUiHost.ACTION_UPGRADE_SCROLL_UP, upgradeTreeGui::onScrollUp);
+    craftuxUi
+        .actions()
+        .register(CraftuxUiHost.ACTION_UPGRADE_SCROLL_DOWN, upgradeTreeGui::onScrollDown);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_UPGRADE_CONFIRM, upgradeTreeGui::onConfirm);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_CANVAS, treeEditorGui::onCanvasClick);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_NODE, treeEditorGui::onNodeClick);
-    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_CONTROL, treeEditorGui::onControlClick);
-    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_NODE_PROP, treeEditorNodeGui::onAction);
-    craftuxUi.actions().register(CraftuxUiHost.ACTION_EDITOR_SETTINGS, treeEditorSettingsGui::onAction);
+    craftuxUi
+        .actions()
+        .register(CraftuxUiHost.ACTION_EDITOR_CONTROL, treeEditorGui::onControlClick);
+    craftuxUi
+        .actions()
+        .register(CraftuxUiHost.ACTION_EDITOR_NODE_PROP, treeEditorNodeGui::onAction);
+    craftuxUi
+        .actions()
+        .register(CraftuxUiHost.ACTION_EDITOR_SETTINGS, treeEditorSettingsGui::onAction);
     craftuxUi.inventory().onSessionClosed(treeEditorGui::onSessionClosed);
 
     Registry<BoostSource> boostSourceRegistry = new SimpleRegistryImpl<>();
-    BoostSourceLoader boostSourceLoader = new BoostSourceLoader(
-        plugin, gson, conditionFactory, boostFactory, boostSourceRegistry);
+    BoostSourceLoader boostSourceLoader =
+        new BoostSourceLoader(plugin, gson, conditionFactory, boostFactory, boostSourceRegistry);
     boostSourceLoader.load();
 
     BlockProtectionAdapter protectionAdapter = BlockProtectionAdapterProvider.create();
-    BlockOwnershipService blockOwnershipService =
-        new BlockOwnershipService(protectionAdapter);
+    BlockOwnershipService blockOwnershipService = new BlockOwnershipService(protectionAdapter);
 
-    final PaymentWiring payment = PaymentWiring.create(
-        plugin,
-        domain.jobService,
-        itemBoostDataService,
-        timedBoostDataService,
-        upgradeBoostDataService,
-        blockOwnershipService,
-        professions.recipeService,
-        professions.professionService);
+    final PaymentWiring payment =
+        PaymentWiring.create(
+            plugin,
+            domain.jobService,
+            itemBoostDataService,
+            timedBoostDataService,
+            upgradeBoostDataService,
+            blockOwnershipService,
+            professions.recipeService,
+            professions.professionService);
 
     LevelUpCommandsConfig levelUpCommands = LevelUpCommandsConfig.fromPlugin(plugin);
-    final LevelUpCommandExecutor levelUpCommandExecutor = new LevelUpCommandExecutor(
-        levelUpCommands,
-        command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+    final LevelUpCommandExecutor levelUpCommandExecutor =
+        new LevelUpCommandExecutor(
+            levelUpCommands, command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
 
     final EditorConfig editorConfig = EditorConfig.fromPlugin(plugin);
 
-    JobBrowseGui jobBrowseGui = new JobBrowseGui(
-        craftuxUi.inventory(), domain.jobService, upgradeService, joinGate);
+    JobBrowseGui jobBrowseGui =
+        new JobBrowseGui(craftuxUi.inventory(), domain.jobService, upgradeService, joinGate);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_JOB_JOIN, jobBrowseGui::onJoin);
     StatsGui statsGui = new StatsGui(craftuxUi.inventory());
     craftuxUi.actions().register(CraftuxUiHost.ACTION_STATS_PREV, statsGui::onPrev);
@@ -309,8 +330,8 @@ public final class PluginContext {
     JobInfoGui jobInfoGui = new JobInfoGui(craftuxUi.inventory(), preferencesService);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_INFO_PREV, jobInfoGui::onPrev);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_INFO_NEXT, jobInfoGui::onNext);
-    InfoCommand infoCommand = new InfoCommand(
-        domain.jobService, domain.jobResolver, preferencesService, jobInfoGui);
+    InfoCommand infoCommand =
+        new InfoCommand(domain.jobService, domain.jobResolver, preferencesService, jobInfoGui);
 
     Set<JobsCommand> commands = new LinkedHashSet<>();
     commands.add(new JoinCommand(domain.jobService, domain.jobResolver, joinGate));
@@ -322,27 +343,30 @@ public final class PluginContext {
     if (editorConfig.enabled()) {
       EditorSessionStore sessionStore = new EditorSessionStore(editorConfig);
       RestSessionClient restSessionClient = new RestSessionClient(editorConfig, gson);
-      EditorService editorService = new EditorService(
-          domain.jobService,
-          domain.jobTaskRepository,
-          restSessionClient,
-          sessionStore,
-          editorConfig);
+      EditorService editorService =
+          new EditorService(
+              domain.jobService,
+              domain.jobTaskRepository,
+              restSessionClient,
+              sessionStore,
+              editorConfig);
       commands.add(new ApplyEditsCommand(editorService));
       commands.add(new EditorCommand(editorService, domain.jobService, domain.jobResolver));
     }
     commands.add(new StatsCommand(domain.jobService, statsGui));
     commands.add(new ArchiveCommand(domain.jobService));
-    commands.add(new BoostCommand(
-        boostSourceRegistry,
-        timedBoostDataService,
-        itemBoostDataService,
-        boostSourceLoader,
-        upgradeBoostDataService,
-        domain.jobService));
+    commands.add(
+        new BoostCommand(
+            boostSourceRegistry,
+            timedBoostDataService,
+            itemBoostDataService,
+            boostSourceLoader,
+            upgradeBoostDataService,
+            domain.jobService));
     commands.add(new UpgradesCommand(upgradeService, domain.jobResolver, upgradeTreeGui));
-    commands.add(new TreeEditorCommand(
-        upgradeService, domain.jobResolver, treeEditorGui, upgradeTreeLoader));
+    commands.add(
+        new TreeEditorCommand(
+            upgradeService, domain.jobResolver, treeEditorGui, upgradeTreeLoader));
     commands.add(new LevelCommand(domain.jobService, domain.progressionService));
     commands.add(new ExperienceCommand(domain.jobService, domain.progressionService));
 
@@ -356,23 +380,25 @@ public final class PluginContext {
     // Info/stats navigation is craftux inventory actions (no Paper Dialog listener)
     listenerList.add(new UpgradeLevelUpListener(upgradeService, skillTreeRegistry));
     // UpgradeTreeGui clicks are host craftux actions (no Bukkit Listener)
-    listenerList.add(new UpgradePermissionRestoreListener(
-        upgradeService, effectApplier, permissionManager, skillTreeRegistry));
+    listenerList.add(
+        new UpgradePermissionRestoreListener(
+            upgradeService, effectApplier, permissionManager, skillTreeRegistry));
 
     EventBus eventBus = new EventBus();
-    Bridge bridge = new BridgeImpl(
-        registryContainer,
-        domain.jobService,
-        professions.professionService,
-        professions.recipeService,
-        professions.buffService,
-        professions.stationService,
-        professions.nodeHarvestService,
-        payables.economyProvider,
-        conditionFactory,
-        boostFactory,
-        timedBoostDataService,
-        eventBus);
+    Bridge bridge =
+        new BridgeImpl(
+            registryContainer,
+            domain.jobService,
+            professions.professionService,
+            professions.recipeService,
+            professions.buffService,
+            professions.stationService,
+            professions.nodeHarvestService,
+            payables.economyProvider,
+            conditionFactory,
+            boostFactory,
+            timedBoostDataService,
+            eventBus);
 
     // Soft-depend: only loads ModularJobsPlaceholderExpansion (and PAPI types) when present
     PlaceholderExpansionHandle placeholderExpansion =

@@ -1,6 +1,5 @@
 package dev.mintychochip.paper.event;
 
-import java.util.Objects;
 import dev.mintychochip.event.EventBus;
 import dev.mintychochip.event.JobExperienceGainEvent;
 import dev.mintychochip.event.JobJoinEvent;
@@ -8,6 +7,7 @@ import dev.mintychochip.event.JobLeaveEvent;
 import dev.mintychochip.event.JobLevelEvent;
 import dev.mintychochip.event.JobsPaymentEvent;
 import dev.mintychochip.event.JobsPrePaymentEvent;
+import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -21,10 +21,12 @@ public final class PaperEventBridge {
 
   private final EventBus bus;
 
+  /** Paper event bridge. */
   public PaperEventBridge(EventBus bus) {
     this.bus = Objects.requireNonNull(bus, "bus");
   }
 
+  /** Publish level. */
   public JobLevelEvent publishLevel(JobLevelEvent pure, @Nullable Player playerForBukkit) {
     bus.publish(pure);
     if (playerForBukkit != null) {
@@ -33,6 +35,7 @@ public final class PaperEventBridge {
     return pure;
   }
 
+  /** Publish join. */
   public JobJoinEvent publishJoin(JobJoinEvent pure, @Nullable Player playerForBukkit) {
     bus.publish(pure);
     if (playerForBukkit != null) {
@@ -41,6 +44,7 @@ public final class PaperEventBridge {
     return pure;
   }
 
+  /** Publish leave. */
   public JobLeaveEvent publishLeave(JobLeaveEvent pure, @Nullable Player playerForBukkit) {
     bus.publish(pure);
     if (playerForBukkit != null) {
@@ -49,6 +53,7 @@ public final class PaperEventBridge {
     return pure;
   }
 
+  /** Publish experience gain. */
   public JobExperienceGainEvent publishExperienceGain(
       JobExperienceGainEvent pure, @Nullable Player playerForBukkit) {
     bus.publish(pure);
@@ -58,6 +63,7 @@ public final class PaperEventBridge {
     return pure;
   }
 
+  /** Publish payment. */
   public JobsPaymentEvent publishPayment(
       JobsPaymentEvent pure, @Nullable OfflinePlayer playerForBukkit) {
     bus.publish(pure);
@@ -67,6 +73,7 @@ public final class PaperEventBridge {
     return pure;
   }
 
+  /** Publish pre payment. */
   public JobsPrePaymentEvent publishPrePayment(
       JobsPrePaymentEvent pure, @Nullable OfflinePlayer playerForBukkit) {
     bus.publish(pure);

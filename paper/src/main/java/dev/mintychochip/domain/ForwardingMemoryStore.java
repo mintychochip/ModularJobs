@@ -1,9 +1,9 @@
 package dev.mintychochip.domain;
 
 import com.google.common.collect.ForwardingMap;
+import dev.mintychochip.domain.repository.MemoryStore;
 import java.util.HashMap;
 import java.util.Map;
-import dev.mintychochip.domain.repository.MemoryStore;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -12,7 +12,8 @@ import org.jetbrains.annotations.NotNull;
  * @param <K> key type
  * @param <V> value type
  */
-abstract class ForwardingMemoryStore<K, V> extends ForwardingMap<K, V> implements MemoryStore<K, V> {
+abstract class ForwardingMemoryStore<K, V> extends ForwardingMap<K, V>
+    implements MemoryStore<K, V> {
 
   /** The backing map used by forwarded operations; replaced when the store reloads. */
   protected Map<K, V> store = new HashMap<>();

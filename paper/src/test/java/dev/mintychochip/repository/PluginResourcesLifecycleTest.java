@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /**
- * Exercises the shipped {@link PluginResources} path used by PluginContext shutdown
- * and failed-composition cleanup — not a reimplementation.
+ * Exercises the shipped {@link PluginResources} path used by PluginContext shutdown and
+ * failed-composition cleanup — not a reimplementation.
  */
 class PluginResourcesLifecycleTest {
 
@@ -60,14 +60,16 @@ class PluginResourcesLifecycleTest {
     ConnectionSource first = resources.track(new TrackingSource(new ArrayList<>()));
     ConnectionSource second = resources.track(new TrackingSource(new ArrayList<>()));
 
-    assertThrows(IllegalStateException.class, () -> {
-      try {
-        throw new IllegalStateException("simulated composition failure after opening sources");
-      } catch (IllegalStateException failure) {
-        resources.closeQuietly();
-        throw failure;
-      }
-    });
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          try {
+            throw new IllegalStateException("simulated composition failure after opening sources");
+          } catch (IllegalStateException failure) {
+            resources.closeQuietly();
+            throw failure;
+          }
+        });
 
     assertTrue(first.isClosed(), "first source must close on composition failure");
     assertTrue(second.isClosed(), "second source must close on composition failure");

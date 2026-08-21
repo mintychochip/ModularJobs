@@ -3,18 +3,18 @@ package dev.mintychochip.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.util.Messages;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import java.util.Optional;
 import dev.mintychochip.Job;
-import dev.mintychochip.gui.UpgradeTreeGui;
 import dev.mintychochip.domain.JobResolver;
+import dev.mintychochip.gui.UpgradeTreeGui;
 import dev.mintychochip.upgrade.PlayerUpgradeData;
 import dev.mintychochip.upgrade.UpgradeNode;
 import dev.mintychochip.upgrade.UpgradeService;
 import dev.mintychochip.upgrade.UpgradeService.UnlockResult;
 import dev.mintychochip.upgrade.UpgradeTree;
+import dev.mintychochip.util.Messages;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import java.util.Optional;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -22,11 +22,8 @@ import org.bukkit.entity.Player;
 /**
  * Command for viewing and managing job upgrades.
  *
- * <p>
- * Usage:
- * - /jobs upgrade <job> - View upgrade tree
- * - /jobs upgrade <job> unlock <node> - Unlock a node
- * - /jobs upgrade <job> reset - Reset all upgrades
+ * <p>Usage: - /jobs upgrade <job> - View upgrade tree - /jobs upgrade <job> unlock <node> - Unlock
+ * a node - /jobs upgrade <job> reset - Reset all upgrades
  */
 public class UpgradesCommand implements JobsCommand {
 
@@ -36,10 +33,9 @@ public class UpgradesCommand implements JobsCommand {
   private final JobResolver jobResolver;
   private final UpgradeTreeGui upgradeTreeGui;
 
+  /** Upgrades command. */
   public UpgradesCommand(
-      UpgradeService upgradeService,
-      JobResolver jobResolver,
-      UpgradeTreeGui upgradeTreeGui) {
+      UpgradeService upgradeService, JobResolver jobResolver, UpgradeTreeGui upgradeTreeGui) {
     this.upgradeService = upgradeService;
     this.jobResolver = jobResolver;
     this.upgradeTreeGui = upgradeTreeGui;
@@ -48,37 +44,55 @@ public class UpgradesCommand implements JobsCommand {
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("upgrade")
-        .then(Commands.argument("job", StringArgumentType.string())
-            .suggests((context, builder) -> {
-              jobResolver.getPlainNames().forEach(builder::suggest);
-              return builder.buildFuture();
-            })
-            // View tree
-            .executes(context -> executeView(
-                context.getSource(),
-                context.getArgument("job", String.class)))
-            // Unlock subcommand
-            .then(Commands.literal("unlock")
-                .then(Commands.argument("node", StringArgumentType.string())
-                    .suggests((context, builder) -> {
-                      String jobName = context.getArgument("job", String.class);
-                      Job job = jobResolver.resolveInNamespace(jobName, DEFAULT_NAMESPACE);
-                      if (job != null) {
-                        upgradeService.getTree(job.key().value())
-                            .ifPresent(tree -> tree.allNodes().forEach(
-                                node -> builder.suggest(getShortKey(node))));
-                      }
+        .then(
+            Commands.argument("job", StringArgumentType.string())
+                .suggests(
+                    (context, builder) -> {
+                      jobResolver.getPlainNames().forEach(builder::suggest);
                       return builder.buildFuture();
                     })
-                    .executes(context -> executeUnlock(
-                        context.getSource(),
-                        context.getArgument("job", String.class),
-                        context.getArgument("node", String.class)))))
-            // Reset subcommand
-            .then(Commands.literal("reset")
-                .executes(context -> executeReset(
-                    context.getSource(),
-                    context.getArgument("job", String.class)))));
+                // View tree
+                .executes(
+                    context ->
+                        executeView(context.getSource(), context.getArgument("job", String.class)))
+                // Unlock subcommand
+                .then(
+                    Commands.literal("unlock")
+                        .then(
+                            Commands.argument("node", StringArgumentType.string())
+                                .suggests(
+                                    (context, builder) -> {
+                                      String jobName = context.getArgument("job", String.class);
+                                      Job job =
+                                          jobResolver.resolveInNamespace(
+                                              jobName, DEFAULT_NAMESPACE);
+                                      if (job != null) {
+                                        upgradeService
+                                            .getTree(job.key().value())
+                                            .ifPresent(
+                                                tree ->
+                                                    tree.allNodes()
+                                                        .forEach(
+                                                            node ->
+                                                                builder.suggest(
+                                                                    getShortKey(node))));
+                                      }
+                                      return builder.buildFuture();
+                                    })
+                                .executes(
+                                    context ->
+                                        executeUnlock(
+                                            context.getSource(),
+                                            context.getArgument("job", String.class),
+                                            context.getArgument("node", String.class)))))
+                // Reset subcommand
+                .then(
+                    Commands.literal("reset")
+                        .executes(
+                            context ->
+                                executeReset(
+                                    context.getSource(),
+                                    context.getArgument("job", String.class)))));
   }
 
   private int executeView(CommandSourceStack source, String jobName) {
@@ -135,21 +149,32 @@ public class UpgradesCommand implements JobsCommand {
 
     switch (result) {
       case UnlockResult.Success success -> {
-        Messages.send(player, "<accent>Unlocked: <primary>" + success.node().name()
-            + " <neutral>(<secondary>" + success.remainingPoints() + " SP remaining<neutral>)");
+        Messages.send(
+            player,
+            "<accent>Unlocked: <primary>"
+                + success.node().name()
+                + " <neutral>(<secondary>"
+                + success.remainingPoints()
+                + " SP remaining<neutral>)");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
       }
       case UnlockResult.InsufficientPoints ip -> {
-        Messages.send(player, "<error>Not enough skill points. Need <secondary>" + ip.required()
-            + "<error>, have <secondary>" + ip.available());
+        Messages.send(
+            player,
+            "<error>Not enough skill points. Need <secondary>"
+                + ip.required()
+                + "<error>, have <secondary>"
+                + ip.available());
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.PrerequisitesNotMet pm -> {
-        Messages.send(player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
+        Messages.send(
+            player, "<error>Missing prerequisites: <secondary>" + String.join(", ", pm.missing()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.ExcludedByChoice ec -> {
-        Messages.send(player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
+        Messages.send(
+            player, "<error>Blocked by: <secondary>" + String.join(", ", ec.conflicting()));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
       }
       case UnlockResult.AlreadyUnlocked au -> {
@@ -189,8 +214,13 @@ public class UpgradesCommand implements JobsCommand {
     boolean success = upgradeService.resetUpgrades(playerId, jobKey);
     if (success) {
       PlayerUpgradeData data = upgradeService.getPlayerData(playerId, jobKey);
-      Messages.send(player, "<accent>Upgrades reset for " + job.getPlainName()
-          + "<neutral>. You now have <primary>" + data.availableSkillPoints() + " SP");
+      Messages.send(
+          player,
+          "<accent>Upgrades reset for "
+              + job.getPlainName()
+              + "<neutral>. You now have <primary>"
+              + data.availableSkillPoints()
+              + " SP");
       player.playSound(player, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.0f);
     } else {
       Messages.send(player, "<error>Failed to reset upgrades.");

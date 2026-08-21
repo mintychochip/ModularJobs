@@ -1,11 +1,7 @@
 package dev.mintychochip.payable;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.NumberFormat;
 import dev.mintychochip.container.Currency;
 import dev.mintychochip.container.EconomyProvider;
-import org.jetbrains.annotations.NotNull;
 import dev.mintychochip.container.ExperiencePayableHandler.ExperienceBarController;
 import dev.mintychochip.container.ExperiencePayableHandler.ExperienceBarFormatter;
 import dev.mintychochip.container.PayableAmount;
@@ -14,6 +10,9 @@ import dev.mintychochip.container.PayableType;
 import dev.mintychochip.gui.craftux.CraftuxSurfaces;
 import dev.mintychochip.registry.Registry;
 import dev.mintychochip.service.JobService;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -21,10 +20,9 @@ import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
-/**
- * Manual composition for payable types and experience bar (replaces Guice PayableModule).
- */
+/** Manual composition for payable types and experience bar (replaces Guice PayableModule). */
 public final class PayableWiring {
 
   private static final String ECONOMY_TYPE = "modularjobs:economy";
@@ -37,9 +35,9 @@ public final class PayableWiring {
   }
 
   /**
-   * Composes the experience and economy payable handlers, registers the corresponding
-   * {@link PayableType}s in {@code payableTypeRegistry}, and resolves the economy provider via
-   * {@link EconomyProviderFactory#createOrFail}. Returns the wiring exposing the chosen provider.
+   * Composes the experience and economy payable handlers, registers the corresponding {@link
+   * PayableType}s in {@code payableTypeRegistry}, and resolves the economy provider via {@link
+   * EconomyProviderFactory#createOrFail}. Returns the wiring exposing the chosen provider.
    */
   public static PayableWiring create(
       Plugin plugin,
@@ -63,8 +61,7 @@ public final class PayableWiring {
 
   /** Delegates economy payables to the selected provider, including the blackhole fallback. */
   static PayableHandler economyHandlerFor(@NotNull EconomyProvider economyProvider) {
-    return context -> economyProvider.deposit(
-        context.playerId(), context.payable().amount());
+    return context -> economyProvider.deposit(context.playerId(), context.payable().amount());
   }
 
   private static PayableType economyType(PayableHandler handler) {
@@ -89,10 +86,13 @@ public final class PayableWiring {
         nf.setMinimumFractionDigits(places);
         nf.setMaximumFractionDigits(places);
         BigDecimal value = amount.value().setScale(places, RoundingMode.HALF_UP);
-        return MiniMessage.miniMessage().deserialize(FORMAT, TagResolver.builder()
-            .tag("symbol", Tag.inserting(Component.text(symbol)))
-            .tag("amount", Tag.inserting(Component.text(nf.format(value))))
-            .build());
+        return MiniMessage.miniMessage()
+            .deserialize(
+                FORMAT,
+                TagResolver.builder()
+                    .tag("symbol", Tag.inserting(Component.text(symbol)))
+                    .tag("amount", Tag.inserting(Component.text(nf.format(value))))
+                    .build());
       }
     };
   }
@@ -118,9 +118,12 @@ public final class PayableWiring {
         nf.setMinimumFractionDigits(places);
         nf.setMaximumFractionDigits(places);
         BigDecimal value = amount.value().setScale(places, RoundingMode.HALF_UP);
-        return MiniMessage.miniMessage().deserialize(FORMAT, TagResolver.builder()
-            .tag("amount", Tag.inserting(Component.text(nf.format(value))))
-            .build());
+        return MiniMessage.miniMessage()
+            .deserialize(
+                FORMAT,
+                TagResolver.builder()
+                    .tag("amount", Tag.inserting(Component.text(nf.format(value))))
+                    .build());
       }
     };
   }

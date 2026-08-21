@@ -1,13 +1,13 @@
 package dev.mintychochip.placeholders;
 
+import dev.mintychochip.Job;
+import dev.mintychochip.JobProgression;
+import dev.mintychochip.service.JobService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import dev.mintychochip.Job;
-import dev.mintychochip.JobProgression;
-import dev.mintychochip.service.JobService;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -16,25 +16,26 @@ import org.jetbrains.annotations.Nullable;
 /**
  * PlaceholderAPI expansion exposing the player's ModularJobs progression.
  *
- * <p>Loaded only when PlaceholderAPI is available; requests read the backing
- * {@link JobService} and return an empty value when no progression exists or the
- * placeholder is unknown.</p>
+ * <p>Loaded only when PlaceholderAPI is available; requests read the backing {@link JobService} and
+ * return an empty value when no progression exists or the placeholder is unknown.
  *
- * <p>Supported placeholders (identifier {@code modular}):</p>
+ * <p>Supported placeholders (identifier {@code modular}):
+ *
  * <ul>
- *   <li>{@code joinedjobcount}, {@code jobs}, {@code totallevels}, {@code maxjobs},
- *       {@code archivedjobs}</li>
- *   <li>{@code level_<job>}, {@code experience_<job>}, {@code maxexperience_<job>},
- *       {@code maxlevel_<job>}, {@code name_<job>}, {@code description_<job>},
- *       {@code isin_<job>}, {@code canjoin_<job>}</li>
+ *   <li>{@code joinedjobcount}, {@code jobs}, {@code totallevels}, {@code maxjobs}, {@code
+ *       archivedjobs}
+ *   <li>{@code level_<job>}, {@code experience_<job>}, {@code maxexperience_<job>}, {@code
+ *       maxlevel_<job>}, {@code name_<job>}, {@code description_<job>}, {@code isin_<job>}, {@code
+ *       canjoin_<job>}
  * </ul>
  */
 public final class ModularJobsPlaceholderExpansion extends PlaceholderExpansion {
 
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
   private final JobService jobService;
-  private final String version = "1.2";
+  private static final String VERSION = "1.2";
 
   /**
    * Creates an expansion backed by the supplied job service.
@@ -57,7 +58,7 @@ public final class ModularJobsPlaceholderExpansion extends PlaceholderExpansion 
 
   @Override
   public @NotNull String getVersion() {
-    return version;
+    return VERSION;
   }
 
   @Override

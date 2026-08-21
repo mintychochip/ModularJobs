@@ -20,7 +20,13 @@ final class YamlFileBackedConfigurationImpl {
     this.plugin = plugin;
     this.path = path;
     this.configFile = new File(plugin.getDataFolder(), path);
-    plugin.getSLF4JLogger().info("Loading config file: {}, exists: {}, data folder: {}", path, configFile.exists(), plugin.getDataFolder());
+    plugin
+        .getSLF4JLogger()
+        .info(
+            "Loading config file: {}, exists: {}, data folder: {}",
+            path,
+            configFile.exists(),
+            plugin.getDataFolder());
     if (!configFile.exists()) {
       plugin.getSLF4JLogger().info("Config file doesn't exist, saving from resources...");
       plugin.saveResource(path, false);
@@ -37,23 +43,24 @@ final class YamlFileBackedConfigurationImpl {
     Preconditions.checkArgument(split[1].equals("yml") || split[1].equals("yaml"));
     YamlFileBackedConfigurationImpl impl = new YamlFileBackedConfigurationImpl(plugin, path);
     YamlConfiguration config = impl.config;
-    return (dev.mintychochip.config.YamlConfiguration) Proxy.newProxyInstance(
-        Thread.currentThread().getContextClassLoader(),
-        new Class[]{
-            dev.mintychochip.config.YamlConfiguration.class}, (proxy, method, args) -> {
-          if ("getPlugin".equals(method.getName())) {
-            return impl.getPlugin();
-          }
-          if ("reload".equals(method.getName())) {
-            impl.reload();
-            return null;
-          }
-          if ("save".equals(method.getName())) {
-            impl.save();
-            return null;
-          }
-          return method.invoke(config, args);
-        });
+    return (dev.mintychochip.config.YamlConfiguration)
+        Proxy.newProxyInstance(
+            Thread.currentThread().getContextClassLoader(),
+            new Class[] {dev.mintychochip.config.YamlConfiguration.class},
+            (proxy, method, args) -> {
+              if ("getPlugin".equals(method.getName())) {
+                return impl.getPlugin();
+              }
+              if ("reload".equals(method.getName())) {
+                impl.reload();
+                return null;
+              }
+              if ("save".equals(method.getName())) {
+                impl.save();
+                return null;
+              }
+              return method.invoke(config, args);
+            });
   }
 
   /** Returns the plugin that owns this configuration file. */
@@ -62,13 +69,11 @@ final class YamlFileBackedConfigurationImpl {
     return plugin;
   }
 
-  /** Reloads the current YAML file from the plugin data folder. */
   void reload() {
     configFile = new File(plugin.getDataFolder(), path);
     config = YamlConfiguration.loadConfiguration(configFile);
   }
 
-  /** Persists the current configuration to its YAML file. */
   void save() {
     try {
       config.save(configFile);

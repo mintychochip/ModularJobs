@@ -6,8 +6,9 @@ import org.jetbrains.annotations.Contract;
 /**
  * A pure function mapping leveling inputs to an experience value.
  *
- * <p>Implementations must be deterministic and side-effect free.</p>
+ * <p>Implementations must be deterministic and side-effect free.
  */
+@FunctionalInterface
 public interface LevelingCurve {
 
   /**
@@ -20,7 +21,5 @@ public interface LevelingCurve {
   BigDecimal evaluate(Parameters parameters);
 
   /** Inputs to {@link LevelingCurve#evaluate(Parameters)}. */
-  record Parameters(int level) {
-
-  }
+  record Parameters(int level) {}
 }

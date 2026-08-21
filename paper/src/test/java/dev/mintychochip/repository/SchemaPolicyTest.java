@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.junit.jupiter.api.Test;
 
-/**
- * Schema ownership: MySQL only; plugin never applies DDL in-process.
- */
+/** Schema ownership: MySQL only; plugin never applies DDL in-process. */
 class SchemaPolicyTest {
 
   @Test

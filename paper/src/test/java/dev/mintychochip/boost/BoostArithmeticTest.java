@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import java.math.BigDecimal;
 import dev.mintychochip.container.Boost;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link AdditiveBoostImpl}, {@link MultiplicativeBoostImpl},
- * and {@link BoostFactoryImpl} arithmetic contracts.
+ * Drives shipped {@link AdditiveBoostImpl}, {@link MultiplicativeBoostImpl}, and {@link
+ * BoostFactoryImpl} arithmetic contracts.
  */
 class BoostArithmeticTest {
 
@@ -61,7 +61,7 @@ class BoostArithmeticTest {
     Boost multi = new MultiplicativeBoostImpl(new BigDecimal("2"));
     BigDecimal base = new BigDecimal("100");
 
-    BigDecimal addFirst = multi.boost(add.boost(base));   // (100+20)*2 = 240
+    BigDecimal addFirst = multi.boost(add.boost(base)); // (100+20)*2 = 240
     BigDecimal multiFirst = add.boost(multi.boost(base)); // 100*2+20 = 220
 
     assertEquals(0, new BigDecimal("240").compareTo(addFirst));

@@ -6,21 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.domain.model.JobProgressionRecord;
+import dev.mintychochip.domain.model.JobRecord;
+import dev.mintychochip.domain.repository.JobProgressionRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.domain.model.JobProgressionRecord;
-import dev.mintychochip.domain.model.JobRecord;
-import dev.mintychochip.domain.repository.JobProgressionRepository;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link ProgressionService} archive/restore migration against in-memory repos.
- */
+/** Drives shipped {@link ProgressionService} archive/restore migration against in-memory repos. */
 class ProgressionServiceArchiveTest {
 
   private InMemoryProgressionRepository live;
@@ -34,21 +32,17 @@ class ProgressionServiceArchiveTest {
     live = new InMemoryProgressionRepository();
     archive = new InMemoryProgressionRepository();
     service = new ProgressionService(live, archive);
-    job = new JobRecord(
-        "modularjobs:miner",
-        "Miner",
-        "Mines blocks",
-        100,
-        "level * 100",
-        Map.of("currency", "base"),
-        30,
-        Map.of()
-    );
-    progression = new JobProgressionRecord(
-        "player-1",
-        job,
-        new BigDecimal("1500.50")
-    );
+    job =
+        new JobRecord(
+            "modularjobs:miner",
+            "Miner",
+            "Mines blocks",
+            100,
+            "level * 100",
+            Map.of("currency", "base"),
+            30,
+            Map.of());
+    progression = new JobProgressionRecord("player-1", job, new BigDecimal("1500.50"));
   }
 
   @Test
@@ -106,10 +100,9 @@ class ProgressionServiceArchiveTest {
 
   @Test
   void loadAllForPlayerRespectsLimit() {
-    JobRecord fisher = new JobRecord(
-        "modularjobs:fisherman", "Fisher", "Fish", 50, "level*10",
-        Map.of(), 20, Map.of()
-    );
+    JobRecord fisher =
+        new JobRecord(
+            "modularjobs:fisherman", "Fisher", "Fish", 50, "level*10", Map.of(), 20, Map.of());
     service.save(progression);
     service.save(new JobProgressionRecord("player-1", fisher, BigDecimal.TEN));
 
@@ -120,9 +113,7 @@ class ProgressionServiceArchiveTest {
     assertEquals(2, all.size());
   }
 
-  /**
-   * In-memory fake for collaborator only — SUT is ProgressionService.
-   */
+  /** In-memory fake for collaborator only — SUT is ProgressionService. */
   private static final class InMemoryProgressionRepository implements JobProgressionRepository {
 
     private final Map<String, JobProgressionRecord> store = new ConcurrentHashMap<>();

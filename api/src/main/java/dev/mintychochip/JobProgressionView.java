@@ -3,9 +3,7 @@ package dev.mintychochip;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-/**
- * A read-only view of a player's progression in a single job.
- */
+/** A read-only view of a player's progression in a single job. */
 public interface JobProgressionView {
 
   /**
@@ -16,15 +14,15 @@ public interface JobProgressionView {
    */
   BigDecimal experienceForLevel(int level);
 
-  /** Returns the job this progression applies to. */
+  /** Job. */
   Job job();
 
-  /** Returns the owning player. */
+  /** Player id. */
   UUID playerId();
 
-  /** Returns the player's accumulated experience. */
+  /** Experience. */
   BigDecimal experience();
 
-  /** Returns the player's current level, derived from {@link #experience()}. */
+  /** Level. */
   int level();
 }

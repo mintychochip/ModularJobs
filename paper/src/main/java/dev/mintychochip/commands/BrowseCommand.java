@@ -2,21 +2,19 @@ package dev.mintychochip.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.gui.JobBrowseGui;
 import dev.mintychochip.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import dev.mintychochip.gui.JobBrowseGui;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/**
- * Command to open the job browse GUI.
- * Usage: /jobs browse
- */
+/** Command to open the job browse GUI. Usage: /jobs browse */
 public final class BrowseCommand implements JobsCommand {
 
   private final JobBrowseGui jobBrowseGui;
 
+  /** Browse command. */
   public BrowseCommand(JobBrowseGui jobBrowseGui) {
     this.jobBrowseGui = jobBrowseGui;
   }
@@ -25,17 +23,18 @@ public final class BrowseCommand implements JobsCommand {
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("browse")
         .requires(source -> source.getSender().hasPermission("jobs.command.browse"))
-        .executes(context -> {
-          CommandSourceStack source = context.getSource();
-          CommandSender sender = source.getSender();
+        .executes(
+            context -> {
+              CommandSourceStack source = context.getSource();
+              CommandSender sender = source.getSender();
 
-          if (!(sender instanceof Player player)) {
-            Messages.send(sender, "<error>This command can only be used by players.");
-            return 0;
-          }
+              if (!(sender instanceof Player player)) {
+                Messages.send(sender, "<error>This command can only be used by players.");
+                return 0;
+              }
 
-          jobBrowseGui.open(player);
-          return Command.SINGLE_SUCCESS;
-        });
+              jobBrowseGui.open(player);
+              return Command.SINGLE_SUCCESS;
+            });
   }
 }

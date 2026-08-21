@@ -1,7 +1,7 @@
 package dev.mintychochip.payment;
 
-import java.util.List;
 import dev.mintychochip.payment.ExploitService.ExploitProtectionType;
+import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;

@@ -1,11 +1,6 @@
 package dev.mintychochip.domain;
 
-import java.math.BigDecimal;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
+import dev.mintychochip.Bridge;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.JobTask;
@@ -16,7 +11,6 @@ import dev.mintychochip.container.PayableType;
 import dev.mintychochip.domain.model.JobProgressionRecord;
 import dev.mintychochip.domain.model.JobRecord;
 import dev.mintychochip.domain.model.JobTaskRecord;
-import dev.mintychochip.Bridge;
 import dev.mintychochip.event.JobJoinEvent;
 import dev.mintychochip.event.JobLeaveEvent;
 import dev.mintychochip.paper.event.PaperEventBridge;
@@ -24,6 +18,12 @@ import dev.mintychochip.registry.Registry;
 import dev.mintychochip.service.JobService;
 import dev.mintychochip.service.JoinGate;
 import dev.mintychochip.util.KeyResolver;
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -32,22 +32,21 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Default {@link JobService} implementation wiring job definitions, tasks, and
- * player progression together.
+ * Default {@link JobService} implementation wiring job definitions, tasks, and player progression
+ * together.
  *
- * <p>Job definitions are served from the in-memory {@link MemoryJobRepositoryImpl}
- * (loaded once at composition from {@code jobs.yml}); tasks come from the relational
- * {@link RelationalJobTaskRepositoryImpl}; progression operations are delegated to
- * {@link ProgressionService} which fronts the write-back relational progression
- * stores (live + archive).
+ * <p>Job definitions are served from the in-memory {@link MemoryJobRepositoryImpl} (loaded once at
+ * composition from {@code jobs.yml}); tasks come from the relational {@link
+ * RelationalJobTaskRepositoryImpl}; progression operations are delegated to {@link
+ * ProgressionService} which fronts the write-back relational progression stores (live + archive).
  *
- * <p>This class is stateless and safe to share; it does not own connections or
- * background tasks (those live in the repositories it is given).
+ * <p>This class is stateless and safe to share; it does not own connections or background tasks
+ * (those live in the repositories it is given).
  *
- * <p>Failure semantics: callers that look up jobs by key might throw unchecked
- * {@link IllegalArgumentException}/{@link IllegalStateException} rather than return
- * a sentinel—see individual methods, and {@link #getProgression(String, String)}
- * returns {@code null} when the player has no progression for that job.
+ * <p>Failure semantics: callers that look up jobs by key might throw unchecked {@link
+ * IllegalArgumentException}/{@link IllegalStateException} rather than return a sentinel—see
+ * individual methods, and {@link #getProgression(String, String)} returns {@code null} when the
+ * player has no progression for that job.
  */
 final class JobServiceImpl implements JobService {
 
@@ -63,14 +62,14 @@ final class JobServiceImpl implements JobService {
   /**
    * Wires job definitions, tasks, and progression into a single service facade.
    *
-   * @param actionTypeRegistry     registry of known action types
-   * @param payableTypeRegistry    registry of known payable types
-   * @param jobTaskRepository      relational task store
-   * @param keyResolver            resolves {@link Context} to keys for task lookup
-   * @param jobRepository          in-memory job definitions
-   * @param progressionService     live/archive progression store facade
-   * @param joinGate               join-eligibility gate
-   * @param plugin                 plugin for key namespaces and events
+   * @param actionTypeRegistry registry of known action types
+   * @param payableTypeRegistry registry of known payable types
+   * @param jobTaskRepository relational task store
+   * @param keyResolver resolves {@link Context} to keys for task lookup
+   * @param jobRepository in-memory job definitions
+   * @param progressionService live/archive progression store facade
+   * @param joinGate join-eligibility gate
+   * @param plugin plugin for key namespaces and events
    */
   JobServiceImpl(
       Registry<ActionType> actionTypeRegistry,
@@ -111,23 +110,29 @@ final class JobServiceImpl implements JobService {
   public JobTask getTask(Job job, ActionType type, Context context) {
     Key contextKey = keyResolver.resolve(context);
     if (contextKey == null) {
-      throw new IllegalStateException("No KeyResolver strategy registered for context type: " + context.getClass().getSimpleName());
+      throw new IllegalStateException(
+          "No KeyResolver strategy registered for context type: "
+              + context.getClass().getSimpleName());
     }
-    JobTaskRecord record = jobTaskRepository.load(job.key().toString(), type.key().toString(),
-        contextKey.toString());
-    return PersistenceConverters.fromRecord(record, keyString -> payableTypeRegistry.getOrThrow(Key.key(keyString)));
+    JobTaskRecord record =
+        jobTaskRepository.load(job.key().toString(), type.key().toString(), contextKey.toString());
+    return PersistenceConverters.fromRecord(
+        record, keyString -> payableTypeRegistry.getOrThrow(Key.key(keyString)));
   }
 
   @Override
   public Map<ActionType, List<JobTask>> getAllTasks(Job job) {
-    Map<String, List<JobTaskRecord>> records = jobTaskRepository.getRecords(
-        job.key().toString());
+    Map<String, List<JobTaskRecord>> records = jobTaskRepository.getRecords(job.key().toString());
     Map<ActionType, List<JobTask>> domain = new LinkedHashMap<>();
     for (Entry<String, List<JobTaskRecord>> entry : records.entrySet()) {
       ActionType type = actionTypeRegistry.getOrThrow(NamespacedKey.fromString(entry.getKey()));
-      List<JobTask> tasks = entry.getValue().stream()
-          .map(r -> PersistenceConverters.fromRecord(r, keyString -> payableTypeRegistry.getOrThrow(Key.key(keyString))))
-          .toList();
+      List<JobTask> tasks =
+          entry.getValue().stream()
+              .map(
+                  r ->
+                      PersistenceConverters.fromRecord(
+                          r, keyString -> payableTypeRegistry.getOrThrow(Key.key(keyString))))
+              .toList();
       domain.put(type, tasks);
     }
     return domain;
@@ -152,9 +157,10 @@ final class JobServiceImpl implements JobService {
     // Enforce join eligibility (max jobs, per-job permission, world restriction) when the
     // player is online. This is the single enforcement point shared by /jobs join and the GUI.
     if (player != null) {
-      List<JobProgression> current = progressionService.loadAllForPlayer(playerId, 100).stream()
-          .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
-          .toList();
+      List<JobProgression> current =
+          progressionService.loadAllForPlayer(playerId, 100).stream()
+              .map(r -> PersistenceConverters.fromRecord(r, plugin, payableTypeRegistry))
+              .toList();
       JoinGate.JoinResult result = joinGate.canJoin(player, job, current);
       if (result != JoinGate.JoinResult.ALLOWED) {
         return false;
@@ -166,9 +172,10 @@ final class JobServiceImpl implements JobService {
     // Try to restore from archive first (rejoin case)
     if (progressionService.restore(playerId, jobKey)) {
       JobProgressionRecord restored = progressionService.load(playerId, jobKey);
-      int level = restored == null
-          ? 1
-          : PersistenceConverters.fromRecord(restored, plugin, payableTypeRegistry).level();
+      int level =
+          restored == null
+              ? 1
+              : PersistenceConverters.fromRecord(restored, plugin, payableTypeRegistry).level();
       events.publishJoin(new JobJoinEvent(uuid, job, level, true), player);
       return true;
     }
@@ -195,7 +202,8 @@ final class JobServiceImpl implements JobService {
       return false;
     }
     // Convert record to domain to get level
-    JobProgression progression = PersistenceConverters.fromRecord(record, plugin, payableTypeRegistry);
+    JobProgression progression =
+        PersistenceConverters.fromRecord(record, plugin, payableTypeRegistry);
     int finalLevel = progression.level();
     Job job = progression.job();
 

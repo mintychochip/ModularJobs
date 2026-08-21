@@ -7,10 +7,9 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Implementation of PlayerUpgradeData.
- * Mutable for use in services; immutable view exposed via interface.
- * Backed by an internal {@link SkillTreeState}; the legacy unlocked-node
- * view is derived from the state's node levels.
+ * Implementation of PlayerUpgradeData. Mutable for use in services; immutable view exposed via
+ * interface. Backed by an internal {@link SkillTreeState}; the legacy unlocked-node view is derived
+ * from the state's node levels.
  */
 public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
 
@@ -19,21 +18,16 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
   private final Map<String, Integer> maxLevels; // perkId -> max achievable level
   private @org.jetbrains.annotations.Nullable SkillTree skillTree;
 
-  /**
-   * Legacy constructor: treats each unlocked node as level 1.
-   */
+  /** Legacy constructor: treats each unlocked node as level 1. */
   public PlayerUpgradeDataImpl(
       @NotNull String playerId,
       @NotNull String jobKey,
       int totalSkillPoints,
-      @NotNull Set<String> unlockedNodes
-  ) {
+      @NotNull Set<String> unlockedNodes) {
     this(toState(playerId, jobKey, totalSkillPoints, unlockedNodes));
   }
 
-  /**
-   * State-backed constructor (v2 format).
-   */
+  /** State-backed constructor (v2 format). */
   public PlayerUpgradeDataImpl(@NotNull SkillTreeState state) {
     this.state = state;
     this.perkLevels = new HashMap<>();
@@ -49,8 +43,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
       @NotNull String playerId,
       @NotNull String jobKey,
       int totalSkillPoints,
-      @NotNull Set<String> unlockedNodes
-  ) {
+      @NotNull Set<String> unlockedNodes) {
     Map<String, Integer> levels = new HashMap<>();
     for (String nodeKey : unlockedNodes) {
       levels.put(nodeKey, 1);
@@ -58,9 +51,7 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
     return new SkillTreeState(playerId, jobKey, totalSkillPoints, levels, Map.of());
   }
 
-  /**
-   * Create empty upgrade data for a new player-job combination.
-   */
+  /** Create empty upgrade data for a new player-job combination. */
   public static PlayerUpgradeDataImpl empty(@NotNull String playerId, @NotNull String jobKey) {
     return new PlayerUpgradeDataImpl(playerId, jobKey, 0, Set.of());
   }
@@ -121,22 +112,30 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
 
   // Mutators for service use
 
-  /**
-   * Add skill points (e.g., on level up).
-   */
+  /** Add skill points (e.g., on level up). */
   public void addSkillPoints(int points) {
-    this.state = new SkillTreeState(
-        state.playerId(), state.jobKey(), state.totalSkillPoints() + points,
-        state.nodeLevels(), state.state(), state.currentJobLevel(), state.permissionCheck());
+    this.state =
+        new SkillTreeState(
+            state.playerId(),
+            state.jobKey(),
+            state.totalSkillPoints() + points,
+            state.nodeLevels(),
+            state.state(),
+            state.currentJobLevel(),
+            state.permissionCheck());
   }
 
-  /**
-   * Set total skill points directly.
-   */
+  /** Set total skill points directly. */
   public void setTotalSkillPoints(int points) {
-    this.state = new SkillTreeState(
-        state.playerId(), state.jobKey(), points,
-        state.nodeLevels(), state.state(), state.currentJobLevel(), state.permissionCheck());
+    this.state =
+        new SkillTreeState(
+            state.playerId(),
+            state.jobKey(),
+            points,
+            state.nodeLevels(),
+            state.state(),
+            state.currentJobLevel(),
+            state.permissionCheck());
   }
 
   /**
@@ -150,9 +149,15 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
     }
     Map<String, Integer> levels = new HashMap<>(state.nodeLevels());
     levels.put(nodeKey, 1);
-    this.state = new SkillTreeState(
-        state.playerId(), state.jobKey(), state.totalSkillPoints(),
-        levels, state.state(), state.currentJobLevel(), state.permissionCheck());
+    this.state =
+        new SkillTreeState(
+            state.playerId(),
+            state.jobKey(),
+            state.totalSkillPoints(),
+            levels,
+            state.state(),
+            state.currentJobLevel(),
+            state.permissionCheck());
     return true;
   }
 
@@ -167,9 +172,15 @@ public final class PlayerUpgradeDataImpl implements PlayerUpgradeData {
     }
     Map<String, Integer> levels = new HashMap<>(state.nodeLevels());
     levels.remove(nodeKey);
-    this.state = new SkillTreeState(
-        state.playerId(), state.jobKey(), state.totalSkillPoints(),
-        levels, state.state(), state.currentJobLevel(), state.permissionCheck());
+    this.state =
+        new SkillTreeState(
+            state.playerId(),
+            state.jobKey(),
+            state.totalSkillPoints(),
+            levels,
+            state.state(),
+            state.currentJobLevel(),
+            state.permissionCheck());
     return true;
   }
 

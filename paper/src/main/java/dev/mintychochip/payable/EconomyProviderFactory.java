@@ -1,7 +1,7 @@
 package dev.mintychochip.payable;
 
-import java.util.Locale;
 import dev.mintychochip.container.EconomyProvider;
+import java.util.Locale;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -35,9 +35,8 @@ public final class EconomyProviderFactory {
   /**
    * Whether the legacy required flag is enabled.
    *
-   * <p>The generated default is false. When true and no explicit
-   * {@code economy.missing-provider} policy is configured, the factory preserves the old
-   * fail-fast behavior.
+   * <p>The generated default is false. When true and no explicit {@code economy.missing-provider}
+   * policy is configured, the factory preserves the old fail-fast behavior.
    */
   public static boolean isRequired(@NotNull Plugin plugin) {
     return plugin.getConfig().getBoolean(REQUIRED_KEY, false);
@@ -56,28 +55,33 @@ public final class EconomyProviderFactory {
 
     return switch (missingProviderPolicy(plugin)) {
       case BLACKHOLE -> new BlackholeEconomyProvider(plugin);
-      case FAIL -> throw new IllegalStateException(
-          "No economy provider is available. Install Mint, or set "
-              + MISSING_PROVIDER_KEY + ": blackhole in config.yml.");
+      case FAIL ->
+          throw new IllegalStateException(
+              "No economy provider is available. Install Mint, or set "
+                  + MISSING_PROVIDER_KEY
+                  + ": blackhole in config.yml.");
     };
   }
 
   private static MissingProviderPolicy missingProviderPolicy(@NotNull Plugin plugin) {
-    String configured = plugin.getConfig().contains(MISSING_PROVIDER_KEY, true)
-        ? plugin.getConfig().getString(MISSING_PROVIDER_KEY)
-        : null;
+    String configured =
+        plugin.getConfig().contains(MISSING_PROVIDER_KEY, true)
+            ? plugin.getConfig().getString(MISSING_PROVIDER_KEY)
+            : null;
     if (configured != null) {
       return switch (configured.trim().toLowerCase(Locale.ROOT)) {
         case "blackhole" -> MissingProviderPolicy.BLACKHOLE;
         case "fail" -> MissingProviderPolicy.FAIL;
-        default -> throw new IllegalArgumentException(
-            "Unknown " + MISSING_PROVIDER_KEY + " value '" + configured
-                + "'; expected blackhole or fail.");
+        default ->
+            throw new IllegalArgumentException(
+                "Unknown "
+                    + MISSING_PROVIDER_KEY
+                    + " value '"
+                    + configured
+                    + "'; expected blackhole or fail.");
       };
     }
-    return isRequired(plugin)
-        ? MissingProviderPolicy.FAIL
-        : MissingProviderPolicy.BLACKHOLE;
+    return isRequired(plugin) ? MissingProviderPolicy.FAIL : MissingProviderPolicy.BLACKHOLE;
   }
 
   private enum MissingProviderPolicy {

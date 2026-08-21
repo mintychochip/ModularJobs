@@ -7,9 +7,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Bukkit dual-fire wrapper for {@link JobJoinEvent}.
- */
+/** Bukkit dual-fire wrapper for {@link JobJoinEvent}. */
 public final class BukkitJobJoinEvent extends Event {
 
   private static final HandlerList HANDLERS = new HandlerList();
@@ -17,6 +15,7 @@ public final class BukkitJobJoinEvent extends Event {
   private final Player player;
   private final JobJoinEvent pure;
 
+  /** Bukkit job join event. */
   public BukkitJobJoinEvent(@NotNull Player player, @NotNull JobJoinEvent pure) {
     this.player = player;
     this.pure = pure;
@@ -26,6 +25,7 @@ public final class BukkitJobJoinEvent extends Event {
     return player;
   }
 
+  /** Pure. */
   public @NotNull JobJoinEvent pure() {
     return pure;
   }

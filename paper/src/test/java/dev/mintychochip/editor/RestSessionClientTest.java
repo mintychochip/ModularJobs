@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import dev.mintychochip.common.editor.EditorMetadata;
+import dev.mintychochip.common.editor.EditorPayload;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
-import dev.mintychochip.common.editor.EditorMetadata;
-import dev.mintychochip.common.editor.EditorPayload;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,20 +37,25 @@ class RestSessionClientTest {
   void createSendsSecretAndParsesServerSession() throws Exception {
     AtomicReference<Throwable> handlerFailure = new AtomicReference<>();
     server = HttpServer.create(new InetSocketAddress(0), 0);
-    server.createContext("/api/v1/sessions", exchange -> {
-      try {
-        assertEquals("POST", exchange.getRequestMethod());
-        assertEquals("test-secret", exchange.getRequestHeaders().getFirst("X-Create-Secret"));
-        assertTrue(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)
-            .contains("registeredActionTypes"));
-        respond(exchange, 201,
-            "{\"code\":\"abc123\",\"token\":\"server-token\","
-                + "\"expiresAt\":\"2030-01-01T00:00:00Z\"}");
-      } catch (AssertionError failure) {
-        handlerFailure.set(failure);
-        respond(exchange, 500, "{\"error\":\"handler assertion failed\"}");
-      }
-    });
+    server.createContext(
+        "/api/v1/sessions",
+        exchange -> {
+          try {
+            assertEquals("POST", exchange.getRequestMethod());
+            assertEquals("test-secret", exchange.getRequestHeaders().getFirst("X-Create-Secret"));
+            assertTrue(
+                new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)
+                    .contains("registeredActionTypes"));
+            respond(
+                exchange,
+                201,
+                "{\"code\":\"abc123\",\"token\":\"server-token\","
+                    + "\"expiresAt\":\"2030-01-01T00:00:00Z\"}");
+          } catch (AssertionError failure) {
+            handlerFailure.set(failure);
+            respond(exchange, 500, "{\"error\":\"handler assertion failed\"}");
+          }
+        });
     server.start();
 
     RestSessionClient.CreatedSession created = client().create(payload()).join();
@@ -65,19 +70,20 @@ class RestSessionClientTest {
   void fetchSendsBothTokenHeadersAndParsesPayload() throws Exception {
     AtomicReference<Throwable> handlerFailure = new AtomicReference<>();
     server = HttpServer.create(new InetSocketAddress(0), 0);
-    server.createContext("/api/v1/sessions/abc123/payload", exchange -> {
-      try {
-        assertEquals("GET", exchange.getRequestMethod());
-        assertEquals("Bearer server-token",
-            exchange.getRequestHeaders().getFirst("Authorization"));
-        assertEquals("server-token",
-            exchange.getRequestHeaders().getFirst("X-Session-Token"));
-        respond(exchange, 200, new Gson().toJson(payload()));
-      } catch (AssertionError failure) {
-        handlerFailure.set(failure);
-        respond(exchange, 500, "{\"error\":\"handler assertion failed\"}");
-      }
-    });
+    server.createContext(
+        "/api/v1/sessions/abc123/payload",
+        exchange -> {
+          try {
+            assertEquals("GET", exchange.getRequestMethod());
+            assertEquals(
+                "Bearer server-token", exchange.getRequestHeaders().getFirst("Authorization"));
+            assertEquals("server-token", exchange.getRequestHeaders().getFirst("X-Session-Token"));
+            respond(exchange, 200, new Gson().toJson(payload()));
+          } catch (AssertionError failure) {
+            handlerFailure.set(failure);
+            respond(exchange, 500, "{\"error\":\"handler assertion failed\"}");
+          }
+        });
     server.start();
 
     EditorPayload fetched = client().fetchPayload("abc123", "server-token").join();
@@ -89,16 +95,18 @@ class RestSessionClientTest {
   @Test
   void classifiesExpiredAndUnauthorizedResponses() throws Exception {
     server = HttpServer.create(new InetSocketAddress(0), 0);
-    server.createContext("/api/v1/sessions/expired/payload",
+    server.createContext(
+        "/api/v1/sessions/expired/payload",
         exchange -> respond(exchange, 410, "{\"error\":\"session expired\"}"));
-    server.createContext("/api/v1/sessions/unauthorized/payload",
+    server.createContext(
+        "/api/v1/sessions/unauthorized/payload",
         exchange -> respond(exchange, 401, "{\"error\":\"invalid session token\"}"));
     server.start();
 
-    RestSessionClient.RestSessionException expired = exceptionFrom(
-        client().fetchPayload("expired", "token"));
-    RestSessionClient.RestSessionException unauthorized = exceptionFrom(
-        client().fetchPayload("unauthorized", "token"));
+    RestSessionClient.RestSessionException expired =
+        exceptionFrom(client().fetchPayload("expired", "token"));
+    RestSessionClient.RestSessionException unauthorized =
+        exceptionFrom(client().fetchPayload("unauthorized", "token"));
 
     assertTrue(expired.expired());
     assertFalse(unauthorized.expired());
@@ -119,11 +127,7 @@ class RestSessionClientTest {
 
   private static EditorPayload payload() {
     return EditorPayload.create(
-        EditorMetadata.create(
-            "2030-01-01T00:00:00Z",
-            "player",
-            "payload-token",
-            "server"),
+        EditorMetadata.create("2030-01-01T00:00:00Z", "player", "payload-token", "server"),
         Map.of(),
         List.of("modularjobs:block_break"),
         List.of("modularjobs:experience"));
@@ -131,9 +135,8 @@ class RestSessionClientTest {
 
   private static RestSessionClient.RestSessionException exceptionFrom(
       java.util.concurrent.CompletableFuture<?> future) {
-    CompletionException failure = org.junit.jupiter.api.Assertions.assertThrows(
-        CompletionException.class,
-        future::join);
+    CompletionException failure =
+        org.junit.jupiter.api.Assertions.assertThrows(CompletionException.class, future::join);
     return assertInstanceOf(RestSessionClient.RestSessionException.class, failure.getCause());
   }
 

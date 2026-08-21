@@ -14,17 +14,15 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface BuffService {
 
+  /** Buff slot. */
   enum BuffSlot {
     FOOD,
     POTION,
     COATING
   }
 
-  record ActiveBuff(
-      @NotNull String buffId,
-      @NotNull BuffSlot slot,
-      @NotNull Instant expiresAt
-  ) {
+  /** Active buff. */
+  record ActiveBuff(@NotNull String buffId, @NotNull BuffSlot slot, @NotNull Instant expiresAt) {
     public boolean isExpired(Instant now) {
       return !expiresAt.isAfter(now);
     }
@@ -42,12 +40,16 @@ public interface BuffService {
       @NotNull BuffSlot slot,
       @NotNull Duration duration);
 
+  /** API member. */
   @NotNull
   List<ActiveBuff> activeBuffs(@NotNull UUID playerId);
 
+  /** Active in slot. */
   Optional<ActiveBuff> activeInSlot(@NotNull UUID playerId, @NotNull BuffSlot slot);
 
+  /** Returns whether has buff. */
   boolean hasBuff(@NotNull UUID playerId, @NotNull String buffId);
 
+  /** Clear. */
   void clear(@NotNull UUID playerId);
 }

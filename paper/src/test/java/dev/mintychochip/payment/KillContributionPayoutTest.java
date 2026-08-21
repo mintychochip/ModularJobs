@@ -3,9 +3,9 @@ package dev.mintychochip.payment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.test.MockBukkitSupport;
 import java.util.List;
 import java.util.Set;
-import dev.mintychochip.test.MockBukkitSupport;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,8 +39,7 @@ class KillContributionPayoutTest {
     // killer may also be in the map with low damage
     contribution.addContribution(killer, 5.0);
 
-    PaymentEligibility eligibility =
-        new PaymentEligibility(PaymentSettings.defaults());
+    PaymentEligibility eligibility = new PaymentEligibility(PaymentSettings.defaults());
 
     List<Player> payees = KillContributionPayout.selectPayees(contribution, 0.5, eligibility);
     // alice 60/105 ≈ 0.57 > 0.5; bob ≈ 0.38; killer ≈ 0.05

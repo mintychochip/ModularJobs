@@ -3,12 +3,6 @@ package dev.mintychochip.payment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.JobTask;
@@ -26,8 +20,15 @@ import dev.mintychochip.profession.RecipeExperienceDepreciationPolicy;
 import dev.mintychochip.service.JobService;
 import dev.mintychochip.service.ProfessionService;
 import dev.mintychochip.service.RecipeService;
-import java.util.OptionalInt;
 import dev.mintychochip.test.MockBukkitSupport;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.OfflinePlayer;
@@ -62,13 +63,14 @@ class JobsPaymentHandlerReloadTest {
     JobProgression snapshot = progression(player, BigDecimal.TEN);
     JobProgression reloaded = progression(player, new BigDecimal("99"));
     AtomicInteger getCalls = new AtomicInteger();
-    JobService service = new StubJobService() {
-      @Override
-      public JobProgression getProgression(String playerId, String jobKey) {
-        getCalls.incrementAndGet();
-        return reloaded;
-      }
-    };
+    JobService service =
+        new StubJobService() {
+          @Override
+          public JobProgression getProgression(String playerId, String jobKey) {
+            getCalls.incrementAndGet();
+            return reloaded;
+          }
+        };
     JobsPaymentHandler handler =
         new JobsPaymentHandler(plugin, new BoostEngine(null, null, null), service);
     JobProgression result =
@@ -86,36 +88,35 @@ class JobsPaymentHandlerReloadTest {
     JobProgression p0 = progression(player, new BigDecimal("0"));
     JobProgression p10 = progression(player, new BigDecimal("10"));
 
-    PayableType expType = experienceType(ctx ->
-        xpSnapshotsAtPay.add(ctx.jobProgression().experience()));
+    PayableType expType =
+        experienceType(ctx -> xpSnapshotsAtPay.add(ctx.jobProgression().experience()));
 
     Payable pay1 = new Payable(expType, PayableAmount.create(new BigDecimal("10"), null));
     Payable pay2 = new Payable(expType, PayableAmount.create(new BigDecimal("10"), null));
     Job job = p0.job();
     ActionType blockBreak = actionType("block_break");
-    JobTask task = new JobTask(
-        job.key(),
-        blockBreak.key(),
-        Key.key("minecraft", "stone"),
-        List.of(pay1, pay2));
+    JobTask task =
+        new JobTask(
+            job.key(), blockBreak.key(), Key.key("minecraft", "stone"), List.of(pay1, pay2));
 
-    JobService service = new StubJobService() {
-      @Override
-      public List<JobProgression> getProgressions(UUID p) {
-        return List.of(p0);
-      }
+    JobService service =
+        new StubJobService() {
+          @Override
+          public List<JobProgression> getProgressions(UUID p) {
+            return List.of(p0);
+          }
 
-      @Override
-      public JobTask getTask(Job j, ActionType type, Context context) {
-        return task;
-      }
+          @Override
+          public JobTask getTask(Job j, ActionType type, Context context) {
+            return task;
+          }
 
-      @Override
-      public JobProgression getProgression(String playerId, String jobKey) {
-        int n = getProgressionCalls.getAndIncrement();
-        return n == 0 ? p0 : p10;
-      }
-    };
+          @Override
+          public JobProgression getProgression(String playerId, String jobKey) {
+            int n = getProgressionCalls.getAndIncrement();
+            return n == 0 ? p0 : p10;
+          }
+        };
 
     // Offline player → BoostEngine.evaluate returns empty without needing services
     JobsPaymentHandler handler =
@@ -127,7 +128,6 @@ class JobsPaymentHandlerReloadTest {
     assertEquals(0, xpSnapshotsAtPay.get(0).compareTo(BigDecimal.ZERO));
     assertEquals(0, xpSnapshotsAtPay.get(1).compareTo(new BigDecimal("10")));
   }
-
 
   @Test
   void payAppliesRecipeDepreciationForCraftExperience() {
@@ -143,23 +143,25 @@ class JobsPaymentHandlerReloadTest {
     Payable payable = new Payable(expType, PayableAmount.create(new BigDecimal("100"), null));
     JobProgression progression = progression(player, BigDecimal.ZERO);
     ActionType craft = actionType("craft");
-    JobTask task = new JobTask(
-        progression.job().key(),
-        craft.key(),
-        Key.key("minecraft", "iron_sword"),
-        List.of(payable));
+    JobTask task =
+        new JobTask(
+            progression.job().key(),
+            craft.key(),
+            Key.key("minecraft", "iron_sword"),
+            List.of(payable));
 
-    JobService service = new StubJobService() {
-      @Override
-      public List<JobProgression> getProgressions(UUID p) {
-        return List.of(progression);
-      }
+    JobService service =
+        new StubJobService() {
+          @Override
+          public List<JobProgression> getProgressions(UUID p) {
+            return List.of(progression);
+          }
 
-      @Override
-      public JobTask getTask(Job job, ActionType type, Context context) {
-        return task;
-      }
-    };
+          @Override
+          public JobTask getTask(Job job, ActionType type, Context context) {
+            return task;
+          }
+        };
 
     RecipeExperienceDepreciationApplier depreciation =
         new RecipeExperienceDepreciationApplier(
@@ -177,7 +179,7 @@ class JobsPaymentHandlerReloadTest {
   }
 
   private static final class RecordingRecipeService implements RecipeService {
-    private final java.util.Map<Key, RecipeDefinition> byCraftOutput = new java.util.HashMap<>();
+    private final Map<Key, RecipeDefinition> byCraftOutput = new HashMap<>();
     private Key lastCraftOutputLookup;
 
     @Override
@@ -230,12 +232,13 @@ class JobsPaymentHandlerReloadTest {
     }
 
     @Override
-    public java.util.List<dev.mintychochip.profession.ProfessionDefinition> tracks() {
-      return java.util.List.of();
+    public List<dev.mintychochip.profession.ProfessionDefinition> tracks() {
+      return List.of();
     }
 
     @Override
-    public java.util.Optional<dev.mintychochip.profession.ProfessionDefinition> resolve(String idOrAlias) {
+    public java.util.Optional<dev.mintychochip.profession.ProfessionDefinition> resolve(
+        String idOrAlias) {
       return java.util.Optional.empty();
     }
 
@@ -256,52 +259,53 @@ class JobsPaymentHandlerReloadTest {
   }
 
   private static JobProgression progression(OfflinePlayer player, BigDecimal xp) {
-    Job job = new Job() {
-      @Override
-      public @NotNull Key key() {
-        return Key.key("modularjobs", "miner");
-      }
+    Job job =
+        new Job() {
+          @Override
+          public @NotNull Key key() {
+            return Key.key("modularjobs", "miner");
+          }
 
-      @Override
-      public @NotNull Component displayName() {
-        return Component.text("Miner");
-      }
+          @Override
+          public @NotNull Component displayName() {
+            return Component.text("Miner");
+          }
 
-      @Override
-      public String getPlainName() {
-        return "miner";
-      }
+          @Override
+          public String getPlainName() {
+            return "miner";
+          }
 
-      @Override
-      public @NotNull Component description() {
-        return Component.empty();
-      }
+          @Override
+          public @NotNull Component description() {
+            return Component.empty();
+          }
 
-      @Override
-      public @NotNull LevelingCurve levelingCurve() {
-        return params -> BigDecimal.valueOf(params.level() * 100L);
-      }
+          @Override
+          public @NotNull LevelingCurve levelingCurve() {
+            return params -> BigDecimal.valueOf(params.level() * 100L);
+          }
 
-      @Override
-      public @NotNull Map<Key, PayableCurve> payableCurves() {
-        return Map.of();
-      }
+          @Override
+          public @NotNull Map<Key, PayableCurve> payableCurves() {
+            return Map.of();
+          }
 
-      @Override
-      public int maxLevel() {
-        return 100;
-      }
+          @Override
+          public int maxLevel() {
+            return 100;
+          }
 
-      @Override
-      public int upgradeLevel() {
-        return 0;
-      }
+          @Override
+          public int upgradeLevel() {
+            return 0;
+          }
 
-      @Override
-      public @NotNull Map<Integer, List<String>> perkUnlocks() {
-        return Map.of();
-      }
-    };
+          @Override
+          public @NotNull Map<Integer, List<String>> perkUnlocks() {
+            return Map.of();
+          }
+        };
     return new JobProgression() {
       @Override
       public BigDecimal experienceForLevel(int level) {

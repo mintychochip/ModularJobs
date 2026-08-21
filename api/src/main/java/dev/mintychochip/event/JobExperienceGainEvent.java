@@ -1,14 +1,12 @@
 package dev.mintychochip.event;
 
+import dev.mintychochip.Job;
+import dev.mintychochip.JobProgression;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;
-import dev.mintychochip.Job;
-import dev.mintychochip.JobProgression;
 
-/**
- * Fired before experience is applied; listeners may cancel or mutate the amount.
- */
+/** Fired before experience is applied; listeners may cancel or mutate the amount. */
 public final class JobExperienceGainEvent implements Cancellable {
 
   private final UUID playerId;
@@ -17,6 +15,7 @@ public final class JobExperienceGainEvent implements Cancellable {
   private BigDecimal experienceGained;
   private boolean cancelled;
 
+  /** Job experience gain event. */
   public JobExperienceGainEvent(
       UUID playerId, Job job, JobProgression progression, BigDecimal experienceGained) {
     this.playerId = Objects.requireNonNull(playerId, "playerId");

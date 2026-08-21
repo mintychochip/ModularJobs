@@ -5,19 +5,14 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Job data for editor operations.
- * Contains display name and all tasks associated with the job.
+ * Job data for editor operations. Contains display name and all tasks associated with the job.
  *
  * @param displayName human-readable job name
- * @param tasks        list of tasks for this job
+ * @param tasks list of tasks for this job
  */
 public record JobData(
-    @SerializedName("displayName")
-    @NotNull String displayName,
-
-    @SerializedName("tasks")
-    @NotNull List<TaskData> tasks
-) {
+    @SerializedName("displayName") @NotNull String displayName,
+    @SerializedName("tasks") @NotNull List<TaskData> tasks) {
 
   /**
    * Creates job data for export.

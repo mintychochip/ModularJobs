@@ -8,52 +8,41 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * JSON persistence document for {@code SerializableBoostData}. Rule
- * {@code conditions} are opaque bytes from {@link dev.mintychochip.databag.ConditionSerializer}.
+ * JSON persistence document for {@code SerializableBoostData}. Rule {@code conditions} are opaque
+ * bytes from {@link dev.mintychochip.databag.ConditionSerializer}.
  */
 public record BoostDataDocument(
-    String kind,
-    @Nullable String slots,
-    @Nullable String duration,
-    SourceDocument source
-) {
+    String kind, @Nullable String slots, @Nullable String duration, SourceDocument source) {
 
   private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
+  /** Source document. */
   public record SourceDocument(
-      String key,
-      @Nullable String description,
-      List<RuleDocument> rules
-  ) {}
+      String key, @Nullable String description, List<RuleDocument> rules) {}
 
-  /**
-   * One ruled boost: priority, condition serializer bytes (base64), boost amount.
-   */
-  public record RuleDocument(
-      int priority,
-      String conditions,
-      BoostDocument boost
-  ) {
+  /** One ruled boost: priority, condition serializer bytes (base64), boost amount. */
+  public record RuleDocument(int priority, String conditions, BoostDocument boost) {
 
+    /** Of. */
     public static RuleDocument of(int priority, byte[] conditionBytes, BoostDocument boost) {
-      return new RuleDocument(
-          priority, Base64.getEncoder().encodeToString(conditionBytes), boost);
+      return new RuleDocument(priority, Base64.getEncoder().encodeToString(conditionBytes), boost);
     }
 
+    /** Condition bytes. */
     public byte[] conditionBytes() {
       return Base64.getDecoder().decode(conditions);
     }
   }
 
-  public record BoostDocument(
-      String type,
-      double amount
-  ) {}
+  /** Boost document. */
+  public record BoostDocument(String type, double amount) {}
 
+  /** Converts to json. */
   public static byte[] toJson(BoostDataDocument document) {
     return GSON.toJson(document).getBytes(StandardCharsets.UTF_8);
   }
 
+  /** From json. */
   public static BoostDataDocument fromJson(byte[] bytes) {
     BoostDataDocument document =
         GSON.fromJson(new String(bytes, StandardCharsets.UTF_8), BoostDataDocument.class);

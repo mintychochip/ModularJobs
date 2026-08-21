@@ -1,9 +1,5 @@
 package dev.mintychochip.domain;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import dev.mintychochip.Job;
 import dev.mintychochip.LevelingCurve;
 import dev.mintychochip.PayableCurve;
@@ -12,10 +8,14 @@ import dev.mintychochip.domain.model.JobRecord;
 import dev.mintychochip.math.ExpressionCurves;
 import dev.mintychochip.registry.Registry;
 import dev.mintychochip.util.KeyUtils;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -30,9 +30,16 @@ import org.bukkit.plugin.Plugin;
  * @param upgradeLevel level at which upgrades become available
  * @param perkUnlocks perk permissions grouped by unlock level
  */
-record JobImpl(Key key, Component displayName, Component description, int maxLevel,
-               LevelingCurve levelingCurve, Map<Key, PayableCurve> payableCurves,
-               int upgradeLevel, Map<Integer, List<String>> perkUnlocks) implements Job {
+record JobImpl(
+    Key key,
+    Component displayName,
+    Component description,
+    int maxLevel,
+    LevelingCurve levelingCurve,
+    Map<Key, PayableCurve> payableCurves,
+    int upgradeLevel,
+    Map<Integer, List<String>> perkUnlocks)
+    implements Job {
 
   private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
@@ -60,8 +67,7 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
         levelingCurve.toString(),
         serializePayableCurves(),
         upgradeLevel(),
-        perkUnlocks()
-    );
+        perkUnlocks());
   }
 
   /**
@@ -76,10 +82,7 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
    * @throws IllegalArgumentException if a key or curve expression is invalid
    */
   static JobImpl fromRecord(
-      JobRecord record,
-      Plugin plugin,
-      Registry<PayableType> payableTypeRegistry
-  ) {
+      JobRecord record, Plugin plugin, Registry<PayableType> payableTypeRegistry) {
     Map<Key, PayableCurve> curves = new HashMap<>();
     for (Map.Entry<String, String> entry : record.payableCurves().entrySet()) {
       Key payableTypeKey = KeyUtils.parseKey(plugin, entry.getKey());
@@ -96,15 +99,11 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
         ExpressionCurves.levelingCurve(record.levellingCurve()),
         curves,
         record.upgradeLevel(),
-        record.perkUnlocks()
-    );
+        record.perkUnlocks());
   }
 
   private Map<String, String> serializePayableCurves() {
     return payableCurves().entrySet().stream()
-        .collect(Collectors.toMap(
-            e -> e.getKey().toString(),
-            e -> e.getValue().toString()
-        ));
+        .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
   }
 }

@@ -1,23 +1,23 @@
 package dev.mintychochip.domain;
 
-import java.math.BigDecimal;
-import java.util.UUID;
 import dev.mintychochip.Job;
-import dev.mintychochip.LevelingCurve.Parameters;
 import dev.mintychochip.JobProgression;
+import dev.mintychochip.LevelingCurve.Parameters;
 import dev.mintychochip.container.PayableType;
 import dev.mintychochip.domain.model.JobProgressionRecord;
 import dev.mintychochip.domain.model.JobRecord;
 import dev.mintychochip.registry.Registry;
+import java.math.BigDecimal;
+import java.util.UUID;
 import org.bukkit.plugin.Plugin;
 
 /**
  * Immutable snapshot of a player's progression within a single job.
  *
- * <p>The current {@code level} is derived from the player's {@code experience}
- * against the job's {@link LevelingCurve} at construction time. Mutations such as
- * {@link #setExperience(BigDecimal)} return a new instance; nothing is persisted
- * here (persistence is handled by {@link ProgressionService}).
+ * <p>The current {@code level} is derived from the player's {@code experience} against the job's
+ * {@link LevelingCurve} at construction time. Mutations such as {@link #setExperience(BigDecimal)}
+ * return a new instance; nothing is persisted here (persistence is handled by {@link
+ * ProgressionService}).
  *
  * <p>Persistence-through-failure: not applicable; this is a passive value object.
  */
@@ -31,8 +31,8 @@ final class JobProgressionImpl implements JobProgression {
   /**
    * Creates a progression snapshot, deriving the current level from accrued experience.
    *
-   * @param playerId   owning player (not validated here; must be non-null)
-   * @param job        job this progression tracks
+   * @param playerId owning player (not validated here; must be non-null)
+   * @param job job this progression tracks
    * @param experience total accrued experience
    * @throws IllegalStateException if the level cannot be derived from the curve
    */
@@ -43,9 +43,7 @@ final class JobProgressionImpl implements JobProgression {
     this.level = calculateCurrentLevel();
   }
 
-  /**
-   * Returns a new progression with the given experience; returns {@code this} if unchanged.
-   */
+  /** Returns a new progression with the given experience; returns {@code this} if unchanged. */
   @Override
   public JobProgression setExperience(BigDecimal experience) {
     if (this.experience.equals(experience)) {
@@ -109,47 +107,39 @@ final class JobProgressionImpl implements JobProgression {
   @Override
   public String toString() {
     return "JobProgressionImpl["
-        + "player=" + playerId
-        + ", job=" + job.key().value()
-        + ", experience=" + experience
-        + ", level=" + level()
+        + "player="
+        + playerId
+        + ", job="
+        + job.key().value()
+        + ", experience="
+        + experience
+        + ", level="
+        + level()
         + "]";
   }
 
   /**
-   * Converts this progression to its persisted record, embedding a serialized
-   * job snapshot.
+   * Converts this progression to its persisted record, embedding a serialized job snapshot.
    *
    * @return record for persistence
    */
   JobProgressionRecord toRecord() {
     JobRecord jobRecord = ((JobImpl) job).toRecord();
-    return new JobProgressionRecord(
-        playerId.toString(),
-        jobRecord,
-        experience
-    );
+    return new JobProgressionRecord(playerId.toString(), jobRecord, experience);
   }
 
   /**
    * Reconstructs a progression from a persisted record.
    *
-   * @param record               persisted progression data
-   * @param plugin               plugin for key namespaces
-   * @param payableTypeRegistry  registry for filtering payable curves
+   * @param record persisted progression data
+   * @param plugin plugin for key namespaces
+   * @param payableTypeRegistry registry for filtering payable curves
    * @return reconstructed progression
    * @throws IllegalArgumentException if the player id, job, or curve is invalid
    */
   static JobProgressionImpl fromRecord(
-      JobProgressionRecord record,
-      Plugin plugin,
-      Registry<PayableType> payableTypeRegistry
-  ) {
+      JobProgressionRecord record, Plugin plugin, Registry<PayableType> payableTypeRegistry) {
     Job job = JobImpl.fromRecord(record.jobRecord(), plugin, payableTypeRegistry);
-    return new JobProgressionImpl(
-        UUID.fromString(record.playerId()),
-        job,
-        record.experience()
-    );
+    return new JobProgressionImpl(UUID.fromString(record.playerId()), job, record.experience());
   }
 }

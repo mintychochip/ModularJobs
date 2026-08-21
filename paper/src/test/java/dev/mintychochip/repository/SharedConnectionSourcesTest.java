@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
-/**
- * Proves pool identity keying for shared MySQL jdbc-url + username.
- */
+/** Proves pool identity keying for shared MySQL jdbc-url + username. */
 class SharedConnectionSourcesTest {
 
   @Test
@@ -42,7 +40,6 @@ class SharedConnectionSourcesTest {
     b.set("username", "bob");
 
     assertNotEquals(
-        SharedConnectionSources.poolIdentity(a),
-        SharedConnectionSources.poolIdentity(b));
+        SharedConnectionSources.poolIdentity(a), SharedConnectionSources.poolIdentity(b));
   }
 }

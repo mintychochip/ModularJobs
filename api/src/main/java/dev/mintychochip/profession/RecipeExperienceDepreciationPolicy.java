@@ -14,6 +14,7 @@ public record RecipeExperienceDepreciationPolicy(
   public static final int DEFAULT_GRACE_LEVELS = 0;
   public static final int DEFAULT_WINDOW_LEVELS = 10;
 
+  /** API member. */
   public RecipeExperienceDepreciationPolicy {
     if (graceLevels < 0) {
       throw new IllegalArgumentException("graceLevels must be >= 0");
@@ -31,6 +32,7 @@ public record RecipeExperienceDepreciationPolicy(
 
   /** Explicitly disables recipe experience depreciation. */
   public static RecipeExperienceDepreciationPolicy disabled() {
-    return new RecipeExperienceDepreciationPolicy(false, DEFAULT_GRACE_LEVELS, DEFAULT_WINDOW_LEVELS);
+    return new RecipeExperienceDepreciationPolicy(
+        false, DEFAULT_GRACE_LEVELS, DEFAULT_WINDOW_LEVELS);
   }
 }

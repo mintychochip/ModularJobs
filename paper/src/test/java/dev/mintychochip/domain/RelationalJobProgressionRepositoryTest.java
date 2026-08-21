@@ -6,6 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.domain.model.JobProgressionRecord;
+import dev.mintychochip.domain.model.JobRecord;
+import dev.mintychochip.domain.repository.JobProgressionRepository;
+import dev.mintychochip.repository.ConnectionSource;
+import dev.mintychochip.repository.DatabaseType;
+import dev.mintychochip.repository.NonClosableConnection;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -13,19 +19,14 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.domain.model.JobProgressionRecord;
-import dev.mintychochip.domain.model.JobRecord;
-import dev.mintychochip.domain.repository.JobProgressionRepository;
-import dev.mintychochip.repository.ConnectionSource;
-import dev.mintychochip.repository.DatabaseType;
-import dev.mintychochip.repository.NonClosableConnection;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * MySQL (real SQL path, fake job catalog only). Requires live MySQL (see {@link dev.mintychochip.test.MysqlTestSupport}).
+ * MySQL (real SQL path, fake job catalog only). Requires live MySQL (see {@link
+ * dev.mintychochip.test.MysqlTestSupport}).
  */
 class RelationalJobProgressionRepositoryTest {
 
@@ -42,7 +43,8 @@ class RelationalJobProgressionRepositoryTest {
     connection = NonClosableConnection.create(dev.mintychochip.test.MysqlTestSupport.open());
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS " + TABLE);
-      st.execute("""
+      st.execute(
+          """
           CREATE TABLE job_progressions_test (
             player_id  VARCHAR(191)    NOT NULL,
             job_key    VARCHAR(191)    NOT NULL,
@@ -52,24 +54,20 @@ class RelationalJobProgressionRepositoryTest {
           """);
     }
 
-    miner = new JobRecord(
-        "modularjobs:miner", "Miner", "Mines", 100, "level * 100",
-        Map.of(), 30, Map.of()
-    );
-    fisher = new JobRecord(
-        "modularjobs:fisherman", "Fisher", "Fish", 50, "level * 50",
-        Map.of(), 20, Map.of()
-    );
+    miner =
+        new JobRecord(
+            "modularjobs:miner", "Miner", "Mines", 100, "level * 100", Map.of(), 30, Map.of());
+    fisher =
+        new JobRecord(
+            "modularjobs:fisherman", "Fisher", "Fish", 50, "level * 50", Map.of(), 20, Map.of());
 
     Map<String, JobRecord> jobs = new ConcurrentHashMap<>();
     jobs.put(miner.jobKey(), miner);
     jobs.put(fisher.jobKey(), fisher);
 
-    repository = RelationalJobProgressionRepositoryImpl.create(
-        new MemoryJobRepositoryImpl(jobs),
-        new FixedConnectionSource(connection),
-        TABLE
-    );
+    repository =
+        RelationalJobProgressionRepositoryImpl.create(
+            new MemoryJobRepositoryImpl(jobs), new FixedConnectionSource(connection), TABLE);
   }
 
   @AfterEach
@@ -88,8 +86,8 @@ class RelationalJobProgressionRepositoryTest {
 
   @Test
   void saveThenLoadReturnsExperience() {
-    JobProgressionRecord record = new JobProgressionRecord(
-        "player-1", miner, new BigDecimal("1234.50"));
+    JobProgressionRecord record =
+        new JobProgressionRecord("player-1", miner, new BigDecimal("1234.50"));
     assertTrue(repository.save(record));
 
     JobProgressionRecord loaded = repository.load("player-1", "modularjobs:miner");
@@ -165,8 +163,7 @@ class RelationalJobProgressionRepositoryTest {
     }
 
     @Override
-    public void shutdown() {
-    }
+    public void shutdown() {}
 
     @Override
     public boolean isClosed() {

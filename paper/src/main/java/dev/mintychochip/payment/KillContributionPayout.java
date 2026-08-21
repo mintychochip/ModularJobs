@@ -1,10 +1,10 @@
 package dev.mintychochip.payment;
 
+import dev.mintychochip.container.ActionTypes;
+import dev.mintychochip.paper.BukkitContexts;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import dev.mintychochip.container.ActionTypes;
-import dev.mintychochip.paper.BukkitContexts;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;

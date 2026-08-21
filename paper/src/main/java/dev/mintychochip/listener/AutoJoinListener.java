@@ -9,19 +9,19 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-/**
- * Joins configured auto-join jobs on login.
- */
+/** Joins configured auto-join jobs on login. */
 public final class AutoJoinListener implements Listener {
 
   private final JobService jobService;
   private final ProgressionLimitsConfig limits;
 
+  /** Auto join listener. */
   public AutoJoinListener(JobService jobService, ProgressionLimitsConfig limits) {
     this.jobService = jobService;
     this.limits = limits;
   }
 
+  /** Event handler. */
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
@@ -33,7 +33,8 @@ public final class AutoJoinListener implements Listener {
         continue; // configured but not present — skip
       }
       if (job == null
-          || jobService.getProgression(player.getUniqueId().toString(), job.key().toString()) != null) {
+          || jobService.getProgression(player.getUniqueId().toString(), job.key().toString())
+              != null) {
         continue;
       }
       jobService.joinJob(player.getUniqueId().toString(), job.key().toString());

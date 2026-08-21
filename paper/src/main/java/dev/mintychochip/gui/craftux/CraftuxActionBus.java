@@ -9,17 +9,18 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Host-owned inventory action registry for craftux {@link dev.craftux.common.inventory.InventoryRuntime}.
+ * Host-owned inventory action registry for craftux {@link
+ * dev.craftux.common.inventory.InventoryRuntime}.
  *
- * <p>Runtime freezes the action map at construction; this bus exposes stable proxy
- * handlers for known action ids while GUIs register/unregister live handlers after
- * composition-root wiring.
+ * <p>Runtime freezes the action map at construction; this bus exposes stable proxy handlers for
+ * known action ids while GUIs register/unregister live handlers after composition-root wiring.
  */
 public final class CraftuxActionBus {
 
   private final Map<String, InventoryAction> handlers = new ConcurrentHashMap<>();
   private final Map<String, InventoryAction> proxies;
 
+  /** Craftux action bus. */
   public CraftuxActionBus(Iterable<String> actionIds) {
     Map<String, InventoryAction> built = new LinkedHashMap<>();
     for (String id : actionIds) {

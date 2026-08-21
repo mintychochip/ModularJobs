@@ -9,14 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Resolves the owning player of a {@link Block} through a pluggable
- * {@link BlockProtectionAdapter}. When no adapter is installed, every block is
- * treated as unowned.
+ * Resolves the owning player of a {@link Block} through a pluggable {@link BlockProtectionAdapter}.
+ * When no adapter is installed, every block is treated as unowned.
  */
 public final class BlockOwnershipService {
 
-  @Nullable
-  private final BlockProtectionAdapter protectionAdapter;
+  @Nullable private final BlockProtectionAdapter protectionAdapter;
 
   /** Creates the service delegating to the given adapter, which may be null. */
   public BlockOwnershipService(@Nullable BlockProtectionAdapter protectionAdapter) {
@@ -24,8 +22,8 @@ public final class BlockOwnershipService {
   }
 
   /**
-   * Returns the owning {@link OfflinePlayer} of the block, or empty when no
-   * adapter is present or the block has no recorded owner.
+   * Returns the owning {@link OfflinePlayer} of the block, or empty when no adapter is present or
+   * the block has no recorded owner.
    */
   public @NotNull Optional<OfflinePlayer> getOwner(Block block) {
     if (protectionAdapter == null) {

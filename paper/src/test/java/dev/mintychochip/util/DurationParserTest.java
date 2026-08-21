@@ -7,9 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link DurationParser} parse/format for short and documented long-form units.
- */
+/** Drives shipped {@link DurationParser} parse/format for short and documented long-form units. */
 class DurationParserTest {
 
   @Test
@@ -30,18 +28,12 @@ class DurationParserTest {
   @Test
   void parseSpacedComposite() {
     Duration d = DurationParser.parse("1h 30m 15s");
-    assertEquals(
-        Duration.ofHours(1).plusMinutes(30).plusSeconds(15),
-        d
-    );
+    assertEquals(Duration.ofHours(1).plusMinutes(30).plusSeconds(15), d);
   }
 
   @Test
   void parseDocumentedLongFormUnits() {
-    assertEquals(
-        Duration.ofHours(1).plusMinutes(30),
-        DurationParser.parse("1 hour 30 minutes")
-    );
+    assertEquals(Duration.ofHours(1).plusMinutes(30), DurationParser.parse("1 hour 30 minutes"));
     assertEquals(Duration.ofDays(2), DurationParser.parse("2 days"));
     assertEquals(Duration.ofDays(1), DurationParser.parse("1 day"));
     assertEquals(Duration.ofMinutes(1), DurationParser.parse("1 minute"));
@@ -54,10 +46,7 @@ class DurationParserTest {
 
   @Test
   void parseLongFormIsCaseInsensitive() {
-    assertEquals(
-        Duration.ofHours(1).plusMinutes(5),
-        DurationParser.parse("1 HOUR 5 MINUTES")
-    );
+    assertEquals(Duration.ofHours(1).plusMinutes(5), DurationParser.parse("1 HOUR 5 MINUTES"));
   }
 
   @Test
@@ -74,8 +63,8 @@ class DurationParserTest {
 
   @Test
   void formatProducesHumanReadableUnits() {
-    String formatted = DurationParser.format(
-        Duration.ofDays(1).plusHours(2).plusMinutes(5).plusSeconds(3));
+    String formatted =
+        DurationParser.format(Duration.ofDays(1).plusHours(2).plusMinutes(5).plusSeconds(3));
     assertTrue(formatted.contains("1d"), "got " + formatted);
     assertTrue(formatted.contains("2h"), "got " + formatted);
     assertTrue(formatted.contains("5m"), "got " + formatted);
@@ -111,7 +100,6 @@ class DurationParserTest {
     String remaining = DurationParser.formatRemaining(started, Duration.ofMinutes(30));
     assertTrue(
         remaining.contains("m") || remaining.contains("s") || remaining.contains("h"),
-        "expected remaining time fragment, got " + remaining
-    );
+        "expected remaining time fragment, got " + remaining);
   }
 }

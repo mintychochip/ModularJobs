@@ -1,7 +1,5 @@
 package dev.mintychochip.boost.config;
 
-import java.util.ArrayList;
-import java.util.List;
 import dev.mintychochip.boost.conditions.SnapshotCondition;
 import dev.mintychochip.boost.config.BoostSourceConfig.ConditionConfig;
 import dev.mintychochip.container.boost.Condition;
@@ -11,17 +9,15 @@ import dev.mintychochip.container.boost.PotionConditionType;
 import dev.mintychochip.container.boost.RelationalOperator;
 import dev.mintychochip.container.boost.WeatherState;
 import dev.mintychochip.container.boost.factories.ConditionFactory;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Parses ConditionConfig from JSON into Condition instances.
- */
+/** Parses ConditionConfig from JSON into Condition instances. */
 public final class ConditionConfigParser {
 
   private final ConditionFactory conditionFactory;
 
-  /**
-   * Creates a parser delegating condition construction to {@code conditionFactory}.
-   */
+  /** Creates a parser delegating condition construction to {@code conditionFactory}. */
   public ConditionConfigParser(ConditionFactory conditionFactory) {
     this.conditionFactory = conditionFactory;
   }
@@ -59,8 +55,8 @@ public final class ConditionConfigParser {
   }
 
   /**
-   * Parse world by name or key string. Does not require the world to exist at parse time;
-   * matching is deferred to snapshot evaluation.
+   * Parse world by name or key string. Does not require the world to exist at parse time; matching
+   * is deferred to snapshot evaluation.
    */
   private Condition parseWorld(ConditionConfig config) {
     if (!(config.value() instanceof String worldName) || worldName.isBlank()) {
@@ -149,10 +145,11 @@ public final class ConditionConfigParser {
 
     // Multiple job keys (any match)
     if (config.values() != null) {
-      String[] jobKeys = config.values().stream()
-          .map(String::valueOf)
-          .map(this::namespaceJobKey)
-          .toArray(String[]::new);
+      String[] jobKeys =
+          config.values().stream()
+              .map(String::valueOf)
+              .map(this::namespaceJobKey)
+              .toArray(String[]::new);
       return conditionFactory.jobAny(jobKeys);
     }
 
@@ -160,8 +157,7 @@ public final class ConditionConfigParser {
   }
 
   /**
-   * Ensure job key is properly namespaced.
-   * If the key already contains a colon, return as-is.
+   * Ensure job key is properly namespaced. If the key already contains a colon, return as-is.
    * Otherwise, prepend "modularjobs:" namespace.
    */
   private String namespaceJobKey(String jobKey) {
@@ -175,8 +171,7 @@ public final class ConditionConfigParser {
     List<ConditionConfig> subConditions = config.conditions();
     if (subConditions == null || subConditions.size() < 2) {
       throw new IllegalArgumentException(
-          "Composite condition '" + config.type() + "' requires at least 2 conditions"
-      );
+          "Composite condition '" + config.type() + "' requires at least 2 conditions");
     }
 
     List<Condition> parsed = new ArrayList<>();
@@ -217,10 +212,11 @@ public final class ConditionConfigParser {
       case "HEALTH", "HP" -> PlayerResourceType.HEALTH;
       case "HUNGER", "FOOD", "FOOD_LEVEL" -> PlayerResourceType.HUNGER;
       case "EXPERIENCE", "XP", "EXP" -> PlayerResourceType.EXPERIENCE;
-      default -> throw new IllegalArgumentException(
-          "Unknown player resource type: " + resourceTypeStr
-              + " (expected health, hunger/food_level, experience)");
+      default ->
+          throw new IllegalArgumentException(
+              "Unknown player resource type: "
+                  + resourceTypeStr
+                  + " (expected health, hunger/food_level, experience)");
     };
   }
-
 }

@@ -22,9 +22,7 @@ class EditorPayloadTest {
                     "Miner",
                     List.of(
                         new TaskData(
-                            "break",
-                            "minecraft:stone",
-                            List.of(new PayableData("exp", "10")))))),
+                            "break", "minecraft:stone", List.of(new PayableData("exp", "10")))))),
             List.of("break"),
             List.of("exp"));
 

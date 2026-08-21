@@ -3,8 +3,8 @@ package dev.mintychochip.payment;
 import org.bukkit.entity.Entity;
 
 /**
- * Facade over {@link MobDamageTrackerStore} for tracking damage dealt to an entity and
- * retrieving the final contribution breakdown when tracking ends.
+ * Facade over {@link MobDamageTrackerStore} for tracking damage dealt to an entity and retrieving
+ * the final contribution breakdown when tracking ends.
  */
 public final class MobDamageTracker {
 
@@ -15,9 +15,7 @@ public final class MobDamageTracker {
     this.store = store;
   }
 
-  /**
-   * Stops tracking {@code entity} and returns its accumulated {@link DamageContribution}.
-   */
+  /** Stops tracking {@code entity} and returns its accumulated {@link DamageContribution}. */
   public DamageContribution endTracking(Entity entity) {
     return store.removeContribution(entity);
   }

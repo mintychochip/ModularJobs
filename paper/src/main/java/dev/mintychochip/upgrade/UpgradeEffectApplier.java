@@ -1,30 +1,31 @@
 package dev.mintychochip.upgrade;
 
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import dev.mintychochip.service.RecipeService;
 import dev.mintychochip.upgrade.NodeEffect.PermissionEffect;
 import dev.mintychochip.upgrade.NodeEffect.RecipeUnlockEffect;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Applies and unapplies upgrade effects when nodes are unlocked or reset.
- * Permissions and recipe unlocks are mutable grants; boosts flow through
- * {@link UpgradeBoostDataService}.
+ * Applies and unapplies upgrade effects when nodes are unlocked or reset. Permissions and recipe
+ * unlocks are mutable grants; boosts flow through {@link UpgradeBoostDataService}.
  */
 public final class UpgradeEffectApplier implements NodeEffectApplier {
   private final UpgradePermissionManager permissionManager;
   private final @Nullable RecipeService recipeService;
 
+  /** Upgrade effect applier. */
   public UpgradeEffectApplier(UpgradePermissionManager permissionManager) {
     this(permissionManager, null);
   }
 
+  /** Upgrade effect applier. */
   public UpgradeEffectApplier(
       UpgradePermissionManager permissionManager, @Nullable RecipeService recipeService) {
     this.permissionManager = permissionManager;
@@ -42,7 +43,8 @@ public final class UpgradeEffectApplier implements NodeEffectApplier {
   }
 
   @Override
-  public void syncEffects(Player player, SkillTreeState previous, SkillTreeState current, SkillTree tree) {
+  public void syncEffects(
+      Player player, SkillTreeState previous, SkillTreeState current, SkillTree tree) {
     syncEffects(player, Map.of(tree, previous), Map.of(tree, current));
   }
 
@@ -155,6 +157,7 @@ public final class UpgradeEffectApplier implements NodeEffectApplier {
     }
   }
 
+  /** Apply node effects. */
   public void applyNodeEffects(Player player, UpgradeNode node) {
     for (UpgradeEffect effect : node.effects()) {
       if (effect instanceof UpgradeEffect.PermissionEffect perm) {
@@ -165,6 +168,7 @@ public final class UpgradeEffectApplier implements NodeEffectApplier {
     }
   }
 
+  /** Unapply node effects. */
   public void unapplyNodeEffects(Player player, UpgradeNode node) {
     for (UpgradeEffect effect : node.effects()) {
       if (effect instanceof UpgradeEffect.PermissionEffect perm) {
@@ -175,6 +179,7 @@ public final class UpgradeEffectApplier implements NodeEffectApplier {
     }
   }
 
+  /** Restore effects. */
   public void restoreEffects(Player player, UpgradeTree tree, Set<String> unlockedNodeKeys) {
     Map<String, UpgradeNode> activeNodes = new HashMap<>();
 

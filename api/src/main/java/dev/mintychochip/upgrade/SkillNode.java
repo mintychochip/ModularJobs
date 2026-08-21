@@ -9,9 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A node in a job's skill graph. One model for all kinds: ROOT, SKILL, MAJOR.
- * Levelled skills carry per-level costs and effects; majors are one-time
- * permanent choices with optional state writes.
+ * A node in a job's skill graph. One model for all kinds: ROOT, SKILL, MAJOR. Levelled skills carry
+ * per-level costs and effects; majors are one-time permanent choices with optional state writes.
  */
 public record SkillNode(
     @NotNull Key key,
@@ -32,16 +31,16 @@ public record SkillNode(
     @NotNull List<NodeEffect> effects,
     @Nullable Position position,
     @NotNull List<Position> pathPoints,
-    @NotNull List<NodeStateWrite> stateWrites
-) implements Keyed {
+    @NotNull List<NodeStateWrite> stateWrites)
+    implements Keyed {
 
+  /** Level effect mode. */
   public enum LevelEffectMode {
-    /** Active effects are effects of levels 1..current. */
     CUMULATIVE,
-    /** Active effects are effects of the current level only. */
     REPLACE
   }
 
+  /** API member. */
   public SkillNode {
     if (cost < 0 || maxLevel < 0) {
       throw new IllegalArgumentException("Skill node cost and maxLevel must be non-negative");
@@ -94,18 +93,18 @@ public record SkillNode(
     return levels.get(capped - 1).effects();
   }
 
-  /**
-   * Whether all configured requirements are satisfied for the given player state.
-   */
+  /** Whether all configured requirements are satisfied for the given player state. */
   public @NotNull String getIconForState(boolean unlocked) {
     return unlocked ? unlockedIcon : lockedIcon;
   }
 
+  /** API member. */
   @Nullable
   public String getItemModelForState(boolean unlocked) {
     return unlocked ? unlockedItemModel : lockedItemModel;
   }
 
+  /** Precondition satisfied. */
   public boolean preconditionSatisfied(@NotNull SkillTreeState state) {
     for (Requirement requirement : requirements) {
       if (!requirement.satisfied(state)) {

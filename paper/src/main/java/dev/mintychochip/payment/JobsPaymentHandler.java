@@ -1,9 +1,5 @@
 package dev.mintychochip.payment;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.JobTask;
@@ -18,20 +14,24 @@ import dev.mintychochip.container.PayableHandler;
 import dev.mintychochip.container.PayableHandler.PayableContext;
 import dev.mintychochip.container.PayableType;
 import dev.mintychochip.service.JobService;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Pays the player for a single {@link ActionType} across every job that defines a matching
- * task and has non-empty payables.
+ * Pays the player for a single {@link ActionType} across every job that defines a matching task and
+ * has non-empty payables.
  *
- * <p>
- * For each payable, the base amount is run through the job's {@link PayableCurve} (when present),
- * then recipe experience depreciation (when configured), then boosted via {@link BoostEngine},
- * and finally handed to the payable type's {@link PayableHandler}. Progression is reloaded per
- * payable so sequential XP awards accumulate instead of last-write-wins against a single snapshot.
+ * <p>For each payable, the base amount is run through the job's {@link PayableCurve} (when
+ * present), then recipe experience depreciation (when configured), then boosted via {@link
+ * BoostEngine}, and finally handed to the payable type's {@link PayableHandler}. Progression is
+ * reloaded per payable so sequential XP awards accumulate instead of last-write-wins against a
+ * single snapshot.
  */
 public final class JobsPaymentHandler {
 
@@ -43,8 +43,8 @@ public final class JobsPaymentHandler {
   private final @Nullable RecipeExperienceDepreciationApplier recipeDepreciation;
 
   /**
-   * Creates the handler with the boost engine and progression service used to compute and
-   * persist each payable.
+   * Creates the handler with the boost engine and progression service used to compute and persist
+   * each payable.
    */
   public JobsPaymentHandler(Plugin plugin, BoostEngine boostEngine, JobService jobService) {
     this(plugin, boostEngine, jobService, null);
@@ -65,9 +65,9 @@ public final class JobsPaymentHandler {
   }
 
   /**
-   * Pays {@code player} for {@code type} across every job that has a matching task with
-   * non-empty payables. Applies the payable curve and all active boosts before dispatching to
-   * the payable handler, reloading progression per payable for correct accumulation.
+   * Pays {@code player} for {@code type} across every job that has a matching task with non-empty
+   * payables. Applies the payable curve and all active boosts before dispatching to the payable
+   * handler, reloading progression per payable for correct accumulation.
    */
   public void pay(OfflinePlayer player, ActionType type, Context context) {
     List<JobProgression> progressions = jobService.getProgressions(player.getUniqueId());
@@ -88,8 +88,8 @@ public final class JobsPaymentHandler {
         }
         PayableType payableType = payable.type();
         PayableAmount amount = payable.amount();
-        Parameters parameters = new Parameters(
-            amount.value(), progression.level(), progressions.size());
+        Parameters parameters =
+            new Parameters(amount.value(), progression.level(), progressions.size());
         PayableCurve curve = job.payableCurves().get(type.key());
         BigDecimal baseAmount = curve == null ? amount.value() : curve.evaluate(parameters);
         baseAmount = applyRecipeDepreciation(player, type, context, payableType, baseAmount);
@@ -97,14 +97,16 @@ public final class JobsPaymentHandler {
           continue;
         }
 
-        Payable basePayable = new Payable(
-            payableType, PayableAmount.create(baseAmount, amount.currency().orElse(null)));
+        Payable basePayable =
+            new Payable(
+                payableType, PayableAmount.create(baseAmount, amount.currency().orElse(null)));
         Map<Key, Boost> boosts =
             boostEngine.evaluate(player, type, context, progression, basePayable);
         BigDecimal boostedAmount = BoostEngine.applyBoosts(baseAmount, boosts);
 
-        Payable finalPayable = new Payable(
-            payableType, PayableAmount.create(boostedAmount, amount.currency().orElse(null)));
+        Payable finalPayable =
+            new Payable(
+                payableType, PayableAmount.create(boostedAmount, amount.currency().orElse(null)));
         PayableHandler handler = payableType.handler();
         handler.pay(new PayableContext(player.getUniqueId(), finalPayable, progression));
       }
@@ -126,11 +128,10 @@ public final class JobsPaymentHandler {
   }
 
   /**
-   * Fresh progression from the service (write-back cache aware). Falls back to the list snapshot
-   * if reload returns null mid-pay (e.g. concurrent leave).
+   * Fresh progression from the service (write-back cache aware). Falls back to the list snapshot if
+   * reload returns null mid-pay (e.g. concurrent leave).
    */
-  JobProgression reloadProgression(
-      String playerId, String jobKey, JobProgression fallback) {
+  JobProgression reloadProgression(String playerId, String jobKey, JobProgression fallback) {
     JobProgression reloaded = jobService.getProgression(playerId, jobKey);
     return reloaded != null ? reloaded : fallback;
   }

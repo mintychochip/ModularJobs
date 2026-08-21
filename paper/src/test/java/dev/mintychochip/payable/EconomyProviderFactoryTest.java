@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
-import java.util.UUID;
 import dev.mintychochip.container.Currency;
 import dev.mintychochip.container.EconomyProvider;
 import dev.mintychochip.container.Payable;
@@ -17,6 +15,8 @@ import dev.mintychochip.container.PayableHandler;
 import dev.mintychochip.container.PayableHandler.PayableContext;
 import dev.mintychochip.container.PayableType;
 import dev.mintychochip.test.MockBukkitSupport;
+import java.math.BigDecimal;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
@@ -61,9 +61,9 @@ class EconomyProviderFactoryTest {
   void createOrFailThrowsWhenExplicitFailPolicyHasNoProvider() {
     plugin.getConfig().set("economy.missing-provider", "fail");
 
-    IllegalStateException ex = assertThrows(
-        IllegalStateException.class,
-        () -> EconomyProviderFactory.createOrFail(plugin));
+    IllegalStateException ex =
+        assertThrows(
+            IllegalStateException.class, () -> EconomyProviderFactory.createOrFail(plugin));
 
     assertTrue(ex.getMessage().contains("economy.missing-provider"));
   }
@@ -73,9 +73,7 @@ class EconomyProviderFactoryTest {
     plugin.getConfig().set("economy.missing-provider", null);
     plugin.getConfig().set("economy.required", true);
 
-    assertThrows(
-        IllegalStateException.class,
-        () -> EconomyProviderFactory.createOrFail(plugin));
+    assertThrows(IllegalStateException.class, () -> EconomyProviderFactory.createOrFail(plugin));
   }
 
   @Test
@@ -83,18 +81,16 @@ class EconomyProviderFactoryTest {
     plugin.getConfig().set("economy.required", true);
     plugin.getConfig().set("economy.missing-provider", "BLACKHOLE");
 
-    assertInstanceOf(
-        BlackholeEconomyProvider.class,
-        EconomyProviderFactory.createOrFail(plugin));
+    assertInstanceOf(BlackholeEconomyProvider.class, EconomyProviderFactory.createOrFail(plugin));
   }
 
   @Test
   void unknownMissingProviderPolicyFailsConfiguration() {
     plugin.getConfig().set("economy.missing-provider", "unknown");
 
-    IllegalArgumentException ex = assertThrows(
-        IllegalArgumentException.class,
-        () -> EconomyProviderFactory.createOrFail(plugin));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class, () -> EconomyProviderFactory.createOrFail(plugin));
 
     assertTrue(ex.getMessage().contains("economy.missing-provider"));
   }
@@ -111,18 +107,19 @@ class EconomyProviderFactoryTest {
   @Test
   void economyHandlerDelegatesToProvider() {
     boolean[] deposited = {false};
-    EconomyProvider provider = new EconomyProvider() {
-      @Override
-      public boolean isCurrencySupported() {
-        return false;
-      }
+    EconomyProvider provider =
+        new EconomyProvider() {
+          @Override
+          public boolean isCurrencySupported() {
+            return false;
+          }
 
-      @Override
-      public boolean deposit(UUID playerId, PayableAmount payableAmount) {
-        deposited[0] = true;
-        return true;
-      }
-    };
+          @Override
+          public boolean deposit(UUID playerId, PayableAmount payableAmount) {
+            deposited[0] = true;
+            return true;
+          }
+        };
 
     PayableHandler handler = PayableWiring.economyHandlerFor(provider);
     OfflinePlayer player = MockBukkitSupport.offlinePlayer(UUID.randomUUID());
@@ -138,24 +135,24 @@ class EconomyProviderFactoryTest {
   }
 
   private static PayableContext contextFor(PayableHandler handler, OfflinePlayer player) {
-    PayableType type = new PayableType() {
-      @Override
-      public PayableHandler handler() {
-        return handler;
-      }
+    PayableType type =
+        new PayableType() {
+          @Override
+          public PayableHandler handler() {
+            return handler;
+          }
 
-      @Override
-      public Key key() {
-        return Key.key("modularjobs", "economy");
-      }
+          @Override
+          public Key key() {
+            return Key.key("modularjobs", "economy");
+          }
 
-      @Override
-      public net.kyori.adventure.text.Component render(PayableAmount amount, int places) {
-        return net.kyori.adventure.text.Component.empty();
-      }
-    };
-    Payable payable = new Payable(
-        type, PayableAmount.create(BigDecimal.TEN, Currency.USD));
+          @Override
+          public net.kyori.adventure.text.Component render(PayableAmount amount, int places) {
+            return net.kyori.adventure.text.Component.empty();
+          }
+        };
+    Payable payable = new Payable(type, PayableAmount.create(BigDecimal.TEN, Currency.USD));
     return new PayableContext(player.getUniqueId(), payable, null);
   }
 }

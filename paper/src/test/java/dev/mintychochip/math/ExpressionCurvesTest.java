@@ -4,14 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
 import dev.mintychochip.LevelingCurve;
 import dev.mintychochip.PayableCurve;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link ExpressionCurves} against real exp4j evaluation + caching.
- */
+/** Drives shipped {@link ExpressionCurves} against real exp4j evaluation + caching. */
 class ExpressionCurvesTest {
 
   @Test
@@ -37,8 +35,7 @@ class ExpressionCurvesTest {
   @Test
   void payableCurveUsesBaseLevelAndJobs() {
     PayableCurve curve = ExpressionCurves.payableCurve("base * (1 + level * 0.1) / jobs");
-    BigDecimal result = curve.evaluate(
-        new PayableCurve.Parameters(new BigDecimal("100"), 5, 2));
+    BigDecimal result = curve.evaluate(new PayableCurve.Parameters(new BigDecimal("100"), 5, 2));
     // 100 * (1 + 0.5) / 2 = 75
     assertEquals(0, new BigDecimal("75.0").compareTo(result), "got " + result);
   }

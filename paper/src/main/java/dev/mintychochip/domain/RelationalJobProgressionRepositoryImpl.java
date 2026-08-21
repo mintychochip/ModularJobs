@@ -2,6 +2,11 @@ package dev.mintychochip.domain;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import dev.mintychochip.domain.model.JobProgressionRecord;
+import dev.mintychochip.domain.model.JobRecord;
+import dev.mintychochip.domain.repository.JobProgressionRepository;
+import dev.mintychochip.repository.ConnectionSource;
+import dev.mintychochip.repository.SqlStatements;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,34 +15,28 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import dev.mintychochip.domain.model.JobProgressionRecord;
-import dev.mintychochip.domain.model.JobRecord;
-import dev.mintychochip.domain.repository.JobProgressionRepository;
-import dev.mintychochip.repository.ConnectionSource;
-import dev.mintychochip.repository.SqlStatements;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * MySQL-backed {@link JobProgressionRepository} for active progression records.
  *
- * <p>Owns no connection pool itself; it draws connections on demand from the
- * provided shared {@link ConnectionSource} (composition-owned). Each operation
- * checks out one connection and closes it via try-with-resources.
+ * <p>Owns no connection pool itself; it draws connections on demand from the provided shared {@link
+ * ConnectionSource} (composition-owned). Each operation checks out one connection and closes it via
+ * try-with-resources.
  *
- * <p>Reads are cached in a Caffeine cache (10-minute write expiry, 10k entries)
- * to reduce DB load; {@code loadAll*}-style bulk reads prefer cached entries and
- * only fall back to fresh rows for uncached keys. {@link #save} and {@link #delete}
- * refresh or invalidate the cache accordingly, keeping single-key reads consistent
- * with writes through this instance.
+ * <p>Reads are cached in a Caffeine cache (10-minute write expiry, 10k entries) to reduce DB load;
+ * {@code loadAll*}-style bulk reads prefer cached entries and only fall back to fresh rows for
+ * uncached keys. {@link #save} and {@link #delete} refresh or invalidate the cache accordingly,
+ * keeping single-key reads consistent with writes through this instance.
  *
- * <p>Failure semantics: unchecked {@link RuntimeException} wrapping the underlying
- * {@link SQLException} is thrown on any connection or SQL failure; callers must
- * treat a throw as "operation not performed". Nullability: {@link #load(String, String)}
- * returns {@code null} when the player/job pair has no persisted row, when the job
- * is unknown to the in-memory job repository, or when the row is absent.
+ * <p>Failure semantics: unchecked {@link RuntimeException} wrapping the underlying {@link
+ * SQLException} is thrown on any connection or SQL failure; callers must treat a throw as
+ * "operation not performed". Nullability: {@link #load(String, String)} returns {@code null} when
+ * the player/job pair has no persisted row, when the job is unknown to the in-memory job
+ * repository, or when the row is absent.
  *
- * <p>Table naming is parameterized; writes use MySQL {@code ON DUPLICATE KEY UPDATE}
- * semantics, so {@link #save} is an upsert keyed by (player_id, job_key).
+ * <p>Table naming is parameterized; writes use MySQL {@code ON DUPLICATE KEY UPDATE} semantics, so
+ * {@link #save} is an upsert keyed by (player_id, job_key).
  */
 final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepository {
 
@@ -52,19 +51,22 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   private final String loadAllByJobQuery;
   private final String loadAllForPlayerQuery;
   private final String deleteQuery;
-  private final Cache<JobProgressionRepository.Key, JobProgressionRecord> readCache = Caffeine.newBuilder()
-      .expireAfterWrite(CACHE_TIME_TO_LIVE).maximumSize(CACHE_MAXIMUM_SIZE)
-      .build();
+  private final Cache<JobProgressionRepository.Key, JobProgressionRecord> readCache =
+      Caffeine.newBuilder()
+          .expireAfterWrite(CACHE_TIME_TO_LIVE)
+          .maximumSize(CACHE_MAXIMUM_SIZE)
+          .build();
 
-  private RelationalJobProgressionRepositoryImpl(MemoryJobRepositoryImpl jobRepository,
-      ConnectionSource connectionSource, String tableName) {
+  private RelationalJobProgressionRepositoryImpl(
+      MemoryJobRepositoryImpl jobRepository, ConnectionSource connectionSource, String tableName) {
     this.jobRepository = jobRepository;
     this.connectionSource = connectionSource;
     this.tableName = tableName;
     this.saveQuery = bindTable(SqlStatements.load("job_progression/save.sql"));
     this.loadQuery = bindTable(SqlStatements.load("job_progression/load.sql"));
     this.loadAllByJobQuery = bindTable(SqlStatements.load("job_progression/load-all-by-job.sql"));
-    this.loadAllForPlayerQuery = bindTable(SqlStatements.load("job_progression/load-all-for-player.sql"));
+    this.loadAllForPlayerQuery =
+        bindTable(SqlStatements.load("job_progression/load-all-for-player.sql"));
     this.deleteQuery = bindTable(SqlStatements.load("job_progression/delete.sql"));
   }
 
@@ -76,8 +78,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     return sql.replace("{limit}", Integer.toString(limit));
   }
 
-  static JobProgressionRepository create(MemoryJobRepositoryImpl jobRepository,
-      ConnectionSource connectionSource, String tableName) {
+  static JobProgressionRepository create(
+      MemoryJobRepositoryImpl jobRepository, ConnectionSource connectionSource, String tableName) {
     return new RelationalJobProgressionRepositoryImpl(jobRepository, connectionSource, tableName);
   }
 
@@ -95,7 +97,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return false;
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
@@ -124,7 +127,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
         return progressionRecord;
       }
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
@@ -136,8 +140,7 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
     }
     List<JobProgressionRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            withLimit(loadAllByJobQuery, limit))) {
+        PreparedStatement ps = connection.prepareStatement(withLimit(loadAllByJobQuery, limit))) {
       ps.setString(1, jobKey);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
@@ -156,7 +159,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return records;
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
@@ -164,8 +168,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
   public List<JobProgressionRecord> loadAllForPlayer(String playerId, int limit) {
     List<JobProgressionRecord> records = new ArrayList<>();
     try (Connection connection = connectionSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(
-            withLimit(loadAllForPlayerQuery, limit))) {
+        PreparedStatement ps =
+            connection.prepareStatement(withLimit(loadAllForPlayerQuery, limit))) {
       ps.setString(1, playerId);
       try (ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
@@ -188,7 +192,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return records;
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 
@@ -204,7 +209,8 @@ final class RelationalJobProgressionRepositoryImpl implements JobProgressionRepo
       }
       return false;
     } catch (SQLException e) {
-      throw new dev.mintychochip.repository.WriteBackException("Relational repository operation failed", e);
+      throw new dev.mintychochip.repository.WriteBackException(
+          "Relational repository operation failed", e);
     }
   }
 }

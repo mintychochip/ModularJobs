@@ -3,22 +3,22 @@ package dev.mintychochip.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.JobProgression;
+import dev.mintychochip.service.JobService;
 import dev.mintychochip.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import dev.mintychochip.JobProgression;
-import dev.mintychochip.service.JobService;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * Lists a player's archived (previously left) jobs. Supports an admin variant
- * {@code /jobs archive <player>} and a self-variant for players.
+ * Lists a player's archived (previously left) jobs. Supports an admin variant {@code /jobs archive
+ * <player>} and a self-variant for players.
  */
 public class ArchiveCommand implements JobsCommand {
 
@@ -37,50 +37,53 @@ public class ArchiveCommand implements JobsCommand {
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("archive")
         // /jobs archive <playerName> - admin variant
-        .then(Commands.argument("player", StringArgumentType.word())
-            .requires(source -> source.getSender().hasPermission("jobs.command.admin.archive"))
-            .executes(context -> {
+        .then(
+            Commands.argument("player", StringArgumentType.word())
+                .requires(source -> source.getSender().hasPermission("jobs.command.admin.archive"))
+                .executes(
+                    context -> {
+                      CommandSourceStack source = context.getSource();
+                      CommandSender sender = source.getSender();
+
+                      String playerName = context.getArgument("player", String.class);
+                      OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+
+                      if (target == null) {
+                        Messages.send(sender, "<error>Player not found: " + playerName);
+                        return 0;
+                      }
+
+                      displayArchive(sender, target);
+                      return Command.SINGLE_SUCCESS;
+                    }))
+        // /jobs archive - player variant
+        .requires(source -> source.getSender().hasPermission("jobs.command.archive"))
+        .executes(
+            context -> {
               CommandSourceStack source = context.getSource();
               CommandSender sender = source.getSender();
 
-              String playerName = context.getArgument("player", String.class);
-              OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
-
-              if (target == null) {
-                Messages.send(sender, "<error>Player not found: " + playerName);
+              if (!(sender instanceof Player player)) {
+                Messages.send(sender, "<error>This command can only be used by players.");
                 return 0;
               }
 
-              displayArchive(sender, target);
+              displayArchive(player, player);
               return Command.SINGLE_SUCCESS;
-            }))
-        // /jobs archive - player variant
-        .requires(source -> source.getSender().hasPermission("jobs.command.archive"))
-        .executes(context -> {
-          CommandSourceStack source = context.getSource();
-          CommandSender sender = source.getSender();
-
-          if (!(sender instanceof Player player)) {
-            Messages.send(sender, "<error>This command can only be used by players.");
-            return 0;
-          }
-
-          displayArchive(player, player);
-          return Command.SINGLE_SUCCESS;
-        });
+            });
   }
 
-  /**
-   * Prints the header and the target player's archived jobs to the viewer.
-   */
+  /** Prints the header and the target player's archived jobs to the viewer. */
   private void displayArchive(CommandSender viewer, OfflinePlayer target) {
-    List<JobProgression> archivedProgressions = jobService.getArchivedProgressions(target.getUniqueId());
+    List<JobProgression> archivedProgressions =
+        jobService.getArchivedProgressions(target.getUniqueId());
 
     // Header
     String targetName = target.getName() != null ? target.getName() : "Unknown";
-    String header = viewer.equals(target)
-        ? "<primary>Your Archived Jobs"
-        : "<primary>" + targetName + "'s Archived Jobs";
+    String header =
+        viewer.equals(target)
+            ? "<primary>Your Archived Jobs"
+            : "<primary>" + targetName + "'s Archived Jobs";
 
     Messages.send(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral>━━━━━━━━━");
 
@@ -100,7 +103,8 @@ public class ArchiveCommand implements JobsCommand {
     int level = progression.level();
     BigDecimal experience = progression.experience();
 
-    Messages.send(viewer, "  " + progression.job().getPlainName() + " <neutral>- Level <accent>" + level);
+    Messages.send(
+        viewer, "  " + progression.job().getPlainName() + " <neutral>- Level <accent>" + level);
     Messages.send(viewer, "    <neutral>Total XP: <accent>" + formatNumber(experience));
   }
 

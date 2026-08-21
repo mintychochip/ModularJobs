@@ -6,12 +6,11 @@ import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Default immutable {@link PayableAmount} holding a {@link BigDecimal} value
- * and an optional {@link Currency}.
+ * Default immutable {@link PayableAmount} holding a {@link BigDecimal} value and an optional {@link
+ * Currency}.
  *
- * <p>Instances are created through the package-private constructors in the
- * {@code dev.mintychochip.container} package and are value-typed on both the
- * amount and the currency.</p>
+ * <p>Instances are created through the package-private constructors in the {@code
+ * dev.mintychochip.container} package and are value-typed on both the amount and the currency.
  */
 public final class PayableAmountImpl implements PayableAmount {
 
@@ -32,25 +31,21 @@ public final class PayableAmountImpl implements PayableAmount {
    * Creates an amount carrying the given currency.
    *
    * @param amount the reward quantity, must not be {@code null}
-   * @param currency the currency of the amount, or {@code null} if the amount
-   *     has no currency (for example a plain experience quantity)
+   * @param currency the currency of the amount, or {@code null} if the amount has no currency (for
+   *     example a plain experience quantity)
    */
   PayableAmountImpl(BigDecimal amount, Currency currency) {
     this.amount = Objects.requireNonNull(amount, "amount cannot be null");
     this.currency = currency;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public BigDecimal value() {
     return amount;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public @NotNull Optional<Currency> currency() {
     return Optional.ofNullable(currency);
@@ -58,8 +53,12 @@ public final class PayableAmountImpl implements PayableAmount {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof PayableAmountImpl that)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PayableAmountImpl that)) {
+      return false;
+    }
     return Objects.equals(amount, that.amount) && Objects.equals(currency, that.currency);
   }
 
@@ -69,15 +68,13 @@ public final class PayableAmountImpl implements PayableAmount {
   }
 
   /**
-   * Returns the amount as its plain decimal string, or the amount followed by
-   * its currency symbol when a currency is present.
+   * Returns the amount as its plain decimal string, or the amount followed by its currency symbol
+   * when a currency is present.
    *
    * @return the textual representation of this amount
    */
   @Override
   public String toString() {
-    return currency().isEmpty()
-        ? amount.toString()
-        : amount + " " + currency().get().symbol();
+    return currency().isEmpty() ? amount.toString() : amount + " " + currency().get().symbol();
   }
 }

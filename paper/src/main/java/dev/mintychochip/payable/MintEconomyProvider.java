@@ -1,5 +1,7 @@
 package dev.mintychochip.payable;
 
+import dev.mintychochip.container.EconomyProvider;
+import dev.mintychochip.container.PayableAmount;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -12,8 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import dev.mintychochip.container.EconomyProvider;
-import dev.mintychochip.container.PayableAmount;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.jetbrains.annotations.Nullable;
@@ -91,7 +91,10 @@ public final class MintEconomyProvider implements EconomyProvider {
       return bridge.issue(mint, playerId, amount);
     } catch (TimeoutException e) {
       LOGGER.severe(
-          "Mint issue timed out for " + playerId + " after " + TIMEOUT_MILLIS
+          "Mint issue timed out for "
+              + playerId
+              + " after "
+              + TIMEOUT_MILLIS
               + "ms — outcome unknown, do not retry (at-most-once)");
       return false;
     } catch (LinkageError e) {
@@ -229,12 +232,7 @@ public final class MintEconomyProvider implements EconomyProvider {
           idempotencyKeyClass.getConstructor(String.class),
           moneyClass.getConstructor(currencyId, BigDecimal.class),
           issueRequestClass.getConstructor(
-              idempotencyKeyClass,
-              actorId,
-              accountId,
-              moneyClass,
-              String.class,
-              Map.class),
+              idempotencyKeyClass, actorId, accountId, moneyClass, String.class, Map.class),
           committedClass,
           rejectedClass);
     }
@@ -260,27 +258,25 @@ public final class MintEconomyProvider implements EconomyProvider {
     }
 
     private boolean issue(Object mint, UUID playerId, BigDecimal amount)
-        throws ReflectiveOperationException, InterruptedException,
-        java.util.concurrent.ExecutionException, TimeoutException {
+        throws ReflectiveOperationException,
+            InterruptedException,
+            java.util.concurrent.ExecutionException,
+            TimeoutException {
       Object namespace = namespaceParse.invoke(null, ACTOR_NAMESPACE);
       Object actor = actorOf.invoke(null, namespace);
-      Object currency = currencyOf.invoke(
-          null, namespaceParse.invoke(null, CURRENCY_NAMESPACE));
-      Object client = clientOf.invoke(
-          null, namespaceParse.invoke(null, CLIENT_NAMESPACE));
+      Object currency = currencyOf.invoke(null, namespaceParse.invoke(null, CURRENCY_NAMESPACE));
+      Object client = clientOf.invoke(null, namespaceParse.invoke(null, CLIENT_NAMESPACE));
       Object account = accountPlayer.invoke(null, playerId);
       Object key = idempotencyKey.newInstance("modularjobs:" + UUID.randomUUID());
       Object value = money.newInstance(currency, amount);
-      Object request = issueRequest.newInstance(
-          key, actor, account, value, REASON, Map.of());
+      Object request = issueRequest.newInstance(key, actor, account, value, REASON, Map.of());
       Object clientService = mintClient.invoke(mint, client);
       Object ledger = clientLedger.invoke(clientService);
       Object result = ledgerIssue.invoke(ledger, request);
       if (!(result instanceof CompletionStage<?> stage)) {
         throw new IllegalStateException("Mint LedgerService.issue did not return CompletionStage");
       }
-      Object outcome = stage.toCompletableFuture()
-          .get(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+      Object outcome = stage.toCompletableFuture().get(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
       if (committedClass.isInstance(outcome)) {
         LOGGER.fine("Mint issued " + amount + " to " + playerId);
         return true;

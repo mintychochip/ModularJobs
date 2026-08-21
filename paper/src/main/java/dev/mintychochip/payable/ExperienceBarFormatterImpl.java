@@ -1,9 +1,9 @@
 package dev.mintychochip.payable;
 
-import java.math.BigDecimal;
 import dev.mintychochip.JobProgressionView;
 import dev.mintychochip.container.ExperiencePayableHandler;
 import dev.mintychochip.container.ExperiencePayableHandler.ExperienceBarFormatter;
+import java.math.BigDecimal;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
 import net.kyori.adventure.text.Component;
@@ -16,10 +16,10 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Default {@link ExperienceBarFormatter} that composes an existing boss bar's name (via
- * {@link NameFormatter}), progress fraction, color (from {@link ExperienceBarColorProvider}),
- * and the configured overlay. Formatting never mutates the passed bar; it returns a new
- * configured boss bar.
+ * Default {@link ExperienceBarFormatter} that composes an existing boss bar's name (via {@link
+ * NameFormatter}), progress fraction, color (from {@link ExperienceBarColorProvider}), and the
+ * configured overlay. Formatting never mutates the passed bar; it returns a new configured boss
+ * bar.
  */
 public final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
@@ -29,19 +29,17 @@ public final class ExperienceBarFormatterImpl implements ExperienceBarFormatter 
 
   private final NameFormatter formatter = new NameFormatter();
 
-  /** Creates a formatter using the supplied color provider for player-specific bar colors. */
   ExperienceBarFormatterImpl(ExperienceBarColorProvider colorProvider) {
     this.colorProvider = colorProvider;
   }
 
   @Override
-  public BossBar format(@NotNull BossBar bossBar,
-      @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
+  public BossBar format(
+      @NotNull BossBar bossBar, @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
     Player player = Bukkit.getPlayer(context.playerId());
-    BossBar.Color color = player != null
-        ? colorProvider.getColor(player)
-        : BossBar.Color.GREEN;
-    return bossBar.name(formatter.format(context))
+    BossBar.Color color = player != null ? colorProvider.getColor(player) : BossBar.Color.GREEN;
+    return bossBar
+        .name(formatter.format(context))
         .progress(progress(context.progression()))
         .color(color)
         .overlay(overlay);
@@ -53,8 +51,8 @@ public final class ExperienceBarFormatterImpl implements ExperienceBarFormatter 
   }
 
   /**
-   * Computes the bar progress fraction as the position of the progression's current
-   * experience within its current level band, clamped to {@code 0..1}.
+   * Computes the bar progress fraction as the position of the progression's current experience
+   * within its current level band, clamped to {@code 0..1}.
    *
    * @param progression the progression view to measure
    * @return a float in {@code [0,1]} representing progress toward the next level
@@ -87,20 +85,22 @@ public final class ExperienceBarFormatterImpl implements ExperienceBarFormatter 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     /** Deserializes the level/job/xp/payable name template against the given context. */
-    @NotNull Component format(
-        @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
+    @NotNull
+    Component format(@NotNull ExperiencePayableHandler.ExperienceBarContext context) {
       JobProgressionView progression = context.progression();
       int level = progression.level();
       BigDecimal experienceForNext = progression.experienceForLevel(level + 1);
-      return MINI_MESSAGE.deserialize(FORMAT, TagResolver.builder()
-          .tag("level", Tag.inserting(Component.text(level)))
-          .tag("job-name",
-              Tag.inserting(Component.empty().append(progression.job().displayName())))
-          .tag("xp", Tag.inserting(Component.text(
-              progression.experience().doubleValue())))
-          .tag("total-xp", Tag.inserting(Component.text(experienceForNext.doubleValue())))
-          .tag("payable", Tag.inserting(payableComponent(context.amount())))
-          .build());
+      return MINI_MESSAGE.deserialize(
+          FORMAT,
+          TagResolver.builder()
+              .tag("level", Tag.inserting(Component.text(level)))
+              .tag(
+                  "job-name",
+                  Tag.inserting(Component.empty().append(progression.job().displayName())))
+              .tag("xp", Tag.inserting(Component.text(progression.experience().doubleValue())))
+              .tag("total-xp", Tag.inserting(Component.text(experienceForNext.doubleValue())))
+              .tag("payable", Tag.inserting(payableComponent(context.amount())))
+              .build());
     }
 
     /** Formats a payable amount as a signed text component (e.g. {@code +12.5}). */

@@ -13,12 +13,8 @@ class EditorSessionStoreTest {
   void looksUpSessionsByCodeAndEnforcesOwner() {
     UUID owner = UUID.randomUUID();
     Instant now = Instant.parse("2030-01-01T00:00:00Z");
-    EditorSession session = new EditorSession(
-        "code-a",
-        "token-a",
-        owner,
-        now,
-        now.plusSeconds(3600));
+    EditorSession session =
+        new EditorSession("code-a", "token-a", owner, now, now.plusSeconds(3600));
     EditorSessionStore store = new EditorSessionStore(EditorConfig.defaults());
 
     store.store(session);
@@ -32,12 +28,8 @@ class EditorSessionStoreTest {
   void removesSessionByCode() {
     UUID owner = UUID.randomUUID();
     Instant now = Instant.parse("2030-01-01T00:00:00Z");
-    EditorSession session = new EditorSession(
-        "code-a",
-        "token-a",
-        owner,
-        now,
-        now.plusSeconds(3600));
+    EditorSession session =
+        new EditorSession("code-a", "token-a", owner, now, now.plusSeconds(3600));
     EditorSessionStore store = new EditorSessionStore(EditorConfig.defaults());
     store.store(session);
 
@@ -50,12 +42,8 @@ class EditorSessionStoreTest {
   void rejectsExpiredOwnedSession() {
     UUID owner = UUID.randomUUID();
     Instant now = Instant.parse("2020-01-01T00:00:00Z");
-    EditorSession session = new EditorSession(
-        "expired",
-        "token-a",
-        owner,
-        now.minusSeconds(3600),
-        now.minusSeconds(1));
+    EditorSession session =
+        new EditorSession("expired", "token-a", owner, now.minusSeconds(3600), now.minusSeconds(1));
     EditorSessionStore store = new EditorSessionStore(EditorConfig.defaults());
     store.store(session);
 

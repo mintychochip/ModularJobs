@@ -1,23 +1,21 @@
 package dev.mintychochip.boost.conditions;
 
-import dev.mintychochip.databag.ConditionContext;
 import dev.mintychochip.container.BoostContext;
 import dev.mintychochip.container.boost.Condition;
+import dev.mintychochip.databag.ConditionContext;
 
 /**
- * Adapts a Paper-free {@link dev.mintychochip.databag.Condition} onto the boost
- * {@link Condition} interface by reading {@link BoostContext#conditions()}.
+ * Adapts a Paper-free {@link dev.mintychochip.databag.Condition} onto the boost {@link Condition}
+ * interface by reading {@link BoostContext#conditions()}.
  */
 public record SnapshotCondition(dev.mintychochip.databag.Condition delegate) implements Condition {
 
+  /** Wrap. */
   public static Condition wrap(dev.mintychochip.databag.Condition delegate) {
     return new SnapshotCondition(delegate);
   }
 
-  /**
-   * Unwraps a boost condition to the snapshot graph, wrapping lambdas as
-   * snapshot predicates.
-   */
+  /** Unwraps a boost condition to the snapshot graph, wrapping lambdas as snapshot predicates. */
   public static dev.mintychochip.databag.Condition unwrap(Condition condition) {
     if (condition instanceof SnapshotCondition snapshot) {
       return snapshot.delegate();

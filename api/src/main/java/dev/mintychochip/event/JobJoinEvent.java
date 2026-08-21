@@ -1,12 +1,10 @@
 package dev.mintychochip.event;
 
+import dev.mintychochip.Job;
 import java.util.Objects;
 import java.util.UUID;
-import dev.mintychochip.Job;
 
-/**
- * Event fired when a player joins or rejoins a job.
- */
+/** Event fired when a player joins or rejoins a job. */
 public final class JobJoinEvent {
 
   private final UUID playerId;
@@ -14,6 +12,7 @@ public final class JobJoinEvent {
   private final int level;
   private final boolean rejoin;
 
+  /** Job join event. */
   public JobJoinEvent(UUID playerId, Job job, int level, boolean rejoin) {
     this.playerId = Objects.requireNonNull(playerId, "playerId");
     this.job = job;
@@ -29,16 +28,12 @@ public final class JobJoinEvent {
     return job;
   }
 
-  /**
-   * Gets the player's level (1 for new joins, restored level for rejoins).
-   */
+  /** Gets the player's level (1 for new joins, restored level for rejoins). */
   public int getLevel() {
     return level;
   }
 
-  /**
-   * Whether this is a rejoin (player previously left this job).
-   */
+  /** Whether this is a rejoin (player previously left this job). */
   public boolean isRejoin() {
     return rejoin;
   }

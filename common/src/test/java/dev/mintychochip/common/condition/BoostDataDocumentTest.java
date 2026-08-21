@@ -2,10 +2,10 @@ package dev.mintychochip.common.condition;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import dev.mintychochip.common.boost.BoostDataDocument;
 import dev.mintychochip.common.boost.BoostDataDocument.BoostDocument;
 import dev.mintychochip.common.boost.BoostDataDocument.RuleDocument;
@@ -15,6 +15,8 @@ import dev.mintychochip.databag.ConditionSerializer;
 import dev.mintychochip.databag.Conditions;
 import dev.mintychochip.databag.SneakingCondition;
 import dev.mintychochip.databag.gson.GsonConditionSerializer;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class BoostDataDocumentTest {
@@ -24,16 +26,17 @@ class BoostDataDocumentTest {
   @Test
   void roundTripStoresPriorityAndConditionBytes() {
     byte[] conditionBytes = serializer.write(Conditions.sneaking(true));
-    BoostDataDocument document = new BoostDataDocument(
-        "passive",
-        "all",
-        null,
-        new SourceDocument(
-            "modularjobs:mining_helmet",
-            "helmet",
-            List.of(RuleDocument.of(100, conditionBytes, new BoostDocument("multiplicative", 1.25)))
-        )
-    );
+    BoostDataDocument document =
+        new BoostDataDocument(
+            "passive",
+            "all",
+            null,
+            new SourceDocument(
+                "modularjobs:mining_helmet",
+                "helmet",
+                List.of(
+                    RuleDocument.of(
+                        100, conditionBytes, new BoostDocument("multiplicative", 1.25)))));
 
     byte[] json = BoostDataDocument.toJson(document);
     BoostDataDocument back = BoostDataDocument.fromJson(json);
@@ -51,19 +54,18 @@ class BoostDataDocumentTest {
   @Test
   void jsonContainsBase64ConditionsNotNestedObject() {
     byte[] conditionBytes = serializer.write(Conditions.sneaking(true));
-    BoostDataDocument document = new BoostDataDocument(
-        "consumable",
-        null,
-        "PT1H",
-        new SourceDocument(
-            "modularjobs:timed",
+    BoostDataDocument document =
+        new BoostDataDocument(
+            "consumable",
             null,
-            List.of(RuleDocument.of(1, conditionBytes, new BoostDocument("additive", 5)))
-        )
-    );
+            "PT1H",
+            new SourceDocument(
+                "modularjobs:timed",
+                null,
+                List.of(RuleDocument.of(1, conditionBytes, new BoostDocument("additive", 5)))));
     String json = new String(BoostDataDocument.toJson(document), StandardCharsets.UTF_8);
-    assertEquals(true, json.contains("\"priority\":1") || json.contains("\"priority\": 1"));
-    assertEquals(true, json.contains("\"conditions\":"));
-    assertEquals(false, json.contains("minecraft:entity_properties"));
+    assertTrue(json.contains("\"priority\":1") || json.contains("\"priority\": 1"));
+    assertTrue(json.contains("\"conditions\":"));
+    assertFalse(json.contains("minecraft:entity_properties"));
   }
 }

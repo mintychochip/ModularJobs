@@ -2,12 +2,6 @@ package dev.mintychochip.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.util.Messages;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import java.util.List;
-import java.util.stream.Collectors;
 import dev.mintychochip.boost.AdditiveBoostImpl;
 import dev.mintychochip.boost.ConditionTreeFormatter;
 import dev.mintychochip.boost.MultiplicativeBoostImpl;
@@ -17,22 +11,25 @@ import dev.mintychochip.container.BoostSource;
 import dev.mintychochip.container.boost.RuledBoostSource;
 import dev.mintychochip.container.boost.RuledBoostSource.Rule;
 import dev.mintychochip.registry.Registry;
+import dev.mintychochip.util.Messages;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import java.util.List;
+import java.util.stream.Collectors;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
-/**
- * Generic boost source management command.
- */
+/** Generic boost source management command. */
 public final class SourceCommand implements JobsCommand {
 
   private final Registry<BoostSource> boostSourceRegistry;
   private final BoostSourceLoader boostSourceLoader;
 
+  /** Source command. */
   public SourceCommand(
-      Registry<BoostSource> boostSourceRegistry,
-      BoostSourceLoader boostSourceLoader
-  ) {
+      Registry<BoostSource> boostSourceRegistry, BoostSourceLoader boostSourceLoader) {
     this.boostSourceRegistry = boostSourceRegistry;
     this.boostSourceLoader = boostSourceLoader;
   }
@@ -40,28 +37,27 @@ public final class SourceCommand implements JobsCommand {
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("source")
-        .then(Commands.literal("list")
-            .executes(context -> listBoostSources(context.getSource()))
-        )
-        .then(Commands.literal("info")
-            .then(Commands.argument("boostKey", ArgumentTypes.key())
-                .suggests((context, builder) -> {
-                  boostSourceRegistry.stream()
-                      .map(source -> source.key().asString())
-                      .forEach(builder::suggest);
-                  return builder.buildFuture();
-                })
-                .executes(context -> {
-                  return showBoostSourceInfo(
-                      context.getSource(),
-                      context.getArgument("boostKey", Key.class).asString()
-                  );
-                })
-            )
-        )
-        .then(Commands.literal("reload")
-            .executes(context -> reloadBoostSources(context.getSource()))
-        );
+        .then(Commands.literal("list").executes(context -> listBoostSources(context.getSource())))
+        .then(
+            Commands.literal("info")
+                .then(
+                    Commands.argument("boostKey", ArgumentTypes.key())
+                        .suggests(
+                            (context, builder) -> {
+                              boostSourceRegistry.stream()
+                                  .map(source -> source.key().asString())
+                                  .forEach(builder::suggest);
+                              return builder.buildFuture();
+                            })
+                        .executes(
+                            context -> {
+                              return showBoostSourceInfo(
+                                  context.getSource(),
+                                  context.getArgument("boostKey", Key.class).asString());
+                            })))
+        .then(
+            Commands.literal("reload")
+                .executes(context -> reloadBoostSources(context.getSource())));
   }
 
   private int listBoostSources(CommandSourceStack source) {

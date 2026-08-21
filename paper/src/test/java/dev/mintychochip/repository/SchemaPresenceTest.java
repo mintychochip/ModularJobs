@@ -15,9 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Fail-fast presence checks against real MySQL (provision ≠ create-from-app).
- */
+/** Fail-fast presence checks against real MySQL (provision ≠ create-from-app). */
 class SchemaPresenceTest {
 
   private static final String DEFAULT_URL = "jdbc:mysql://localhost:13306/modularjobs";
@@ -39,7 +37,7 @@ class SchemaPresenceTest {
     try {
       Class.forName(DatabaseType.MYSQL.getClassName());
       try (Connection c = DriverManager.getConnection(jdbcUrl, user, password);
-           Statement st = c.createStatement()) {
+          Statement st = c.createStatement()) {
         st.execute("SELECT 1");
         mysqlAvailable = true;
       }
@@ -66,28 +64,28 @@ class SchemaPresenceTest {
     String probe = "mj_schema_presence_probe_" + System.nanoTime();
     assertFalse(SchemaPresence.tableExists(connection, DatabaseType.MYSQL, probe));
 
-    SchemaPresence.SchemaMissingException ex = assertThrows(
-        SchemaPresence.SchemaMissingException.class,
-        () -> SchemaPresence.requireTables(
-            connection, DatabaseType.MYSQL, List.of(probe)));
+    SchemaPresence.SchemaMissingException ex =
+        assertThrows(
+            SchemaPresence.SchemaMissingException.class,
+            () -> SchemaPresence.requireTables(connection, DatabaseType.MYSQL, List.of(probe)));
 
-    assertTrue(ex.getMessage().contains("does not create")
-        || ex.getMessage().contains("not provisioned"));
-    assertTrue(ex.getMessage().contains("apply-mysql-schema")
-        || ex.getMessage().contains("sql/mysql.sql"));
+    assertTrue(
+        ex.getMessage().contains("does not create") || ex.getMessage().contains("not provisioned"));
+    assertTrue(
+        ex.getMessage().contains("apply-mysql-schema")
+            || ex.getMessage().contains("sql/mysql.sql"));
     assertTrue(ex.getMissingTables().contains(probe));
   }
 
   @Test
   void provisionedTablePassesPresenceCheck() throws Exception {
     // Apply shipped DDL the same way ops would (out-of-band from the app boot path).
-    for (String sql : DatabaseType.MYSQL.getSQLTables()) {
+    for (String sql : DatabaseType.MYSQL.getSqlTables()) {
       try (Statement st = connection.createStatement()) {
         st.execute(sql);
       }
     }
-    assertTrue(
-        SchemaPresence.tableExists(connection, DatabaseType.MYSQL, "job_tasks"));
+    assertTrue(SchemaPresence.tableExists(connection, DatabaseType.MYSQL, "job_tasks"));
     SchemaPresence.requireTables(
         connection, DatabaseType.MYSQL, List.of("job_tasks", "job_task_payables"));
   }

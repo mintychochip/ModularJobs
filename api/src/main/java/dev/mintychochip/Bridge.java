@@ -1,6 +1,5 @@
 package dev.mintychochip;
 
-import java.util.Optional;
 import dev.mintychochip.container.EconomyProvider;
 import dev.mintychochip.container.boost.TimedBoostDataService;
 import dev.mintychochip.container.boost.factories.BoostFactory;
@@ -13,9 +12,12 @@ import dev.mintychochip.service.NodeHarvestService;
 import dev.mintychochip.service.ProfessionService;
 import dev.mintychochip.service.RecipeService;
 import dev.mintychochip.service.StationService;
+import java.util.Optional;
 
+/** Bridge. */
 public interface Bridge {
 
+  /** Bridge. */
   static Bridge bridge() {
     Bridge b = Holder.INSTANCE;
     if (b == null) {
@@ -29,42 +31,50 @@ public interface Bridge {
     Holder.INSTANCE = bridge;
   }
 
+  /** Unregister. */
   static void unregister() {
     Holder.INSTANCE = null;
   }
 
+  /** Registry container. */
   RegistryContainer registryContainer();
 
+  /** Condition factory. */
   ConditionFactory conditionFactory();
 
+  /** Boost factory. */
   BoostFactory boostFactory();
 
+  /** Timed boost data service. */
   TimedBoostDataService timedBoostDataService();
 
+  /** Economy. */
   Optional<EconomyProvider> economy();
 
+  /** Job service. */
   JobService jobService();
 
-  /** Profession catalog and progression facade. */
+  /** Profession service. */
   ProfessionService professionService();
 
-  /** Learned profession recipes. */
+  /** Recipe service. */
   RecipeService recipeService();
 
-  /** Consumable combat buff slots and effects. */
+  /** Buff service. */
   BuffService buffService();
 
-  /** Station tier gate for crafting and gathering. */
+  /** Station service. */
   StationService stationService();
 
-  /** World-gather integration hook. */
+  /** Node harvest service. */
   NodeHarvestService nodeHarvestService();
 
-  /** Shared pure domain event bus. */
+  /** Event bus. */
   EventBus eventBus();
 
   /** Volatile holder; nested types on interfaces are public. */
   final class Holder {
+    @SuppressWarnings("PMD.AvoidUsingVolatile")
     private static volatile Bridge INSTANCE;
 
     private Holder() {}

@@ -6,9 +6,8 @@ import net.kyori.adventure.key.Keyed;
 /**
  * Identifies a typed registry within a {@link RegistryContainer}.
  *
- * <p>Equality is delegated to the underlying Adventure {@link Key}, so two keys
- * wrapping the same key value are interchangeable regardless of their type
- * parameter.</p>
+ * <p>Equality is delegated to the underlying Adventure {@link Key}, so two keys wrapping the same
+ * key value are interchangeable regardless of their type parameter.
  *
  * @param <T> the element type of the addressed registry
  */
@@ -24,5 +23,4 @@ public sealed interface RegistryKey<T> extends Keyed permits RegistryKeyImpl {
   static <T> RegistryKey<T> key(Key key) {
     return new RegistryKeyImpl<>(key);
   }
-
 }

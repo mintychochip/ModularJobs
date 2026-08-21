@@ -9,13 +9,12 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityTransformEvent;
 
 /**
- * Responsible for tracking entities spawned or transformed by spawner-related mechanics
- * (e.g., natural spawners or spawn eggs).
+ * Responsible for tracking entities spawned or transformed by spawner-related mechanics (e.g.,
+ * natural spawners or spawn eggs).
  *
- * <p>
- * It tags these entities using the {@link EntityValidationService}, so that future plugin logic can
- * identify them as "spawner" entities — useful for applying special behavior or filtering.
- * </p>
+ * <p>It tags these entities using the {@link EntityValidationService}, so that future plugin logic
+ * can identify them as "spawner" entities — useful for applying special behavior or filtering.
+ *
  * @author ModularJobs contributors
  */
 final class MobTagController implements Listener {

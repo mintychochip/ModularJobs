@@ -30,7 +30,6 @@ class ModularJobsBagsTest {
   void registerExposesBoostPayloadHandler() {
     ModularJobsBags.register();
     assertEquals(
-        Optional.of(BoostPayloadHandler.INSTANCE),
-        DataHandlers.get(BoostPayloadHandler.KEY));
+        Optional.of(BoostPayloadHandler.INSTANCE), DataHandlers.get(BoostPayloadHandler.KEY));
   }
 }

@@ -7,16 +7,17 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * A boostSource of one or more {@link Boost Boosts}.
- * <p>
- * Each boostSource defines its own semantics:
+ *
+ * <p>Each boostSource defines its own semantics:
+ *
  * <ul>
- *   <li>What type of boosts it produces,</li>
- *   <li>When they apply for a given {@link BoostContext},</li>
- *   <li>And how many to return.</li>
+ *   <li>What type of boosts it produces,
+ *   <li>When they apply for a given {@link BoostContext},
+ *   <li>And how many to return.
  * </ul>
- * A boostSource may yield none, one, or many boosts. It is the
- * responsibility of the implementation to determine the
- * behavior behind its output.
+ *
+ * <p>A boostSource may yield none, one, or many boosts. It is the responsibility of the
+ * implementation to determine the behavior behind its output.
  */
 public interface BoostSource extends Keyed {
 
@@ -36,5 +37,4 @@ public interface BoostSource extends Keyed {
    */
   @Nullable
   String description();
-
 }

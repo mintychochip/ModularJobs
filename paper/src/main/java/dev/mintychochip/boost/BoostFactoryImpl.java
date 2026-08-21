@@ -1,8 +1,6 @@
 package dev.mintychochip.boost;
 
-import java.math.BigDecimal;
 import dev.mintychochip.boost.conditions.SnapshotCondition;
-import dev.mintychochip.databag.Conditions;
 import dev.mintychochip.container.Boost;
 import dev.mintychochip.container.boost.Condition;
 import dev.mintychochip.container.boost.LogicalOperator;
@@ -12,11 +10,13 @@ import dev.mintychochip.container.boost.RelationalOperator;
 import dev.mintychochip.container.boost.WeatherState;
 import dev.mintychochip.container.boost.factories.BoostFactory;
 import dev.mintychochip.container.boost.factories.ConditionFactory;
+import dev.mintychochip.databag.Conditions;
+import java.math.BigDecimal;
 import net.kyori.adventure.key.Key;
 
 /**
- * Boost and condition factory. Conditions are snapshot-graph types from
- * {@code dev.mintychochip.databag}, adapted onto the boost {@link Condition} interface.
+ * Boost and condition factory. Conditions are snapshot-graph types from {@code
+ * dev.mintychochip.databag}, adapted onto the boost {@link Condition} interface.
  */
 public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
 
@@ -45,8 +45,8 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   }
 
   @Override
-  public Condition playerResource(PlayerResourceType type, double expected,
-      RelationalOperator operator) {
+  public Condition playerResource(
+      PlayerResourceType type, double expected, RelationalOperator operator) {
     return SnapshotCondition.wrap(
         Conditions.playerResource(mapResource(type), mapOperator(operator), expected));
   }
@@ -77,25 +77,30 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   }
 
   @Override
-  public Condition potion(String potionEffectTypeKey, int expected,
-      PotionConditionType conditionType, RelationalOperator operator) {
+  public Condition potion(
+      String potionEffectTypeKey,
+      int expected,
+      PotionConditionType conditionType,
+      RelationalOperator operator) {
     Key key = toKey(potionEffectTypeKey);
     dev.mintychochip.databag.RelationalOperator op = mapOperator(operator);
-    return SnapshotCondition.wrap(switch (conditionType) {
-      case AMPLIFIER -> Conditions.potionAmplifier(key, op, expected);
-      case DURATION -> Conditions.potionDuration(key, op, expected);
-    });
+    return SnapshotCondition.wrap(
+        switch (conditionType) {
+          case AMPLIFIER -> Conditions.potionAmplifier(key, op, expected);
+          case DURATION -> Conditions.potionDuration(key, op, expected);
+        });
   }
 
   @Override
   public Condition compose(Condition a, Condition b, LogicalOperator operator) {
     dev.mintychochip.databag.Condition left = SnapshotCondition.unwrap(a);
     dev.mintychochip.databag.Condition right = SnapshotCondition.unwrap(b);
-    dev.mintychochip.databag.Condition composed = switch (operator) {
-      case AND -> Conditions.allOf(left, right);
-      case OR -> Conditions.anyOf(left, right);
-      default -> ctx -> operator.test(left.test(ctx), right.test(ctx));
-    };
+    dev.mintychochip.databag.Condition composed =
+        switch (operator) {
+          case AND -> Conditions.allOf(left, right);
+          case OR -> Conditions.anyOf(left, right);
+          default -> ctx -> operator.test(left.test(ctx), right.test(ctx));
+        };
     return SnapshotCondition.wrap(composed);
   }
 
@@ -115,8 +120,8 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   }
 
   /**
-   * Normalizes a raw key string into a {@link Key}: trims and lowercases it, prepending
-   * the {@code minecraft:} namespace when no namespace separator is present.
+   * Normalizes a raw key string into a {@link Key}: trims and lowercases it, prepending the {@code
+   * minecraft:} namespace when no namespace separator is present.
    *
    * @param raw the raw key string
    * @return the normalized {@link Key}
@@ -141,12 +146,14 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
     };
   }
 
-  private static dev.mintychochip.databag.RelationalOperator mapOperator(RelationalOperator operator) {
+  private static dev.mintychochip.databag.RelationalOperator mapOperator(
+      RelationalOperator operator) {
     return switch (operator) {
       case LESS_THAN -> dev.mintychochip.databag.RelationalOperator.LESS_THAN;
       case LESS_THAN_OR_EQUAL -> dev.mintychochip.databag.RelationalOperator.LESS_THAN_OR_EQUAL;
       case GREATER_THAN -> dev.mintychochip.databag.RelationalOperator.GREATER_THAN;
-      case GREATER_THAN_OR_EQUAL -> dev.mintychochip.databag.RelationalOperator.GREATER_THAN_OR_EQUAL;
+      case GREATER_THAN_OR_EQUAL ->
+          dev.mintychochip.databag.RelationalOperator.GREATER_THAN_OR_EQUAL;
       case EQUAL -> dev.mintychochip.databag.RelationalOperator.EQUAL;
       case NOT_EQUAL -> dev.mintychochip.databag.RelationalOperator.NOT_EQUAL;
     };

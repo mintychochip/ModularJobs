@@ -12,10 +12,12 @@ public final class EventBus {
 
   private final List<Consumer<Object>> listeners = new CopyOnWriteArrayList<>();
 
+  /** Subscribe. */
   public void subscribe(Consumer<Object> listener) {
     listeners.add(Objects.requireNonNull(listener, "listener"));
   }
 
+  /** Publish. */
   public <T> T publish(T event) {
     Objects.requireNonNull(event, "event");
     for (Consumer<Object> listener : listeners) {

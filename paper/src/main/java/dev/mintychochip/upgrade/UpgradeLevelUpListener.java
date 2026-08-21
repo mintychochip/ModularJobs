@@ -1,11 +1,11 @@
 package dev.mintychochip.upgrade;
 
-import java.util.Optional;
 import dev.mintychochip.Job;
 import dev.mintychochip.paper.event.BukkitJobLeaveEvent;
 import dev.mintychochip.paper.event.BukkitJobLevelEvent;
 import dev.mintychochip.registry.Registry;
 import dev.mintychochip.util.Messages;
+import java.util.Optional;
 import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,20 +13,22 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 /**
- * Awards skill points on job level-up and clears skill tree state on leave.
- * v2 trees take precedence for point awards; legacy jobs use {@link UpgradeTree}.
+ * Awards skill points on job level-up and clears skill tree state on leave. v2 trees take
+ * precedence for point awards; legacy jobs use {@link UpgradeTree}.
  */
 public final class UpgradeLevelUpListener implements Listener {
 
   private final UpgradeService upgradeService;
   private final Registry<SkillTree> skillTreeRegistry;
 
+  /** Upgrade level up listener. */
   public UpgradeLevelUpListener(
       UpgradeService upgradeService, Registry<SkillTree> skillTreeRegistry) {
     this.upgradeService = upgradeService;
     this.skillTreeRegistry = skillTreeRegistry;
   }
 
+  /** Event handler. */
   @EventHandler(priority = EventPriority.NORMAL)
   public void onJobLevelUp(BukkitJobLevelEvent event) {
     Player player = event.getPlayer();
@@ -92,6 +94,7 @@ public final class UpgradeLevelUpListener implements Listener {
     return pointsToAward;
   }
 
+  /** Event handler. */
   @EventHandler(priority = EventPriority.MONITOR)
   public void onJobLeave(BukkitJobLeaveEvent event) {
     String playerId = event.getPlayer().getUniqueId().toString();

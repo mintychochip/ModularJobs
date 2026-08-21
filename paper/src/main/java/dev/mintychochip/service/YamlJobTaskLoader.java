@@ -1,5 +1,7 @@
 package dev.mintychochip.service;
 
+import dev.mintychochip.repository.ConnectionSource;
+import dev.mintychochip.repository.SqlStatements;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -14,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import dev.mintychochip.repository.ConnectionSource;
-import dev.mintychochip.repository.SqlStatements;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -26,10 +26,10 @@ import org.jetbrains.annotations.NotNull;
  * Seeds the {@code job_tasks} and {@code job_task_payables} tables from packaged data on first
  * start.
  *
- * <p>{@link #loadIfEmpty()} runs only when the tables are empty. It prefers the shipped
- * {@code job_tasks.csv}, falling back to {@code job_tasks.yml}. CSV rows group per task
- * (job/action/context) with one payable each; YAML nests job -&gt; action -&gt; context -&gt; payable
- * amounts. Keys lacking a namespace gain one ({@code modularjobs} for actions and payables,
+ * <p>{@link #loadIfEmpty()} runs only when the tables are empty. It prefers the shipped {@code
+ * job_tasks.csv}, falling back to {@code job_tasks.yml}. CSV rows group per task
+ * (job/action/context) with one payable each; YAML nests job -&gt; action -&gt; context -&gt;
+ * payable amounts. Keys lacking a namespace gain one ({@code modularjobs} for actions and payables,
  * {@code minecraft} for context keys). Imports run as a single transaction.
  */
 public final class YamlJobTaskLoader {
@@ -91,8 +91,8 @@ public final class YamlJobTaskLoader {
   /** Returns whether the {@code job_tasks} table contains no rows. */
   private boolean isTableEmpty() {
     try (Connection connection = connectionSource.getConnection();
-         Statement stmt = connection.createStatement();
-         ResultSet rs = stmt.executeQuery(COUNT_JOB_TASKS)) {
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery(COUNT_JOB_TASKS)) {
       return rs.next() && rs.getInt(1) == 0;
     } catch (SQLException e) {
       throw new RuntimeException("Failed to check if job_tasks table is empty", e);
@@ -186,8 +186,9 @@ public final class YamlJobTaskLoader {
 
         // Group by task key
         String taskKey = jobKey + "|" + actionType + "|" + contextKey;
-        TaskEntry entry = taskMap.computeIfAbsent(taskKey,
-            k -> new TaskEntry(jobKey, actionType, contextKey, new ArrayList<>()));
+        TaskEntry entry =
+            taskMap.computeIfAbsent(
+                taskKey, k -> new TaskEntry(jobKey, actionType, contextKey, new ArrayList<>()));
         entry.payables().add(new PayableEntry(payableType, amount, currency));
       }
     } catch (IOException e) {
@@ -209,8 +210,9 @@ public final class YamlJobTaskLoader {
     try (Connection connection = connectionSource.getConnection()) {
       connection.setAutoCommit(false);
 
-      try (PreparedStatement taskStmt = connection.prepareStatement(INSERT_TASK, Statement.RETURN_GENERATED_KEYS);
-           PreparedStatement payableStmt = connection.prepareStatement(INSERT_PAYABLE)) {
+      try (PreparedStatement taskStmt =
+              connection.prepareStatement(INSERT_TASK, Statement.RETURN_GENERATED_KEYS);
+          PreparedStatement payableStmt = connection.prepareStatement(INSERT_PAYABLE)) {
 
         for (TaskEntry task : tasks) {
           taskStmt.setString(1, task.jobKey);
@@ -223,7 +225,13 @@ public final class YamlJobTaskLoader {
             if (generatedKeys.next()) {
               taskId = generatedKeys.getInt(1);
             } else {
-              throw new SQLException("Failed to get generated task_id for " + task.jobKey + ":" + task.actionType + ":" + task.contextKey);
+              throw new SQLException(
+                  "Failed to get generated task_id for "
+                      + task.jobKey
+                      + ":"
+                      + task.actionType
+                      + ":"
+                      + task.contextKey);
             }
           }
 
@@ -251,7 +259,8 @@ public final class YamlJobTaskLoader {
   }
 
   /** A job task to insert, with its associated payable entries. */
-  private record TaskEntry(String jobKey, String actionType, String contextKey, List<PayableEntry> payables) {}
+  private record TaskEntry(
+      String jobKey, String actionType, String contextKey, List<PayableEntry> payables) {}
 
   /** A reward payable to attach to a task (type, amount, optional currency). */
   private record PayableEntry(String payableType, BigDecimal amount, String currency) {}

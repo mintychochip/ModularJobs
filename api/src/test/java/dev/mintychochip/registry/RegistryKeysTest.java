@@ -8,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link RegistryKeys} constants and {@link RegistryKey#key} factory.
- */
+/** Drives shipped {@link RegistryKeys} constants and {@link RegistryKey#key} factory. */
 class RegistryKeysTest {
 
   @Test
@@ -36,18 +34,21 @@ class RegistryKeysTest {
   }
 
   @Test
+  @SuppressWarnings({"PMD.AvoidAccessibilityAlteration", "PMD.PreserveStackTrace"})
   void utilityConstructorIsBlocked() {
-    assertThrows(UnsupportedOperationException.class, () -> {
-      var ctor = RegistryKeys.class.getDeclaredConstructor();
-      ctor.setAccessible(true);
-      try {
-        ctor.newInstance();
-      } catch (ReflectiveOperationException e) {
-        if (e.getCause() instanceof UnsupportedOperationException uoe) {
-          throw uoe;
-        }
-        throw new RuntimeException(e);
-      }
-    });
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> {
+          var ctor = RegistryKeys.class.getDeclaredConstructor();
+          ctor.setAccessible(true);
+          try {
+            ctor.newInstance();
+          } catch (ReflectiveOperationException e) {
+            if (e.getCause() instanceof UnsupportedOperationException uoe) {
+              throw uoe;
+            }
+            throw new RuntimeException(e);
+          }
+        });
   }
 }

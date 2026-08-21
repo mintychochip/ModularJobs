@@ -26,8 +26,8 @@ import org.bukkit.entity.Player;
 /**
  * Host-owned craftux text surfaces (scoreboard + boss bar) for ModularJobs.
  *
- * <p>Inventory GUIs use {@link CraftuxUiHost#inventory()}; ephemeral top
- * leaderboards and XP bars go through these Paper surface renderers.
+ * <p>Inventory GUIs use {@link CraftuxUiHost#inventory()}; ephemeral top leaderboards and XP bars
+ * go through these Paper surface renderers.
  */
 public final class CraftuxSurfaces {
 
@@ -41,11 +41,10 @@ public final class CraftuxSurfaces {
     this.bossBars = bossBars;
   }
 
+  /** Create. */
   public static CraftuxSurfaces create() {
     PaperAudienceProvider audiences = CraftuxSurfaces::audience;
-    return new CraftuxSurfaces(
-        new ScoreboardRenderer(audiences),
-        new BossBarRenderer(audiences));
+    return new CraftuxSurfaces(new ScoreboardRenderer(audiences), new BossBarRenderer(audiences));
   }
 
   private static PaperAudience audience(UUID id) {
@@ -54,8 +53,8 @@ public final class CraftuxSurfaces {
   }
 
   /**
-   * Mounts or replaces the sidebar scoreboard for {@code audience} with a title
-   * and body lines (max 15). Empty lines are skipped.
+   * Mounts or replaces the sidebar scoreboard for {@code audience} with a title and body lines (max
+   * 15). Empty lines are skipped.
    */
   public void showScoreboard(UUID audience, String title, List<String> lines) {
     requireNonNull(audience, "audience");
@@ -90,7 +89,7 @@ public final class CraftuxSurfaces {
    * Mounts or replaces a named boss bar for {@code audience}.
    *
    * @param barKey stable key (e.g. player+job) so multiple bars can coexist
-   * @param title  plain title text (MiniMessage optional via {@code miniMessage})
+   * @param title plain title text (MiniMessage optional via {@code miniMessage})
    * @param miniMessage optional MiniMessage markup for the title, or null
    * @param progress normalized 0..1
    * @param role semantic style (maps to Adventure bar color)
@@ -110,9 +109,10 @@ public final class CraftuxSurfaces {
     String composite = audience + ":" + barKey;
     hideBossBar(audience, barKey);
 
-    TextSpan span = miniMessage == null || miniMessage.isBlank()
-        ? new TextSpan(title, role)
-        : new TextSpan(title, role, null, null, miniMessage);
+    TextSpan span =
+        miniMessage == null || miniMessage.isBlank()
+            ? new TextSpan(title, role)
+            : new TextSpan(title, role, null, null, miniMessage);
     BossBarPlan plan = new BossBarPlan(new RichText(List.of(span)), clamp(progress), role);
     SurfaceHandle handle = bossBars.mount(audience, plan);
     bossBarHandles.put(composite, handle);
@@ -120,7 +120,8 @@ public final class CraftuxSurfaces {
 
   /** Unmounts one named boss bar. */
   public void hideBossBar(UUID audience, String barKey) {
-    String composite = requireNonNull(audience, "audience") + ":" + requireNonNull(barKey, "barKey");
+    String composite =
+        requireNonNull(audience, "audience") + ":" + requireNonNull(barKey, "barKey");
     SurfaceHandle handle = bossBarHandles.remove(composite);
     if (handle != null) {
       bossBars.unmount(handle);
@@ -145,10 +146,12 @@ public final class CraftuxSurfaces {
     }
   }
 
+  /** Scoreboards. */
   public ScoreboardRenderer scoreboards() {
     return scoreboards;
   }
 
+  /** Boss bars. */
   public BossBarRenderer bossBars() {
     return bossBars;
   }

@@ -9,8 +9,14 @@ public final class Requirements {
 
   private Requirements() {}
 
+  /** Returns an all-of requirement over the given children. */
+  public static Requirement allOf(@NotNull List<Requirement> requirements) {
+    return new AllOf(requirements);
+  }
+
   /** All children must be satisfied. */
   public record AllOf(@NotNull List<Requirement> requirements) implements Requirement {
+    /** API member. */
     public AllOf {
       requirements = List.copyOf(requirements);
     }
@@ -23,6 +29,7 @@ public final class Requirements {
 
   /** At least one child must be satisfied. */
   public record AnyOf(@NotNull List<Requirement> requirements) implements Requirement {
+    /** API member. */
     public AnyOf {
       requirements = List.copyOf(requirements);
     }
@@ -66,7 +73,8 @@ public final class Requirements {
   }
 
   /** A namespaced state key must equal {@code value}. */
-  public record StateEqualsRequirement(@NotNull Key key, @NotNull String value) implements Requirement {
+  public record StateEqualsRequirement(@NotNull Key key, @NotNull String value)
+      implements Requirement {
     @Override
     public boolean satisfied(@NotNull SkillTreeState state) {
       return value.equals(state.state().get(key));

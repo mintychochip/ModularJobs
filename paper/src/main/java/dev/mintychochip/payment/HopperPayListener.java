@@ -7,15 +7,13 @@ import org.bukkit.block.Furnace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.block.Action;
 import org.bukkit.inventory.InventoryHolder;
 
-/**
- * Marks hopper-filled containers so smelt and brew rewards can be skipped.
- */
+/** Marks hopper-filled containers so smelt and brew rewards can be skipped. */
 final class HopperPayListener implements Listener {
 
   private final HopperPayDisableStore store;

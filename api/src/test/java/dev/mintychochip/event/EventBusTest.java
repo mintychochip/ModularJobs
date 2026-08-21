@@ -26,11 +26,12 @@ class EventBusTest {
   @Test
   void cancellableEventSharesCancelState() {
     EventBus bus = new EventBus();
-    bus.subscribe(e -> {
-      if (e instanceof JobsPaymentEvent payment) {
-        payment.setCancelled(true);
-      }
-    });
+    bus.subscribe(
+        e -> {
+          if (e instanceof JobsPaymentEvent payment) {
+            payment.setCancelled(true);
+          }
+        });
 
     JobsPaymentEvent event = new JobsPaymentEvent(UUID.randomUUID(), null);
     assertFalse(event.isCancelled());

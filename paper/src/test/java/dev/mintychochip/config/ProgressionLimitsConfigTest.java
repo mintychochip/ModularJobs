@@ -10,10 +10,15 @@ class ProgressionLimitsConfigTest {
 
   @Test
   void parsesLimitsAndAutoJoin() {
-    ProgressionLimitsConfig config = ProgressionLimitsConfig.fromMap(java.util.Map.of(
-        "max-jobs", 3,
-        "auto-join-jobs", List.of("miner", "farmer"),
-        "world-join-restriction", true));
+    ProgressionLimitsConfig config =
+        ProgressionLimitsConfig.fromMap(
+            java.util.Map.of(
+                "max-jobs",
+                3,
+                "auto-join-jobs",
+                List.of("miner", "farmer"),
+                "world-join-restriction",
+                true));
     assertEquals(3, config.maxJobs());
     assertEquals(List.of("miner", "farmer"), config.autoJoinJobs());
     assertTrue(config.worldJoinRestriction());
@@ -29,9 +34,9 @@ class ProgressionLimitsConfigTest {
 
   @Test
   void clampsNegativeMaxJobsAndNormalizesAutoJoinNames() {
-    ProgressionLimitsConfig config = ProgressionLimitsConfig.fromMap(java.util.Map.of(
-        "max-jobs", -5,
-        "auto-join-jobs", List.of("Miner", "  ", "FARMER")));
+    ProgressionLimitsConfig config =
+        ProgressionLimitsConfig.fromMap(
+            java.util.Map.of("max-jobs", -5, "auto-join-jobs", List.of("Miner", "  ", "FARMER")));
     assertEquals(0, config.maxJobs());
     assertEquals(List.of("miner", "farmer"), config.autoJoinJobs());
   }

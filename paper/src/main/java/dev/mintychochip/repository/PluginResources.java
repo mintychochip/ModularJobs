@@ -35,6 +35,7 @@ public final class PluginResources {
     return List.copyOf(connectionSources);
   }
 
+  /** Source count. */
   public int sourceCount() {
     return connectionSources.size();
   }

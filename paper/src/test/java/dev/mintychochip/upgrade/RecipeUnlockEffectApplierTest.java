@@ -2,24 +2,22 @@ package dev.mintychochip.upgrade;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.profession.RecipeDefinition;
+import dev.mintychochip.service.RecipeService;
+import dev.mintychochip.upgrade.NodeEffect.RecipeUnlockEffect;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import dev.mintychochip.profession.RecipeDefinition;
-import dev.mintychochip.service.RecipeService;
-import dev.mintychochip.upgrade.NodeEffect.RecipeUnlockEffect;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
-/**
- * Drives shipped {@link UpgradeEffectApplier#syncEffects} recipe_unlock → RecipeService.grant.
- */
+/** Drives shipped {@link UpgradeEffectApplier#syncEffects} recipe_unlock → RecipeService.grant. */
 class RecipeUnlockEffectApplierTest {
 
   @Test

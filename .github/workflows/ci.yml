@@ -245,7 +245,6 @@ jobs:
             "mysql://test:test@127.0.0.1:13306/modularjobs"
 
       - name: Check (compile + Error Prone + unit tests + static analysis)
-        # quality.fail not set in wave 1 → Checkstyle/PMD/SpotBugs report-only
         run: ./gradlew clean check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
 
       - name: Shadow jar

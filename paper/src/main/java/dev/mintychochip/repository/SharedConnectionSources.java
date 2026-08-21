@@ -9,8 +9,8 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Deduplicates {@link ConnectionSource} instances for the same MySQL jdbc-url + credentials
- * so payable / timed-boost / upgrades sections sharing one database do not open multiple pools.
+ * Deduplicates {@link ConnectionSource} instances for the same MySQL jdbc-url + credentials so
+ * payable / timed-boost / upgrades sections sharing one database do not open multiple pools.
  */
 public final class SharedConnectionSources {
 
@@ -18,14 +18,13 @@ public final class SharedConnectionSources {
   private final PluginResources resources;
   private final Map<String, ConnectionSource> byIdentity = new HashMap<>();
 
+  /** Shared connection sources. */
   public SharedConnectionSources(@NotNull Plugin plugin, @NotNull PluginResources resources) {
     this.plugin = Objects.requireNonNull(plugin, "plugin");
     this.resources = Objects.requireNonNull(resources, "resources");
   }
 
-  /**
-   * Create or reuse a connection source for the given database.yml section.
-   */
+  /** Create or reuse a connection source for the given database.yml section. */
   public @NotNull ConnectionSource getOrCreate(@NotNull ConfigurationSection section) {
     String identity = poolIdentity(section);
     ConnectionSource existing = byIdentity.get(identity);

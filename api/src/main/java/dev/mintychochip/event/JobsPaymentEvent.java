@@ -1,18 +1,17 @@
 package dev.mintychochip.event;
 
+import dev.mintychochip.container.Payable;
 import java.util.Objects;
 import java.util.UUID;
-import dev.mintychochip.container.Payable;
 
-/**
- * Fired when a jobs payment is delivered.
- */
+/** Fired when a jobs payment is delivered. */
 public final class JobsPaymentEvent implements Cancellable {
 
   private final UUID playerId;
   private final Payable base;
   private boolean cancelled;
 
+  /** Jobs payment event. */
   public JobsPaymentEvent(UUID playerId, Payable base) {
     this.playerId = Objects.requireNonNull(playerId, "playerId");
     this.base = base;

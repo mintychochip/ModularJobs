@@ -9,9 +9,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives the real {@link DatabaseConfigSections} helper used before ConnectionSourceFactory.
- */
+/** Drives the real {@link DatabaseConfigSections} helper used before ConnectionSourceFactory. */
 class DatabaseConfigSectionsTest {
   @Test
   void requireSectionReturnsNestedMap() {
@@ -29,9 +27,10 @@ class DatabaseConfigSectionsTest {
     MemoryConfiguration root = new MemoryConfiguration();
     root.set("other", "value");
 
-    IllegalArgumentException ex = assertThrows(
-        IllegalArgumentException.class,
-        () -> DatabaseConfigSections.requireSection(root, "payable"));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> DatabaseConfigSections.requireSection(root, "payable"));
     assertTrue(ex.getMessage().contains("payable"), ex.getMessage());
     assertTrue(
         ex.getMessage().toLowerCase().contains("missing")
@@ -44,20 +43,21 @@ class DatabaseConfigSectionsTest {
     MemoryConfiguration root = new MemoryConfiguration();
     root.set("payable", "not-a-map");
 
-    IllegalArgumentException ex = assertThrows(
-        IllegalArgumentException.class,
-        () -> DatabaseConfigSections.requireSection(root, "payable"));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> DatabaseConfigSections.requireSection(root, "payable"));
     assertTrue(ex.getMessage().contains("payable"), ex.getMessage());
     assertTrue(
-        ex.getMessage().contains("section") || ex.getMessage().contains("map"),
-        ex.getMessage());
+        ex.getMessage().contains("section") || ex.getMessage().contains("map"), ex.getMessage());
   }
 
   @Test
   void requireSectionNullRootThrowsClearly() {
-    IllegalArgumentException ex = assertThrows(
-        IllegalArgumentException.class,
-        () -> DatabaseConfigSections.requireSection(null, "payable"));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> DatabaseConfigSections.requireSection(null, "payable"));
     assertTrue(ex.getMessage().contains("payable"), ex.getMessage());
   }
 
@@ -93,9 +93,10 @@ class DatabaseConfigSectionsTest {
     ConfigurationSection payable = root.createSection("payable");
     root.set("upgrades", "scalar");
 
-    IllegalArgumentException ex = assertThrows(
-        IllegalArgumentException.class,
-        () -> DatabaseConfigSections.sectionOrFallback(root, "upgrades", payable));
+    IllegalArgumentException ex =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> DatabaseConfigSections.sectionOrFallback(root, "upgrades", payable));
     assertTrue(ex.getMessage().contains("upgrades"), ex.getMessage());
   }
 }

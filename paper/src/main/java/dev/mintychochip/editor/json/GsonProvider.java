@@ -12,25 +12,26 @@ import net.kyori.adventure.key.Key;
 /**
  * Factory that creates a configured Gson instance for the ModularJobs web editor.
  *
- * <p>
- * Configuration:
+ * <p>Configuration:
+ *
  * <ul>
- *   <li>Pretty printing enabled for readability</li>
- *   <li>Lenient parsing enabled</li>
- *   <li>Null values are NOT serialized (default behavior)</li>
+ *   <li>Pretty printing enabled for readability
+ *   <li>Lenient parsing enabled
+ *   <li>Null values are NOT serialized (default behavior)
  * </ul>
  *
- * <p>
- * Custom type adapters:
+ * <p>Custom type adapters:
+ *
  * <ul>
- *   <li>{@link Key} - serialized as "namespace:value" strings</li>
- *   <li>{@link Instant} - serialized as ISO-8601 strings</li>
+ *   <li>{@link Key} - serialized as "namespace:value" strings
+ *   <li>{@link Instant} - serialized as ISO-8601 strings
  * </ul>
  */
 public final class GsonProvider {
 
   private GsonProvider() {}
 
+  /** Create. */
   public static Gson create() {
     return new GsonBuilder()
         .setPrettyPrinting()
@@ -43,8 +44,7 @@ public final class GsonProvider {
   /**
    * TypeAdapter for Adventure Key serialization.
    *
-   * <p>
-   * Writes keys as "namespace:value" strings and reads them using {@link Key#key(String)}.
+   * <p>Writes keys as "namespace:value" strings and reads them using {@link Key#key(String)}.
    */
   private static final class KeyAdapter extends TypeAdapter<Key> {
 
@@ -67,8 +67,8 @@ public final class GsonProvider {
   /**
    * TypeAdapter for Instant serialization.
    *
-   * <p>
-   * Writes instants as ISO-8601 strings and reads them using {@link Instant#parse(CharSequence)}.
+   * <p>Writes instants as ISO-8601 strings and reads them using {@link
+   * Instant#parse(CharSequence)}.
    */
   private static final class InstantAdapter extends TypeAdapter<Instant> {
 

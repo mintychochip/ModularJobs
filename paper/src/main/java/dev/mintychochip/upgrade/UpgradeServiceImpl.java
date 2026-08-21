@@ -1,5 +1,8 @@
 package dev.mintychochip.upgrade;
 
+import dev.mintychochip.JobProgression;
+import dev.mintychochip.registry.Registry;
+import dev.mintychochip.service.JobService;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,17 +17,12 @@ import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import dev.mintychochip.JobProgression;
-import dev.mintychochip.registry.Registry;
-import dev.mintychochip.service.JobService;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Implementation of UpgradeService.
- */
+/** Implementation of UpgradeService. */
 public final class UpgradeServiceImpl implements UpgradeService {
 
   private final Registry<UpgradeTree> treeRegistry;
@@ -36,13 +34,13 @@ public final class UpgradeServiceImpl implements UpgradeService {
   // In-memory cache: playerId -> jobKey -> data
   private final Map<String, Map<String, PlayerUpgradeDataImpl>> cache = new ConcurrentHashMap<>();
 
+  /** Upgrade service impl. */
   public UpgradeServiceImpl(
       Registry<UpgradeTree> treeRegistry,
       Registry<SkillTree> skillTreeRegistry,
       PlayerUpgradeRepository repository,
       JobService jobService,
-      UpgradeEffectApplier effectApplier
-  ) {
+      UpgradeEffectApplier effectApplier) {
     this.treeRegistry = treeRegistry;
     this.skillTreeRegistry = skillTreeRegistry;
     this.repository = repository;
@@ -58,9 +56,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
     }
 
     final String finalPlainJobKey = plainJobKey;
-    return treeRegistry.stream()
-        .filter(tree -> tree.jobKey().equals(finalPlainJobKey))
-        .findFirst();
+    return treeRegistry.stream().filter(tree -> tree.jobKey().equals(finalPlainJobKey)).findFirst();
   }
 
   @Override
@@ -74,12 +70,14 @@ public final class UpgradeServiceImpl implements UpgradeService {
   }
 
   @Override
-  public @NotNull PlayerUpgradeData getPlayerData(@NotNull String playerId, @NotNull String jobKey) {
+  public @NotNull PlayerUpgradeData getPlayerData(
+      @NotNull String playerId, @NotNull String jobKey) {
     return getOrLoadData(playerId, jobKey);
   }
 
   @Override
-  public @NotNull Set<UpgradeNode> getAvailableNodes(@NotNull String playerId, @NotNull String jobKey) {
+  public @NotNull Set<UpgradeNode> getAvailableNodes(
+      @NotNull String playerId, @NotNull String jobKey) {
     Optional<UpgradeTree> treeOpt = getTree(jobKey);
     if (treeOpt.isEmpty()) {
       return Set.of();
@@ -91,17 +89,22 @@ public final class UpgradeServiceImpl implements UpgradeService {
   }
 
   @Override
-  public @NotNull UnlockResult unlock(@NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey) {
+  public @NotNull UnlockResult unlock(
+      @NotNull String playerId, @NotNull String jobKey, @NotNull String nodeKey) {
     // v2 tree takes precedence for matching jobs; legacy trees fall back below.
     if (skillTreeFor(jobKey).isPresent()) {
       return switch (purchaseSkillLevel(playerId, jobKey, nodeKey)) {
-        case PurchaseResult.Success success -> new UnlockResult.Success(
-            legacyNode(nodeKey, success.node().name()), success.remainingPoints());
+        case PurchaseResult.Success success ->
+            new UnlockResult.Success(
+                legacyNode(nodeKey, success.node().name()), success.remainingPoints());
         case PurchaseResult.InsufficientPoints ip ->
             new UnlockResult.InsufficientPoints(ip.required(), ip.available());
-        case PurchaseResult.RequirementsNotMet rn -> new UnlockResult.PrerequisitesNotMet(rn.unmet());
-        case PurchaseResult.PrerequisitesNotMet pm -> new UnlockResult.PrerequisitesNotMet(pm.missing());
-        case PurchaseResult.ExcludedByChoice ec -> new UnlockResult.ExcludedByChoice(ec.conflicting());
+        case PurchaseResult.RequirementsNotMet rn ->
+            new UnlockResult.PrerequisitesNotMet(rn.unmet());
+        case PurchaseResult.PrerequisitesNotMet pm ->
+            new UnlockResult.PrerequisitesNotMet(pm.missing());
+        case PurchaseResult.ExcludedByChoice ec ->
+            new UnlockResult.ExcludedByChoice(ec.conflicting());
         case PurchaseResult.AlreadyOwned ao -> new UnlockResult.AlreadyUnlocked(ao.nodeKey());
         case PurchaseResult.NodeNotFound nf -> new UnlockResult.NodeNotFound(nf.nodeKey());
         case PurchaseResult.TreeNotFound tf -> new UnlockResult.TreeNotFound(tf.jobKey());
@@ -183,9 +186,15 @@ public final class UpgradeServiceImpl implements UpgradeService {
     // v2 trees persist points in SkillTreeState; legacy trees keep the old data path.
     if (skillTreeFor(jobKey).isPresent()) {
       SkillTreeState state = loadOrCreateState(playerId, jobKey);
-      SkillTreeState updated = new SkillTreeState(
-          playerId, jobKey, state.totalSkillPoints() + points, state.nodeLevels(), state.state(),
-          state.currentJobLevel(), state.permissionCheck());
+      SkillTreeState updated =
+          new SkillTreeState(
+              playerId,
+              jobKey,
+              state.totalSkillPoints() + points,
+              state.nodeLevels(),
+              state.state(),
+              state.currentJobLevel(),
+              state.permissionCheck());
       repository.saveState(updated);
       return;
     }
@@ -214,9 +223,10 @@ public final class UpgradeServiceImpl implements UpgradeService {
     for (String nodeKey : unlocked) {
       // Unapply effects before locking
       if (player != null && player.isOnline() && treeOpt.isPresent()) {
-        treeOpt.get().getNode(nodeKey).ifPresent(node ->
-            effectApplier.unapplyNodeEffects(player, node)
-        );
+        treeOpt
+            .get()
+            .getNode(nodeKey)
+            .ifPresent(node -> effectApplier.unapplyNodeEffects(player, node));
       }
 
       data.lock(nodeKey);
@@ -278,9 +288,15 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     Map<String, Integer> levels = new HashMap<>(state.nodeLevels());
     levels.put(nodeKey, nextLevel);
-    SkillTreeState updated = new SkillTreeState(
-        playerId, jobKey, state.totalSkillPoints(), levels, state.state(),
-        state.currentJobLevel(), state.permissionCheck());
+    SkillTreeState updated =
+        new SkillTreeState(
+            playerId,
+            jobKey,
+            state.totalSkillPoints(),
+            levels,
+            state.state(),
+            state.currentJobLevel(),
+            state.permissionCheck());
     repository.saveState(updated);
     syncEffectsFor(playerId, tree, state, updated);
     return new PurchaseResult.Success(node, tree.availablePoints(updated));
@@ -345,9 +361,15 @@ public final class UpgradeServiceImpl implements UpgradeService {
         }
       }
     }
-    SkillTreeState updated = new SkillTreeState(
-        playerId, jobKey, state.totalSkillPoints(), levels, nextState,
-        state.currentJobLevel(), state.permissionCheck());
+    SkillTreeState updated =
+        new SkillTreeState(
+            playerId,
+            jobKey,
+            state.totalSkillPoints(),
+            levels,
+            nextState,
+            state.currentJobLevel(),
+            state.permissionCheck());
     repository.saveState(updated);
     syncEffectsFor(playerId, tree, state, updated);
     return new PurchaseResult.Success(node, tree.availablePoints(updated));
@@ -365,15 +387,23 @@ public final class UpgradeServiceImpl implements UpgradeService {
     // Refund ordinary SKILL levels; preserve ROOT and MAJOR levels and state.
     Map<String, Integer> levels = new HashMap<>();
     for (String ownedKey : state.nodeLevels().keySet()) {
-      tree.node(ownedKey).ifPresent(node -> {
-        if (!node.isSkill()) {
-          levels.put(ownedKey, 1);
-        }
-      });
+      tree.node(ownedKey)
+          .ifPresent(
+              node -> {
+                if (!node.isSkill()) {
+                  levels.put(ownedKey, 1);
+                }
+              });
     }
-    SkillTreeState refunded = new SkillTreeState(
-        playerId, jobKey, state.totalSkillPoints(), levels, state.state(),
-        state.currentJobLevel(), state.permissionCheck());
+    SkillTreeState refunded =
+        new SkillTreeState(
+            playerId,
+            jobKey,
+            state.totalSkillPoints(),
+            levels,
+            state.state(),
+            state.currentJobLevel(),
+            state.permissionCheck());
     repository.saveState(refunded);
     syncEffectsFor(playerId, tree, state, refunded);
     return true;
@@ -400,21 +430,21 @@ public final class UpgradeServiceImpl implements UpgradeService {
       }
       effectApplier.syncEffects(player, previousByTree, currentByTree);
     }
-    cache.computeIfPresent(playerId, (id, byJob) -> {
-      byJob.remove(jobKey);
-      return byJob;
-    });
+    cache.computeIfPresent(
+        playerId,
+        (id, byJob) -> {
+          byJob.remove(jobKey);
+          return byJob;
+        });
     repository.deletePlayerData(playerId, jobKey);
   }
 
   /**
-   * Single v2 mutation sync path: diff the pre-mutation state against the
-   * persisted state for an online player only. The previous state snapshot
-   * lives only for this call — no persistent effect snapshot. The previous
-   * and current maps cover EVERY registered v2 tree (the mutated tree's
-   * captured pre/post snapshots replace its loaded state), so a permission
-   * still derived by another active tree is never revoked. Unmocked servers
-   * (tests) and offline players are no-ops.
+   * Single v2 mutation sync path: diff the pre-mutation state against the persisted state for an
+   * online player only. The previous state snapshot lives only for this call — no persistent effect
+   * snapshot. The previous and current maps cover EVERY registered v2 tree (the mutated tree's
+   * captured pre/post snapshots replace its loaded state), so a permission still derived by another
+   * active tree is never revoked. Unmocked servers (tests) and offline players are no-ops.
    */
   private void syncEffectsFor(
       String playerId, SkillTree tree, SkillTreeState previous, SkillTreeState current) {
@@ -447,8 +477,10 @@ public final class UpgradeServiceImpl implements UpgradeService {
       // back or surface a false failure (retry would double-spend). It is
       // logged instead of silently swallowed.
       Logger.getLogger(UpgradeServiceImpl.class.getName())
-          .log(Level.WARNING, "Failed to sync upgrade effects for " + playerId
-              + "/" + tree.jobKey(), e);
+          .log(
+              Level.WARNING,
+              "Failed to sync upgrade effects for " + playerId + "/" + tree.jobKey(),
+              e);
     }
   }
 
@@ -459,27 +491,34 @@ public final class UpgradeServiceImpl implements UpgradeService {
       // permission suppliers so persisted states evaluate requirements live.
       SkillTreeState rebound = bindRuntimeHooks(playerId, jobKey, loaded);
       return skillTreeFor(jobKey)
-          .map(tree -> PlayerUpgradeRepository.hydrate(tree,
-              remapLegacyNodeKeys(playerId, jobKey, rebound, tree)))
+          .map(
+              tree ->
+                  PlayerUpgradeRepository.hydrate(
+                      tree, remapLegacyNodeKeys(playerId, jobKey, rebound, tree)))
           .orElse(rebound);
     }
     return skillTreeFor(jobKey)
-        .map(tree -> new SkillTreeState(
-            playerId, jobKey, 0, Map.of(), Map.of(),
-            currentJobLevel(playerId, jobKey), permissionCheck(playerId)))
+        .map(
+            tree ->
+                new SkillTreeState(
+                    playerId,
+                    jobKey,
+                    0,
+                    Map.of(),
+                    Map.of(),
+                    currentJobLevel(playerId, jobKey),
+                    permissionCheck(playerId)))
         .orElseGet(() -> SkillTreeState.empty(playerId, jobKey));
   }
 
   /**
-   * Migrates pre-v2 persisted node IDs to their converted perk keys when this
-   * job's v2 tree derives from a legacy {@link UpgradeTree}. Without this the
-   * first v2 write would persist raw legacy IDs into {@code node_levels} and
-   * clear {@code unlocked_nodes}, stranding old progression permanently:
-   * boost derivation, GUI ownership, and purchase gates would all miss it.
-   * Legacy `_N`-suffixed IDs carry their level, so levels aggregate onto the
-   * perk ({@code efficiency_1} + {@code efficiency_2} -> {@code efficiency}
-   * at the max seen). Keys already known to the v2 tree pass through; unknown
-   * keys are left untouched for diagnostics.
+   * Migrates pre-v2 persisted node IDs to their converted perk keys when this job's v2 tree derives
+   * from a legacy {@link UpgradeTree}. Without this the first v2 write would persist raw legacy IDs
+   * into {@code node_levels} and clear {@code unlocked_nodes}, stranding old progression
+   * permanently: boost derivation, GUI ownership, and purchase gates would all miss it. Legacy
+   * `_N`-suffixed IDs carry their level, so levels aggregate onto the perk ({@code efficiency_1} +
+   * {@code efficiency_2} -> {@code efficiency} at the max seen). Keys already known to the v2 tree
+   * pass through; unknown keys are left untouched for diagnostics.
    */
   private SkillTreeState remapLegacyNodeKeys(
       String playerId, String jobKey, SkillTreeState state, SkillTree tree) {
@@ -505,7 +544,8 @@ public final class UpgradeServiceImpl implements UpgradeService {
       if (perk == null || tree.node(perk).isEmpty()) {
         continue; // Unknown to both trees; keep for diagnostics.
       }
-      remapped.merge(perk,
+      remapped.merge(
+          perk,
           Math.max(entry.getValue(), levelByLegacyKey.getOrDefault(entry.getKey(), 1)),
           Math::max);
       remapped.remove(entry.getKey());
@@ -515,22 +555,29 @@ public final class UpgradeServiceImpl implements UpgradeService {
       return state;
     }
     return new SkillTreeState(
-        playerId, jobKey, state.totalSkillPoints(), remapped, state.state(),
-        state.currentJobLevel(), state.permissionCheck());
+        playerId,
+        jobKey,
+        state.totalSkillPoints(),
+        remapped,
+        state.state(),
+        state.currentJobLevel(),
+        state.permissionCheck());
   }
 
-  private SkillTreeState bindRuntimeHooks(
-      String playerId, String jobKey, SkillTreeState state) {
+  private SkillTreeState bindRuntimeHooks(String playerId, String jobKey, SkillTreeState state) {
     return new SkillTreeState(
-        state.playerId(), state.jobKey(), state.totalSkillPoints(),
-        state.nodeLevels(), state.state(),
-        currentJobLevel(playerId, jobKey), permissionCheck(playerId));
+        state.playerId(),
+        state.jobKey(),
+        state.totalSkillPoints(),
+        state.nodeLevels(),
+        state.state(),
+        currentJobLevel(playerId, jobKey),
+        permissionCheck(playerId));
   }
 
   /**
-   * Runtime job-level supplier backed by JobService progression. Resolves to 0
-   * when the player has no progression or the job service cannot answer, so
-   * offline callers and tests stay safe.
+   * Runtime job-level supplier backed by JobService progression. Resolves to 0 when the player has
+   * no progression or the job service cannot answer, so offline callers and tests stay safe.
    */
   private IntSupplier currentJobLevel(String playerId, String jobKey) {
     return () -> {
@@ -544,8 +591,8 @@ public final class UpgradeServiceImpl implements UpgradeService {
   }
 
   /**
-   * Runtime permission check against the online Bukkit player. Offline players
-   * and non-UUID callers (tests) resolve to false.
+   * Runtime permission check against the online Bukkit player. Offline players and non-UUID callers
+   * (tests) resolve to false.
    */
   private Predicate<String> permissionCheck(String playerId) {
     return permission -> {
@@ -597,7 +644,8 @@ public final class UpgradeServiceImpl implements UpgradeService {
       }
     }
     for (Map.Entry<String, Integer> owned : state.nodeLevels().entrySet()) {
-      if (owned.getValue() > 0 && tree.symmetricExcludes(owned.getKey()).contains(node.key().value())) {
+      if (owned.getValue() > 0
+          && tree.symmetricExcludes(owned.getKey()).contains(node.key().value())) {
         conflicting.add(owned.getKey());
       }
     }
@@ -607,9 +655,23 @@ public final class UpgradeServiceImpl implements UpgradeService {
   /** Legacy node view for v2 unlock results (name only; effects are synced in Task 7). */
   private @NotNull UpgradeNode legacyNode(String nodeKey, String nodeName) {
     return new UpgradeNode(
-        Key.key("modularjobs", nodeKey), nodeName, null,
-        "STONE", "STONE", null, null, 0,
-        Set.of(), Set.of(), Set.of(), List.of(), List.of(), null, List.of(), "", 0);
+        Key.key("modularjobs", nodeKey),
+        nodeName,
+        null,
+        "STONE",
+        "STONE",
+        null,
+        null,
+        0,
+        Set.of(),
+        Set.of(),
+        Set.of(),
+        List.of(),
+        List.of(),
+        null,
+        List.of(),
+        "",
+        0);
   }
 
   private PlayerUpgradeDataImpl getOrLoadData(String playerId, String jobKey) {
@@ -630,7 +692,8 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     if (retroactiveSkillPoints > 0) {
       // Create new data with calculated skill points
-      PlayerUpgradeDataImpl newData = new PlayerUpgradeDataImpl(playerId, jobKey, retroactiveSkillPoints, Set.of());
+      PlayerUpgradeDataImpl newData =
+          new PlayerUpgradeDataImpl(playerId, jobKey, retroactiveSkillPoints, Set.of());
       skillTreeFor(jobKey).ifPresent(newData::bindSkillTree);
       // Save to database immediately
       repository.savePlayerData(newData);
@@ -643,8 +706,8 @@ public final class UpgradeServiceImpl implements UpgradeService {
   }
 
   /**
-   * Calculate how many skill points a player should have based on their current job level.
-   * This is used for retroactive skill point calculation when the upgrade system is first accessed.
+   * Calculate how many skill points a player should have based on their current job level. This is
+   * used for retroactive skill point calculation when the upgrade system is first accessed.
    */
   private int calculateRetroactiveSkillPoints(String playerId, String jobKey) {
     // Check if this job has an upgrade tree

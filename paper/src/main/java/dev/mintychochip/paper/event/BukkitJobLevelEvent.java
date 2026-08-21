@@ -8,9 +8,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Bukkit dual-fire wrapper for {@link JobLevelEvent}.
- */
+/** Bukkit dual-fire wrapper for {@link JobLevelEvent}. */
 public final class BukkitJobLevelEvent extends Event {
 
   private static final HandlerList HANDLERS = new HandlerList();
@@ -18,6 +16,7 @@ public final class BukkitJobLevelEvent extends Event {
   private final Player player;
   private final JobLevelEvent pure;
 
+  /** Bukkit job level event. */
   public BukkitJobLevelEvent(@NotNull Player player, @NotNull JobLevelEvent pure) {
     this.player = player;
     this.pure = pure;
@@ -27,6 +26,7 @@ public final class BukkitJobLevelEvent extends Event {
     return player;
   }
 
+  /** Pure. */
   public @NotNull JobLevelEvent pure() {
     return pure;
   }

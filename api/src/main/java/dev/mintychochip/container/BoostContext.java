@@ -1,12 +1,11 @@
 package dev.mintychochip.container;
 
-import java.util.UUID;
 import dev.mintychochip.JobProgressionView;
 import dev.mintychochip.databag.ConditionContext;
+import java.util.UUID;
 
 /**
- * Immutable context supplied while evaluating a boost for a player and job
- * progression.
+ * Immutable context supplied while evaluating a boost for a player and job progression.
  *
  * @param type action that triggered the boost evaluation
  * @param progression current progression view associated with the player
@@ -23,9 +22,7 @@ public record BoostContext(
     Payable payable,
     ConditionContext conditions) {
 
-  /**
-   * Builds a context with an absent condition snapshot (tests / fail-closed).
-   */
+  /** Builds a context with an absent condition snapshot (tests / fail-closed). */
   public BoostContext(
       ActionType type,
       JobProgressionView progression,

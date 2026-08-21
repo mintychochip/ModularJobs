@@ -5,6 +5,7 @@ public final class WriteBackException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 
+  /** Write back exception. */
   public WriteBackException(String message, Throwable cause) {
     super(message, cause);
   }

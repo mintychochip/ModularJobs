@@ -7,9 +7,7 @@ import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
-/**
- * Pure equality / formatting contracts for key utility records used as map keys.
- */
+/** Pure equality / formatting contracts for key utility records used as map keys. */
 class KeyUtilityTest {
 
   /** Verifies {@link LocationKey} equality, hash code, and formatting. */

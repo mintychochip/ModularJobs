@@ -9,9 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Accumulates damage by entity UUID and can expose each contributor's share.
- */
+/** Accumulates damage by entity UUID and can expose each contributor's share. */
 final class DamageContribution {
 
   private final Map<UUID, Double> contribution = new HashMap<>();
@@ -50,12 +48,11 @@ final class DamageContribution {
    *
    * @return non-null entities that are still resolvable by Bukkit
    */
-  @NotNull Collection<@NotNull Entity> getContributors() {
-    return contribution.keySet().stream().map(Bukkit::getEntity).filter(Objects::nonNull)
-        .toList();
+  @NotNull
+  Collection<@NotNull Entity> getContributors() {
+    return contribution.keySet().stream().map(Bukkit::getEntity).filter(Objects::nonNull).toList();
   }
 
-  /** Adds damage to the contributor's accumulated total. */
   void addContribution(Entity entity, double contribution) {
     dirty = true;
     this.contribution.merge(entity.getUniqueId(), contribution, Double::sum);

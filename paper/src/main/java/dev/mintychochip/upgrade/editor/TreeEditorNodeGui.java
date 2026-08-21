@@ -7,14 +7,14 @@ import dev.craftux.api.inventory.InventoryView;
 import dev.craftux.api.inventory.Slot;
 import dev.craftux.api.inventory.SlotPixelIntent;
 import dev.craftux.common.inventory.InventoryRuntime;
+import dev.mintychochip.gui.craftux.CraftuxItems;
+import dev.mintychochip.gui.craftux.CraftuxUiHost;
+import dev.mintychochip.util.Messages;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import dev.mintychochip.gui.craftux.CraftuxItems;
-import dev.mintychochip.gui.craftux.CraftuxUiHost;
-import dev.mintychochip.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -24,9 +24,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Node property editor as a craftux inventory view.
- */
+/** Node property editor as a craftux inventory view. */
 public final class TreeEditorNodeGui implements Listener {
 
   private static final int GUI_SIZE = 54;
@@ -48,6 +46,7 @@ public final class TreeEditorNodeGui implements Listener {
     void handle(String input);
   }
 
+  /** Tree editor node gui. */
   public TreeEditorNodeGui(Plugin plugin, InventoryRuntime inventory) {
     this.plugin = plugin;
     this.inventory = inventory;
@@ -57,13 +56,16 @@ public final class TreeEditorNodeGui implements Listener {
     this.mainEditor = mainEditor;
   }
 
-  public void open(@NotNull Player player, @NotNull EditorSession session, @NotNull EditorNode node) {
+  /** Open. */
+  public void open(
+      @NotNull Player player, @NotNull EditorSession session, @NotNull EditorNode node) {
     UUID playerId = player.getUniqueId();
     editSessions.put(playerId, new NodeEditSession(session, node));
     ensureChatListener();
     inventory.open(playerId, buildView(player, session, node));
   }
 
+  /** On action. */
   public void onAction(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
     NodeEditSession edit = editSessions.get(audience);
@@ -88,44 +90,126 @@ public final class TreeEditorNodeGui implements Listener {
 
     put(content, actions, 0, Material.ARROW, "back", "Back", List.of("Return to tree editor"));
     Material icon = node.icon() != null ? node.icon() : Material.PAPER;
-    content.put(4, Slot.decorative(CraftuxItems.of(icon, node.name(), List.of("ID: " + node.id()))));
+    content.put(
+        4, Slot.decorative(CraftuxItems.of(icon, node.name(), List.of("ID: " + node.id()))));
 
-    put(content, actions, 10, Material.NAME_TAG, "name", "Name", List.of("Current: " + node.name(), "Click to edit"));
-    put(content, actions, 11, Material.WRITABLE_BOOK, "description", "Description",
-        List.of("Current: " + (node.description() != null ? node.description() : "(none)"), "Click to edit"));
-    put(content, actions, 12, icon, "icon", "Icon",
+    put(
+        content,
+        actions,
+        10,
+        Material.NAME_TAG,
+        "name",
+        "Name",
+        List.of("Current: " + node.name(), "Click to edit"));
+    put(
+        content,
+        actions,
+        11,
+        Material.WRITABLE_BOOK,
+        "description",
+        "Description",
+        List.of(
+            "Current: " + (node.description() != null ? node.description() : "(none)"),
+            "Click to edit"));
+    put(
+        content,
+        actions,
+        12,
+        icon,
+        "icon",
+        "Icon",
         List.of("Current: " + icon.name(), "Click to cycle materials"));
-    put(content, actions, 13, Material.DIAMOND, "cost", "Cost (SP)",
+    put(
+        content,
+        actions,
+        13,
+        Material.DIAMOND,
+        "cost",
+        "Cost (SP)",
         List.of("Current: " + node.cost(), "Left +1 | Right -1 | Shift ±5"));
 
-    put(content, actions, 19, Material.ENCHANTED_BOOK, "perk_id", "Perk ID",
-        List.of("Current: " + (node.perkId().isEmpty() ? "(none)" : node.perkId()), "Click to edit"));
-    put(content, actions, 20, Material.EXPERIENCE_BOTTLE, "level", "Perk Level",
+    put(
+        content,
+        actions,
+        19,
+        Material.ENCHANTED_BOOK,
+        "perk_id",
+        "Perk ID",
+        List.of(
+            "Current: " + (node.perkId().isEmpty() ? "(none)" : node.perkId()), "Click to edit"));
+    put(
+        content,
+        actions,
+        20,
+        Material.EXPERIENCE_BOTTLE,
+        "level",
+        "Perk Level",
         List.of("Current: " + node.level(), "Left +1 | Right -1"));
-    put(content, actions, 21, Material.PURPLE_DYE, "archetype", "Archetype",
-        List.of("Current: " + (node.archetypeRef() != null ? node.archetypeRef() : "(none)"), "Click to cycle"));
+    put(
+        content,
+        actions,
+        21,
+        Material.PURPLE_DYE,
+        "archetype",
+        "Archetype",
+        List.of(
+            "Current: " + (node.archetypeRef() != null ? node.archetypeRef() : "(none)"),
+            "Click to cycle"));
 
-    put(content, actions, 28, Material.BREWING_STAND, "add_effect", "Add Effect",
+    put(
+        content,
+        actions,
+        28,
+        Material.BREWING_STAND,
+        "add_effect",
+        "Add Effect",
         List.of("Add a boost effect stub"));
     List<EditorEffect> effects = node.effects();
     for (int i = 0; i < Math.min(effects.size(), 7); i++) {
       EditorEffect effect = effects.get(i);
-      put(content, actions, 29 + i, Material.GOLDEN_APPLE, "effect_" + i,
+      put(
+          content,
+          actions,
+          29 + i,
+          Material.GOLDEN_APPLE,
+          "effect_" + i,
           "Effect: " + effect.type().name(),
           List.of(effect.getDisplayDescription(), "Shift+click to remove"));
     }
 
-    put(content, actions, 37, Material.COMPASS, "position", "Position",
-        List.of("X: " + (node.position() != null ? node.position().x() : 0)
-            + ", Y: " + (node.position() != null ? node.position().y() : 0)));
-    put(content, actions, 49, Material.BARRIER, "delete", "Delete Node",
+    put(
+        content,
+        actions,
+        37,
+        Material.COMPASS,
+        "position",
+        "Position",
+        List.of(
+            "X: "
+                + (node.position() != null ? node.position().x() : 0)
+                + ", Y: "
+                + (node.position() != null ? node.position().y() : 0)));
+    put(
+        content,
+        actions,
+        49,
+        Material.BARRIER,
+        "delete",
+        "Delete Node",
         List.of("Permanently remove this node"));
 
-    InventoryView.Builder builder = InventoryView.builder(MENU_ID, 6)
-        .title(trim("Edit Node: " + node.name()))
-        .interactionPolicy(new InteractionPolicy(
-            EnumSet.of(ClickKind.LEFT, ClickKind.RIGHT, ClickKind.SHIFT_LEFT, ClickKind.SHIFT_RIGHT),
-            true, true));
+    InventoryView.Builder builder =
+        InventoryView.builder(MENU_ID, 6)
+            .title(trim("Edit Node: " + node.name()))
+            .interactionPolicy(
+                new InteractionPolicy(
+                    EnumSet.of(
+                        ClickKind.LEFT,
+                        ClickKind.RIGHT,
+                        ClickKind.SHIFT_LEFT,
+                        ClickKind.SHIFT_RIGHT),
+                    true,
+                    true));
     for (int i = 0; i < GUI_SIZE; i++) {
       Slot slot = content.get(i);
       if (slot != null) {
@@ -147,11 +231,13 @@ public final class TreeEditorNodeGui implements Listener {
       String action,
       String label,
       List<String> lore) {
-    content.put(index, Slot.button(
-        "act." + action,
-        CraftuxItems.of(material, label, lore),
-        CraftuxUiHost.ACTION_EDITOR_NODE_PROP,
-        SlotPixelIntent.UNVALIDATED));
+    content.put(
+        index,
+        Slot.button(
+            "act." + action,
+            CraftuxItems.of(material, label, lore),
+            CraftuxUiHost.ACTION_EDITOR_NODE_PROP,
+            SlotPixelIntent.UNVALIDATED));
     actions.put(index, action);
   }
 
@@ -167,20 +253,28 @@ public final class TreeEditorNodeGui implements Listener {
           mainEditor.reopenFor(player);
         }
       }
-      case "name" -> prompt(player, "Enter new name:", input -> {
-        node.setName(input);
-        Messages.send(player, "<success>Name set to: <secondary>" + input);
-        reopen(player, edit);
-      });
-      case "description" -> prompt(player, "Enter description:", input -> {
-        node.setDescription(input);
-        Messages.send(player, "<success>Description updated");
-        reopen(player, edit);
-      });
+      case "name" ->
+          prompt(
+              player,
+              "Enter new name:",
+              input -> {
+                node.setName(input);
+                Messages.send(player, "<success>Name set to: <secondary>" + input);
+                reopen(player, edit);
+              });
+      case "description" ->
+          prompt(
+              player,
+              "Enter description:",
+              input -> {
+                node.setDescription(input);
+                Messages.send(player, "<success>Description updated");
+                reopen(player, edit);
+              });
       case "icon" -> {
         Material[] cycle = {
-            Material.PAPER, Material.EMERALD, Material.DIAMOND, Material.GOLD_INGOT,
-            Material.IRON_INGOT, Material.BOOK, Material.BLAZE_POWDER, Material.ENCHANTED_BOOK
+          Material.PAPER, Material.EMERALD, Material.DIAMOND, Material.GOLD_INGOT,
+          Material.IRON_INGOT, Material.BOOK, Material.BLAZE_POWDER, Material.ENCHANTED_BOOK
         };
         Material current = node.icon() != null ? node.icon() : Material.PAPER;
         int idx = 0;
@@ -201,10 +295,14 @@ public final class TreeEditorNodeGui implements Listener {
         node.setCost(Math.max(0, node.cost() + delta));
         reopen(player, edit);
       }
-      case "perk_id" -> prompt(player, "Enter perk id (or blank to clear):", input -> {
-        node.setPerkId(input == null ? "" : input.trim());
-        reopen(player, edit);
-      });
+      case "perk_id" ->
+          prompt(
+              player,
+              "Enter perk id (or blank to clear):",
+              input -> {
+                node.setPerkId(input == null ? "" : input.trim());
+                reopen(player, edit);
+              });
       case "level" -> {
         int delta = kind == ClickKind.RIGHT ? -1 : 1;
         node.setLevel(Math.max(0, node.level() + delta));
@@ -234,18 +332,22 @@ public final class TreeEditorNodeGui implements Listener {
         Messages.send(player, "<success>Added boost effect stub");
         reopen(player, edit);
       }
-      case "position" -> prompt(player, "Enter position as x,y:", input -> {
-        try {
-          String[] parts = input.split(",");
-          int x = Integer.parseInt(parts[0].trim());
-          int y = Integer.parseInt(parts[1].trim());
-          node.setPosition(new dev.mintychochip.upgrade.Position(x, y));
-          Messages.send(player, "<success>Position set to " + x + "," + y);
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-          Messages.send(player, "<error>Invalid position. Use x,y");
-        }
-        reopen(player, edit);
-      });
+      case "position" ->
+          prompt(
+              player,
+              "Enter position as x,y:",
+              input -> {
+                try {
+                  String[] parts = input.split(",");
+                  int x = Integer.parseInt(parts[0].trim());
+                  int y = Integer.parseInt(parts[1].trim());
+                  node.setPosition(new dev.mintychochip.upgrade.Position(x, y));
+                  Messages.send(player, "<success>Position set to " + x + "," + y);
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                  Messages.send(player, "<error>Invalid position. Use x,y");
+                }
+                reopen(player, edit);
+              });
       case "delete" -> {
         if (node.id().equals(session.tree().rootNodeId())) {
           Messages.send(player, "<error>Cannot delete root node!");
@@ -290,6 +392,7 @@ public final class TreeEditorNodeGui implements Listener {
     plugin.getServer().getPluginManager().registerEvents(this, plugin);
   }
 
+  /** API member. */
   @EventHandler
   public void onChat(AsyncPlayerChatEvent event) {
     ChatInputHandler handler = chatInputHandlers.remove(event.getPlayer().getUniqueId());

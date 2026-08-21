@@ -1,21 +1,20 @@
 package dev.mintychochip.container;
 
-import java.util.UUID;
 import dev.mintychochip.JobProgression;
+import java.util.UUID;
 
-/**
- * Applies a {@link Payable} reward to a player for a given job progression.
- */
+/** Applies a {@link Payable} reward to a player for a given job progression. */
+@FunctionalInterface
 public interface PayableHandler {
 
   /**
    * Pays out the reward described by the given context.
    *
    * @param context details of the player, payable, and progression
-   * @throws IllegalArgumentException if the context is invalid or the payable
-   *     cannot be applied to this handler
+   * @throws IllegalArgumentException if the context is invalid or the payable cannot be applied to
+   *     this handler
    */
-  void pay(PayableContext context) throws IllegalArgumentException;
+  void pay(PayableContext context);
 
   /**
    * Immutable context describing a single payout.
@@ -26,9 +25,8 @@ public interface PayableHandler {
    */
   record PayableContext(UUID playerId, Payable payable, JobProgression jobProgression) {}
 
-  /**
-   * Controls how a payout is presented visually to the player.
-   */
+  /** Controls how a payout is presented visually to the player. */
+  @FunctionalInterface
   interface PayableVisualController {
     /**
      * Renders the payout described by the given context.
@@ -37,5 +35,4 @@ public interface PayableHandler {
      */
     void display(PayableContext context);
   }
-
 }

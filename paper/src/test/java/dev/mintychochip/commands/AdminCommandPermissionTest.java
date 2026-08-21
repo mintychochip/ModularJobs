@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import dev.mintychochip.test.MockBukkitSupport;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import java.lang.reflect.Proxy;
 import java.util.function.Predicate;
-import dev.mintychochip.test.MockBukkitSupport;
 import org.bukkit.command.CommandSender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,8 +65,8 @@ class AdminCommandPermissionTest {
   }
 
   /**
-   * BoostCommand.build() pulls Paper ArgumentTypes (not fully MockBukkit-backed). Assert the
-   * same shipped predicate used by its root {@code .requires(AdminPermissions::isAdmin)}.
+   * BoostCommand.build() pulls Paper ArgumentTypes (not fully MockBukkit-backed). Assert the same
+   * shipped predicate used by its root {@code .requires(AdminPermissions::isAdmin)}.
    */
   @Test
   void boostCommandUsesAdminPermissionsGate() {
@@ -93,36 +93,37 @@ class AdminCommandPermissionTest {
   }
 
   private static CommandSourceStack sourceWith(CommandSender sender) {
-    return (CommandSourceStack) Proxy.newProxyInstance(
-        Thread.currentThread().getContextClassLoader(),
-        new Class<?>[] {CommandSourceStack.class},
-        (proxy, method, args) -> {
-          if ("getSender".equals(method.getName())) {
-            return sender;
-          }
-          if ("hashCode".equals(method.getName())) {
-            return System.identityHashCode(proxy);
-          }
-          if ("toString".equals(method.getName())) {
-            return "CommandSourceStackProxy(" + sender + ")";
-          }
-          Class<?> rt = method.getReturnType();
-          if (rt == boolean.class) {
-            return false;
-          }
-          if (rt == int.class) {
-            return 0;
-          }
-          if (rt == long.class) {
-            return 0L;
-          }
-          if (rt == double.class) {
-            return 0.0d;
-          }
-          if (rt == float.class) {
-            return 0.0f;
-          }
-          return null;
-        });
+    return (CommandSourceStack)
+        Proxy.newProxyInstance(
+            Thread.currentThread().getContextClassLoader(),
+            new Class<?>[] {CommandSourceStack.class},
+            (proxy, method, args) -> {
+              if ("getSender".equals(method.getName())) {
+                return sender;
+              }
+              if ("hashCode".equals(method.getName())) {
+                return System.identityHashCode(proxy);
+              }
+              if ("toString".equals(method.getName())) {
+                return "CommandSourceStackProxy(" + sender + ")";
+              }
+              Class<?> rt = method.getReturnType();
+              if (rt == boolean.class) {
+                return false;
+              }
+              if (rt == int.class) {
+                return 0;
+              }
+              if (rt == long.class) {
+                return 0L;
+              }
+              if (rt == double.class) {
+                return 0.0d;
+              }
+              if (rt == float.class) {
+                return 0.0f;
+              }
+              return null;
+            });
   }
 }

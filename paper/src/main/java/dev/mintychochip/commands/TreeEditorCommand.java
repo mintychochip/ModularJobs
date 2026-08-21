@@ -3,16 +3,16 @@ package dev.mintychochip.commands;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import dev.mintychochip.util.Messages;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
-import java.util.Optional;
 import dev.mintychochip.Job;
 import dev.mintychochip.domain.JobResolver;
 import dev.mintychochip.upgrade.UpgradeService;
 import dev.mintychochip.upgrade.UpgradeTree;
 import dev.mintychochip.upgrade.config.UpgradeTreeLoader;
 import dev.mintychochip.upgrade.editor.TreeEditorGui;
+import dev.mintychochip.util.Messages;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import java.util.Optional;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,10 +20,8 @@ import org.bukkit.entity.Player;
 /**
  * Command for editing upgrade trees.
  *
- * <p>
- * Usage:
- * - /jobs treeeditor <job> - Edit existing tree
- * - /jobs treeeditor new <job> - Create new tree
+ * <p>Usage: - /jobs treeeditor <job> - Edit existing tree - /jobs treeeditor new <job> - Create new
+ * tree
  */
 public class TreeEditorCommand implements JobsCommand {
 
@@ -34,6 +32,7 @@ public class TreeEditorCommand implements JobsCommand {
   private final TreeEditorGui treeEditorGui;
   private final UpgradeTreeLoader treeLoader;
 
+  /** Tree editor command. */
   public TreeEditorCommand(
       UpgradeService upgradeService,
       JobResolver jobResolver,
@@ -50,24 +49,31 @@ public class TreeEditorCommand implements JobsCommand {
     return Commands.literal("treeeditor")
         .requires(source -> source.getSender().hasPermission("jobs.command.admin.treeeditor"))
         // Edit existing tree: /jobs treeeditor <job>
-        .then(Commands.argument("job", StringArgumentType.string())
-            .suggests((context, builder) -> {
-              jobResolver.getPlainNames().forEach(builder::suggest);
-              return builder.buildFuture();
-            })
-            .executes(context -> executeEdit(
-                context.getSource(),
-                context.getArgument("job", String.class))))
+        .then(
+            Commands.argument("job", StringArgumentType.string())
+                .suggests(
+                    (context, builder) -> {
+                      jobResolver.getPlainNames().forEach(builder::suggest);
+                      return builder.buildFuture();
+                    })
+                .executes(
+                    context ->
+                        executeEdit(context.getSource(), context.getArgument("job", String.class))))
         // Create new tree: /jobs treeeditor new <job>
-        .then(Commands.literal("new")
-            .then(Commands.argument("job", StringArgumentType.string())
-                .suggests((context, builder) -> {
-                  jobResolver.getPlainNames().forEach(builder::suggest);
-                  return builder.buildFuture();
-                })
-                .executes(context -> executeNew(
-                    context.getSource(),
-                    context.getArgument("job", String.class)))));
+        .then(
+            Commands.literal("new")
+                .then(
+                    Commands.argument("job", StringArgumentType.string())
+                        .suggests(
+                            (context, builder) -> {
+                              jobResolver.getPlainNames().forEach(builder::suggest);
+                              return builder.buildFuture();
+                            })
+                        .executes(
+                            context ->
+                                executeNew(
+                                    context.getSource(),
+                                    context.getArgument("job", String.class)))));
   }
 
   private int executeEdit(CommandSourceStack source, String jobName) {
@@ -93,14 +99,22 @@ public class TreeEditorCommand implements JobsCommand {
       // Fall back to in-memory tree if file doesn't exist
       treeOpt = upgradeService.getTree(treeId);
       if (treeOpt.isEmpty()) {
-        Messages.send(sender, "<neutral>This job has no upgrade tree. Use <secondary>/jobs treeeditor new " + jobName + "<neutral> to create one.");
+        Messages.send(
+            sender,
+            "<neutral>This job has no upgrade tree. Use <secondary>/jobs treeeditor new "
+                + jobName
+                + "<neutral> to create one.");
         return 0;
       }
     }
 
     UpgradeTree tree = treeOpt.get();
     treeEditorGui.open(player, tree);
-    Messages.send(player, "<accent>Opening tree editor for <primary>" + job.getPlainName() + " <neutral>(loaded from file)");
+    Messages.send(
+        player,
+        "<accent>Opening tree editor for <primary>"
+            + job.getPlainName()
+            + " <neutral>(loaded from file)");
     player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1.0f, 1.0f);
 
     return Command.SINGLE_SUCCESS;
@@ -123,7 +137,11 @@ public class TreeEditorCommand implements JobsCommand {
     // Check if tree already exists
     Optional<UpgradeTree> existingTree = upgradeService.getTree(job.key().value());
     if (existingTree.isPresent()) {
-      Messages.send(sender, "<warning>A tree already exists for this job. Use <secondary>/jobs treeeditor " + jobName + "<warning> to edit it.");
+      Messages.send(
+          sender,
+          "<warning>A tree already exists for this job. Use <secondary>/jobs treeeditor "
+              + jobName
+              + "<warning> to edit it.");
       return 0;
     }
 

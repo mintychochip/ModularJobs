@@ -16,9 +16,7 @@ public final class PaymentEligibility {
 
   private final PaymentSettings settings;
 
-  /**
-   * Creates the gate backed by the given settings snapshot.
-   */
+  /** Creates the gate backed by the given settings snapshot. */
   public PaymentEligibility(@NotNull PaymentSettings settings) {
     this.settings = Objects.requireNonNull(settings, "settings");
   }
@@ -53,9 +51,7 @@ public final class PaymentEligibility {
     return player.hasMetadata(CITIZENS_METADATA);
   }
 
-  /**
-   * Predicate form used by existing listener call sites ({@code true} = block pay).
-   */
+  /** Predicate form used by existing listener call sites ({@code true} = block pay). */
   public Predicate<Player> asPredicate() {
     return this::blocksPay;
   }

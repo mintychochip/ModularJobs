@@ -11,11 +11,9 @@ import org.jetbrains.annotations.NotNull;
 /** Stores an invalidation marker on entities using persistent data. */
 public final class EntityValidationService {
 
-  @NotNull
-  private final Plugin plugin;
+  @NotNull private final Plugin plugin;
 
-  @LazyInit
-  private NamespacedKey invalidationKey = null;
+  @LazyInit private NamespacedKey invalidationKey = null;
 
   /** Lazily creates the plugin-scoped key used for invalidation markers. */
   private NamespacedKey invalidationKey() {

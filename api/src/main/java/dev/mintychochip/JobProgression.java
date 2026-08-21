@@ -6,7 +6,7 @@ import java.math.BigDecimal;
  * The mutable progression of a single player in a single job.
  *
  * <p>Each operation returns a new {@code JobProgression} instance rather than mutating the
- * receiver, so instances are effectively immutable snapshots of progression state.</p>
+ * receiver, so instances are effectively immutable snapshots of progression state.
  */
 public interface JobProgression extends JobProgressionView {
 
@@ -15,7 +15,7 @@ public interface JobProgression extends JobProgressionView {
    *
    * @param experience the new total experience
    * @return a new progression carrying the given experience, or {@code this} unchanged when the
-   *         value is already set
+   *     value is already set
    */
   JobProgression setExperience(BigDecimal experience);
 

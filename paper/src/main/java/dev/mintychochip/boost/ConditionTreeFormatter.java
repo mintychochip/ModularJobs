@@ -1,8 +1,7 @@
 package dev.mintychochip.boost;
 
-import java.util.ArrayList;
-import java.util.List;
 import dev.mintychochip.boost.conditions.SnapshotCondition;
+import dev.mintychochip.container.boost.Condition;
 import dev.mintychochip.databag.AllOfCondition;
 import dev.mintychochip.databag.AlwaysCondition;
 import dev.mintychochip.databag.AnyOfCondition;
@@ -28,15 +27,15 @@ import dev.mintychochip.databag.SprintingCondition;
 import dev.mintychochip.databag.SwimmingCondition;
 import dev.mintychochip.databag.WeatherCondition;
 import dev.mintychochip.databag.WorldCondition;
-import dev.mintychochip.container.boost.Condition;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Formats a boost condition tree for admin command output.
- */
+/** Formats a boost condition tree for admin command output. */
 public final class ConditionTreeFormatter {
 
   private ConditionTreeFormatter() {}
 
+  /** Format. */
   public static List<String> format(Condition condition, String indent) {
     List<String> lines = new ArrayList<>();
     formatBoost(condition, indent, "", true, lines);
@@ -50,8 +49,11 @@ public final class ConditionTreeFormatter {
       return;
     }
     String connector = isLast ? "└── " : "├── ";
-    lines.add(baseIndent + prefix + connector
-        + condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", ""));
+    lines.add(
+        baseIndent
+            + prefix
+            + connector
+            + condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", ""));
   }
 
   private static void formatApi(
@@ -63,20 +65,27 @@ public final class ConditionTreeFormatter {
     String connector = isLast ? "└── " : "├── ";
     String childPrefix = isLast ? "    " : "│   ";
     switch (condition) {
-      case AlwaysCondition ignored ->
-          lines.add(baseIndent + prefix + connector + "Always");
+      case AlwaysCondition ignored -> lines.add(baseIndent + prefix + connector + "Always");
       case AllOfCondition all -> {
         lines.add(baseIndent + prefix + connector + "AND");
         for (int i = 0; i < all.terms().size(); i++) {
-          formatApi(all.terms().get(i), baseIndent, prefix + childPrefix,
-              i == all.terms().size() - 1, lines);
+          formatApi(
+              all.terms().get(i),
+              baseIndent,
+              prefix + childPrefix,
+              i == all.terms().size() - 1,
+              lines);
         }
       }
       case AnyOfCondition any -> {
         lines.add(baseIndent + prefix + connector + "OR");
         for (int i = 0; i < any.terms().size(); i++) {
-          formatApi(any.terms().get(i), baseIndent, prefix + childPrefix,
-              i == any.terms().size() - 1, lines);
+          formatApi(
+              any.terms().get(i),
+              baseIndent,
+              prefix + childPrefix,
+              i == any.terms().size() - 1,
+              lines);
         }
       }
       case InvertedCondition inverted -> {
@@ -116,18 +125,40 @@ public final class ConditionTreeFormatter {
       case FluidCondition fluid ->
           lines.add(baseIndent + prefix + connector + "In Liquid: " + fluid.fluidKey().value());
       case PlayerResourceCondition resource ->
-          lines.add(baseIndent + prefix + connector + resource.type() + " "
-              + resource.operator() + " " + resource.expected());
+          lines.add(
+              baseIndent
+                  + prefix
+                  + connector
+                  + resource.type()
+                  + " "
+                  + resource.operator()
+                  + " "
+                  + resource.expected());
       case PotionPresentCondition potion ->
           lines.add(baseIndent + prefix + connector + "Has Potion: " + potion.effectKey().value());
       case PotionAmplifierCondition potion ->
-          lines.add(baseIndent + prefix + connector + "Potion: " + potion.effectKey().value()
-              + " amplifier " + potion.operator() + " " + potion.expected());
+          lines.add(
+              baseIndent
+                  + prefix
+                  + connector
+                  + "Potion: "
+                  + potion.effectKey().value()
+                  + " amplifier "
+                  + potion.operator()
+                  + " "
+                  + potion.expected());
       case PotionDurationCondition potion ->
-          lines.add(baseIndent + prefix + connector + "Potion: " + potion.effectKey().value()
-              + " duration " + potion.operator() + " " + potion.expected());
-      case JobCondition job ->
-          lines.add(baseIndent + prefix + connector + "Job: " + job.jobKeys());
+          lines.add(
+              baseIndent
+                  + prefix
+                  + connector
+                  + "Potion: "
+                  + potion.effectKey().value()
+                  + " duration "
+                  + potion.operator()
+                  + " "
+                  + potion.expected());
+      case JobCondition job -> lines.add(baseIndent + prefix + connector + "Job: " + job.jobKeys());
       default -> lines.add(baseIndent + prefix + connector + condition.getClass().getSimpleName());
     }
   }

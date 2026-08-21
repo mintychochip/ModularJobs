@@ -13,12 +13,8 @@ import java.util.UUID;
  * @param expiresAt REST session expiry time
  */
 public record EditorSession(
-    String sessionCode,
-    String token,
-    UUID playerId,
-    Instant createdAt,
-    Instant expiresAt
-) {
+    String sessionCode, String token, UUID playerId, Instant createdAt, Instant expiresAt) {
+  /** Returns whether expired. */
   public boolean isExpired(Instant now) {
     return !expiresAt.isAfter(now);
   }

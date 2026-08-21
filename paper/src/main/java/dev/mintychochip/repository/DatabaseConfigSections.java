@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Validates {@code database.yml} (or any ConfigurationSection root) keys used for
- * ConnectionSource wiring. Fails with a clear IllegalArgumentException rather than NPE.
+ * Validates {@code database.yml} (or any ConfigurationSection root) keys used for ConnectionSource
+ * wiring. Fails with a clear IllegalArgumentException rather than NPE.
  */
 public final class DatabaseConfigSections {
 
@@ -37,16 +37,18 @@ public final class DatabaseConfigSections {
       Object raw = root.get(path);
       String type = raw == null ? "null" : raw.getClass().getSimpleName();
       throw new IllegalArgumentException(
-          "database.yml key '" + path
+          "database.yml key '"
+              + path
               + "' must be a configuration section (map), not a scalar/list (got "
-              + type + ")");
+              + type
+              + ")");
     }
     return section;
   }
 
   /**
-   * Prefer {@code preferredPath} if present as a section; otherwise return {@code fallback}.
-   * If preferred path exists but is not a section, fails clearly (does not silently fall back).
+   * Prefer {@code preferredPath} if present as a section; otherwise return {@code fallback}. If
+   * preferred path exists but is not a section, fails clearly (does not silently fall back).
    */
   @NotNull
   public static ConfigurationSection sectionOrFallback(
@@ -63,9 +65,11 @@ public final class DatabaseConfigSections {
       Object raw = root.get(preferredPath);
       String type = raw == null ? "null" : raw.getClass().getSimpleName();
       throw new IllegalArgumentException(
-          "database.yml key '" + preferredPath
+          "database.yml key '"
+              + preferredPath
               + "' must be a configuration section (map), not a scalar/list (got "
-              + type + ")");
+              + type
+              + ")");
     }
     return section;
   }

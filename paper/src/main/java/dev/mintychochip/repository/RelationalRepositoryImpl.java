@@ -10,8 +10,8 @@ import java.time.Duration;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Temporary relational repository over a {@link ConnectionSource} driven by a
- * {@link RelationalRepositoryContext}.
+ * Temporary relational repository over a {@link ConnectionSource} driven by a {@link
+ * RelationalRepositoryContext}.
  *
  * <p>Loads are cached in a short-lived Caffeine cache (entries expire after 5 minutes of access,
  * bounded to 1_000 entries): {@link #load} reads through the cache, {@link #save} writes through to
@@ -23,11 +23,12 @@ public final class RelationalRepositoryImpl<K, V> {
 
   private final RelationalRepositoryContext<K, V> context;
 
-  private final Cache<K, V> readCache = Caffeine.newBuilder()
-      .expireAfterAccess(Duration.ofMinutes(5)).maximumSize(1_000).build();
+  private final Cache<K, V> readCache =
+      Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(5)).maximumSize(1_000).build();
 
-  public RelationalRepositoryImpl(ConnectionSource connectionSource,
-      RelationalRepositoryContext<K, V> context) {
+  /** Relational repository impl. */
+  public RelationalRepositoryImpl(
+      ConnectionSource connectionSource, RelationalRepositoryContext<K, V> context) {
     this.connectionSource = connectionSource;
     this.context = context;
   }
@@ -38,17 +39,19 @@ public final class RelationalRepositoryImpl<K, V> {
    */
   @Nullable
   public V load(K key) {
-    return readCache.get(key, ignored -> {
-      try (Connection connection = connectionSource.getConnection();
-          PreparedStatement ps = connection.prepareStatement(context.getSelectQuery())) {
-        context.setKey(ps, key);
-        try (ResultSet rs = ps.executeQuery()) {
-          return rs.next() ? context.mapResult(rs, key) : null;
-        }
-      } catch (SQLException e) {
-        throw new WriteBackException("Relational repository operation failed", e);
-      }
-    });
+    return readCache.get(
+        key,
+        ignored -> {
+          try (Connection connection = connectionSource.getConnection();
+              PreparedStatement ps = connection.prepareStatement(context.getSelectQuery())) {
+            context.setKey(ps, key);
+            try (ResultSet rs = ps.executeQuery()) {
+              return rs.next() ? context.mapResult(rs, key) : null;
+            }
+          } catch (SQLException e) {
+            throw new WriteBackException("Relational repository operation failed", e);
+          }
+        });
   }
 
   /**

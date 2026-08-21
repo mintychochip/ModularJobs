@@ -11,14 +11,13 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Supported store for ModularJobs. MySQL only — schema is applied out-of-band
- * ({@code sql/mysql.sql} / {@code scripts/apply-mysql-schema.sh}).
+ * Supported store for ModularJobs. MySQL only — schema is applied out-of-band ({@code
+ * sql/mysql.sql} / {@code scripts/apply-mysql-schema.sh}).
  */
 public enum DatabaseType {
   MYSQL("mysql", "com.mysql.cj.jdbc.Driver");
 
-  @NotNull
-  private final String identifier;
+  @NotNull private final String identifier;
   private final String className;
 
   DatabaseType(@NotNull String identifier, String className) {
@@ -37,15 +36,15 @@ public enum DatabaseType {
   /**
    * Returns the shipped DDL statements for this database type.
    *
-   * <p>The file is split on semicolons that are not inside SQL comments or string
-   * literals, so comment lines such as {@code -- Apply out-of-band; the plugin never runs DDL.}
-   * do not create partial statements.
+   * <p>The file is split on semicolons that are not inside SQL comments or string literals, so
+   * comment lines such as {@code -- Apply out-of-band; the plugin never runs DDL.} do not create
+   * partial statements.
    */
-  public String[] getSQLTables() {
-    try (InputStream resourceStream = ResourceExtractor.getResourceStream(
-        String.format("sql/%s.sql", identifier));
-        BufferedReader reader = new BufferedReader(
-            new InputStreamReader(resourceStream, StandardCharsets.UTF_8))) {
+  public String[] getSqlTables() {
+    try (InputStream resourceStream =
+            ResourceExtractor.getResourceStream(String.format("sql/%s.sql", identifier));
+        BufferedReader reader =
+            new BufferedReader(new InputStreamReader(resourceStream, StandardCharsets.UTF_8))) {
       String sql = reader.lines().collect(Collectors.joining("\n"));
       return splitStatements(sql);
     } catch (IOException e) {
@@ -54,9 +53,8 @@ public enum DatabaseType {
   }
 
   /**
-   * Splits SQL on statement terminators ({@code ;}) while respecting single-line
-   * comments ({@code --}), block comments ({@code /* * /}), and single/double-quoted
-   * string literals.
+   * Splits SQL on statement terminators ({@code ;}) while respecting single-line comments ({@code
+   * --}), block comments ({@code /* * /}), and single/double-quoted string literals.
    */
   private static String[] splitStatements(String sql) {
     List<String> statements = new ArrayList<>();
@@ -164,7 +162,8 @@ public enum DatabaseType {
       return MYSQL;
     }
     throw new IllegalArgumentException(
-        "Unsupported database type '" + identifier
+        "Unsupported database type '"
+            + identifier
             + "'. ModularJobs supports MySQL only (type: mysql). "
             + "Provision schema with scripts/apply-mysql-schema.sh");
   }

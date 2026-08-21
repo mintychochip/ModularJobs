@@ -10,19 +10,22 @@ import org.bukkit.Material;
 /** Helpers for craftux {@link ItemSpec} construction from Bukkit materials / Adventure text. */
 public final class CraftuxItems {
 
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
-  private CraftuxItems() {
-  }
+  private CraftuxItems() {}
 
+  /** Of. */
   public static ItemSpec of(Material material, String label) {
     return of(material, label, List.of());
   }
 
+  /** Of. */
   public static ItemSpec of(Material material, String label, List<String> lore) {
     return new ItemSpec(materialKey(material), 1, nullToEmpty(label), List.copyOf(lore));
   }
 
+  /** Of. */
   public static ItemSpec of(Material material, Component label, List<Component> lore) {
     List<String> lines = new ArrayList<>(lore.size());
     for (Component line : lore) {
@@ -31,10 +34,12 @@ public final class CraftuxItems {
     return new ItemSpec(materialKey(material), 1, PLAIN.serialize(label), lines);
   }
 
+  /** Pane. */
   public static ItemSpec pane(Material material) {
     return of(material, " ");
   }
 
+  /** Material key. */
   public static String materialKey(Material material) {
     return material.getKey().asString();
   }

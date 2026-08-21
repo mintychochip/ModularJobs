@@ -1,23 +1,22 @@
 package dev.mintychochip.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.JobTask;
 import dev.mintychochip.container.ActionType;
 import dev.mintychochip.container.Context;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
-
 
 /**
  * Provides access to jobs, their task definitions, and player job progression.
  *
- * <p>Job records are typically keyed by string or Adventure key. Methods that
- * address a single job by key throw {@link IllegalArgumentException} when the key
- * is unknown; mutation methods report success via their boolean return value.</p>
+ * <p>Job records are typically keyed by string or Adventure key. Methods that address a single job
+ * by key throw {@link IllegalArgumentException} when the key is unknown; mutation methods report
+ * success via their boolean return value.
  */
 public interface JobService {
 
@@ -36,7 +35,7 @@ public interface JobService {
    * @return the matching job
    * @throws IllegalArgumentException if no job matches the key
    */
-  Job getJob(String jobKey) throws IllegalArgumentException;
+  Job getJob(String jobKey);
 
   /**
    * Returns the task a job defines for the given action type and context.
@@ -72,7 +71,7 @@ public interface JobService {
    * @return {@code true} if the player joined, {@code false} otherwise
    * @throws IllegalArgumentException if the job key is unknown
    */
-  boolean joinJob(String playerId, String jobKey) throws IllegalArgumentException;
+  boolean joinJob(String playerId, String jobKey);
 
   /**
    * Removes the given player from the given job.
@@ -82,7 +81,7 @@ public interface JobService {
    * @return {@code true} if the player left, {@code false} otherwise
    * @throws IllegalArgumentException if the job key is unknown
    */
-  boolean leaveJob(String playerId, String jobKey) throws IllegalArgumentException;
+  boolean leaveJob(String playerId, String jobKey);
 
   /**
    * Returns the player's progression in the given job.
@@ -92,7 +91,7 @@ public interface JobService {
    * @return the player's progression in the job
    * @throws IllegalArgumentException if the job key is unknown
    */
-  JobProgression getProgression(String playerId, String jobKey) throws IllegalArgumentException;
+  JobProgression getProgression(String playerId, String jobKey);
 
   /**
    * Returns all progressions for the given player.

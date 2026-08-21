@@ -1,14 +1,14 @@
 package dev.mintychochip.domain;
 
-import java.util.List;
 import dev.mintychochip.domain.model.JobProgressionRecord;
 import dev.mintychochip.domain.repository.JobProgressionRepository;
+import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Coordinates job progression persistence between a primary "live" store and an
- * archival store, adding {@linkplain #archive(String, String) archive} and
- * {@linkplain #restore(String, String) restore} migration on top of the live repository.
+ * Coordinates job progression persistence between a primary "live" store and an archival store,
+ * adding {@linkplain #archive(String, String) archive} and {@linkplain #restore(String, String)
+ * restore} migration on top of the live repository.
  */
 public final class ProgressionService {
 
@@ -24,15 +24,14 @@ public final class ProgressionService {
    * @param live the live repository backing normal progression operations
    * @param archive the repository used to hold archived progression records
    */
-  public ProgressionService(
-      JobProgressionRepository live,
-      JobProgressionRepository archive) {
+  public ProgressionService(JobProgressionRepository live, JobProgressionRepository archive) {
     this.live = live;
     this.archive = archive;
   }
 
   /**
    * Saves a progression record to the live store.
+   *
    * @param record the record to persist
    * @return {@code true} if the record was stored
    */
@@ -42,6 +41,7 @@ public final class ProgressionService {
 
   /**
    * Loads a progression record from the live store.
+   *
    * @param playerId the owning player id
    * @param jobKey the job key
    * @return the matching record, or {@code null} if absent
@@ -52,6 +52,7 @@ public final class ProgressionService {
 
   /**
    * Loads up to {@code limit} live progression records for a job.
+   *
    * @param jobKey the job key to match
    * @param limit the maximum number of records to return
    * @return the matching live records
@@ -62,6 +63,7 @@ public final class ProgressionService {
 
   /**
    * Loads up to {@code limit} live progression records for a player.
+   *
    * @param playerId the player id to match
    * @param limit the maximum number of records to return
    * @return the matching live records
@@ -72,6 +74,7 @@ public final class ProgressionService {
 
   /**
    * Deletes a progression record from the live store.
+   *
    * @param playerId the owning player id
    * @param jobKey the job key
    * @return {@code true} if a record was deleted
@@ -82,9 +85,11 @@ public final class ProgressionService {
 
   /**
    * Moves a progression record from the live store to the archive.
+   *
    * @param playerId the owning player id
    * @param jobKey the job key
-   * @return {@code true} if the record was migrated, {@code false} if it was absent or the copy failed
+   * @return {@code true} if the record was migrated, {@code false} if it was absent or the copy
+   *     failed
    */
   public boolean archive(String playerId, String jobKey) {
     return migrate(live, archive, playerId, jobKey);
@@ -92,9 +97,11 @@ public final class ProgressionService {
 
   /**
    * Moves an archived progression record back to the live store.
+   *
    * @param playerId the owning player id
    * @param jobKey the job key
-   * @return {@code true} if the record was restored, {@code false} if it was absent or the copy failed
+   * @return {@code true} if the record was restored, {@code false} if it was absent or the copy
+   *     failed
    */
   public boolean restore(String playerId, String jobKey) {
     return migrate(archive, live, playerId, jobKey);
@@ -102,6 +109,7 @@ public final class ProgressionService {
 
   /**
    * Loads up to {@code limit} archived progression records for a player.
+   *
    * @param playerId the player id to match
    * @param limit the maximum number of records to return
    * @return the matching archived records
@@ -113,14 +121,15 @@ public final class ProgressionService {
   /**
    * Migrates a single progression record between two repositories: loads it from {@code from},
    * saves a copy to {@code to}, and only deletes the source once the copy succeeds.
+   *
    * @param from the source repository
    * @param to the destination repository
    * @param playerId the owning player id
    * @param jobKey the job key
    * @return {@code true} if the record was migrated, {@code false} otherwise
    */
-  private boolean migrate(JobProgressionRepository from, JobProgressionRepository to,
-      String playerId, String jobKey) {
+  private boolean migrate(
+      JobProgressionRepository from, JobProgressionRepository to, String playerId, String jobKey) {
     JobProgressionRecord record = from.load(playerId, jobKey);
     if (record == null) {
       return false;

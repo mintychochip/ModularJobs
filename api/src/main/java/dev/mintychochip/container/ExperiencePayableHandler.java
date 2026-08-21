@@ -1,23 +1,21 @@
 package dev.mintychochip.container;
 
+import dev.mintychochip.JobProgressionView;
 import java.math.BigDecimal;
 import java.util.UUID;
-import dev.mintychochip.JobProgressionView;
 import net.kyori.adventure.bossbar.BossBar;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Payable handler for experience-based rewards.
  *
- * <p>Extends {@link PayableHandler} with hooks for customising the boss bar
- * used to present the experience reward and for controlling how that bar is
- * displayed to the player.</p>
+ * <p>Extends {@link PayableHandler} with hooks for customising the boss bar used to present the
+ * experience reward and for controlling how that bar is displayed to the player.
  */
+@FunctionalInterface
 public interface ExperiencePayableHandler extends PayableHandler {
 
-  /**
-   * Formats a boss bar instance for a given experience reward context.
-   */
+  /** Formats a boss bar instance for a given experience reward context. */
   interface ExperienceBarFormatter {
 
     /**
@@ -27,8 +25,7 @@ public interface ExperiencePayableHandler extends PayableHandler {
      * @param context details of the experience reward being presented
      * @return the formatted boss bar, which may be the supplied instance
      */
-    BossBar format(@NotNull BossBar bossBar,
-        @NotNull ExperienceBarContext context);
+    BossBar format(@NotNull BossBar bossBar, @NotNull ExperienceBarContext context);
 
     /**
      * Sets the overlay style used when rendering the formatted boss bar.
@@ -38,9 +35,8 @@ public interface ExperiencePayableHandler extends PayableHandler {
     void setOverlay(@NotNull BossBar.Overlay overlay);
   }
 
-  /**
-   * Controls when and how an experience reward's boss bar is displayed.
-   */
+  /** Controls when and how an experience reward's boss bar is displayed. */
+  @FunctionalInterface
   interface ExperienceBarController {
 
     /**

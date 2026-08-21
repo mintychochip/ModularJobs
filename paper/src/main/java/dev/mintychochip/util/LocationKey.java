@@ -25,16 +25,22 @@ public record LocationKey(@NotNull String worldName, int x, int y, int z) {
   public static final LoadingCache<Location, LocationKey> CACHE =
       CacheBuilder.newBuilder()
           .expireAfterWrite(Duration.ofMinutes(10))
-          .build(CacheLoader.from(
-              location -> new LocationKey(location.getWorld().getName(), location.getBlockX(),
-                  location.getBlockY(), location.getBlockZ())));
+          .build(
+              CacheLoader.from(
+                  location ->
+                      new LocationKey(
+                          location.getWorld().getName(),
+                          location.getBlockX(),
+                          location.getBlockY(),
+                          location.getBlockZ())));
 
   /**
    * Converts a Bukkit location to its block-coordinate key.
    *
    * @param loc source location; must not be {@code null}
    * @return cached immutable key
-   * @throws com.google.common.cache.CacheLoader.InvalidCacheLoadException if the location's world is null
+   * @throws com.google.common.cache.CacheLoader.InvalidCacheLoadException if the location's world
+   *     is null
    */
   public static LocationKey create(@NotNull Location loc) {
     return CACHE.getUnchecked(loc);

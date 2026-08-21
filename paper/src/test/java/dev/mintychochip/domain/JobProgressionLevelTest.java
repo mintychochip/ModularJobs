@@ -5,13 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.math.ExpressionCurves;
 import dev.mintychochip.test.MockBukkitSupport;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.AfterEach;
@@ -31,16 +31,16 @@ class JobProgressionLevelTest {
   void setUp() {
     MockBukkitSupport.mockServer();
     // Threshold for level N is N * 100 XP (curve evaluates level variable)
-    job = new JobImpl(
-        Key.key("modularjobs", "miner"),
-        Component.text("Miner"),
-        Component.text("Mines blocks"),
-        10,
-        ExpressionCurves.levelingCurve("level * 100"),
-        Map.of(),
-        30,
-        Map.of()
-    );
+    job =
+        new JobImpl(
+            Key.key("modularjobs", "miner"),
+            Component.text("Miner"),
+            Component.text("Mines blocks"),
+            10,
+            ExpressionCurves.levelingCurve("level * 100"),
+            Map.of(),
+            30,
+            Map.of());
   }
 
   @AfterEach
@@ -107,17 +107,18 @@ class JobProgressionLevelTest {
 
   @Test
   void maxLevelZeroOrNegativeDefaultsToLevelOne() {
-    Job uncapped = new JobImpl(
-        Key.key("modularjobs", "free"),
-        Component.text("Free"),
-        Component.empty(),
-        0,
-        ExpressionCurves.levelingCurve("level * 100"),
-        Map.of(),
-        30,
-        Map.of()
-    );
-    JobProgression progression = new JobProgressionImpl(PLAYER_ID, uncapped, new BigDecimal("9999"));
+    Job uncapped =
+        new JobImpl(
+            Key.key("modularjobs", "free"),
+            Component.text("Free"),
+            Component.empty(),
+            0,
+            ExpressionCurves.levelingCurve("level * 100"),
+            Map.of(),
+            30,
+            Map.of());
+    JobProgression progression =
+        new JobProgressionImpl(PLAYER_ID, uncapped, new BigDecimal("9999"));
     assertEquals(1, progression.level());
   }
 

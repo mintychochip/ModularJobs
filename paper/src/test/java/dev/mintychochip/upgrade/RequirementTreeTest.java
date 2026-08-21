@@ -2,16 +2,17 @@ package dev.mintychochip.upgrade;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.util.List;
-import java.util.Map;
+
 import dev.mintychochip.upgrade.Requirements.AllOf;
 import dev.mintychochip.upgrade.Requirements.AnyOf;
-import dev.mintychochip.upgrade.Requirements.Not;
 import dev.mintychochip.upgrade.Requirements.JobLevelRequirement;
 import dev.mintychochip.upgrade.Requirements.NodeLevelRequirement;
 import dev.mintychochip.upgrade.Requirements.NodeUnlockedRequirement;
+import dev.mintychochip.upgrade.Requirements.Not;
 import dev.mintychochip.upgrade.Requirements.PermissionRequirement;
 import dev.mintychochip.upgrade.Requirements.StateEqualsRequirement;
+import java.util.List;
+import java.util.Map;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
@@ -19,12 +20,13 @@ class RequirementTreeTest {
 
   private SkillTreeState state() {
     return new SkillTreeState(
-        "p1", "miner", 10,
+        "p1",
+        "miner",
+        10,
         Map.of("efficiency", 2, "blasting", 1),
         Map.of(Key.key("tree", "vocation"), "weaponsmith"),
         () -> 25,
-        key -> key.equals("jobs.special_access")
-    );
+        key -> key.equals("jobs.special_access"));
   }
 
   @Test
@@ -48,8 +50,10 @@ class RequirementTreeTest {
 
   @Test
   void stateEqualsLeaf() {
-    assertTrue(new StateEqualsRequirement(Key.key("tree", "vocation"), "weaponsmith").satisfied(state()));
-    assertFalse(new StateEqualsRequirement(Key.key("tree", "vocation"), "toolsmith").satisfied(state()));
+    assertTrue(
+        new StateEqualsRequirement(Key.key("tree", "vocation"), "weaponsmith").satisfied(state()));
+    assertFalse(
+        new StateEqualsRequirement(Key.key("tree", "vocation"), "toolsmith").satisfied(state()));
   }
 
   @Test
@@ -60,31 +64,29 @@ class RequirementTreeTest {
 
   @Test
   void allOfRequiresEveryChild() {
-    Requirement all = new AllOf(List.of(
-        new NodeLevelRequirement("efficiency", 1),
-        new NodeLevelRequirement("blasting", 1)
-    ));
+    Requirement all =
+        new AllOf(
+            List.of(
+                new NodeLevelRequirement("efficiency", 1),
+                new NodeLevelRequirement("blasting", 1)));
     assertTrue(all.satisfied(state()));
 
-    Requirement allFail = new AllOf(List.of(
-        new NodeLevelRequirement("efficiency", 1),
-        new NodeLevelRequirement("deep_mine", 1)
-    ));
+    Requirement allFail =
+        new AllOf(
+            List.of(
+                new NodeLevelRequirement("efficiency", 1),
+                new NodeLevelRequirement("deep_mine", 1)));
     assertFalse(allFail.satisfied(state()));
   }
 
   @Test
   void anyOfRequiresOneChild() {
-    Requirement any = new AnyOf(List.of(
-        new JobLevelRequirement(30),
-        new NodeLevelRequirement("efficiency", 2)
-    ));
+    Requirement any =
+        new AnyOf(List.of(new JobLevelRequirement(30), new NodeLevelRequirement("efficiency", 2)));
     assertTrue(any.satisfied(state()));
 
-    Requirement anyFail = new AnyOf(List.of(
-        new JobLevelRequirement(30),
-        new NodeLevelRequirement("deep_mine", 1)
-    ));
+    Requirement anyFail =
+        new AnyOf(List.of(new JobLevelRequirement(30), new NodeLevelRequirement("deep_mine", 1)));
     assertFalse(anyFail.satisfied(state()));
   }
 

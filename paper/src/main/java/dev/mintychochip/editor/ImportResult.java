@@ -9,9 +9,4 @@ import java.util.List;
  * @param tasksDeleted number of tasks deleted during import
  * @param errors list of error messages encountered during import
  */
-public record ImportResult(
-    int tasksImported,
-    int tasksDeleted,
-    List<String> errors
-) {
-}
+public record ImportResult(int tasksImported, int tasksDeleted, List<String> errors) {}

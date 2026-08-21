@@ -1,13 +1,13 @@
 package dev.mintychochip;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.commands.JobsCommand;
+import dev.mintychochip.placeholders.PlaceholderExpansionHandle;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.sql.SQLException;
 import java.util.List;
-import dev.mintychochip.commands.JobsCommand;
-import dev.mintychochip.placeholders.PlaceholderExpansionHandle;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
@@ -16,14 +16,13 @@ import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Paper plugin entry point that creates, registers, and tears down the
- * {@link PluginContext} composition root.
+ * Paper plugin entry point that creates, registers, and tears down the {@link PluginContext}
+ * composition root.
  */
 @NullMarked
 public final class ModularJobsBootstrap extends JavaPlugin {
 
-  @Nullable
-  private PluginContext context = null;
+  @Nullable private PluginContext context = null;
 
   /** Starts the plugin services, listeners, integrations, and command tree. */
   @Override
@@ -33,32 +32,47 @@ public final class ModularJobsBootstrap extends JavaPlugin {
 
     PluginProvider.set(this);
     Bridge.register(created.bridge);
-    Bukkit.getServicesManager()
-        .register(Bridge.class, created.bridge, this, ServicePriority.High);
+    Bukkit.getServicesManager().register(Bridge.class, created.bridge, this, ServicePriority.High);
 
     // ProfessionService is the stable integration point for dependent plugins.
-    Bukkit.getServicesManager().register(
-        dev.mintychochip.service.ProfessionService.class,
-        created.bridge.professionService(), this, ServicePriority.Normal);
+    Bukkit.getServicesManager()
+        .register(
+            dev.mintychochip.service.ProfessionService.class,
+            created.bridge.professionService(),
+            this,
+            ServicePriority.Normal);
 
     // Auxiliary profession APIs may be stubs — only expose them when explicitly enabled.
     if (getConfig().getBoolean("profession-apis.register-bukkit-services", false)) {
-      getSLF4JLogger().info(
-          "Registering auxiliary profession Bukkit services "
-              + "(profession-apis.register-bukkit-services=true). "
-              + "Station/NodeHarvest may be stubs — see README.");
-      Bukkit.getServicesManager().register(
-          dev.mintychochip.service.RecipeService.class,
-          created.bridge.recipeService(), this, ServicePriority.Normal);
-      Bukkit.getServicesManager().register(
-          dev.mintychochip.service.BuffService.class,
-          created.bridge.buffService(), this, ServicePriority.Normal);
-      Bukkit.getServicesManager().register(
-          dev.mintychochip.service.StationService.class,
-          created.bridge.stationService(), this, ServicePriority.Normal);
-      Bukkit.getServicesManager().register(
-          dev.mintychochip.service.NodeHarvestService.class,
-          created.bridge.nodeHarvestService(), this, ServicePriority.Normal);
+      getSLF4JLogger()
+          .info(
+              "Registering auxiliary profession Bukkit services "
+                  + "(profession-apis.register-bukkit-services=true). "
+                  + "Station/NodeHarvest may be stubs — see README.");
+      Bukkit.getServicesManager()
+          .register(
+              dev.mintychochip.service.RecipeService.class,
+              created.bridge.recipeService(),
+              this,
+              ServicePriority.Normal);
+      Bukkit.getServicesManager()
+          .register(
+              dev.mintychochip.service.BuffService.class,
+              created.bridge.buffService(),
+              this,
+              ServicePriority.Normal);
+      Bukkit.getServicesManager()
+          .register(
+              dev.mintychochip.service.StationService.class,
+              created.bridge.stationService(),
+              this,
+              ServicePriority.Normal);
+      Bukkit.getServicesManager()
+          .register(
+              dev.mintychochip.service.NodeHarvestService.class,
+              created.bridge.nodeHarvestService(),
+              this,
+              ServicePriority.Normal);
     }
 
     for (Listener listener : created.listeners) {
@@ -69,15 +83,18 @@ public final class ModularJobsBootstrap extends JavaPlugin {
       created.placeholderExpansion.register();
     }
 
-    getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, c -> {
-      for (String alias : List.of("jobs", "j")) {
-        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(alias);
-        for (JobsCommand command : created.commands) {
-          root.then(command.build());
-        }
-        c.registrar().register(root.build());
-      }
-    });
+    getLifecycleManager()
+        .registerEventHandler(
+            LifecycleEvents.COMMANDS,
+            c -> {
+              for (String alias : List.of("jobs", "j")) {
+                LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal(alias);
+                for (JobsCommand command : created.commands) {
+                  root.then(command.build());
+                }
+                c.registrar().register(root.build());
+              }
+            });
   }
 
   /** Unregisters integrations and closes resources created during startup. */

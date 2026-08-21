@@ -3,15 +3,15 @@ package dev.mintychochip.hooks;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityActivateEvent;
 import com.gmail.nossr50.events.skills.abilities.McMMOPlayerAbilityDeactivateEvent;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import dev.mintychochip.container.Boost;
 import dev.mintychochip.container.BoostContext;
 import dev.mintychochip.container.BoostSource;
 import dev.mintychochip.container.MemoryStoreImpl;
 import dev.mintychochip.container.Store;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -23,10 +23,10 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Supplies multiplicative boosts while a player has an active McMMO super ability.
  *
- * <p>The source tracks each player's active ability and uses the configured amount for that
- * ability when evaluating a boost context.
+ * <p>The source tracks each player's active ability and uses the configured amount for that ability
+ * when evaluating a boost context.
  */
-public class McMMOBoostSourceImpl implements BoostSource {
+public class McmmoBoostSourceImpl implements BoostSource {
 
   private final Store<UUID, SuperAbilityType> store;
 
@@ -38,8 +38,8 @@ public class McMMOBoostSourceImpl implements BoostSource {
    * @param store store containing each tracked player's active super ability
    * @param boostAmounts configured multiplicative boost amount for each super ability
    */
-  public McMMOBoostSourceImpl(Store<UUID, SuperAbilityType> store,
-      Map<SuperAbilityType, BigDecimal> boostAmounts) {
+  public McmmoBoostSourceImpl(
+      Store<UUID, SuperAbilityType> store, Map<SuperAbilityType, BigDecimal> boostAmounts) {
     this.store = store;
     this.boostAmounts = boostAmounts;
   }
@@ -54,11 +54,11 @@ public class McMMOBoostSourceImpl implements BoostSource {
    * @param boostAmounts configured multiplicative boost amount for each super ability
    * @return a source that evaluates boosts for currently active McMMO abilities
    */
-  public static McMMOBoostSourceImpl create(Plugin plugin,
-      Map<SuperAbilityType, BigDecimal> boostAmounts) {
+  public static McmmoBoostSourceImpl create(
+      Plugin plugin, Map<SuperAbilityType, BigDecimal> boostAmounts) {
     Store<UUID, SuperAbilityType> store = new MemoryStoreImpl<>();
-    Bukkit.getPluginManager().registerEvents(new McMMOController(store), plugin);
-    return new McMMOBoostSourceImpl(store, boostAmounts);
+    Bukkit.getPluginManager().registerEvents(new McmmoController(store), plugin);
+    return new McmmoBoostSourceImpl(store, boostAmounts);
   }
 
   /**
@@ -89,7 +89,7 @@ public class McMMOBoostSourceImpl implements BoostSource {
    *
    * @param store store updated when players activate or deactivate super abilities
    */
-  public record McMMOController(Store<UUID, SuperAbilityType> store) implements Listener {
+  public record McmmoController(Store<UUID, SuperAbilityType> store) implements Listener {
 
     /** Stores the ability just activated by the player. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

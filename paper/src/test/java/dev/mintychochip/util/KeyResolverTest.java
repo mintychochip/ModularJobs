@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Drives shipped {@link KeyResolver} strategy registration and resolve dispatch.
- * Pure Context material keys need no MockBukkit lifecycle.
+ * Drives shipped {@link KeyResolver} strategy registration and resolve dispatch. Pure Context
+ * material keys need no MockBukkit lifecycle.
  */
 class KeyResolverTest {
 

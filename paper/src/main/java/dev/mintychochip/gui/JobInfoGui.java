@@ -6,13 +6,6 @@ import dev.craftux.api.inventory.ItemSpec;
 import dev.craftux.api.inventory.Slot;
 import dev.craftux.api.inventory.SlotPixelIntent;
 import dev.craftux.common.inventory.InventoryRuntime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobTask;
 import dev.mintychochip.container.ActionType;
@@ -20,6 +13,13 @@ import dev.mintychochip.container.Payable;
 import dev.mintychochip.gui.craftux.CraftuxItems;
 import dev.mintychochip.gui.craftux.CraftuxUiHost;
 import dev.mintychochip.service.PreferencesService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -35,17 +35,15 @@ public final class JobInfoGui {
 
   private static final int GUI_ROWS = 6;
   private static final String MENU_ID = "job_info";
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
   private final InventoryRuntime inventory;
   private final PreferencesService preferencesService;
   private final Map<UUID, Session> sessions = new HashMap<>();
 
   private record Session(
-      Job job,
-      List<Map.Entry<ActionType, List<JobTask>>> entries,
-      int page,
-      int entriesPerPage) {}
+      Job job, List<Map.Entry<ActionType, List<JobTask>>> entries, int page, int entriesPerPage) {}
 
   /** Builds the job-info presenter over the shared craftux runtime. */
   public JobInfoGui(InventoryRuntime inventory, PreferencesService preferencesService) {
@@ -92,8 +90,12 @@ public final class JobInfoGui {
     if (session == null || player == null) {
       return;
     }
-    int total = Math.max(1, (int) Math.ceil(
-        (double) session.entries().size() / Math.max(1, session.entriesPerPage())));
+    int total =
+        Math.max(
+            1,
+            (int)
+                Math.ceil(
+                    (double) session.entries().size() / Math.max(1, session.entriesPerPage())));
     if (session.page() >= total) {
       return;
     }
@@ -125,7 +127,8 @@ public final class JobInfoGui {
     int page = session.page();
     int entriesPerPage = session.entriesPerPage();
     List<Map.Entry<ActionType, List<JobTask>>> entries = session.entries();
-    int totalPages = Math.max(1, (int) Math.ceil((double) entries.size() / Math.max(1, entriesPerPage)));
+    int totalPages =
+        Math.max(1, (int) Math.ceil((double) entries.size() / Math.max(1, entriesPerPage)));
 
     String jobName = PLAIN.serialize(job.displayName());
     String title = "Info: " + jobName + " (" + page + "/" + totalPages + ")";
@@ -148,10 +151,10 @@ public final class JobInfoGui {
     int end = Math.min(start + entriesPerPage, entries.size());
     // Content slots: rows 1-4, columns 1-7 (slots 10-16, 19-25, 28-34, 37-43)
     int[] contentSlots = {
-        10, 11, 12, 13, 14, 15, 16,
-        19, 20, 21, 22, 23, 24, 25,
-        28, 29, 30, 31, 32, 33, 34,
-        37, 38, 39, 40, 41, 42, 43
+      10, 11, 12, 13, 14, 15, 16,
+      19, 20, 21, 22, 23, 24, 25,
+      28, 29, 30, 31, 32, 33, 34,
+      37, 38, 39, 40, 41, 42, 43
     };
     int slotIndex = 0;
     for (int i = start; i < end && slotIndex < contentSlots.length; i++) {
@@ -159,25 +162,32 @@ public final class JobInfoGui {
       if (entry.getValue().isEmpty()) {
         continue;
       }
-      content.put(contentSlots[slotIndex], Slot.decorative(actionItem(entry.getKey(), entry.getValue())));
+      content.put(
+          contentSlots[slotIndex], Slot.decorative(actionItem(entry.getKey(), entry.getValue())));
       slotIndex++;
     }
 
     if (page > 1) {
-      content.put(45, Slot.navigation(
-          "info_prev",
-          CraftuxItems.of(Material.ARROW, "Previous", List.of("Page " + (page - 1))),
-          CraftuxUiHost.ACTION_INFO_PREV,
-          SlotPixelIntent.UNVALIDATED));
+      content.put(
+          45,
+          Slot.navigation(
+              "info_prev",
+              CraftuxItems.of(Material.ARROW, "Previous", List.of("Page " + (page - 1))),
+              CraftuxUiHost.ACTION_INFO_PREV,
+              SlotPixelIntent.UNVALIDATED));
     }
-    content.put(49, Slot.decorative(CraftuxItems.of(
-        Material.PAPER, "Page " + page + "/" + totalPages, List.of())));
+    content.put(
+        49,
+        Slot.decorative(
+            CraftuxItems.of(Material.PAPER, "Page " + page + "/" + totalPages, List.of())));
     if (page < totalPages) {
-      content.put(53, Slot.navigation(
-          "info_next",
-          CraftuxItems.of(Material.ARROW, "Next", List.of("Page " + (page + 1))),
-          CraftuxUiHost.ACTION_INFO_NEXT,
-          SlotPixelIntent.UNVALIDATED));
+      content.put(
+          53,
+          Slot.navigation(
+              "info_next",
+              CraftuxItems.of(Material.ARROW, "Next", List.of("Page " + (page + 1))),
+              CraftuxUiHost.ACTION_INFO_NEXT,
+              SlotPixelIntent.UNVALIDATED));
     }
 
     InventoryView.Builder builder = InventoryView.builder(MENU_ID, GUI_ROWS).title(title);

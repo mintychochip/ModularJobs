@@ -1,33 +1,27 @@
 package dev.mintychochip.service;
 
+import dev.mintychochip.profession.ProfessionDefinition;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
-import dev.mintychochip.profession.ProfessionDefinition;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Public profession API over job progression and catalog.
- */
+/** Public profession API over job progression and catalog. */
 public interface ProfessionService {
 
   /** Built-in tracks in catalog order. */
   @NotNull
   List<ProfessionDefinition> tracks();
 
-  /** Resolve canonical id, storage key, or legacy alias. */
+  /** Resolve. */
   Optional<ProfessionDefinition> resolve(String idOrAlias);
 
-  /**
-   * Profession level for a player, or empty if no progression row (not joined / no XP yet).
-   */
+  /** Level. */
   OptionalInt level(@NotNull UUID playerId, @NotNull String professionIdOrAlias);
 
-  /**
-   * Raw experience points, or empty if no progression.
-   */
+  /** Experience. */
   Optional<BigDecimal> experience(@NotNull UUID playerId, @NotNull String professionIdOrAlias);
 
   /**

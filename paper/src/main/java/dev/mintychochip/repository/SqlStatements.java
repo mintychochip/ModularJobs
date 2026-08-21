@@ -5,9 +5,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Loads packaged SQL statement text from {@code /sql/} classpath resources.
- */
+/** Loads packaged SQL statement text from {@code /sql/} classpath resources. */
 public final class SqlStatements {
 
   private SqlStatements() {}
@@ -15,8 +13,8 @@ public final class SqlStatements {
   /**
    * Reads the SQL resource {@code name}. Relative names are resolved under {@code /sql/}.
    *
-   * @param name resource name such as {@code job_tasks/select-task-id.sql} or an absolute
-   *     classpath path starting with {@code /}
+   * @param name resource name such as {@code job_tasks/select-task-id.sql} or an absolute classpath
+   *     path starting with {@code /}
    * @return trimmed statement text
    * @throws IllegalStateException if the resource is missing
    */

@@ -9,9 +9,7 @@ import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link MemoryRecipeService} grant/know/gate rules (P6 recipe learning).
- */
+/** Drives shipped {@link MemoryRecipeService} grant/know/gate rules (P6 recipe learning). */
 class MemoryRecipeServiceTest {
 
   private static final UUID PLAYER = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
@@ -74,6 +72,7 @@ class MemoryRecipeServiceTest {
     assertFalse(recipes.knows(other, RECIPE));
     assertFalse(recipes.canCraft(other, RECIPE, 10));
   }
+
   @Test
   void definitionForCraftOutputResolvesDistinctOutputKey() {
     Key recipeId = Key.key("modularjobs", "masterwork_iron_sword");
@@ -85,6 +84,7 @@ class MemoryRecipeServiceTest {
     assertTrue(recipes.definition(recipeId).isPresent());
     assertTrue(recipes.definitionForCraftOutput(Key.key("minecraft", "diamond")).isEmpty());
   }
+
   @Test
   void reRegisterWithChangedOutputKeyClearsStaleCraftOutputLookup() {
     Key recipeId = Key.key("modularjobs", "masterwork_iron_sword");
@@ -112,9 +112,9 @@ class MemoryRecipeServiceTest {
     IllegalArgumentException ex =
         org.junit.jupiter.api.Assertions.assertThrows(
             IllegalArgumentException.class,
-            () -> recipes.registerDefinition(
-                new RecipeDefinition(recipeB, "weaponsmithing", 5, 2, output)));
+            () ->
+                recipes.registerDefinition(
+                    new RecipeDefinition(recipeB, "weaponsmithing", 5, 2, output)));
     assertTrue(ex.getMessage().contains("iron_sword"));
   }
-
 }

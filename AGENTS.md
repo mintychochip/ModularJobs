@@ -15,9 +15,8 @@ MySQL-backed REST API (Rust) and React secure session editor.
 
 Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-<version>-all.jar`, e.g. `paper-26.8.11.1-all.jar`).
 Unit tests: `./gradlew :api:test :common:test :paper:test`.  
-Static analysis (Error Prone on compile; Checkstyle/PMD/SpotBugs on `check`):  
-`./gradlew clean check` is the CI gate — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
-Wave 1 analyzers are report-only; enforce fail-on-findings: `./gradlew check -Pquality.fail=true`.  
+Static analysis (Error Prone on compile; Spotless, Checkstyle Google Checks, PMD, SpotBugs on `check`):  
+`./gradlew clean check` is the fail-closed CI gate — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
 Configs: `config/checkstyle/`, `config/pmd/`, `config/spotbugs/`.  
 Rust API: `cd web/rest-api && cargo test` / `cargo run --release`.  
 React editor: `cd web/session-editor && npm test && npm run build`.

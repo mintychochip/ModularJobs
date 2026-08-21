@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 class CiTemplateHookupTest {
   private static final String RELEASE_VERSION = "26.8.17.99";
 
@@ -21,15 +22,12 @@ class CiTemplateHookupTest {
     assertTrue(
         text.contains("name: API build + publish artifact"),
         "missing inline api-build job in " + workflow);
-    assertTrue(
-        text.contains(":api:test :api:build"),
-        "missing api gradle tasks in " + workflow);
-    assertTrue(
-        text.contains("api/build/libs/*.jar"),
-        "missing api jar upload glob in " + workflow);
+    assertTrue(text.contains(":api:test :api:build"), "missing api gradle tasks in " + workflow);
+    assertTrue(text.contains("api/build/libs/*.jar"), "missing api jar upload glob in " + workflow);
     assertFalse(
         text.contains("aincraft-org/ci-template/.github/workflows/paper.yml@"),
-        "reusable workflow must not be referenced from " + workflow
+        "reusable workflow must not be referenced from "
+            + workflow
             + " (aincraft-org/ci-template is private and unresolvable from a public repo)");
   }
 
@@ -68,8 +66,7 @@ class CiTemplateHookupTest {
           continue;
         }
         assertTrue(
-            isScheduleOrManualOnly(text),
-            "leftover Packages/Release on push/PR/tag in " + file);
+            isScheduleOrManualOnly(text), "leftover Packages/Release on push/PR/tag in " + file);
       }
     }
   }

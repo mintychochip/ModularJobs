@@ -1,5 +1,9 @@
 package dev.mintychochip.repository;
 
+import dev.mintychochip.boost.BoostDataCodec;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
+import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,17 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.boost.BoostDataCodec;
-import dev.mintychochip.container.BoostSource;
-import dev.mintychochip.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
-import dev.mintychochip.container.boost.TimedBoostDataService.ActiveBoostData;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Timed boost persistence. Write-back cache keys are {@code targetId + SEP + sourceId},
- * but SQL columns always store pure {@code target_id} and {@code source_id}.
+ * Timed boost persistence. Write-back cache keys are {@code targetId + SEP + sourceId}, but SQL
+ * columns always store pure {@code target_id} and {@code source_id}.
  */
 public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepository {
 
@@ -32,39 +32,27 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
 
   private static final String SELECT_SOURCE_IDS =
       SqlStatements.load("time_boosts/select-source-ids.sql");
-  private static final String SELECT_BOOST =
-      SqlStatements.load("time_boosts/select.sql");
-  private static final String SAVE_BOOST =
-      SqlStatements.load("time_boosts/save.sql");
-  private static final String DELETE_BOOST =
-      SqlStatements.load("time_boosts/delete.sql");
+  private static final String SELECT_BOOST = SqlStatements.load("time_boosts/select.sql");
+  private static final String SAVE_BOOST = SqlStatements.load("time_boosts/save.sql");
+  private static final String DELETE_BOOST = SqlStatements.load("time_boosts/delete.sql");
 
   private final ConnectionSource connectionSource;
   private final RelationalRepositoryImpl<String, ActiveBoostData> relational;
+
   /** Null when constructed for synchronous (test) access without write-back. */
-  @Nullable
-  private final WriteBackRepositoryImpl<String, ActiveBoostData> writeBack;
+  @Nullable private final WriteBackRepositoryImpl<String, ActiveBoostData> writeBack;
+
   // Track boost keys per target to handle write-back cache delay
   private final Map<String, Set<String>> knownBoostKeys = new ConcurrentHashMap<>();
 
-  public RelationalTimedBoostRepositoryImpl(Plugin plugin, ConnectionSource connectionSource,
-      BoostDataCodec codec) {
+  /** Relational timed boost repository impl. */
+  public RelationalTimedBoostRepositoryImpl(
+      Plugin plugin, ConnectionSource connectionSource, BoostDataCodec codec) {
     this(connectionSource, codec, plugin);
   }
 
-  /**
-   * Synchronous construction (no Bukkit write-back scheduler) for unit tests.
-   * Still uses the production SQL context.
-   */
-  static RelationalTimedBoostRepositoryImpl createSynchronous(
-      ConnectionSource connectionSource, BoostDataCodec codec) {
-    return new RelationalTimedBoostRepositoryImpl(connectionSource, codec, null);
-  }
-
   private RelationalTimedBoostRepositoryImpl(
-      ConnectionSource connectionSource,
-      BoostDataCodec codec,
-      @Nullable Plugin plugin) {
+      ConnectionSource connectionSource, BoostDataCodec codec, @Nullable Plugin plugin) {
     this.connectionSource = connectionSource;
     TimedBoostRelationalContext context = new TimedBoostRelationalContext(codec);
     this.relational = new RelationalRepositoryImpl<>(connectionSource, context);
@@ -73,6 +61,15 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
     } else {
       this.writeBack = null;
     }
+  }
+
+  /**
+   * Synchronous construction (no Bukkit write-back scheduler) for unit tests. Still uses the
+   * production SQL context.
+   */
+  static RelationalTimedBoostRepositoryImpl createSynchronous(
+      ConnectionSource connectionSource, BoostDataCodec codec) {
+    return new RelationalTimedBoostRepositoryImpl(connectionSource, codec, null);
   }
 
   static String toCacheKey(String targetId, String sourceId) {
@@ -152,7 +149,8 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   public void addBoost(ActiveBoostData boost) {
     String cacheKey = toCacheKey(boost.targetIdentifier(), boost.sourceIdentifier());
     save(cacheKey, boost);
-    knownBoostKeys.computeIfAbsent(boost.targetIdentifier(), k -> ConcurrentHashMap.newKeySet())
+    knownBoostKeys
+        .computeIfAbsent(boost.targetIdentifier(), k -> ConcurrentHashMap.newKeySet())
         .add(boost.sourceIdentifier());
   }
 
@@ -180,8 +178,8 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   }
 
   /**
-   * Flush write-back pending timed boosts before ConnectionSource shutdown.
-   * No-op when constructed synchronously without write-back.
+   * Flush write-back pending timed boosts before ConnectionSource shutdown. No-op when constructed
+   * synchronously without write-back.
    */
   public void flushPending() {
     if (writeBack != null) {
@@ -189,9 +187,7 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
     }
   }
 
-  /**
-   * Production SQL binding for timed boosts. Cache key is composite; columns are pure ids.
-   */
+  /** Production SQL binding for timed boosts. Cache key is composite; columns are pure ids. */
   static final class TimedBoostRelationalContext
       implements RelationalRepositoryContext<String, ActiveBoostData> {
 
@@ -251,7 +247,8 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
       byte[] durationBlob = rs.getBytes("duration");
       Duration duration = null;
       if (durationBlob != null && durationBlob.length > 0) {
-        duration = Duration.parse(new String(durationBlob, java.nio.charset.StandardCharsets.UTF_8));
+        duration =
+            Duration.parse(new String(durationBlob, java.nio.charset.StandardCharsets.UTF_8));
       }
 
       byte[] boostSourceBytes = rs.getBytes("boost_source");

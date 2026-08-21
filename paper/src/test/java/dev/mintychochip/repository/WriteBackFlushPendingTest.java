@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import dev.mintychochip.test.MysqlTestSupport;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import dev.mintychochip.test.MysqlTestSupport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -17,8 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Proves shipped {@link WriteBackRepositoryImpl#flushPending()} drains pending state
- * before ConnectionSource shutdown (disable path). Requires live MySQL.
+ * Proves shipped {@link WriteBackRepositoryImpl#flushPending()} drains pending state before
+ * ConnectionSource shutdown (disable path). Requires live MySQL.
  */
 class WriteBackFlushPendingTest {
 
@@ -31,7 +31,8 @@ class WriteBackFlushPendingTest {
     connection = NonClosableConnection.create(MysqlTestSupport.open());
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS kv_writeback_test");
-      st.execute("CREATE TABLE kv_writeback_test (k VARCHAR(191) PRIMARY KEY, v VARCHAR(191) NOT NULL)");
+      st.execute(
+          "CREATE TABLE kv_writeback_test (k VARCHAR(191) PRIMARY KEY, v VARCHAR(191) NOT NULL)");
     }
     ConnectionSource source = new FixedSource(connection);
     RelationalRepositoryImpl<String, String> relational =
@@ -84,19 +85,21 @@ class WriteBackFlushPendingTest {
   @Test
   void pluginResourcesFlushThenShutdownOrder() throws Exception {
     PluginResources resources = new PluginResources();
-    final ConnectionSource source = resources.track(new FixedSource(connection) {
-      private boolean closed;
+    final ConnectionSource source =
+        resources.track(
+            new FixedSource(connection) {
+              private boolean closed;
 
-      @Override
-      public void shutdown() {
-        closed = true;
-      }
+              @Override
+              public void shutdown() {
+                closed = true;
+              }
 
-      @Override
-      public boolean isClosed() {
-        return closed;
-      }
-    });
+              @Override
+              public boolean isClosed() {
+                return closed;
+              }
+            });
     writeBack.save("z", "9");
     resources.onFlush(writeBack::flushPending);
 
@@ -107,8 +110,8 @@ class WriteBackFlushPendingTest {
   }
 
   private @Nullable String loadFromDb(String key) throws SQLException {
-    try (PreparedStatement ps = connection.prepareStatement(
-        "SELECT v FROM kv_writeback_test WHERE k = ?")) {
+    try (PreparedStatement ps =
+        connection.prepareStatement("SELECT v FROM kv_writeback_test WHERE k = ?")) {
       ps.setString(1, key);
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) {
@@ -166,8 +169,7 @@ class WriteBackFlushPendingTest {
     }
 
     @Override
-    public void shutdown() {
-    }
+    public void shutdown() {}
 
     @Override
     public boolean isClosed() {

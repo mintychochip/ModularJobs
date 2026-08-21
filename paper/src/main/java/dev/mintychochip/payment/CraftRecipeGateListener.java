@@ -10,8 +10,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.InventoryType.SlotType;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * Blocks crafting of registered unknown recipes according to configured profession rules.
@@ -22,9 +22,7 @@ public final class CraftRecipeGateListener implements Listener {
   private final RecipeService recipeService;
   private final ProfessionService professionService;
 
-  /**
-   * Creates the gate with the recipe and profession services used to resolve craftability.
-   */
+  /** Creates the gate with the recipe and profession services used to resolve craftability. */
   public CraftRecipeGateListener(RecipeService recipeService, ProfessionService professionService) {
     this.recipeService = recipeService;
     this.professionService = professionService;

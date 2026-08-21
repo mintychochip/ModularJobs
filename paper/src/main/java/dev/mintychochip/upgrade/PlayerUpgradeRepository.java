@@ -1,36 +1,31 @@
 package dev.mintychochip.upgrade;
 
+import dev.mintychochip.repository.ConnectionSource;
+import dev.mintychochip.repository.SqlStatements;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import dev.mintychochip.repository.ConnectionSource;
-import dev.mintychochip.repository.SqlStatements;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Relational database implementation of PlayerUpgradeRepository.
- */
+/** Relational database implementation of PlayerUpgradeRepository. */
 public final class PlayerUpgradeRepository {
 
-  private static final String SELECT_QUERY =
-      SqlStatements.load("player_upgrades/select.sql");
+  private static final String SELECT_QUERY = SqlStatements.load("player_upgrades/select.sql");
 
-  private static final String UPSERT_QUERY =
-      SqlStatements.load("player_upgrades/upsert.sql");
+  private static final String UPSERT_QUERY = SqlStatements.load("player_upgrades/upsert.sql");
 
-  private static final String DELETE_QUERY =
-      SqlStatements.load("player_upgrades/delete.sql");
+  private static final String DELETE_QUERY = SqlStatements.load("player_upgrades/delete.sql");
 
   private static final String SELECT_STATE_QUERY =
       SqlStatements.load("player_upgrades/select-state.sql");
@@ -40,12 +35,15 @@ public final class PlayerUpgradeRepository {
 
   private final ConnectionSource connectionSource;
 
+  /** Player upgrade repository. */
   public PlayerUpgradeRepository(ConnectionSource connectionSource) {
     this.connectionSource = connectionSource;
     // Schema is connect-only: node_levels must exist via sql/mysql.sql (ops apply).
   }
 
-  public @Nullable PlayerUpgradeDataImpl loadPlayerData(@NotNull String playerId, @NotNull String jobKey) {
+  /** Load player data. */
+  public @Nullable PlayerUpgradeDataImpl loadPlayerData(
+      @NotNull String playerId, @NotNull String jobKey) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(SELECT_QUERY)) {
 
@@ -61,11 +59,13 @@ public final class PlayerUpgradeRepository {
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to load player upgrade data for " + playerId + "/" + jobKey, e);
+      throw new RuntimeException(
+          "Failed to load player upgrade data for " + playerId + "/" + jobKey, e);
     }
     return null;
   }
 
+  /** Save player data. */
   public void savePlayerData(@NotNull PlayerUpgradeDataImpl data) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(UPSERT_QUERY)) {
@@ -77,10 +77,12 @@ public final class PlayerUpgradeRepository {
 
       ps.executeUpdate();
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to save player upgrade data for " + data.playerId() + "/" + data.jobKey(), e);
+      throw new RuntimeException(
+          "Failed to save player upgrade data for " + data.playerId() + "/" + data.jobKey(), e);
     }
   }
 
+  /** Delete player data. */
   public boolean deletePlayerData(@NotNull String playerId, @NotNull String jobKey) {
     try (Connection connection = connectionSource.getConnection();
         PreparedStatement ps = connection.prepareStatement(DELETE_QUERY)) {
@@ -90,7 +92,8 @@ public final class PlayerUpgradeRepository {
 
       return ps.executeUpdate() > 0;
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to delete player upgrade data for " + playerId + "/" + jobKey, e);
+      throw new RuntimeException(
+          "Failed to delete player upgrade data for " + playerId + "/" + jobKey, e);
     }
   }
 
@@ -98,7 +101,7 @@ public final class PlayerUpgradeRepository {
    * Load a player's skill tree state for a job (v2 format).
    *
    * @param playerId the player's UUID
-   * @param jobKey   the job key
+   * @param jobKey the job key
    * @return the skill tree state, or null if none exists
    */
   public @Nullable SkillTreeState loadState(@NotNull String playerId, @NotNull String jobKey) {
@@ -125,7 +128,8 @@ public final class PlayerUpgradeRepository {
         return new SkillTreeState(playerId, jobKey, total, nodeLevels, Map.of());
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to load player skill tree state for " + playerId + "/" + jobKey, e);
+      throw new RuntimeException(
+          "Failed to load player skill tree state for " + playerId + "/" + jobKey, e);
     }
   }
 
@@ -143,17 +147,18 @@ public final class PlayerUpgradeRepository {
       ps.setString(4, serializeNodeLevels(state.nodeLevels()));
       ps.executeUpdate();
     } catch (SQLException e) {
-      throw new RuntimeException("Failed to save player skill tree state for " + state.playerId() + "/" + state.jobKey(), e);
+      throw new RuntimeException(
+          "Failed to save player skill tree state for " + state.playerId() + "/" + state.jobKey(),
+          e);
     }
   }
 
   /**
-   * Hydrate a loaded state's derived state map from its purchased majors.
-   * {@link #loadState} returns an empty state map; the service recomputes it
-   * from {@code node_levels} + the tree so major state survives a restart.
-   * {@code node_levels} is persisted as an unordered map, so replay follows
-   * prerequisite order: a major whose purchase required an earlier major
-   * replays after it, mirroring the order purchases could actually occur.
+   * Hydrate a loaded state's derived state map from its purchased majors. {@link #loadState}
+   * returns an empty state map; the service recomputes it from {@code node_levels} + the tree so
+   * major state survives a restart. {@code node_levels} is persisted as an unordered map, so replay
+   * follows prerequisite order: a major whose purchase required an earlier major replays after it,
+   * mirroring the order purchases could actually occur.
    */
   public static SkillTreeState hydrate(SkillTree tree, SkillTreeState persisted) {
     // Clamp persisted levels to the tree's real max so a bad or edited row
@@ -194,16 +199,19 @@ public final class PlayerUpgradeRepository {
       }
     }
     return new SkillTreeState(
-        persisted.playerId(), persisted.jobKey(), persisted.totalSkillPoints(),
-        normalized, hydrated,
-        persisted.currentJobLevel(), persisted.permissionCheck());
+        persisted.playerId(),
+        persisted.jobKey(),
+        persisted.totalSkillPoints(),
+        normalized,
+        hydrated,
+        persisted.currentJobLevel(),
+        persisted.permissionCheck());
   }
 
   /**
-   * Owned node keys (level ≥ 1) ordered so every node appears after its
-   * prerequisites. Nodes not reachable through a prerequisite chain keep a
-   * stable relative order derived from the input map; prerequisite cycles are
-   * tolerated by breaking them at the first repeated node.
+   * Owned node keys (level ≥ 1) ordered so every node appears after its prerequisites. Nodes not
+   * reachable through a prerequisite chain keep a stable relative order derived from the input map;
+   * prerequisite cycles are tolerated by breaking them at the first repeated node.
    */
   private static List<String> ownedInPrerequisiteOrder(
       SkillTree tree, Map<String, Integer> levels) {
@@ -219,18 +227,25 @@ public final class PlayerUpgradeRepository {
   }
 
   private static void visitPrerequisites(
-      SkillTree tree, Map<String, Integer> levels, String nodeKey,
-      Set<String> done, Set<String> visiting, List<String> ordered) {
-    if (done.contains(nodeKey) || visiting.contains(nodeKey)
+      SkillTree tree,
+      Map<String, Integer> levels,
+      String nodeKey,
+      Set<String> done,
+      Set<String> visiting,
+      List<String> ordered) {
+    if (done.contains(nodeKey)
+        || visiting.contains(nodeKey)
         || levels.getOrDefault(nodeKey, 0) < 1) {
       return;
     }
     visiting.add(nodeKey);
-    tree.node(nodeKey).ifPresent(node -> {
-      for (String prereq : node.prerequisites()) {
-        visitPrerequisites(tree, levels, prereq, done, visiting, ordered);
-      }
-    });
+    tree.node(nodeKey)
+        .ifPresent(
+            node -> {
+              for (String prereq : node.prerequisites()) {
+                visitPrerequisites(tree, levels, prereq, done, visiting, ordered);
+              }
+            });
     visiting.remove(nodeKey);
     done.add(nodeKey);
     ordered.add(nodeKey);

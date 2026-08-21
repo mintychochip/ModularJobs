@@ -1,5 +1,12 @@
 package dev.mintychochip.upgrade;
 
+import dev.mintychochip.container.Boost;
+import dev.mintychochip.container.BoostContext;
+import dev.mintychochip.container.BoostSource;
+import dev.mintychochip.container.Payable;
+import dev.mintychochip.container.PayableType;
+import dev.mintychochip.container.PayableTypes;
+import dev.mintychochip.registry.Registry;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,22 +15,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import dev.mintychochip.container.Boost;
-import dev.mintychochip.container.BoostContext;
-import dev.mintychochip.container.BoostSource;
-import dev.mintychochip.container.Payable;
-import dev.mintychochip.container.PayableType;
-import dev.mintychochip.container.PayableTypes;
-import dev.mintychochip.registry.Registry;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Implementation of UpgradeBoostDataService.
- * Aggregates boost sources from unlocked upgrade nodes using the composition API.
- * When a v2 {@link SkillTreeState} and matching {@link SkillTree} exist, the state
- * is the source of truth; otherwise the legacy {@link UpgradeTree} path is used.
+ * Implementation of UpgradeBoostDataService. Aggregates boost sources from unlocked upgrade nodes
+ * using the composition API. When a v2 {@link SkillTreeState} and matching {@link SkillTree} exist,
+ * the state is the source of truth; otherwise the legacy {@link UpgradeTree} path is used.
  */
 public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataService {
 
@@ -31,11 +30,11 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
   private final Registry<UpgradeTree> treeRegistry;
   private final Registry<SkillTree> skillTreeRegistry;
 
+  /** Upgrade boost data service impl. */
   public UpgradeBoostDataServiceImpl(
       @NotNull PlayerUpgradeRepository upgradeRepository,
       @NotNull Registry<UpgradeTree> treeRegistry,
-      @NotNull Registry<SkillTree> skillTreeRegistry
-  ) {
+      @NotNull Registry<SkillTree> skillTreeRegistry) {
     this.upgradeRepository = upgradeRepository;
     this.treeRegistry = treeRegistry;
     this.skillTreeRegistry = skillTreeRegistry;
@@ -48,9 +47,8 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
 
     // v2 state is the source of truth for boost lookup when a v2 tree/state exists.
     SkillTreeState state = upgradeRepository.loadState(playerIdStr, jobKeyStr);
-    Optional<SkillTree> skillTreeOpt = skillTreeRegistry.stream()
-        .filter(tree -> tree.jobKey().equals(jobKeyStr))
-        .findFirst();
+    Optional<SkillTree> skillTreeOpt =
+        skillTreeRegistry.stream().filter(tree -> tree.jobKey().equals(jobKeyStr)).findFirst();
     if (state != null && skillTreeOpt.isPresent()) {
       return buildBoostSourcesForState(state, skillTreeOpt.get());
     }
@@ -60,23 +58,22 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
   }
 
   /**
-   * Derive boost sources from a player's v2 skill tree state. Effects come from
-   * {@link SkillNode#activeEffects(int)} per owned node level so cumulative and
-   * replace level modes are respected. Non-boost effects are ignored.
+   * Derive boost sources from a player's v2 skill tree state. Effects come from {@link
+   * SkillNode#activeEffects(int)} per owned node level so cumulative and replace level modes are
+   * respected. Non-boost effects are ignored.
    *
    * @param state the player's skill tree state
-   * @param tree  the matching skill tree
+   * @param tree the matching skill tree
    * @return boost sources for the state's active boost effects, in stable node order
    */
   public static @NotNull List<BoostSource> buildBoostSourcesForState(
-      @NotNull SkillTreeState state,
-      @NotNull SkillTree tree
-  ) {
+      @NotNull SkillTreeState state, @NotNull SkillTree tree) {
     List<BoostSource> result = new ArrayList<>();
-    List<Map.Entry<String, Integer>> owned = state.nodeLevels().entrySet().stream()
-        .filter(entry -> entry.getValue() > 0)
-        .sorted(Map.Entry.comparingByKey())
-        .toList();
+    List<Map.Entry<String, Integer>> owned =
+        state.nodeLevels().entrySet().stream()
+            .filter(entry -> entry.getValue() > 0)
+            .sorted(Map.Entry.comparingByKey())
+            .toList();
 
     for (Map.Entry<String, Integer> entry : owned) {
       Optional<SkillNode> nodeOpt = tree.node(entry.getKey());
@@ -98,10 +95,7 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
   }
 
   private List<BoostSource> buildLegacyBoostSources(
-      @NotNull String playerIdStr,
-      @NotNull String jobKeyStr,
-      @NotNull Key jobKey
-  ) {
+      @NotNull String playerIdStr, @NotNull String jobKeyStr, @NotNull Key jobKey) {
     PlayerUpgradeDataImpl playerData = upgradeRepository.loadPlayerData(playerIdStr, jobKeyStr);
     if (playerData == null) {
       return List.of();
@@ -112,9 +106,8 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
       return List.of();
     }
 
-    Optional<UpgradeTree> treeOpt = treeRegistry.stream()
-        .filter(tree -> tree.jobKey().equals(jobKeyStr))
-        .findFirst();
+    Optional<UpgradeTree> treeOpt =
+        treeRegistry.stream().filter(tree -> tree.jobKey().equals(jobKeyStr)).findFirst();
 
     if (treeOpt.isEmpty()) {
       return List.of();
@@ -160,8 +153,7 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
 
   @Nullable
   private static BoostSource buildBoostSource(
-      SkillNode node, NodeEffect effect, String jobKey, int effectIndex
-  ) {
+      SkillNode node, NodeEffect effect, String jobKey, int effectIndex) {
     if (effect instanceof NodeEffect.RuledBoostEffect ruled) {
       // Use the full BoostSource from the effect - already has conditions/rules
       return ruled.boostSource();
@@ -173,12 +165,12 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
       // levels, multi-effect nodes) on distinct source keys so BoostEngine
       // aggregation does not overwrite earlier sources.
       return new SimpleUpgradeBoostSource(
-          Key.key("modularjobs",
+          Key.key(
+              "modularjobs",
               "upgrade/" + jobKey + "/" + node.key().value() + "/effect-" + effectIndex),
           simple.target(),
           simple.multiplier(),
-          node.name()
-      );
+          node.name());
     }
 
     return null;
@@ -197,23 +189,17 @@ public final class UpgradeBoostDataServiceImpl implements UpgradeBoostDataServic
           Key.key("modularjobs", "upgrade/" + jobKey.value() + "/" + node.perkId()),
           simple.target(),
           simple.multiplier(),
-          node.name()
-      );
+          node.name());
     }
 
     return null;
   }
 
   /**
-   * Simple BoostSource wrapper for legacy BoostEffect.
-   * Applies boost if the payable target matches.
+   * Simple BoostSource wrapper for legacy BoostEffect. Applies boost if the payable target matches.
    */
   private record SimpleUpgradeBoostSource(
-      Key key,
-      String target,
-      BigDecimal multiplier,
-      String nodeName
-  ) implements BoostSource {
+      Key key, String target, BigDecimal multiplier, String nodeName) implements BoostSource {
 
     @Override
     public @NotNull Key key() {

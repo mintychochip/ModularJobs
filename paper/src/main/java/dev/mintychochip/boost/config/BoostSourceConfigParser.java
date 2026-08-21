@@ -1,8 +1,5 @@
 package dev.mintychochip.boost.config;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import dev.mintychochip.boost.RuledBoostSourceImpl;
 import dev.mintychochip.boost.config.BoostSourceConfig.BoostConfig;
 import dev.mintychochip.boost.config.BoostSourceConfig.RuleConfig;
@@ -12,31 +9,27 @@ import dev.mintychochip.container.boost.Condition;
 import dev.mintychochip.container.boost.RuledBoostSource.Rule;
 import dev.mintychochip.container.boost.factories.BoostFactory;
 import dev.mintychochip.container.boost.factories.ConditionFactory;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import net.kyori.adventure.key.Key;
 
 /**
- * Parses BoostSourceConfig from JSON into BoostSource instances.
- * Provides reusable parsing methods for use across different config contexts.
+ * Parses BoostSourceConfig from JSON into BoostSource instances. Provides reusable parsing methods
+ * for use across different config contexts.
  */
 public final class BoostSourceConfigParser {
 
   private final BoostFactory boostFactory;
   private final ConditionConfigParser conditionParser;
 
-  /**
-   * Creates a parser with the factories used to build boosts and conditions.
-   */
-  public BoostSourceConfigParser(
-      ConditionFactory conditionFactory,
-      BoostFactory boostFactory
-  ) {
+  /** Creates a parser with the factories used to build boosts and conditions. */
+  public BoostSourceConfigParser(ConditionFactory conditionFactory, BoostFactory boostFactory) {
     this.boostFactory = boostFactory;
     this.conditionParser = new ConditionConfigParser(conditionFactory);
   }
 
-  /**
-   * Parse a complete BoostSourceConfig into a BoostSource.
-   */
+  /** Parse a complete BoostSourceConfig into a BoostSource. */
   public BoostSource parse(BoostSourceConfig config) {
     Key key = Key.key(config.key());
     List<Rule> rules = new ArrayList<>();
@@ -50,14 +43,10 @@ public final class BoostSourceConfigParser {
   }
 
   /**
-   * Build a BoostSource from individual components.
-   * Useful when constructing from non-standard config formats.
+   * Build a BoostSource from individual components. Useful when constructing from non-standard
+   * config formats.
    */
-  public BoostSource buildBoostSource(
-      Key key,
-      String description,
-      List<RuleConfig> ruleConfigs
-  ) {
+  public BoostSource buildBoostSource(Key key, String description, List<RuleConfig> ruleConfigs) {
     List<Rule> rules = new ArrayList<>();
 
     if (ruleConfigs != null) {
@@ -70,9 +59,7 @@ public final class BoostSourceConfigParser {
     return new RuledBoostSourceImpl(rules, key, description);
   }
 
-  /**
-   * Parse a rule configuration.
-   */
+  /** Parse a rule configuration. */
   public Rule parseRule(RuleConfig config) {
     Condition condition = conditionParser.parse(config.conditions());
     Boost boost = parseBoost(config.boost());
@@ -80,9 +67,7 @@ public final class BoostSourceConfigParser {
     return new Rule(condition, priority, boost);
   }
 
-  /**
-   * Parse an UpgradeTreeConfig rule configuration.
-   */
+  /** Parse an UpgradeTreeConfig rule configuration. */
   public Rule parseRule(dev.mintychochip.upgrade.config.UpgradeTreeConfig.RuleConfig config) {
     Condition condition = conditionParser.parse(config.conditions());
     Boost boost = parseBoost(config.boost());
@@ -90,9 +75,7 @@ public final class BoostSourceConfigParser {
     return new Rule(condition, priority, boost);
   }
 
-  /**
-   * Parse a boost configuration.
-   */
+  /** Parse a boost configuration. */
   public Boost parseBoost(BoostConfig config) {
     BigDecimal amount = BigDecimal.valueOf(config.amount());
     return switch (config.type().toLowerCase()) {
@@ -102,9 +85,7 @@ public final class BoostSourceConfigParser {
     };
   }
 
-  /**
-   * Parse an UpgradeTreeConfig boost configuration.
-   */
+  /** Parse an UpgradeTreeConfig boost configuration. */
   public Boost parseBoost(dev.mintychochip.upgrade.config.UpgradeTreeConfig.BoostConfig config) {
     BigDecimal amount = BigDecimal.valueOf(config.amount());
     return switch (config.type().toLowerCase()) {

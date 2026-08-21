@@ -8,17 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import dev.mintychochip.boost.BoostFactoryImpl;
 import dev.mintychochip.boost.MultiplicativeBoostImpl;
 import dev.mintychochip.boost.RuledBoostSourceImpl;
 import dev.mintychochip.boost.conditions.SnapshotCondition;
-import dev.mintychochip.databag.SneakingCondition;
-import dev.mintychochip.databag.WorldCondition;
 import dev.mintychochip.boost.config.BoostSourceConfig.BoostConfig;
 import dev.mintychochip.boost.config.BoostSourceConfig.ConditionConfig;
 import dev.mintychochip.boost.config.BoostSourceConfig.RuleConfig;
@@ -26,13 +19,20 @@ import dev.mintychochip.container.Boost;
 import dev.mintychochip.container.BoostSource;
 import dev.mintychochip.container.boost.Condition;
 import dev.mintychochip.container.boost.RuledBoostSource;
+import dev.mintychochip.databag.SneakingCondition;
+import dev.mintychochip.databag.WorldCondition;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Config parse must accept world-by-name and default condition/boost types without
- * requiring live Bukkit worlds.
+ * Config parse must accept world-by-name and default condition/boost types without requiring live
+ * Bukkit worlds.
  */
 class BoostConfigParseTest {
 
@@ -48,87 +48,211 @@ class BoostConfigParseTest {
 
   @Test
   void parseWorldByNameDoesNotRequireWorldToExist() {
-    ConditionConfig config = new ConditionConfig(
-        "world", null, "world_nether", null, null, null, null, null, null, null, null, null
-    );
+    ConditionConfig config =
+        new ConditionConfig(
+            "world", null, "world_nether", null, null, null, null, null, null, null, null, null);
     Condition condition = assertDoesNotThrow(() -> conditionParser.parse(config));
-    WorldCondition world = assertInstanceOf(WorldCondition.class, SnapshotCondition.unwrap(condition));
+    WorldCondition world =
+        assertInstanceOf(WorldCondition.class, SnapshotCondition.unwrap(condition));
     assertEquals("world_nether", world.worldName());
   }
 
   @Test
   void parseWorldByNamespacedKey() {
-    ConditionConfig config = new ConditionConfig(
-        "world", null, "minecraft:the_end", null, null, null, null, null, null, null, null, null
-    );
+    ConditionConfig config =
+        new ConditionConfig(
+            "world",
+            null,
+            "minecraft:the_end",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
     Condition condition = conditionParser.parse(config);
-    WorldCondition world = assertInstanceOf(WorldCondition.class, SnapshotCondition.unwrap(condition));
+    WorldCondition world =
+        assertInstanceOf(WorldCondition.class, SnapshotCondition.unwrap(condition));
     assertEquals("minecraft:the_end", world.worldName());
   }
 
   @Test
   void parseAlwaysSneakingPlayerResourceAndOr() {
-    assertDoesNotThrow(() -> conditionParser.parse(
-        new ConditionConfig("always", null, null, null, null, null, null, null, null, null, null, null)));
+    assertDoesNotThrow(
+        () ->
+            conditionParser.parse(
+                new ConditionConfig(
+                    "always", null, null, null, null, null, null, null, null, null, null, null)));
 
-    Condition sneak = conditionParser.parse(
-        new ConditionConfig("sneaking", null, true, null, null, null, null, null, null, null, null, null));
+    Condition sneak =
+        conditionParser.parse(
+            new ConditionConfig(
+                "sneaking", null, true, null, null, null, null, null, null, null, null, null));
     assertInstanceOf(SneakingCondition.class, SnapshotCondition.unwrap(sneak));
 
-    Condition resource = conditionParser.parse(
-        new ConditionConfig(
-            "player_resource", "less_than_or_equal", 6.0,
-            null, null, null, "health", null, null, null, null, null));
+    Condition resource =
+        conditionParser.parse(
+            new ConditionConfig(
+                "player_resource",
+                "less_than_or_equal",
+                6.0,
+                null,
+                null,
+                null,
+                "health",
+                null,
+                null,
+                null,
+                null,
+                null));
     assertNotNull(resource);
 
-    Condition and = conditionParser.parse(
-        new ConditionConfig(
-            "and", null, null, null,
-            List.of(
-                new ConditionConfig("sneaking", null, true, null, null, null, null, null, null, null, null, null),
-                new ConditionConfig("world", null, "world_nether", null, null, null, null, null, null, null, null, null)
-            ),
-            null, null, null, null, null, null, null));
+    Condition and =
+        conditionParser.parse(
+            new ConditionConfig(
+                "and",
+                null,
+                null,
+                null,
+                List.of(
+                    new ConditionConfig(
+                        "sneaking",
+                        null,
+                        true,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null),
+                    new ConditionConfig(
+                        "world",
+                        null,
+                        "world_nether",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null));
     assertNotNull(and);
 
-    Condition or = conditionParser.parse(
-        new ConditionConfig(
-            "or", null, null, null,
-            List.of(
-                new ConditionConfig("sneaking", null, true, null, null, null, null, null, null, null, null, null),
-                new ConditionConfig("sprinting", null, false, null, null, null, null, null, null, null, null, null)
-            ),
-            null, null, null, null, null, null, null));
+    Condition or =
+        conditionParser.parse(
+            new ConditionConfig(
+                "or",
+                null,
+                null,
+                null,
+                List.of(
+                    new ConditionConfig(
+                        "sneaking",
+                        null,
+                        true,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null),
+                    new ConditionConfig(
+                        "sprinting",
+                        null,
+                        false,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null));
     assertNotNull(or);
   }
 
   @Test
   void parseMiningBoostSourceShapeFromDefaultConfig() {
     // Matches boost_sources_default.json mining_boost: high world+sneak, low always
-    BoostSourceConfig config = new BoostSourceConfig(
-        "modularjobs:mining_boost",
-        "Enhanced mining rewards",
-        null,
-        List.of(
-            new RuleConfig(
-                100,
-                new ConditionConfig(
-                    "and", null, null, null,
-                    List.of(
-                        new ConditionConfig("world", null, "world_nether", null, null, null, null, null, null, null, null, null),
-                        new ConditionConfig("sneaking", null, true, null, null, null, null, null, null, null, null, null)
-                    ),
-                    null, null, null, null, null, null, null
-                ),
-                new BoostConfig("multiplicative", 3.0)
-            ),
-            new RuleConfig(
-                10,
-                new ConditionConfig("always", null, null, null, null, null, null, null, null, null, null, null),
-                new BoostConfig("multiplicative", 1.25)
-            )
-        )
-    );
+    BoostSourceConfig config =
+        new BoostSourceConfig(
+            "modularjobs:mining_boost",
+            "Enhanced mining rewards",
+            null,
+            List.of(
+                new RuleConfig(
+                    100,
+                    new ConditionConfig(
+                        "and",
+                        null,
+                        null,
+                        null,
+                        List.of(
+                            new ConditionConfig(
+                                "world",
+                                null,
+                                "world_nether",
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null),
+                            new ConditionConfig(
+                                "sneaking",
+                                null,
+                                true,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null)),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null),
+                    new BoostConfig("multiplicative", 3.0)),
+                new RuleConfig(
+                    10,
+                    new ConditionConfig(
+                        "always", null, null, null, null, null, null, null, null, null, null, null),
+                    new BoostConfig("multiplicative", 1.25))));
 
     BoostSource source = assertDoesNotThrow(() -> parser.parse(config));
     RuledBoostSource ruled = assertInstanceOf(RuledBoostSourceImpl.class, source);
@@ -141,21 +265,22 @@ class BoostConfigParseTest {
 
   @Test
   void loadDefaultJsonResourceParsesWithoutLiveWorlds() throws Exception {
-    try (InputStream in = Thread.currentThread().getContextClassLoader()
-        .getResourceAsStream("boost_sources_default.json")) {
+    try (InputStream in =
+        Thread.currentThread()
+            .getContextClassLoader()
+            .getResourceAsStream("boost_sources_default.json")) {
       assertNotNull(in, "boost_sources_default.json must be on test classpath");
       Gson gson = new Gson();
-      JsonObject root = gson.fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), JsonObject.class);
+      JsonObject root =
+          gson.fromJson(new InputStreamReader(in, StandardCharsets.UTF_8), JsonObject.class);
       assertTrue(root.has("boost_sources"));
       JsonObject sources = root.getAsJsonObject("boost_sources");
 
       int parsed = 0;
       for (String name : sources.keySet()) {
         BoostSourceConfig config = gson.fromJson(sources.get(name), BoostSourceConfig.class);
-        BoostSource source = assertDoesNotThrow(
-            () -> parser.parse(config),
-            "failed to parse boost source: " + name
-        );
+        BoostSource source =
+            assertDoesNotThrow(() -> parser.parse(config), "failed to parse boost source: " + name);
         assertNotNull(source);
         parsed++;
       }

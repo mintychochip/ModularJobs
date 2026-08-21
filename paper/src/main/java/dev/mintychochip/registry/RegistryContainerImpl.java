@@ -27,8 +27,8 @@ public final class RegistryContainerImpl implements RegistryContainer {
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T extends Keyed> void editRegistry(RegistryKey<T> key,
-      Consumer<Registry<T>> registryConsumer) {
+  public <T extends Keyed> void editRegistry(
+      RegistryKey<T> key, Consumer<Registry<T>> registryConsumer) {
     Preconditions.checkArgument(hasRegistry(key));
     Registry<T> registry = (Registry<T>) registrar.get(key.key());
     registryConsumer.accept(registry);

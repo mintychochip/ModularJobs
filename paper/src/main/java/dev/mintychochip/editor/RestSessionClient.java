@@ -3,6 +3,7 @@ package dev.mintychochip.editor;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import dev.mintychochip.common.editor.EditorPayload;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -14,11 +15,8 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.concurrent.CompletableFuture;
-import dev.mintychochip.common.editor.EditorPayload;
 
-/**
- * HTTP client for the Rust-backed editor session API.
- */
+/** HTTP client for the Rust-backed editor session API. */
 public final class RestSessionClient {
 
   private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -28,33 +26,38 @@ public final class RestSessionClient {
   private final String createSecret;
   private final Gson gson;
 
+  /** Rest session client. */
   public RestSessionClient(EditorConfig config, Gson gson) {
-    this.httpClient = HttpClient.newBuilder()
-        .connectTimeout(TIMEOUT)
-        .build();
+    this.httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
     this.baseUrl = trimTrailingSlashes(config.sessionApiUrl());
     this.createSecret = config.sessionCreateSecret();
     this.gson = gson;
   }
 
+  /** Create. */
   public CompletableFuture<CreatedSession> create(EditorPayload payload) {
-    HttpRequest.Builder builder = requestBuilder("/api/v1/sessions")
-        .header("Content-Type", "application/json")
-        .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(payload), StandardCharsets.UTF_8));
+    HttpRequest.Builder builder =
+        requestBuilder("/api/v1/sessions")
+            .header("Content-Type", "application/json")
+            .POST(
+                HttpRequest.BodyPublishers.ofString(gson.toJson(payload), StandardCharsets.UTF_8));
     if (!createSecret.isBlank()) {
       builder.header("X-Create-Secret", createSecret);
     }
-    return httpClient.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
-        .thenApply(response -> {
-          requireStatus(response, 200, 201);
-          JsonObject body = parseObject(response, "create session response");
-          String code = requiredString(body, "code", response.statusCode());
-          String token = requiredString(body, "token", response.statusCode());
-          String expiresAt = requiredString(body, "expiresAt", response.statusCode());
-          return new CreatedSession(code, token, parseExpiry(expiresAt, response.statusCode()));
-        });
+    return httpClient
+        .sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
+        .thenApply(
+            response -> {
+              requireStatus(response, 200, 201);
+              JsonObject body = parseObject(response, "create session response");
+              String code = requiredString(body, "code", response.statusCode());
+              String token = requiredString(body, "token", response.statusCode());
+              String expiresAt = requiredString(body, "expiresAt", response.statusCode());
+              return new CreatedSession(code, token, parseExpiry(expiresAt, response.statusCode()));
+            });
   }
 
+  /** Fetch payload. */
   public CompletableFuture<EditorPayload> fetchPayload(String sessionCode, String token) {
     if (sessionCode == null || sessionCode.isBlank()) {
       throw new IllegalArgumentException("session code is required");
@@ -64,33 +67,32 @@ public final class RestSessionClient {
     }
 
     String path = "/api/v1/sessions/" + encodePathSegment(sessionCode) + "/payload";
-    HttpRequest request = requestBuilder(path)
-        .header("Authorization", "Bearer " + token)
-        .header("X-Session-Token", token)
-        .GET()
-        .build();
-    return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-        .thenApply(response -> {
-          requireStatus(response, 200);
-          try {
-            EditorPayload payload = gson.fromJson(response.body(), EditorPayload.class);
-            if (payload == null) {
-              throw new JsonParseException("response body is null");
-            }
-            return payload;
-          } catch (JsonParseException e) {
-            throw new RestSessionException(
-                response.statusCode(),
-                "invalid session payload: " + e.getMessage(),
-                false,
-                e);
-          }
-        });
+    HttpRequest request =
+        requestBuilder(path)
+            .header("Authorization", "Bearer " + token)
+            .header("X-Session-Token", token)
+            .GET()
+            .build();
+    return httpClient
+        .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        .thenApply(
+            response -> {
+              requireStatus(response, 200);
+              try {
+                EditorPayload payload = gson.fromJson(response.body(), EditorPayload.class);
+                if (payload == null) {
+                  throw new JsonParseException("response body is null");
+                }
+                return payload;
+              } catch (JsonParseException e) {
+                throw new RestSessionException(
+                    response.statusCode(), "invalid session payload: " + e.getMessage(), false, e);
+              }
+            });
   }
 
   private HttpRequest.Builder requestBuilder(String path) {
-    return HttpRequest.newBuilder(URI.create(baseUrl + path))
-        .timeout(TIMEOUT);
+    return HttpRequest.newBuilder(URI.create(baseUrl + path)).timeout(TIMEOUT);
   }
 
   private static void requireStatus(HttpResponse<String> response, int... accepted) {
@@ -100,11 +102,7 @@ public final class RestSessionClient {
       }
     }
     int status = response.statusCode();
-    throw new RestSessionException(
-        status,
-        responseMessage(response),
-        status == 410,
-        null);
+    throw new RestSessionException(status, responseMessage(response), status == 410, null);
   }
 
   private static JsonObject parseObject(HttpResponse<String> response, String description) {
@@ -116,10 +114,7 @@ public final class RestSessionClient {
       return object;
     } catch (JsonParseException e) {
       throw new RestSessionException(
-          response.statusCode(),
-          "invalid " + description + ": " + e.getMessage(),
-          false,
-          e);
+          response.statusCode(), "invalid " + description + ": " + e.getMessage(), false, e);
     }
   }
 
@@ -169,9 +164,10 @@ public final class RestSessionClient {
     return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
   }
 
-  public record CreatedSession(String sessionCode, String token, Instant expiresAt) {
-  }
+  /** Created session. */
+  public record CreatedSession(String sessionCode, String token, Instant expiresAt) {}
 
+  /** Rest session exception. */
   public static final class RestSessionException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
@@ -185,10 +181,12 @@ public final class RestSessionClient {
       this.expired = expired;
     }
 
+    /** Status code. */
     public int statusCode() {
       return statusCode;
     }
 
+    /** Expired. */
     public boolean expired() {
       return expired;
     }

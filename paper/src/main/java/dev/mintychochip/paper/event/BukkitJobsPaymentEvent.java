@@ -8,9 +8,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Bukkit dual-fire wrapper for {@link JobsPaymentEvent}.
- */
+/** Bukkit dual-fire wrapper for {@link JobsPaymentEvent}. */
 public final class BukkitJobsPaymentEvent extends Event implements Cancellable {
 
   private static final HandlerList HANDLERS = new HandlerList();
@@ -18,6 +16,7 @@ public final class BukkitJobsPaymentEvent extends Event implements Cancellable {
   private final OfflinePlayer player;
   private final JobsPaymentEvent pure;
 
+  /** Bukkit jobs payment event. */
   public BukkitJobsPaymentEvent(@NotNull OfflinePlayer player, @NotNull JobsPaymentEvent pure) {
     this.player = player;
     this.pure = pure;
@@ -27,6 +26,7 @@ public final class BukkitJobsPaymentEvent extends Event implements Cancellable {
     return player;
   }
 
+  /** Pure. */
   public @NotNull JobsPaymentEvent pure() {
     return pure;
   }

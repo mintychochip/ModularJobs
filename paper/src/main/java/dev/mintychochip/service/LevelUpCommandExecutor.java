@@ -1,15 +1,15 @@
 package dev.mintychochip.service;
 
-import java.util.function.Consumer;
 import dev.mintychochip.config.LevelUpCommandsConfig;
 import dev.mintychochip.config.LevelUpCommandsConfig.LevelUpCommand;
+import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Executes configured level-up commands, substituting {@code {player}}, {@code {level}},
- * and {@code {job}} placeholders.
+ * Executes configured level-up commands, substituting {@code {player}}, {@code {level}}, and {@code
+ * {job}} placeholders.
  *
- * <p>Commands whose min-level exceeds the new level are skipped.</p>
+ * <p>Commands whose min-level exceeds the new level are skipped.
  */
 public final class LevelUpCommandExecutor {
 
@@ -19,12 +19,11 @@ public final class LevelUpCommandExecutor {
   /**
    * Creates an executor for configured level-up commands.
    *
-   * @param config     configured level-up command list
+   * @param config configured level-up command list
    * @param dispatcher receives the final command string (typically console dispatch)
    */
   public LevelUpCommandExecutor(
-      @NotNull LevelUpCommandsConfig config,
-      @NotNull Consumer<String> dispatcher) {
+      @NotNull LevelUpCommandsConfig config, @NotNull Consumer<String> dispatcher) {
     this.config = config;
     this.dispatcher = dispatcher;
   }
@@ -35,10 +34,11 @@ public final class LevelUpCommandExecutor {
       if (newLevel < c.minLevel()) {
         continue;
       }
-      String command = c.command()
-          .replace("{player}", playerName)
-          .replace("{level}", Integer.toString(newLevel))
-          .replace("{job}", jobName);
+      String command =
+          c.command()
+              .replace("{player}", playerName)
+              .replace("{level}", Integer.toString(newLevel))
+              .replace("{job}", jobName);
       dispatcher.accept(command);
     }
   }

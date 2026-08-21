@@ -1,21 +1,18 @@
 package dev.mintychochip.upgrade.editor;
 
+import dev.mintychochip.upgrade.Position;
+import dev.mintychochip.upgrade.UpgradeNode;
+import dev.mintychochip.upgrade.UpgradeTree;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import dev.mintychochip.upgrade.Position;
-import dev.mintychochip.upgrade.UpgradeNode;
-import dev.mintychochip.upgrade.UpgradeTree;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Mutable upgrade tree for editing purposes.
- * Can be converted to/from immutable UpgradeTree.
- */
+/** Mutable upgrade tree for editing purposes. Can be converted to/from immutable UpgradeTree. */
 public final class EditorTree {
 
   private String treeId;
@@ -28,6 +25,7 @@ public final class EditorTree {
   private final Map<String, String> perkPolicies = new HashMap<>(); // perkId -> MAX/ADDITIVE
   private final List<Position> paths = new ArrayList<>(); // tree-level paths
 
+  /** Editor tree. */
   public EditorTree() {
     this.treeId = "new_tree";
     this.displayName = "New Tree";
@@ -36,13 +34,12 @@ public final class EditorTree {
     this.rootNodeId = "";
   }
 
-  /**
-   * Create from an existing UpgradeTree.
-   */
+  /** Create from an existing UpgradeTree. */
   public static EditorTree fromUpgradeTree(@NotNull UpgradeTree source) {
     EditorTree editor = new EditorTree();
     editor.treeId = extractSimpleKey(source.key().value());
-    editor.displayName = extractSimpleKey(source.key().value()); // Use key as display name if not available
+    editor.displayName =
+        extractSimpleKey(source.key().value()); // Use key as display name if not available
     editor.jobKey = source.jobKey();
     editor.skillPointsPerLevel = source.skillPointsPerLevel();
     editor.rootNodeId = source.rootNodeKey();
@@ -62,9 +59,7 @@ public final class EditorTree {
     return editor;
   }
 
-  /**
-   * Create a blank tree for a job.
-   */
+  /** Create a blank tree for a job. */
   public static EditorTree createBlank(@NotNull String jobKey) {
     EditorTree editor = new EditorTree();
     editor.treeId = jobKey + "_v1";
@@ -97,9 +92,7 @@ public final class EditorTree {
     return s.substring(0, 1).toUpperCase() + s.substring(1);
   }
 
-  /**
-   * Extract the simple key from a namespaced key (e.g., "upgrade_tree/miner" -> "miner").
-   */
+  /** Extract the simple key from a namespaced key (e.g., "upgrade_tree/miner" -> "miner"). */
   private static String extractSimpleKey(String namespacedKey) {
     if (namespacedKey == null || namespacedKey.isEmpty()) {
       return namespacedKey;
@@ -110,6 +103,7 @@ public final class EditorTree {
 
   // ========== Getters/Setters ==========
 
+  /** Tree id. */
   public String treeId() {
     return treeId;
   }
@@ -118,6 +112,7 @@ public final class EditorTree {
     this.treeId = treeId;
   }
 
+  /** Display name. */
   public String displayName() {
     return displayName;
   }
@@ -126,22 +121,27 @@ public final class EditorTree {
     this.displayName = displayName;
   }
 
+  /** Job key. */
   public String jobKey() {
     return jobKey;
   }
 
+  /** Sets the job key. */
   public void setJobKey(String jobKey) {
     this.jobKey = jobKey;
   }
 
+  /** Skill points per level. */
   public int skillPointsPerLevel() {
     return skillPointsPerLevel;
   }
 
+  /** API member. */
   public void setSkillPointsPerLevel(int sp) {
     this.skillPointsPerLevel = sp;
   }
 
+  /** Root node id. */
   public String rootNodeId() {
     return rootNodeId;
   }
@@ -150,32 +150,39 @@ public final class EditorTree {
     this.rootNodeId = rootNodeId;
   }
 
+  /** Nodes. */
   public Map<String, EditorNode> nodes() {
     return nodes;
   }
 
+  /** Archetypes. */
   public List<EditorArchetype> archetypes() {
     return archetypes;
   }
 
+  /** Perk policies. */
   public Map<String, String> perkPolicies() {
     return perkPolicies;
   }
 
+  /** Paths. */
   public List<Position> paths() {
     return paths;
   }
 
   // ========== Node Operations ==========
 
+  /** Returns the node. */
   public Optional<EditorNode> getNode(String id) {
     return Optional.ofNullable(nodes.get(id));
   }
 
+  /** Add node. */
   public void addNode(EditorNode node) {
     nodes.put(node.id(), node);
   }
 
+  /** Remove node. */
   public void removeNode(String id) {
     nodes.remove(id);
     // Also remove from other nodes' prerequisites/children
@@ -186,9 +193,7 @@ public final class EditorTree {
     }
   }
 
-  /**
-   * Find a node at the given position.
-   */
+  /** Find a node at the given position. */
   public Optional<EditorNode> getNodeAtPosition(int x, int y) {
     for (EditorNode node : nodes.values()) {
       Position pos = node.position();
@@ -199,16 +204,12 @@ public final class EditorTree {
     return Optional.empty();
   }
 
-  /**
-   * Check if a position is occupied.
-   */
+  /** Check if a position is occupied. */
   public boolean isPositionOccupied(int x, int y) {
     return getNodeAtPosition(x, y).isPresent();
   }
 
-  /**
-   * Generate a unique node ID.
-   */
+  /** Generate a unique node ID. */
   public String generateNodeId() {
     int counter = nodes.size() + 1;
     String baseId = "node_" + counter;
@@ -221,9 +222,7 @@ public final class EditorTree {
 
   // ========== Copy/Restore ==========
 
-  /**
-   * Create a deep copy of this tree.
-   */
+  /** Create a deep copy of this tree. */
   public EditorTree copy() {
     EditorTree copy = new EditorTree();
     copy.treeId = this.treeId;
@@ -240,9 +239,7 @@ public final class EditorTree {
     return copy;
   }
 
-  /**
-   * Restore this tree's state from another tree.
-   */
+  /** Restore this tree's state from another tree. */
   public void restoreFrom(EditorTree source) {
     this.treeId = source.treeId;
     this.displayName = source.displayName;
@@ -263,7 +260,9 @@ public final class EditorTree {
 
   // ========== Archetype Record ==========
 
+  /** Editor archetype. */
   public record EditorArchetype(String id, String name, String color) {
+    /** Copy. */
     public EditorArchetype copy() {
       return new EditorArchetype(id, name, color);
     }

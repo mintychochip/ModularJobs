@@ -2,12 +2,12 @@ package dev.mintychochip.commands;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.lang.reflect.Proxy;
-import java.util.Map;
-import java.util.Optional;
 import dev.mintychochip.upgrade.SkillTree;
 import dev.mintychochip.upgrade.UpgradeService;
 import dev.mintychochip.upgrade.UpgradeTree;
+import java.lang.reflect.Proxy;
+import java.util.Map;
+import java.util.Optional;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
@@ -15,23 +15,25 @@ class UpgradesCommandTest {
 
   @Test
   void v2OnlyJobHasAnUpgradeTreeForViewCommand() {
-    SkillTree minerTree = new SkillTree(
-        Key.key("modularjobs", "upgrade_tree/miner"),
-        "miner", null, 1, "root", Map.of());
+    SkillTree minerTree =
+        new SkillTree(
+            Key.key("modularjobs", "upgrade_tree/miner"), "miner", null, 1, "root", Map.of());
     UpgradeService service = serviceWithSkillTree(minerTree);
 
     assertTrue(UpgradesCommand.hasTreeForJob(service, "miner"));
   }
 
   private static UpgradeService serviceWithSkillTree(SkillTree tree) {
-    return (UpgradeService) Proxy.newProxyInstance(
-        Thread.currentThread().getContextClassLoader(),
-        new Class<?>[] {UpgradeService.class},
-        (proxy, method, args) -> switch (method.getName()) {
-          case "getTree" -> Optional.<UpgradeTree>empty();
-          case "getSkillTree" -> Optional.of(tree);
-          default -> defaultValue(method.getReturnType());
-        });
+    return (UpgradeService)
+        Proxy.newProxyInstance(
+            Thread.currentThread().getContextClassLoader(),
+            new Class<?>[] {UpgradeService.class},
+            (proxy, method, args) ->
+                switch (method.getName()) {
+                  case "getTree" -> Optional.<UpgradeTree>empty();
+                  case "getSkillTree" -> Optional.of(tree);
+                  default -> defaultValue(method.getReturnType());
+                });
   }
 
   private static Object defaultValue(Class<?> type) {

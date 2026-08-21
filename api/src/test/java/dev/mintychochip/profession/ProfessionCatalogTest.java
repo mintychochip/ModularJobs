@@ -64,9 +64,10 @@ class ProfessionCatalogTest {
 
   @Test
   void allCanonicalIdsAreUnique() {
-    Set<String> ids = ProfessionCatalog.tracks().stream()
-        .map(ProfessionDefinition::id)
-        .collect(Collectors.toSet());
+    Set<String> ids =
+        ProfessionCatalog.tracks().stream()
+            .map(ProfessionDefinition::id)
+            .collect(Collectors.toSet());
     assertEquals(15, ids.size());
   }
 }

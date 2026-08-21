@@ -4,6 +4,22 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import dev.mintychochip.container.boost.factories.BoostFactory;
+import dev.mintychochip.container.boost.factories.ConditionFactory;
+import dev.mintychochip.registry.Registry;
+import dev.mintychochip.upgrade.NodeEffect;
+import dev.mintychochip.upgrade.NodeLevel;
+import dev.mintychochip.upgrade.PerkPolicy;
+import dev.mintychochip.upgrade.Position;
+import dev.mintychochip.upgrade.Requirement;
+import dev.mintychochip.upgrade.Requirements.NodeLevelRequirement;
+import dev.mintychochip.upgrade.SkillNode;
+import dev.mintychochip.upgrade.SkillNode.LevelEffectMode;
+import dev.mintychochip.upgrade.SkillNodeKind;
+import dev.mintychochip.upgrade.SkillTree;
+import dev.mintychochip.upgrade.UpgradeEffect;
+import dev.mintychochip.upgrade.UpgradeNode;
+import dev.mintychochip.upgrade.UpgradeTree;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,28 +37,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
-import dev.mintychochip.container.boost.factories.BoostFactory;
-import dev.mintychochip.container.boost.factories.ConditionFactory;
-import dev.mintychochip.registry.Registry;
-import dev.mintychochip.upgrade.NodeEffect;
-import dev.mintychochip.upgrade.NodeLevel;
-import dev.mintychochip.upgrade.PerkPolicy;
-import dev.mintychochip.upgrade.Position;
-import dev.mintychochip.upgrade.Requirement;
-import dev.mintychochip.upgrade.Requirements.NodeLevelRequirement;
-import dev.mintychochip.upgrade.SkillNode;
-import dev.mintychochip.upgrade.SkillNode.LevelEffectMode;
-import dev.mintychochip.upgrade.SkillNodeKind;
-import dev.mintychochip.upgrade.SkillTree;
-import dev.mintychochip.upgrade.UpgradeEffect;
-import dev.mintychochip.upgrade.UpgradeNode;
-import dev.mintychochip.upgrade.UpgradeTree;
 import net.kyori.adventure.key.Key;
 import org.bukkit.plugin.Plugin;
 
-/**
- * Loads upgrade trees from JSON configuration files.
- */
+/** Loads upgrade trees from JSON configuration files. */
 public final class UpgradeTreeLoader {
 
   private static final String CONFIG_FILE = "upgrade_trees.json";
@@ -58,14 +56,14 @@ public final class UpgradeTreeLoader {
   private final Registry<SkillTree> skillTreeRegistry;
   private final SkillTreeConfigParser skillTreeParser;
 
+  /** Upgrade tree loader. */
   public UpgradeTreeLoader(
       Plugin plugin,
       Gson gson,
       Registry<UpgradeTree> registry,
       Registry<SkillTree> skillTreeRegistry,
       ConditionFactory conditionFactory,
-      BoostFactory boostFactory
-  ) {
+      BoostFactory boostFactory) {
     this.plugin = plugin;
     this.gson = gson;
     this.legacyParser = new UpgradeTreeConfigParser(conditionFactory, boostFactory);
@@ -77,8 +75,7 @@ public final class UpgradeTreeLoader {
   }
 
   /**
-   * Load upgrade trees from configuration file.
-   * Tries folder first, falls back to single file.
+   * Load upgrade trees from configuration file. Tries folder first, falls back to single file.
    *
    * @return number of upgrade trees loaded
    */
@@ -147,8 +144,9 @@ public final class UpgradeTreeLoader {
         if (isV2(treeObj)) {
           SkillTree tree = skillTreeParser.parse(treeObj);
           skillTreeRegistry.register(tree);
-          plugin.getLogger().info(
-              "Loaded v2 skill tree: " + treeId + " (jobKey=" + tree.jobKey() + ")");
+          plugin
+              .getLogger()
+              .info("Loaded v2 skill tree: " + treeId + " (jobKey=" + tree.jobKey() + ")");
           count++;
           continue;
         }
@@ -157,7 +155,8 @@ public final class UpgradeTreeLoader {
         UpgradeTree tree;
         if (treeObj.has("layout")) {
           dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig config =
-              wynncraftDeserializer.deserialize(treeObj, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+              wynncraftDeserializer.deserialize(
+                  treeObj, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
           tree = wynncraftParser.parse(config);
         } else {
           // Legacy format - needs wrapping
@@ -165,14 +164,16 @@ public final class UpgradeTreeLoader {
           tree = legacyParser.parse(config);
 
           // Verify all nodes have positions (Wynncraft format is required now)
-          boolean missingPositions = tree.allNodes().stream()
-              .anyMatch(node -> node.position() == null);
+          boolean missingPositions =
+              tree.allNodes().stream().anyMatch(node -> node.position() == null);
 
           if (missingPositions) {
             throw new IllegalArgumentException(
-                "Tree '" + treeId + "' uses legacy format but is missing positions. "
-                + "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
-            );
+                "Tree '"
+                    + treeId
+                    + "' uses legacy format but is missing positions. "
+                    + "Please use Wynncraft format with layout coordinates or specify positions"
+                    + " for all nodes.");
           }
         }
 
@@ -181,8 +182,13 @@ public final class UpgradeTreeLoader {
         count++;
         plugin.getLogger().info("Loaded tree: " + treeId + " (job=" + tree.jobKey() + ")");
 
-      } catch (IOException | JsonParseException | IllegalArgumentException | IllegalStateException e) {
-        plugin.getLogger().warning("Failed to load tree from " + file.getName() + ": " + e.getMessage());
+      } catch (IOException
+          | JsonParseException
+          | IllegalArgumentException
+          | IllegalStateException e) {
+        plugin
+            .getLogger()
+            .warning("Failed to load tree from " + file.getName() + ": " + e.getMessage());
         plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       }
     }
@@ -211,8 +217,9 @@ public final class UpgradeTreeLoader {
       try {
         SkillTree tree = skillTreeParser.parse(root);
         skillTreeRegistry.register(tree);
-        plugin.getLogger().info(
-            "Loaded v2 skill tree: " + CONFIG_FILE + " (jobKey=" + tree.jobKey() + ")");
+        plugin
+            .getLogger()
+            .info("Loaded v2 skill tree: " + CONFIG_FILE + " (jobKey=" + tree.jobKey() + ")");
         return 1;
       } catch (IllegalArgumentException | IllegalStateException e) {
         plugin.getLogger().warning("Failed to parse v2 skill tree: " + e.getMessage());
@@ -236,9 +243,9 @@ public final class UpgradeTreeLoader {
   }
 
   /**
-   * Load a config whose entries are version-2 skill trees keyed by tree id.
-   * Only v2 entries are consumed here; mixed legacy entries belong in the
-   * {@code upgrade_trees} wrapper handled by {@link #loadLegacyFormat}.
+   * Load a config whose entries are version-2 skill trees keyed by tree id. Only v2 entries are
+   * consumed here; mixed legacy entries belong in the {@code upgrade_trees} wrapper handled by
+   * {@link #loadLegacyFormat}.
    */
   private int loadNestedV2Format(JsonObject root) {
     int count = 0;
@@ -249,12 +256,14 @@ public final class UpgradeTreeLoader {
       try {
         SkillTree tree = skillTreeParser.parse(entry.getValue().getAsJsonObject());
         skillTreeRegistry.register(tree);
-        plugin.getLogger().info(
-            "Loaded v2 skill tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ")");
+        plugin
+            .getLogger()
+            .info("Loaded v2 skill tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ")");
         count++;
       } catch (IllegalArgumentException | IllegalStateException e) {
-        plugin.getLogger().warning(
-            "Failed to parse v2 tree '" + entry.getKey() + "': " + e.getMessage());
+        plugin
+            .getLogger()
+            .warning("Failed to parse v2 tree '" + entry.getKey() + "': " + e.getMessage());
         plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       }
     }
@@ -270,9 +279,7 @@ public final class UpgradeTreeLoader {
     return false;
   }
 
-  /**
-   * Load Wynncraft-style format (with "layout" array).
-   */
+  /** Load Wynncraft-style format (with "layout" array). */
   private int loadWynncraftFormat(JsonObject root) {
     try {
       plugin.getLogger().info("Detected Wynncraft format - using WynncraftTreeConfigParser");
@@ -306,9 +313,7 @@ public final class UpgradeTreeLoader {
     }
   }
 
-  /**
-   * Load flat Wynncraft format where tree_id, job, layout are at root level.
-   */
+  /** Load flat Wynncraft format where tree_id, job, layout are at root level. */
   private int loadFlatWynncraftFormat(JsonObject root) {
     try {
       plugin.getLogger().info("Loading flat Wynncraft format");
@@ -317,14 +322,14 @@ public final class UpgradeTreeLoader {
       if (isV2(root)) {
         SkillTree tree = skillTreeParser.parse(root);
         skillTreeRegistry.register(tree);
-        plugin.getLogger().info(
-            "Loaded v2 skill tree (jobKey=" + tree.jobKey() + ")");
+        plugin.getLogger().info("Loaded v2 skill tree (jobKey=" + tree.jobKey() + ")");
         return 1;
       }
 
       // Deserialize directly - root is the tree config
       dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig config =
-          wynncraftDeserializer.deserialize(root, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+          wynncraftDeserializer.deserialize(
+              root, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
 
       // Parse into UpgradeTree
       UpgradeTree tree = wynncraftParser.parse(config);
@@ -333,8 +338,16 @@ public final class UpgradeTreeLoader {
       registry.register(tree);
       convertLegacy(tree);
 
-      plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + config.treeId() + " (jobKey=" + tree.jobKey() + ") with "
-          + tree.allNodes().size() + " nodes");
+      plugin
+          .getLogger()
+          .info(
+              "Loaded Wynncraft upgrade tree: "
+                  + config.treeId()
+                  + " (jobKey="
+                  + tree.jobKey()
+                  + ") with "
+                  + tree.allNodes().size()
+                  + " nodes");
       return 1;
     } catch (JsonParseException | IllegalArgumentException | IllegalStateException e) {
       plugin.getLogger().warning("Failed to parse flat Wynncraft format: " + e.getMessage());
@@ -343,9 +356,7 @@ public final class UpgradeTreeLoader {
     }
   }
 
-  /**
-   * Load nested Wynncraft format where tree entries are keyed by tree ID.
-   */
+  /** Load nested Wynncraft format where tree entries are keyed by tree ID. */
   private int loadNestedWynncraftFormat(JsonObject root) {
     try {
       plugin.getLogger().info("Loading nested Wynncraft format");
@@ -363,8 +374,9 @@ public final class UpgradeTreeLoader {
           if (isV2(treeConfig)) {
             SkillTree tree = skillTreeParser.parse(treeConfig);
             skillTreeRegistry.register(tree);
-            plugin.getLogger().info(
-                "Loaded v2 skill tree: " + treeId + " (jobKey=" + tree.jobKey() + ")");
+            plugin
+                .getLogger()
+                .info("Loaded v2 skill tree: " + treeId + " (jobKey=" + tree.jobKey() + ")");
             count++;
             continue;
           }
@@ -379,7 +391,8 @@ public final class UpgradeTreeLoader {
 
           // Deserialize using custom deserializer
           dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig config =
-              wynncraftDeserializer.deserialize(treeConfig, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+              wynncraftDeserializer.deserialize(
+                  treeConfig, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
 
           // Parse into UpgradeTree
           UpgradeTree tree = wynncraftParser.parse(config);
@@ -389,11 +402,22 @@ public final class UpgradeTreeLoader {
           registry.register(tree);
           convertLegacy(tree);
 
-          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + treeId + " (jobKey=" + tree.jobKey() + ") with "
-              + tree.allNodes().size() + " nodes");
+          plugin
+              .getLogger()
+              .info(
+                  "Loaded Wynncraft upgrade tree: "
+                      + treeId
+                      + " (jobKey="
+                      + tree.jobKey()
+                      + ") with "
+                      + tree.allNodes().size()
+                      + " nodes");
           count++;
         } catch (JsonParseException | IllegalArgumentException | IllegalStateException e) {
-          plugin.getLogger().warning("Failed to parse Wynncraft tree '" + entry.getKey() + "': " + e.getMessage());
+          plugin
+              .getLogger()
+              .warning(
+                  "Failed to parse Wynncraft tree '" + entry.getKey() + "': " + e.getMessage());
           plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
         }
       }
@@ -407,8 +431,8 @@ public final class UpgradeTreeLoader {
   }
 
   /**
-   * Load legacy format (with "upgrade_trees" object).
-   * Also handles hybrid format where trees inside use Wynncraft-style layout.
+   * Load legacy format (with "upgrade_trees" object). Also handles hybrid format where trees inside
+   * use Wynncraft-style layout.
    */
   private int loadLegacyFormat(JsonObject root) {
     if (!root.has("upgrade_trees")) {
@@ -429,8 +453,9 @@ public final class UpgradeTreeLoader {
         if (isV2(treeConfig)) {
           SkillTree tree = skillTreeParser.parse(treeConfig);
           skillTreeRegistry.register(tree);
-          plugin.getLogger().info(
-              "Loaded v2 skill tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ")");
+          plugin
+              .getLogger()
+              .info("Loaded v2 skill tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ")");
           count++;
           continue;
         }
@@ -449,11 +474,20 @@ public final class UpgradeTreeLoader {
           }
 
           dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig config =
-              wynncraftDeserializer.deserialize(treeConfig, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+              wynncraftDeserializer.deserialize(
+                  treeConfig, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
           tree = wynncraftParser.parse(config);
 
-          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ") with "
-              + tree.allNodes().size() + " nodes");
+          plugin
+              .getLogger()
+              .info(
+                  "Loaded Wynncraft upgrade tree: "
+                      + entry.getKey()
+                      + " (jobKey="
+                      + tree.jobKey()
+                      + ") with "
+                      + tree.allNodes().size()
+                      + " nodes");
           registry.register(tree);
           convertLegacy(tree);
           count++;
@@ -466,25 +500,35 @@ public final class UpgradeTreeLoader {
         tree = legacyParser.parse(config);
 
         // Verify all nodes have positions (Wynncraft format is required now)
-        boolean missingPositions = tree.allNodes().stream()
-            .anyMatch(node -> node.position() == null);
+        boolean missingPositions =
+            tree.allNodes().stream().anyMatch(node -> node.position() == null);
 
         if (missingPositions) {
           throw new IllegalArgumentException(
-              "Tree '" + entry.getKey() + "' uses legacy format but is missing positions. "
-              + "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
-          );
+              "Tree '"
+                  + entry.getKey()
+                  + "' uses legacy format but is missing positions. "
+                  + "Please use Wynncraft format with layout coordinates or specify positions"
+                  + " for all nodes.");
         }
 
         registry.register(tree);
         convertLegacy(tree);
         count++;
-        plugin.getLogger().info("Loaded legacy upgrade tree for job: " + config.job() + " (jobKey=" + tree.jobKey() + ") with "
-            + tree.allNodes().size() + " nodes");
+        plugin
+            .getLogger()
+            .info(
+                "Loaded legacy upgrade tree for job: "
+                    + config.job()
+                    + " (jobKey="
+                    + tree.jobKey()
+                    + ") with "
+                    + tree.allNodes().size()
+                    + " nodes");
       } catch (JsonParseException | IllegalArgumentException | IllegalStateException e) {
-        plugin.getLogger().warning(
-            "Failed to parse upgrade tree '" + entry.getKey() + "': " + e.getMessage()
-        );
+        plugin
+            .getLogger()
+            .warning("Failed to parse upgrade tree '" + entry.getKey() + "': " + e.getMessage());
         plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       }
     }
@@ -518,11 +562,13 @@ public final class UpgradeTreeLoader {
     plugin.getLogger().info("Saved tree: " + treeId + " to " + treeFile.getPath());
 
     // Reload tree into registry so changes take effect immediately (after file is closed)
-    loadSingleTree(treeId).ifPresent(tree -> {
-      registry.register(tree);
-      convertLegacy(tree);
-      plugin.getLogger().info("Reloaded tree into registry: " + treeId);
-    });
+    loadSingleTree(treeId)
+        .ifPresent(
+            tree -> {
+              registry.register(tree);
+              convertLegacy(tree);
+              plugin.getLogger().info("Reloaded tree into registry: " + treeId);
+            });
 
     return true;
   }
@@ -541,8 +587,7 @@ public final class UpgradeTreeLoader {
   }
 
   /**
-   * Load a single tree from its JSON file.
-   * Useful for reloading after manual edits.
+   * Load a single tree from its JSON file. Useful for reloading after manual edits.
    *
    * @param treeId the tree ID (filename without .json extension)
    * @return the loaded tree, or empty if not found
@@ -568,8 +613,9 @@ public final class UpgradeTreeLoader {
       if (isV2(treeObj)) {
         SkillTree tree = skillTreeParser.parse(treeObj);
         skillTreeRegistry.register(tree);
-        plugin.getLogger().info(
-            "Loaded v2 skill tree: " + treeId + " (jobKey=" + tree.jobKey() + ")");
+        plugin
+            .getLogger()
+            .info("Loaded v2 skill tree: " + treeId + " (jobKey=" + tree.jobKey() + ")");
         return java.util.Optional.empty();
       }
 
@@ -577,7 +623,8 @@ public final class UpgradeTreeLoader {
       UpgradeTree tree;
       if (treeObj.has("layout")) {
         dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig config =
-            wynncraftDeserializer.deserialize(treeObj, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
+            wynncraftDeserializer.deserialize(
+                treeObj, dev.mintychochip.upgrade.wynncraft.WynncraftTreeConfig.class, null);
         tree = wynncraftParser.parse(config);
       } else {
         // Legacy format - requires manual positions
@@ -585,19 +632,24 @@ public final class UpgradeTreeLoader {
         tree = legacyParser.parse(config);
 
         // Verify all nodes have positions
-        boolean missingPositions = tree.allNodes().stream()
-            .anyMatch(node -> node.position() == null);
+        boolean missingPositions =
+            tree.allNodes().stream().anyMatch(node -> node.position() == null);
 
         if (missingPositions) {
           throw new IllegalArgumentException(
-              "Tree '" + treeId + "' uses legacy format but is missing positions. "
-              + "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
-          );
+              "Tree '"
+                  + treeId
+                  + "' uses legacy format but is missing positions. "
+                  + "Please use Wynncraft format with layout coordinates or specify positions"
+                  + " for all nodes.");
         }
       }
 
       return java.util.Optional.of(tree);
-    } catch (IOException | JsonParseException | IllegalArgumentException | IllegalStateException e) {
+    } catch (IOException
+        | JsonParseException
+        | IllegalArgumentException
+        | IllegalStateException e) {
       plugin.getLogger().warning("Failed to load tree '" + treeId + "': " + e.getMessage());
       plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       return java.util.Optional.empty();
@@ -620,21 +672,19 @@ public final class UpgradeTreeLoader {
   }
 
   /**
-   * Builds a version-2 {@link SkillTree} adapter for a legacy tree and registers
-   * it in the v2 registry. The original {@link UpgradeTree} stays registered in
-   * the legacy registry; load paths register both so v2 service consumers see
-   * every tree while legacy callers keep their existing view.
+   * Builds a version-2 {@link SkillTree} adapter for a legacy tree and registers it in the v2
+   * registry. The original {@link UpgradeTree} stays registered in the legacy registry; load paths
+   * register both so v2 service consumers see every tree while legacy callers keep their existing
+   * view.
    *
-   * <p>Legacy nodes are grouped by {@linkplain UpgradeNode#perkId() perk}, sorted
-   * by level, and collapsed into one v2 {@link SkillNode} whose per-level
-   * costs/effects preserve the legacy {@link PerkPolicy}: MAX maps to
-   * {@link LevelEffectMode#REPLACE}, ADDITIVE to {@link LevelEffectMode#CUMULATIVE}.
-   * Numeric legacy references (e.g. {@code efficiency_1}) are remapped to their
-   * perk node; exclusives become v2 excludes; maxed prerequisites become
-   * {@link NodeLevelRequirement}s against the target perk's converted max level;
-   * positions and path points carry over. Tree-level walk paths
-   * ({@link UpgradeTree#paths()}) and state writes have no per-node v2
-   * equivalent, so they are not migrated.
+   * <p>Legacy nodes are grouped by {@linkplain UpgradeNode#perkId() perk}, sorted by level, and
+   * collapsed into one v2 {@link SkillNode} whose per-level costs/effects preserve the legacy
+   * {@link PerkPolicy}: MAX maps to {@link LevelEffectMode#REPLACE}, ADDITIVE to {@link
+   * LevelEffectMode#CUMULATIVE}. Numeric legacy references (e.g. {@code efficiency_1}) are remapped
+   * to their perk node; exclusives become v2 excludes; maxed prerequisites become {@link
+   * NodeLevelRequirement}s against the target perk's converted max level; positions and path points
+   * carry over. Tree-level walk paths ({@link UpgradeTree#paths()}) and state writes have no
+   * per-node v2 equivalent, so they are not migrated.
    */
   public SkillTree convertLegacy(UpgradeTree legacy) {
     Map<String, String> perkByNodeKey = new LinkedHashMap<>();
@@ -646,7 +696,8 @@ public final class UpgradeTreeLoader {
 
     Map<String, List<UpgradeNode>> nodesByPerk = new LinkedHashMap<>();
     for (UpgradeNode node : legacy.allNodes()) {
-      nodesByPerk.computeIfAbsent(perkByNodeKey.get(node.key().value()), k -> new ArrayList<>())
+      nodesByPerk
+          .computeIfAbsent(perkByNodeKey.get(node.key().value()), k -> new ArrayList<>())
           .add(node);
     }
     for (List<UpgradeNode> group : nodesByPerk.values()) {
@@ -661,24 +712,35 @@ public final class UpgradeTreeLoader {
 
     Map<String, SkillNode> skillNodes = new LinkedHashMap<>();
     for (Map.Entry<String, List<UpgradeNode>> entry : nodesByPerk.entrySet()) {
-      skillNodes.put(entry.getKey(), convertPerk(
-          legacy, entry.getKey(), entry.getValue(), perkByNodeKey, maxLevelByPerk));
+      skillNodes.put(
+          entry.getKey(),
+          convertPerk(legacy, entry.getKey(), entry.getValue(), perkByNodeKey, maxLevelByPerk));
     }
 
     String rootPerk = perkByNodeKey.get(legacy.rootNodeKey());
-    String v2Root = rootPerk != null && skillNodes.containsKey(rootPerk)
-        ? rootPerk : skillNodes.isEmpty() ? legacy.rootNodeKey() : skillNodes.keySet().iterator().next();
+    String v2Root =
+        rootPerk != null && skillNodes.containsKey(rootPerk)
+            ? rootPerk
+            : skillNodes.isEmpty() ? legacy.rootNodeKey() : skillNodes.keySet().iterator().next();
 
-    SkillTree tree = new SkillTree(
-        Key.key("modularjobs", "upgrade_tree/" + legacy.jobKey()),
-        legacy.jobKey(), legacy.description(), legacy.skillPointsPerLevel(),
-        v2Root, skillNodes);
+    SkillTree tree =
+        new SkillTree(
+            Key.key("modularjobs", "upgrade_tree/" + legacy.jobKey()),
+            legacy.jobKey(),
+            legacy.description(),
+            legacy.skillPointsPerLevel(),
+            v2Root,
+            skillNodes);
     skillTreeRegistry.register(tree);
     return tree;
   }
 
-  private SkillNode convertPerk(UpgradeTree legacy, String perk, List<UpgradeNode> group,
-      Map<String, String> perkByNodeKey, Map<String, Integer> maxLevelByPerk) {
+  private SkillNode convertPerk(
+      UpgradeTree legacy,
+      String perk,
+      List<UpgradeNode> group,
+      Map<String, String> perkByNodeKey,
+      Map<String, Integer> maxLevelByPerk) {
     final UpgradeNode base = group.get(0);
     boolean isRoot = Objects.equals(perk, perkByNodeKey.get(legacy.rootNodeKey()));
     SkillNodeKind kind = isRoot ? SkillNodeKind.ROOT : SkillNodeKind.SKILL;
@@ -693,8 +755,10 @@ public final class UpgradeTreeLoader {
       }
     }
 
-    LevelEffectMode mode = legacy.getPerkPolicy(perk) == PerkPolicy.ADDITIVE
-        ? LevelEffectMode.CUMULATIVE : LevelEffectMode.REPLACE;
+    LevelEffectMode mode =
+        legacy.getPerkPolicy(perk) == PerkPolicy.ADDITIVE
+            ? LevelEffectMode.CUMULATIVE
+            : LevelEffectMode.REPLACE;
 
     Set<String> prerequisites = new HashSet<>();
     Set<String> excludes = new HashSet<>();
@@ -739,12 +803,24 @@ public final class UpgradeTreeLoader {
 
     return new SkillNode(
         Key.key(legacy.jobKey(), perk),
-        base.name(), base.description(),
-        base.icon(), base.unlockedIcon(), base.itemModel(), base.unlockedItemModel(),
-        kind, base.cost(),
+        base.name(),
+        base.description(),
+        base.icon(),
+        base.unlockedIcon(),
+        base.itemModel(),
+        base.unlockedItemModel(),
+        kind,
+        base.cost(),
         kind == SkillNodeKind.SKILL ? levels.size() : 1,
-        mode, levels, requirements, prerequisites, excludes, nodeEffects,
-        position, base.pathPoints(), List.of());
+        mode,
+        levels,
+        requirements,
+        prerequisites,
+        excludes,
+        nodeEffects,
+        position,
+        base.pathPoints(),
+        List.of());
   }
 
   private static List<NodeEffect> mapEffects(List<UpgradeEffect> legacyEffects) {
@@ -777,7 +853,8 @@ public final class UpgradeTreeLoader {
       }
 
       // Create minimal example config
-      String defaultJson = """
+      String defaultJson =
+          """
           {
             "upgrade_trees": {
               "miner": {

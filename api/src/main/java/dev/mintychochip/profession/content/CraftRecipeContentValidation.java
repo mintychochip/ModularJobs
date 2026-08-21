@@ -15,12 +15,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class CraftRecipeContentValidation {
 
-  private CraftRecipeContentValidation() {
-  }
+  private CraftRecipeContentValidation() {}
 
-  /**
-   * Finds craft tasks without recipe metadata and registered recipes without craft pay tasks.
-   */
+  /** Finds craft tasks without recipe metadata and registered recipes without craft pay tasks. */
   public static @NotNull CraftRecipeValidationReport validate(
       @NotNull List<CraftTaskSnapshot> craftTasks,
       @NotNull List<RegisteredRecipeSnapshot> recipes) {
@@ -39,13 +36,18 @@ public final class CraftRecipeContentValidation {
       if (recipeOutputKeys.contains(task.outputKey())) {
         continue;
       }
-      tasksWithoutRecipe.add(new CraftTaskWithoutRecipeFinding(
-          task.jobKey(),
-          task.contextKey(),
-          task.outputKey(),
-          "Craft task " + task.jobKey().asString() + " / " + task.contextKey().asString()
-              + " has no entry in recipes.yml for output " + task.outputKey().asString()
-              + " — craft gate and recipe XP depreciation will not apply."));
+      tasksWithoutRecipe.add(
+          new CraftTaskWithoutRecipeFinding(
+              task.jobKey(),
+              task.contextKey(),
+              task.outputKey(),
+              "Craft task "
+                  + task.jobKey().asString()
+                  + " / "
+                  + task.contextKey().asString()
+                  + " has no entry in recipes.yml for output "
+                  + task.outputKey().asString()
+                  + " — craft gate and recipe XP depreciation will not apply."));
     }
 
     List<RegisteredRecipeWithoutTaskFinding> recipesWithoutTask = new ArrayList<>();
@@ -53,15 +55,21 @@ public final class CraftRecipeContentValidation {
       if (taskOutputKeys.contains(recipe.craftOutputKey())) {
         continue;
       }
-      recipesWithoutTask.add(new RegisteredRecipeWithoutTaskFinding(
-          recipe.recipeId(),
-          recipe.craftOutputKey(),
-          recipe.professionId(),
-          recipe.requiredLevel(),
-          "Recipe " + recipe.recipeId().asString() + " (" + recipe.professionId() + " "
-              + recipe.requiredLevel() + ") has no modularjobs:craft job task for output "
-              + recipe.craftOutputKey().asString()
-              + " — crafting will not pay job XP/money."));
+      recipesWithoutTask.add(
+          new RegisteredRecipeWithoutTaskFinding(
+              recipe.recipeId(),
+              recipe.craftOutputKey(),
+              recipe.professionId(),
+              recipe.requiredLevel(),
+              "Recipe "
+                  + recipe.recipeId().asString()
+                  + " ("
+                  + recipe.professionId()
+                  + " "
+                  + recipe.requiredLevel()
+                  + ") has no modularjobs:craft job task for output "
+                  + recipe.craftOutputKey().asString()
+                  + " — crafting will not pay job XP/money."));
     }
 
     return new CraftRecipeValidationReport(tasksWithoutRecipe, recipesWithoutTask);

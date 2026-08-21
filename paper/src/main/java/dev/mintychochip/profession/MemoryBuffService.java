@@ -1,5 +1,6 @@
 package dev.mintychochip.profession;
 
+import dev.mintychochip.service.BuffService;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -11,21 +12,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import dev.mintychochip.service.BuffService;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * In-memory consumable buff slots (food / potion / coating). No illegal cross-stacking.
- */
+/** In-memory consumable buff slots (food / potion / coating). No illegal cross-stacking. */
 public final class MemoryBuffService implements BuffService {
 
   private final Clock clock;
   private final Map<UUID, Map<BuffSlot, ActiveBuff>> byPlayer = new ConcurrentHashMap<>();
 
+  /** Memory buff service. */
   public MemoryBuffService() {
     this(Clock.systemUTC());
   }
 
+  /** Memory buff service. */
   public MemoryBuffService(Clock clock) {
     this.clock = Objects.requireNonNull(clock);
   }
@@ -37,8 +37,8 @@ public final class MemoryBuffService implements BuffService {
       @NotNull BuffSlot slot,
       @NotNull Duration duration) {
     Instant now = clock.instant();
-    Map<BuffSlot, ActiveBuff> slots = byPlayer.computeIfAbsent(
-        playerId, id -> new EnumMap<>(BuffSlot.class));
+    Map<BuffSlot, ActiveBuff> slots =
+        byPlayer.computeIfAbsent(playerId, id -> new EnumMap<>(BuffSlot.class));
     purgeExpired(slots, now);
 
     ActiveBuff existing = slots.get(slot);

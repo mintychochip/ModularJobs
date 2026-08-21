@@ -2,8 +2,6 @@ package dev.mintychochip;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import dev.mintychochip.container.PayableType;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
 import net.kyori.adventure.text.Component;
@@ -21,7 +19,7 @@ public interface Job extends Keyed {
   @NotNull
   Component displayName();
 
-  /** Returns the plain-text form of this job's name. */
+  /** Returns the plain name. */
   String getPlainName();
 
   /** Returns the component describing this job. */
@@ -40,10 +38,10 @@ public interface Job extends Keyed {
   @NotNull
   Map<Key, PayableCurve> payableCurves();
 
-  /** Returns the highest level attainable in this job. */
+  /** Max level. */
   int maxLevel();
 
-  /** Returns the current upgrade level applied to this job. */
+  /** Upgrade level. */
   int upgradeLevel();
 
   /**

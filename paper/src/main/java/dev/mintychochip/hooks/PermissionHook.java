@@ -7,28 +7,29 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Grants/revokes job perk permissions (LuckPerms when present, else Bukkit attachments).
- *
- */
+/** Grants/revokes job perk permissions (LuckPerms when present, else Bukkit attachments). */
 public final class PermissionHook {
 
   private final Plugin plugin;
   private final Logger logger;
 
+  /** Permission hook. */
   public PermissionHook(Plugin plugin) {
     this.plugin = plugin;
     this.logger = plugin.getLogger();
   }
 
+  /** Grant perk permission. */
   public void grantPerkPermission(@NotNull Player player, @NotNull String perkConfigName) {
     grantPermission(player, perkPermission(perkConfigName));
   }
 
+  /** Revoke perk permission. */
   public void revokePerkPermission(@NotNull Player player, @NotNull String perkConfigName) {
     revokePermission(player, perkPermission(perkConfigName));
   }
 
+  /** Grant permission. */
   public void grantPermission(@NotNull Player player, @NotNull String permission) {
     if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
       grantViaLuckPerms(player, permission);
@@ -38,6 +39,7 @@ public final class PermissionHook {
     attachment.setPermission(permission, true);
   }
 
+  /** Revoke permission. */
   public void revokePermission(@NotNull Player player, @NotNull String permission) {
     if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
       revokeViaLuckPerms(player, permission);
@@ -58,8 +60,11 @@ public final class PermissionHook {
       Class<?> lpClass = Class.forName("net.luckperms.api.LuckPermsProvider");
       Object lp = lpClass.getMethod("get").invoke(null);
       Object userManager = lp.getClass().getMethod("getUserManager").invoke(lp);
-      Object user = userManager.getClass().getMethod("getUser", java.util.UUID.class)
-          .invoke(userManager, player.getUniqueId());
+      Object user =
+          userManager
+              .getClass()
+              .getMethod("getUser", java.util.UUID.class)
+              .invoke(userManager, player.getUniqueId());
       if (user != null) {
         Class<?> nodeClass = Class.forName("net.luckperms.api.node.Node");
         Object node = nodeClass.getMethod("builder", String.class).invoke(null, permission);
@@ -79,8 +84,11 @@ public final class PermissionHook {
       Class<?> lpClass = Class.forName("net.luckperms.api.LuckPermsProvider");
       Object lp = lpClass.getMethod("get").invoke(null);
       Object userManager = lp.getClass().getMethod("getUserManager").invoke(lp);
-      Object user = userManager.getClass().getMethod("getUser", java.util.UUID.class)
-          .invoke(userManager, player.getUniqueId());
+      Object user =
+          userManager
+              .getClass()
+              .getMethod("getUser", java.util.UUID.class)
+              .invoke(userManager, player.getUniqueId());
       if (user != null) {
         Class<?> nodeClass = Class.forName("net.luckperms.api.node.Node");
         Object node = nodeClass.getMethod("builder", String.class).invoke(null, permission);

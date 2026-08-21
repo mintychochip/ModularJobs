@@ -8,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Drives shipped {@link MemoryStoreImpl} map-backed store contracts.
- */
+/** Drives shipped {@link MemoryStoreImpl} map-backed store contracts. */
 class MemoryStoreImplTest {
 
   private MemoryStoreImpl<String, Integer> store;

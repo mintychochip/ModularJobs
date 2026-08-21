@@ -12,15 +12,14 @@ import org.jetbrains.annotations.NotNull;
  * Join-eligibility knobs loaded from {@code config.yml} under {@code progression-limits}.
  *
  * <p>{@code maxJobs == 0} means unlimited concurrent jobs. {@code autoJoinJobs} are joined
- * automatically on login when the player is not already in them. {@code worldJoinRestriction}
- * gates joins to the player's current world via the payout disabled-worlds rule (a job cannot
- * be joined while in a world that pays nothing).</p>
+ * automatically on login when the player is not already in them. {@code worldJoinRestriction} gates
+ * joins to the player's current world via the payout disabled-worlds rule (a job cannot be joined
+ * while in a world that pays nothing).
  */
 public record ProgressionLimitsConfig(
-    int maxJobs,
-    @NotNull List<String> autoJoinJobs,
-    boolean worldJoinRestriction) {
+    int maxJobs, @NotNull List<String> autoJoinJobs, boolean worldJoinRestriction) {
 
+  /** Defaults. */
   public static ProgressionLimitsConfig defaults() {
     return new ProgressionLimitsConfig(0, List.of(), true);
   }

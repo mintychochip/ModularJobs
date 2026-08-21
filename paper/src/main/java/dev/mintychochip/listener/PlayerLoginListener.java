@@ -1,31 +1,30 @@
 package dev.mintychochip.listener;
 
-import java.util.List;
-import java.util.Map;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.hooks.PermissionHook;
 import dev.mintychochip.service.JobService;
+import java.util.List;
+import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-/**
- * Restores job perk permissions on login.
- *
- */
+/** Restores job perk permissions on login. */
 public final class PlayerLoginListener implements Listener {
 
   private final JobService jobService;
   private final PermissionHook permissions;
 
+  /** Player login listener. */
   public PlayerLoginListener(JobService jobService, PermissionHook permissions) {
     this.jobService = jobService;
     this.permissions = permissions;
   }
 
+  /** Event handler. */
   @EventHandler(priority = EventPriority.MONITOR)
   public void onPlayerJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();

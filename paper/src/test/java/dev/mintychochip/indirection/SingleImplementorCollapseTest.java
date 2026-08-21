@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.lang.reflect.Modifier;
 import dev.mintychochip.domain.JobResolver;
 import dev.mintychochip.service.ItemBoostDataService;
 import dev.mintychochip.upgrade.PlayerUpgradeData;
@@ -13,12 +12,13 @@ import dev.mintychochip.upgrade.UpgradeBoostDataService;
 import dev.mintychochip.upgrade.UpgradeBoostDataServiceImpl;
 import dev.mintychochip.upgrade.UpgradeService;
 import dev.mintychochip.upgrade.UpgradeServiceImpl;
+import java.lang.reflect.Modifier;
 import org.junit.jupiter.api.Test;
 
 /**
- * Structural proof that single-implementor interface collapses landed on concrete types
- * (no parallel interface + *Impl pair for these removals), except upgrade contracts which
- * intentionally keep an API interface + paper impl for the v2 skill-tree dual path.
+ * Structural proof that single-implementor interface collapses landed on concrete types (no
+ * parallel interface + *Impl pair for these removals), except upgrade contracts which intentionally
+ * keep an API interface + paper impl for the v2 skill-tree dual path.
  */
 class SingleImplementorCollapseTest {
 
@@ -60,10 +60,12 @@ class SingleImplementorCollapseTest {
   void multiImplementorAndBridgeContractsRemainInterfaces() throws ClassNotFoundException {
     assertTrue(Class.forName("dev.mintychochip.service.JobService").isInterface());
     assertTrue(Class.forName("dev.mintychochip.service.PreferencesService").isInterface());
-    assertTrue(Class.forName("dev.mintychochip.container.boost.TimedBoostDataService").isInterface());
+    assertTrue(
+        Class.forName("dev.mintychochip.container.boost.TimedBoostDataService").isInterface());
     assertTrue(Class.forName("dev.mintychochip.repository.ConnectionSource").isInterface());
     assertTrue(Class.forName("dev.mintychochip.repository.TimedBoostRepository").isInterface());
-    assertTrue(Class.forName("dev.mintychochip.domain.repository.JobProgressionRepository").isInterface());
+    assertTrue(
+        Class.forName("dev.mintychochip.domain.repository.JobProgressionRepository").isInterface());
     assertTrue(Class.forName("dev.mintychochip.commands.JobsCommand").isInterface());
     assertTrue(Class.forName("dev.mintychochip.Bridge").isInterface());
   }

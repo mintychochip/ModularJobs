@@ -6,13 +6,6 @@ import dev.craftux.api.inventory.ItemSpec;
 import dev.craftux.api.inventory.Slot;
 import dev.craftux.api.inventory.SlotPixelIntent;
 import dev.craftux.common.inventory.InventoryRuntime;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobProgression;
 import dev.mintychochip.container.ActionType;
@@ -24,6 +17,13 @@ import dev.mintychochip.service.JoinGate;
 import dev.mintychochip.upgrade.UpgradeService;
 import dev.mintychochip.upgrade.UpgradeTree;
 import dev.mintychochip.util.Messages;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -37,14 +37,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Job browse GUI backed by craftux {@link InventoryRuntime}.
  *
- * <p>Views are pure presentation; join side-effects live in the host action
- * registered under {@link CraftuxUiHost#ACTION_JOB_JOIN}.
+ * <p>Views are pure presentation; join side-effects live in the host action registered under {@link
+ * CraftuxUiHost#ACTION_JOB_JOIN}.
  */
 public final class JobBrowseGui {
 
   private static final int GUI_ROWS = 6;
   private static final String MENU_ID = "job_browse";
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
   private final InventoryRuntime inventory;
   private final JobService jobService;
@@ -74,8 +75,8 @@ public final class JobBrowseGui {
   }
 
   /**
-   * Host action: join the job mapped to the clicked slot.
-   * Registered via {@link CraftuxUiHost#actions()}.
+   * Host action: join the job mapped to the clicked slot. Registered via {@link
+   * CraftuxUiHost#actions()}.
    */
   public void onJoin(UUID audience, InventoryClick click) {
     Player player = Bukkit.getPlayer(audience);
@@ -102,36 +103,49 @@ public final class JobBrowseGui {
     }
     try {
       if (jobService.getProgression(playerId, jobKey) != null) {
-        Messages.send(player, "<neutral>You are already in</neutral> <secondary>" + name + "</secondary>.");
+        Messages.send(
+            player, "<neutral>You are already in</neutral> <secondary>" + name + "</secondary>.");
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.0f);
         return;
       }
-      JoinGate.JoinResult result = joinGate.canJoin(
-          player, jobService.getJob(jobKey), jobService.getProgressions(audience));
+      JoinGate.JoinResult result =
+          joinGate.canJoin(player, jobService.getJob(jobKey), jobService.getProgressions(audience));
       if (result != JoinGate.JoinResult.ALLOWED) {
-        Messages.send(player, switch (result) {
-          case MAX_JOBS -> "<error>You reached the maximum number of jobs you can join.";
-          case PERMISSION_DENIED -> "<error>You do not have permission to join</error> <secondary>"
-              + name + "</secondary><error>.</error>";
-          case WORLD_DENIED -> "<error>You cannot join jobs while in this world.";
-          case ALLOWED -> "";
-        });
+        Messages.send(
+            player,
+            switch (result) {
+              case MAX_JOBS -> "<error>You reached the maximum number of jobs you can join.";
+              case PERMISSION_DENIED ->
+                  "<error>You do not have permission to join</error> <secondary>"
+                      + name
+                      + "</secondary><error>.</error>";
+              case WORLD_DENIED -> "<error>You cannot join jobs while in this world.";
+              case ALLOWED -> "";
+            });
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.0f);
         return;
       }
       if (jobService.joinJob(playerId, jobKey)) {
-        Messages.send(player,
-            "<primary>✓ You joined</primary> <secondary>" + name + "</secondary> <primary>!</primary>");
+        Messages.send(
+            player,
+            "<primary>✓ You joined</primary> <secondary>"
+                + name
+                + "</secondary> <primary>!</primary>");
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.8f, 1.2f);
         inventory.close(audience);
         JavaPlugin plugin = JavaPlugin.getProvidingPlugin(JobBrowseGui.class);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-          if (player.isOnline()) {
-            open(player);
-          }
-        }, 1L);
+        Bukkit.getScheduler()
+            .runTaskLater(
+                plugin,
+                () -> {
+                  if (player.isOnline()) {
+                    open(player);
+                  }
+                },
+                1L);
       } else {
-        Messages.send(player, "<neutral>You could not join</neutral> <secondary>" + name + "</secondary>.");
+        Messages.send(
+            player, "<neutral>You could not join</neutral> <secondary>" + name + "</secondary>.");
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1.0f);
       }
     } catch (IllegalArgumentException e) {
@@ -140,7 +154,6 @@ public final class JobBrowseGui {
     }
   }
 
-  /** Builds the craftux inventory view for the current job list (testable pure path). */
   InventoryView buildView(Player player) {
     UUID audience = player.getUniqueId();
     Map<Integer, String> slotJobs = new HashMap<>();
@@ -175,18 +188,19 @@ public final class JobBrowseGui {
       }
 
       JobProgression progression = playerJobMap.get(job.key().asString());
-      content.put(slot, Slot.button(
-          "job_" + jobIndex,
-          jobItem(job, progression),
-          CraftuxUiHost.ACTION_JOB_JOIN,
-          SlotPixelIntent.UNVALIDATED));
+      content.put(
+          slot,
+          Slot.button(
+              "job_" + jobIndex,
+              jobItem(job, progression),
+              CraftuxUiHost.ACTION_JOB_JOIN,
+              SlotPixelIntent.UNVALIDATED));
       slotJobs.put(slot, job.key().asString());
       slot++;
       jobIndex++;
     }
 
-    InventoryView.Builder builder = InventoryView.builder(MENU_ID, GUI_ROWS)
-        .title("Browse Jobs");
+    InventoryView.Builder builder = InventoryView.builder(MENU_ID, GUI_ROWS).title("Browse Jobs");
     ItemSpec pane = CraftuxItems.pane(Material.GRAY_STAINED_GLASS_PANE);
     for (int i = 0; i < GUI_ROWS * 9; i++) {
       Slot placed = content.get(i);
@@ -203,60 +217,82 @@ public final class JobBrowseGui {
 
   private ItemSpec jobItem(Job job, JobProgression progression) {
     List<String> lore = new ArrayList<>();
-    lore.add(plain(job.description().color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
+    lore.add(
+        plain(
+            job.description().color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
     lore.add("");
-    lore.add(plain(Component.text()
-        .append(Component.text("Max Level: ", NamedTextColor.GRAY))
-        .append(Component.text(job.maxLevel(), NamedTextColor.YELLOW))
-        .decoration(TextDecoration.ITALIC, false)
-        .build()));
-    lore.add(plain(Component.text()
-        .append(Component.text("Active Players: ", NamedTextColor.GRAY))
-        .append(Component.text(countActivePlayers(job), NamedTextColor.AQUA))
-        .decoration(TextDecoration.ITALIC, false)
-        .build()));
+    lore.add(
+        plain(
+            Component.text()
+                .append(Component.text("Max Level: ", NamedTextColor.GRAY))
+                .append(Component.text(job.maxLevel(), NamedTextColor.YELLOW))
+                .decoration(TextDecoration.ITALIC, false)
+                .build()));
+    lore.add(
+        plain(
+            Component.text()
+                .append(Component.text("Active Players: ", NamedTextColor.GRAY))
+                .append(Component.text(countActivePlayers(job), NamedTextColor.AQUA))
+                .decoration(TextDecoration.ITALIC, false)
+                .build()));
 
     Optional<UpgradeTree> treeOpt = upgradeService.getTree(job.key().value());
     if (treeOpt.isPresent()) {
       UpgradeTree tree = treeOpt.get();
-      lore.add(plain(Component.text()
-          .append(Component.text("Upgrade Tree: ", NamedTextColor.GRAY))
-          .append(Component.text(tree.allNodes().size() + " nodes", NamedTextColor.LIGHT_PURPLE))
-          .decoration(TextDecoration.ITALIC, false)
-          .build()));
+      lore.add(
+          plain(
+              Component.text()
+                  .append(Component.text("Upgrade Tree: ", NamedTextColor.GRAY))
+                  .append(
+                      Component.text(
+                          tree.allNodes().size() + " nodes", NamedTextColor.LIGHT_PURPLE))
+                  .decoration(TextDecoration.ITALIC, false)
+                  .build()));
     }
 
     lore.add("");
-    lore.add(plain(Component.text("Example Rewards:", NamedTextColor.GOLD)
-        .decoration(TextDecoration.ITALIC, false)));
+    lore.add(
+        plain(
+            Component.text("Example Rewards:", NamedTextColor.GOLD)
+                .decoration(TextDecoration.ITALIC, false)));
     addExampleRewards(job, lore);
 
     boolean isJoined = progression != null;
     if (isJoined) {
       lore.add("");
-      lore.add(plain(Component.text()
-          .append(Component.text("Your Level: ", NamedTextColor.GRAY))
-          .append(Component.text(progression.level(), NamedTextColor.GREEN))
-          .decoration(TextDecoration.ITALIC, false)
-          .build()));
-      lore.add(plain(Component.text()
-          .append(Component.text("Experience: ", NamedTextColor.GRAY))
-          .append(Component.text(progression.experience().toPlainString(), NamedTextColor.AQUA))
-          .decoration(TextDecoration.ITALIC, false)
-          .build()));
+      lore.add(
+          plain(
+              Component.text()
+                  .append(Component.text("Your Level: ", NamedTextColor.GRAY))
+                  .append(Component.text(progression.level(), NamedTextColor.GREEN))
+                  .decoration(TextDecoration.ITALIC, false)
+                  .build()));
+      lore.add(
+          plain(
+              Component.text()
+                  .append(Component.text("Experience: ", NamedTextColor.GRAY))
+                  .append(
+                      Component.text(progression.experience().toPlainString(), NamedTextColor.AQUA))
+                  .decoration(TextDecoration.ITALIC, false)
+                  .build()));
       lore.add("");
-      lore.add(plain(Component.text("✓ Already Joined", NamedTextColor.GREEN)
-          .decoration(TextDecoration.ITALIC, false)));
+      lore.add(
+          plain(
+              Component.text("✓ Already Joined", NamedTextColor.GREEN)
+                  .decoration(TextDecoration.ITALIC, false)));
     } else {
       lore.add("");
-      lore.add(plain(Component.text("Click to join!", NamedTextColor.YELLOW)
-          .decoration(TextDecoration.ITALIC, false)));
+      lore.add(
+          plain(
+              Component.text("Click to join!", NamedTextColor.YELLOW)
+                  .decoration(TextDecoration.ITALIC, false)));
     }
 
     Material material = isJoined ? Material.EMERALD : Material.BOOK;
     NamedTextColor nameColor = isJoined ? NamedTextColor.GREEN : NamedTextColor.GOLD;
-    String name = PLAIN.serialize(
-        job.displayName().color(nameColor).decoration(TextDecoration.ITALIC, false));
+    String name =
+        PLAIN.serialize(
+            job.displayName().color(nameColor).decoration(TextDecoration.ITALIC, false));
     return CraftuxItems.of(material, name, lore);
   }
 
@@ -300,18 +336,24 @@ public final class JobBrowseGui {
         actionName = actionName.substring(actionName.indexOf(':') + 1);
       }
       String formattedPayable = formatPayableType(payableTypeName);
-      lore.add(plain(Component.text()
-          .append(Component.text("  • ", NamedTextColor.DARK_GRAY))
-          .append(Component.text(actionName, NamedTextColor.YELLOW))
-          .append(Component.text(" → ", NamedTextColor.DARK_GRAY))
-          .append(Component.text(amount.toPlainString() + " " + formattedPayable, NamedTextColor.GREEN))
-          .decoration(TextDecoration.ITALIC, false)
-          .build()));
+      lore.add(
+          plain(
+              Component.text()
+                  .append(Component.text("  • ", NamedTextColor.DARK_GRAY))
+                  .append(Component.text(actionName, NamedTextColor.YELLOW))
+                  .append(Component.text(" → ", NamedTextColor.DARK_GRAY))
+                  .append(
+                      Component.text(
+                          amount.toPlainString() + " " + formattedPayable, NamedTextColor.GREEN))
+                  .decoration(TextDecoration.ITALIC, false)
+                  .build()));
       examplesAdded++;
     }
     if (examplesAdded == 0) {
-      lore.add(plain(Component.text("  No rewards configured", NamedTextColor.GRAY)
-          .decoration(TextDecoration.ITALIC, false)));
+      lore.add(
+          plain(
+              Component.text("  No rewards configured", NamedTextColor.GRAY)
+                  .decoration(TextDecoration.ITALIC, false)));
     }
   }
 

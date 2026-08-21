@@ -1,29 +1,31 @@
 package dev.mintychochip.commands;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import dev.mintychochip.JobProgression;
+import dev.mintychochip.gui.StatsGui;
+import dev.mintychochip.service.JobService;
+import dev.mintychochip.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import dev.mintychochip.JobProgression;
-import dev.mintychochip.gui.StatsGui;
-import dev.mintychochip.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import dev.mintychochip.util.Messages;
 
+/** Stats command. */
 public class StatsCommand implements JobsCommand {
 
   private final JobService jobService;
   private final StatsGui statsGui;
 
+  /** Stats command. */
   public StatsCommand(JobService jobService, StatsGui statsGui) {
     this.jobService = jobService;
     this.statsGui = statsGui;
@@ -33,27 +35,67 @@ public class StatsCommand implements JobsCommand {
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("stats")
         // /jobs stats chat <playerName> - admin variant (chat output)
-        .then(Commands.literal("chat")
-            .then(Commands.argument("player", StringArgumentType.word())
+        .then(
+            Commands.literal("chat")
+                .then(
+                    Commands.argument("player", StringArgumentType.word())
+                        .requires(
+                            source -> source.getSender().hasPermission("jobs.command.admin.stats"))
+                        .executes(
+                            context -> {
+                              CommandSourceStack source = context.getSource();
+                              CommandSender sender = source.getSender();
+
+                              String playerName = context.getArgument("player", String.class);
+                              OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+
+                              if (target == null) {
+                                Messages.send(sender, "<error>Player not found: " + playerName);
+                                return 0;
+                              }
+
+                              displayStatsChat(sender, target);
+                              return Command.SINGLE_SUCCESS;
+                            }))
+                // /jobs stats chat - player variant (chat output)
+                .requires(source -> source.getSender().hasPermission("jobs.command.stats"))
+                .executes(
+                    context -> {
+                      CommandSourceStack source = context.getSource();
+                      CommandSender sender = source.getSender();
+
+                      if (!(sender instanceof Player player)) {
+                        Messages.send(sender, "<error>This command can only be used by players.");
+                        return 0;
+                      }
+
+                      displayStatsChat(player, player);
+                      return Command.SINGLE_SUCCESS;
+                    }))
+        // /jobs stats <playerName> - admin variant (GUI output)
+        .then(
+            Commands.argument("player", StringArgumentType.word())
                 .requires(source -> source.getSender().hasPermission("jobs.command.admin.stats"))
-                .executes(context -> {
-                  CommandSourceStack source = context.getSource();
-                  CommandSender sender = source.getSender();
+                .executes(
+                    context -> {
+                      CommandSourceStack source = context.getSource();
+                      CommandSender sender = source.getSender();
 
-                  String playerName = context.getArgument("player", String.class);
-                  OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
+                      String playerName = context.getArgument("player", String.class);
+                      OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
 
-                  if (target == null) {
-                    Messages.send(sender, "<error>Player not found: " + playerName);
-                    return 0;
-                  }
+                      if (target == null) {
+                        Messages.send(sender, "<error>Player not found: " + playerName);
+                        return 0;
+                      }
 
-                  displayStatsChat(sender, target);
-                  return Command.SINGLE_SUCCESS;
-                }))
-            // /jobs stats chat - player variant (chat output)
-            .requires(source -> source.getSender().hasPermission("jobs.command.stats"))
-            .executes(context -> {
+                      displayStats(sender, target);
+                      return Command.SINGLE_SUCCESS;
+                    }))
+        // /jobs stats - player variant (GUI output)
+        .requires(source -> source.getSender().hasPermission("jobs.command.stats"))
+        .executes(
+            context -> {
               CommandSourceStack source = context.getSource();
               CommandSender sender = source.getSender();
 
@@ -62,46 +104,12 @@ public class StatsCommand implements JobsCommand {
                 return 0;
               }
 
-              displayStatsChat(player, player);
+              displayStats(player, player);
               return Command.SINGLE_SUCCESS;
-            }))
-        // /jobs stats <playerName> - admin variant (GUI output)
-        .then(Commands.argument("player", StringArgumentType.word())
-            .requires(source -> source.getSender().hasPermission("jobs.command.admin.stats"))
-            .executes(context -> {
-              CommandSourceStack source = context.getSource();
-              CommandSender sender = source.getSender();
-
-              String playerName = context.getArgument("player", String.class);
-              OfflinePlayer target = Bukkit.getOfflinePlayerIfCached(playerName);
-
-              if (target == null) {
-                Messages.send(sender, "<error>Player not found: " + playerName);
-                return 0;
-              }
-
-              displayStats(sender, target);
-              return Command.SINGLE_SUCCESS;
-            }))
-        // /jobs stats - player variant (GUI output)
-        .requires(source -> source.getSender().hasPermission("jobs.command.stats"))
-        .executes(context -> {
-          CommandSourceStack source = context.getSource();
-          CommandSender sender = source.getSender();
-
-          if (!(sender instanceof Player player)) {
-            Messages.send(sender, "<error>This command can only be used by players.");
-            return 0;
-          }
-
-          displayStats(player, player);
-          return Command.SINGLE_SUCCESS;
-        });
+            });
   }
 
-  /**
-   * Displays stats in a GUI dialog. Falls back to chat if sender is not a player.
-   */
+  /** Displays stats in a GUI dialog. Falls back to chat if sender is not a player. */
   private void displayStats(CommandSender viewer, OfflinePlayer target) {
     if (viewer instanceof Player player) {
       displayStatsDialog(player, target);
@@ -110,33 +118,31 @@ public class StatsCommand implements JobsCommand {
     }
   }
 
-  /**
-   * Displays stats in a craftux inventory GUI.
-   */
+  /** Displays stats in a craftux inventory GUI. */
   private void displayStatsDialog(Player viewer, OfflinePlayer target) {
     final List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
     statsGui.open(viewer, target, progressions, 1);
   }
 
-  /**
-   * Displays stats in chat format (original implementation).
-   */
+  /** Displays stats in chat format (original implementation). */
   private void displayStatsChat(CommandSender viewer, OfflinePlayer target) {
     final List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
 
     String targetName = target.getName() != null ? target.getName() : "Unknown";
-    String header = viewer.equals(target)
-        ? "<primary>Job Statistics"
-        : "<primary>" + targetName + "'s Job Statistics";
+    String header =
+        viewer.equals(target)
+            ? "<primary>Job Statistics"
+            : "<primary>" + targetName + "'s Job Statistics";
 
     Messages.send(viewer, "");
     Messages.send(viewer, "<neutral>━━━━━━━━━ " + header + " <neutral> ━━━━━━━━━");
     Messages.send(viewer, "");
 
     if (progressions.isEmpty()) {
-      String message = viewer.equals(target)
-          ? "<neutral>  You are not in any jobs."
-          : "<neutral>  " + targetName + " is not in any jobs.";
+      String message =
+          viewer.equals(target)
+              ? "<neutral>  You are not in any jobs."
+              : "<neutral>  " + targetName + " is not in any jobs.";
       Messages.send(viewer, message);
       Messages.send(viewer, "<neutral>  Use <secondary>/jobs join<neutral> to join a job.");
       Messages.send(viewer, "");
@@ -170,42 +176,62 @@ public class StatsCommand implements JobsCommand {
       BigDecimal nextLevelXp = progression.experienceForLevel(currentLevel + 1);
       xpCurrent = currentXp.subtract(currentLevelXp);
       xpTotal = nextLevelXp.subtract(currentLevelXp);
-      percentage = xpCurrent.divide(xpTotal, 4, RoundingMode.HALF_UP)
-          .multiply(BigDecimal.valueOf(100))
-          .doubleValue();
+      percentage =
+          xpCurrent
+              .divide(xpTotal, 4, RoundingMode.HALF_UP)
+              .multiply(BigDecimal.valueOf(100))
+              .doubleValue();
     }
 
     // Build hover text with all metadata
-    Component hoverText = buildHoverText(currentLevel, maxLevel, currentXp, xpCurrent, xpTotal, percentage);
+    Component hoverText =
+        buildHoverText(currentLevel, maxLevel, currentXp, xpCurrent, xpTotal, percentage);
 
     // Build main display: bar + Lvl. [level] + [name]
     String bar = createProgressBar(percentage);
     Component barComponent = Messages.component(bar);
     Component jobName = progression.job().displayName();
-    Component mainDisplay = Component.text("  ")
-        .append(barComponent)
-        .append(Component.space())
-        .append(Messages.component("<neutral>Lvl. "))
-        .append(Messages.component("<secondary>" + currentLevel))
-        .append(Component.space())
-        .append(jobName)
-        .hoverEvent(HoverEvent.showText(hoverText));
+    Component mainDisplay =
+        Component.text("  ")
+            .append(barComponent)
+            .append(Component.space())
+            .append(Messages.component("<neutral>Lvl. "))
+            .append(Messages.component("<secondary>" + currentLevel))
+            .append(Component.space())
+            .append(jobName)
+            .hoverEvent(HoverEvent.showText(hoverText));
 
     viewer.sendMessage(mainDisplay);
   }
 
-  private Component buildHoverText(int currentLevel, int maxLevel, BigDecimal currentXp,
-                                   BigDecimal xpCurrent, BigDecimal xpTotal, double percentage) {
+  private Component buildHoverText(
+      int currentLevel,
+      int maxLevel,
+      BigDecimal currentXp,
+      BigDecimal xpCurrent,
+      BigDecimal xpTotal,
+      double percentage) {
     String percentageStr = String.format("%.1f%%", percentage);
     String xpCurrentStr = formatFullNumber(xpCurrent);
     String xpTotalStr = xpTotal != null ? formatFullNumber(xpTotal) : "MAX";
     String totalXpStr = formatFullNumber(currentXp);
     String progressColor = getProgressColorTag(percentage);
 
-    return Messages.component("<neutral>Level: <primary>" + currentLevel + " / " + maxLevel
-        + "\n<neutral>Progress: <" + progressColor + ">" + percentageStr
-        + "\n<neutral>XP in level: <secondary>" + xpCurrentStr + " / " + xpTotalStr
-        + "\n<neutral>Total XP: <accent>" + totalXpStr);
+    return Messages.component(
+        "<neutral>Level: <primary>"
+            + currentLevel
+            + " / "
+            + maxLevel
+            + "\n<neutral>Progress: <"
+            + progressColor
+            + ">"
+            + percentageStr
+            + "\n<neutral>XP in level: <secondary>"
+            + xpCurrentStr
+            + " / "
+            + xpTotalStr
+            + "\n<neutral>Total XP: <accent>"
+            + totalXpStr);
   }
 
   private String createProgressBar(double percentage) {

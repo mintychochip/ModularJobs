@@ -1,9 +1,6 @@
 package dev.mintychochip.container;
 
-/**
- * Represents a currency for payable amounts.
- * Extensible for custom currencies via plugins.
- */
+/** Represents a currency for payable amounts. Extensible for custom currencies via plugins. */
 public interface Currency {
 
   Currency USD = of("USD", "$");
@@ -13,20 +10,19 @@ public interface Currency {
   Currency CNY = of("CNY", "¥");
 
   /**
-   * Creates a new currency with the given identifier and symbol.
-   * Use this for custom currencies in plugins.
+   * Creates a new currency with the given identifier and symbol. Use this for custom currencies in
+   * plugins.
    */
   static Currency of(String identifier, String symbol) {
     return new CurrencyImpl(identifier, symbol);
   }
 
+  /** Identifier. */
   String identifier();
 
+  /** Symbol. */
   String symbol();
 
-  /**
-   * Default implementation for standard and custom currencies.
-   */
+  /** Default implementation for standard and custom currencies. */
   record CurrencyImpl(String identifier, String symbol) implements Currency {}
 }
-

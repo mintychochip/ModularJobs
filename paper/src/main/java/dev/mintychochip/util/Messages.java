@@ -13,28 +13,29 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Local themed MiniMessage messaging — replaces Mint.sendThemedMessage /
- * Mint.createThemedComponent. Tags: {@code primary}, {@code secondary},
- * {@code neutral}, {@code accent}, {@code error}, {@code success}, {@code info}.
+ * Mint.createThemedComponent. Tags: {@code primary}, {@code secondary}, {@code neutral}, {@code
+ * accent}, {@code error}, {@code success}, {@code info}.
  */
 @NullMarked
 public final class Messages {
 
-  private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
-      .tags(TagResolver.builder()
-          .resolver(StandardTags.defaults())
-          .tag("primary", Tag.styling(NamedTextColor.GOLD))
-          .tag("secondary", Tag.styling(NamedTextColor.YELLOW))
-          .tag("neutral", Tag.styling(NamedTextColor.GRAY))
-          .tag("accent", Tag.styling(NamedTextColor.AQUA))
-          .tag("error", Tag.styling(NamedTextColor.RED))
-          .tag("success", Tag.styling(NamedTextColor.GREEN))
-          .tag("info", Tag.styling(NamedTextColor.BLUE))
-          .build())
-      .build();
+  private static final MiniMessage MINI_MESSAGE =
+      MiniMessage.builder()
+          .tags(
+              TagResolver.builder()
+                  .resolver(StandardTags.defaults())
+                  .tag("primary", Tag.styling(NamedTextColor.GOLD))
+                  .tag("secondary", Tag.styling(NamedTextColor.YELLOW))
+                  .tag("neutral", Tag.styling(NamedTextColor.GRAY))
+                  .tag("accent", Tag.styling(NamedTextColor.AQUA))
+                  .tag("error", Tag.styling(NamedTextColor.RED))
+                  .tag("success", Tag.styling(NamedTextColor.GREEN))
+                  .tag("info", Tag.styling(NamedTextColor.BLUE))
+                  .build())
+          .build();
 
   /** Prevents instantiation of this static utility class. */
-  private Messages() {
-  }
+  private Messages() {}
 
   /** Deserialize a themed MiniMessage string to a Component. */
   public static Component component(@Nullable String message) {

@@ -7,9 +7,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Bukkit dual-fire wrapper for {@link JobLeaveEvent}.
- */
+/** Bukkit dual-fire wrapper for {@link JobLeaveEvent}. */
 public final class BukkitJobLeaveEvent extends Event {
 
   private static final HandlerList HANDLERS = new HandlerList();
@@ -17,6 +15,7 @@ public final class BukkitJobLeaveEvent extends Event {
   private final Player player;
   private final JobLeaveEvent pure;
 
+  /** Bukkit job leave event. */
   public BukkitJobLeaveEvent(@NotNull Player player, @NotNull JobLeaveEvent pure) {
     this.player = player;
     this.pure = pure;
@@ -26,6 +25,7 @@ public final class BukkitJobLeaveEvent extends Event {
     return player;
   }
 
+  /** Pure. */
   public @NotNull JobLeaveEvent pure() {
     return pure;
   }

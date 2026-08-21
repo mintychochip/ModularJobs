@@ -14,21 +14,21 @@ import java.sql.SQLException;
  */
 public interface RelationalRepositoryContext<K, V> {
 
-  /** SELECT statement resolving a single row by key. */
+  /** Returns the select query. */
   String getSelectQuery();
 
-  /** INSERT/UPDATE statement persisting a value by key. */
+  /** Returns the save query. */
   String getSaveQuery();
 
-  /** DELETE statement removing a row by key. */
+  /** Returns the delete query. */
   String getDeleteQuery();
 
-  /** Binds the key onto the prepared statement for select/delete operations. */
+  /** Sets the key. */
   void setKey(PreparedStatement ps, K key) throws SQLException;
 
-  /** Binds the key and value onto the prepared statement for a save operation. */
+  /** Sets the save values. */
   void setSaveValues(PreparedStatement ps, K key, V value) throws SQLException;
 
-  /** Maps a single result row to a value for the given key. */
+  /** Map result. */
   V mapResult(ResultSet rs, K key) throws SQLException;
 }

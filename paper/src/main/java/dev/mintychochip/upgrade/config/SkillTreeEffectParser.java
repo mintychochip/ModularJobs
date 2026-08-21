@@ -3,54 +3,61 @@ package dev.mintychochip.upgrade.config;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 import dev.mintychochip.boost.config.BoostSourceConfig;
 import dev.mintychochip.boost.config.BoostSourceConfigParser;
 import dev.mintychochip.container.boost.factories.BoostFactory;
 import dev.mintychochip.container.boost.factories.ConditionFactory;
 import dev.mintychochip.upgrade.NodeEffect;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Parses the JSON effect vocabulary into sealed NodeEffect instances.
- * Unknown types throw so misconfigurations are loud.
+ * Parses the JSON effect vocabulary into sealed NodeEffect instances. Unknown types throw so
+ * misconfigurations are loud.
  */
 public final class SkillTreeEffectParser {
 
   private final BoostSourceConfigParser boostSourceParser;
 
+  /** Skill tree effect parser. */
   public SkillTreeEffectParser(BoostFactory boostFactory, ConditionFactory conditionFactory) {
     this.boostSourceParser = new BoostSourceConfigParser(conditionFactory, boostFactory);
   }
 
+  /** Parse. */
   public NodeEffect parse(@NotNull JsonElement element) {
     JsonObject obj = element.getAsJsonObject();
     String type = obj.get("type").getAsString();
 
     return switch (type) {
-      case "boost" -> new NodeEffect.BoostEffect(
-          obj.has("target") ? obj.get("target").getAsString() : NodeEffect.BoostEffect.TARGET_ALL,
-          obj.has("amount") ? BigDecimal.valueOf(obj.get("amount").getAsDouble()) : BigDecimal.ONE);
+      case "boost" ->
+          new NodeEffect.BoostEffect(
+              obj.has("target")
+                  ? obj.get("target").getAsString()
+                  : NodeEffect.BoostEffect.TARGET_ALL,
+              obj.has("amount")
+                  ? BigDecimal.valueOf(obj.get("amount").getAsDouble())
+                  : BigDecimal.ONE);
       case "ruled_boost" -> parseRuledBoost(obj);
       case "permission" -> new NodeEffect.PermissionEffect(obj.get("key").getAsString());
       case "recipe_unlock" ->
           new NodeEffect.RecipeUnlockEffect(Key.key(obj.get("recipe").getAsString()));
       case "capability" -> parseCapability(obj);
-      case "state_set" -> new NodeEffect.StateSetEffect(
-          parseKey(obj.get("key").getAsString()),
-          obj.get("value").getAsString(),
-          obj.has("remove") && obj.get("remove").getAsBoolean());
+      case "state_set" ->
+          new NodeEffect.StateSetEffect(
+              parseKey(obj.get("key").getAsString()),
+              obj.get("value").getAsString(),
+              obj.has("remove") && obj.get("remove").getAsBoolean());
       default -> throw new IllegalArgumentException("Unknown effect type: " + type);
     };
   }
 
   private NodeEffect parseRuledBoost(JsonObject obj) {
-    String target = obj.has("target")
-        ? obj.get("target").getAsString()
-        : NodeEffect.BoostEffect.TARGET_ALL;
+    String target =
+        obj.has("target") ? obj.get("target").getAsString() : NodeEffect.BoostEffect.TARGET_ALL;
     BoostSourceConfig config = new Gson().fromJson(obj, BoostSourceConfig.class);
     return new NodeEffect.RuledBoostEffect(target, boostSourceParser.parse(config));
   }

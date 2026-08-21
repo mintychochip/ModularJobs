@@ -9,28 +9,27 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Builds a MySQL {@link ConnectionSource} (HikariCP). Schema is never applied here —
- * ops must run {@code scripts/apply-mysql-schema.sh} first.
+ * Builds a MySQL {@link ConnectionSource} (HikariCP). Schema is never applied here — ops must run
+ * {@code scripts/apply-mysql-schema.sh} first.
  */
 public final class ConnectionSourceFactory {
 
-  @NotNull
-  private final Plugin plugin;
+  @NotNull private final Plugin plugin;
 
-  @NotNull
-  private final ConfigurationSection configuration;
+  @NotNull private final ConfigurationSection configuration;
 
+  /** Connection source factory. */
   public ConnectionSourceFactory(
       @NotNull Plugin plugin, @NotNull ConfigurationSection configuration) {
     this.plugin = plugin;
     this.configuration = configuration;
   }
 
+  /** API member. */
   @NotNull
   public ConnectionSource create() {
     Preconditions.checkState(
-        configuration.contains("type"),
-        "database section missing type (must be mysql)");
+        configuration.contains("type"), "database section missing type (must be mysql)");
     DatabaseType type = DatabaseType.fromIdentifier(configuration.getString("type"));
 
     Logger log = plugin.getLogger();

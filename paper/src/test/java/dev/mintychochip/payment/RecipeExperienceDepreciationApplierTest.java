@@ -3,6 +3,11 @@ package dev.mintychochip.payment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import dev.mintychochip.container.Context;
+import dev.mintychochip.profession.RecipeDefinition;
+import dev.mintychochip.profession.RecipeExperienceDepreciationPolicy;
+import dev.mintychochip.service.ProfessionService;
+import dev.mintychochip.service.RecipeService;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,11 +15,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
-import dev.mintychochip.container.Context;
-import dev.mintychochip.profession.RecipeDefinition;
-import dev.mintychochip.profession.RecipeExperienceDepreciationPolicy;
-import dev.mintychochip.service.ProfessionService;
-import dev.mintychochip.service.RecipeService;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +27,7 @@ class RecipeExperienceDepreciationApplierTest {
   @Test
   void resolvesRegisteredRecipeByCraftOutputKey() {
     RecordingRecipeService recipes = new RecordingRecipeService();
-    recipes.registerDefinition(
-        new RecipeDefinition(RECIPE_ID, "weaponsmithing", 25, 2, OUTPUT));
+    recipes.registerDefinition(new RecipeDefinition(RECIPE_ID, "weaponsmithing", 25, 2, OUTPUT));
     RecipeExperienceDepreciationApplier applier =
         new RecipeExperienceDepreciationApplier(
             new RecipeExperienceDepreciationPolicy(true, 0, 10),
@@ -37,9 +36,7 @@ class RecipeExperienceDepreciationApplierTest {
 
     BigDecimal scaled =
         applier.scaleCraftExperience(
-            PLAYER,
-            new Context.ItemContext("minecraft:iron_sword", 1),
-            new BigDecimal("100"));
+            PLAYER, new Context.ItemContext("minecraft:iron_sword", 1), new BigDecimal("100"));
 
     assertEquals(OUTPUT, recipes.lastCraftOutputLookup());
     assertEquals(0, new BigDecimal("50").compareTo(scaled));

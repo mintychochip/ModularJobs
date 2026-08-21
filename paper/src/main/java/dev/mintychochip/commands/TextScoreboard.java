@@ -1,9 +1,9 @@
 package dev.mintychochip.commands;
 
+import dev.mintychochip.gui.craftux.CraftuxSurfaces;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import dev.mintychochip.gui.craftux.CraftuxSurfaces;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -12,13 +12,14 @@ import org.bukkit.entity.Player;
 /**
  * Ephemeral sidebar scoreboard backed by craftux {@link CraftuxSurfaces}.
  *
- * <p>Hosts accumulate lines then call {@link #setCurrent(Player)} to mount a
- * craftux scoreboard plan for that audience.
+ * <p>Hosts accumulate lines then call {@link #setCurrent(Player)} to mount a craftux scoreboard
+ * plan for that audience.
  */
 public final class TextScoreboard {
 
   private static final int MAX_LINES = 15;
-  private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
+  private static final PlainTextComponentSerializer PLAIN =
+      PlainTextComponentSerializer.plainText();
 
   private final CraftuxSurfaces surfaces;
   private final String title;
@@ -29,6 +30,7 @@ public final class TextScoreboard {
     this.title = title;
   }
 
+  /** Create. */
   public static TextScoreboard create(CraftuxSurfaces surfaces, Component displayName) {
     return new TextScoreboard(surfaces, PLAIN.serialize(displayName));
   }
@@ -44,6 +46,7 @@ public final class TextScoreboard {
         "TextScoreboard requires CraftuxSurfaces; use create(surfaces, title)");
   }
 
+  /** Sets the line. */
   public void setLine(int index, ComponentLike prefix, ComponentLike suffix) {
     if (index < 0 || index >= MAX_LINES) {
       throw new IndexOutOfBoundsException("scoreboard line " + index);
@@ -53,10 +56,12 @@ public final class TextScoreboard {
     lines[index] = left + right;
   }
 
+  /** Show. */
   public void show(Player player, Duration duration) {
     setCurrent(player);
   }
 
+  /** Sets the current. */
   public void setCurrent(Player player) {
     if (player == null) {
       return;

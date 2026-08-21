@@ -13,8 +13,8 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 /**
- * Local fallback path when the Preferences plugin / service is absent.
- * Exercises shipped {@link PreferencesServiceImpl} get/set and config defaults.
+ * Local fallback path when the Preferences plugin / service is absent. Exercises shipped {@link
+ * PreferencesServiceImpl} get/set and config defaults.
  */
 class PreferencesServiceImplTest {
 

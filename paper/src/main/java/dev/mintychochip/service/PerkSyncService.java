@@ -1,25 +1,24 @@
 package dev.mintychochip.service;
 
+import dev.mintychochip.Job;
+import dev.mintychochip.hooks.PermissionHook;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import dev.mintychochip.Job;
-import dev.mintychochip.hooks.PermissionHook;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Admin perk grant/revoke without player notifications.
- *
- */
+/** Admin perk grant/revoke without player notifications. */
 public final class PerkSyncService {
 
   private final PermissionHook permissions;
 
+  /** Perk sync service. */
   public PerkSyncService(PermissionHook permissions) {
     this.permissions = permissions;
   }
 
+  /** Sync perks to level. */
   public void syncPerksToLevel(@NotNull Player player, @NotNull Job job, int targetLevel) {
     Map<Integer, List<String>> unlocks = job.perkUnlocks();
     String highestStoragePerk = null;
@@ -44,6 +43,7 @@ public final class PerkSyncService {
     }
   }
 
+  /** Revoke perks above level. */
   public void revokePerksAboveLevel(@NotNull Player player, @NotNull Job job, int targetLevel) {
     Map<Integer, List<String>> unlocks = job.perkUnlocks();
     for (Map.Entry<Integer, List<String>> entry : unlocks.entrySet()) {

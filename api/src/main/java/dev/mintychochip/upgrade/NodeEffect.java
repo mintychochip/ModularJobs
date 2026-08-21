@@ -1,23 +1,23 @@
 package dev.mintychochip.upgrade;
 
+import dev.mintychochip.container.BoostSource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import dev.mintychochip.container.BoostSource;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Effect granted by a skill level or major node. Sealed vocabulary; unknown
- * types fail tree loading rather than silently no-op.
+ * Effect granted by a skill level or major node. Sealed vocabulary; unknown types fail tree loading
+ * rather than silently no-op.
  */
-public sealed interface NodeEffect permits
-    NodeEffect.BoostEffect,
-    NodeEffect.RuledBoostEffect,
-    NodeEffect.PermissionEffect,
-    NodeEffect.CapabilityEffect,
-    NodeEffect.RecipeUnlockEffect,
-    NodeEffect.StateSetEffect {
+public sealed interface NodeEffect
+    permits NodeEffect.BoostEffect,
+        NodeEffect.RuledBoostEffect,
+        NodeEffect.PermissionEffect,
+        NodeEffect.CapabilityEffect,
+        NodeEffect.RecipeUnlockEffect,
+        NodeEffect.StateSetEffect {
 
   /** Simple multiplier boost for a payable target. */
   record BoostEffect(@NotNull String target, @NotNull BigDecimal multiplier) implements NodeEffect {
@@ -31,8 +31,8 @@ public sealed interface NodeEffect permits
   }
 
   /** Full BoostSource effect with rules/conditions, reusing the composition API. */
-  record RuledBoostEffect(@NotNull String target, @NotNull BoostSource boostSource) implements NodeEffect {
-  }
+  record RuledBoostEffect(@NotNull String target, @NotNull BoostSource boostSource)
+      implements NodeEffect {}
 
   /** One or more temporary permissions granted via PermissionAttachment. */
   record PermissionEffect(@NotNull List<String> permissions) implements NodeEffect {
@@ -42,8 +42,7 @@ public sealed interface NodeEffect permits
   }
 
   /** Unlocks a namespaced crafting/smelting recipe. */
-  record RecipeUnlockEffect(@NotNull Key recipeKey) implements NodeEffect {
-  }
+  record RecipeUnlockEffect(@NotNull Key recipeKey) implements NodeEffect {}
 
   /** Grants a versioned capability payload for later handler dispatch. */
   record CapabilityEffect(@NotNull Key key, int schema, @NotNull Map<String, String> payload)
@@ -57,9 +56,10 @@ public sealed interface NodeEffect permits
   }
 
   /** Sets or removes a namespaced tree-state key. */
-  record StateSetEffect(@NotNull Key key, @NotNull String value, boolean remove) implements NodeEffect {
-  }
+  record StateSetEffect(@NotNull Key key, @NotNull String value, boolean remove)
+      implements NodeEffect {}
 
+  /** Boost. */
   static BoostEffect boost(String target, double multiplier) {
     return BoostEffect.of(target, multiplier);
   }

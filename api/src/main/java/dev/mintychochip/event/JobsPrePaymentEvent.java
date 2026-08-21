@@ -1,14 +1,12 @@
 package dev.mintychochip.event;
 
-import java.util.Objects;
-import java.util.UUID;
 import dev.mintychochip.Job;
 import dev.mintychochip.JobTask;
 import dev.mintychochip.container.Payable;
+import java.util.Objects;
+import java.util.UUID;
 
-/**
- * Fired before a jobs payment is processed.
- */
+/** Fired before a jobs payment is processed. */
 public final class JobsPrePaymentEvent implements Cancellable {
 
   private final UUID playerId;
@@ -17,6 +15,7 @@ public final class JobsPrePaymentEvent implements Cancellable {
   private final JobTask jobTask;
   private boolean cancelled;
 
+  /** Jobs pre payment event. */
   public JobsPrePaymentEvent(UUID playerId, Payable payable, Job job, JobTask jobTask) {
     this.playerId = Objects.requireNonNull(playerId, "playerId");
     this.payable = payable;
