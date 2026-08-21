@@ -1,7 +1,7 @@
 # ModularJobs — Living Spec (product / platform)
 
 > Status: active  
-> Last updated: 2026-08-19
+> Last updated: 2026-08-21
 > Owners: modularjobs maintainers
 
 ## Intent
@@ -77,6 +77,7 @@ Shipped platform surface still “active capability” for agents:
 - [x] Java toolchain 25, Paper/MockBukkit 26.2, Gradle multi-module
 - [x] Git hooks + CI (Java check + shadow jar, rest-api, session-editor)
 - [x] Root README / AGENTS.md document operator + agent paths
+- [x] Java domain package `dev.mintychochip` (`api`, `common`, `paper`; was `net.aincraft`)
 - [ ] Living specs adopted and kept honest across domains (this catalog)
 
 ### Current notes
@@ -106,6 +107,7 @@ Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.m
 | 2026-08 | MySQL 8 only, connect-only schema | Multi-instance, least privilege, reviewable migrations |
 | 2026-08 | Secure editor via REST + MySQL, not Bytebin | Token ownership, shared durable store |
 | 2026-08-10 | Optional reflective Mint adapter + blackhole default | Base Paper builds stay independent of Mint while currency-required servers can fail fast |
+| 2026-08-21 | Rename Java packages to `dev.mintychochip` | Align plugin bootstrap, shadow jar, and published API coordinates |
 
 ## Open questions
 

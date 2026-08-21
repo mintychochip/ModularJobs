@@ -1,7 +1,7 @@
 # Jobs progression — Living Spec
 
 > Status: active  
-> Last updated: 2026-08-08  
+> Last updated: 2026-08-21  
 > Owners: modularjobs maintainers
 
 ## Intent
@@ -91,6 +91,8 @@ touches adjacent domains (economy, gates, editor) rather than rewriting the pipe
 | 1.1.0 | PaymentSettings + expand anti-farm | Production fairness / security |
 | 1.1.0 | Reload progression per payable | Multi-XP correctness |
 | 1.1.0 | Kill contribution pays all qualifiers | Fair multi-fighter rewards |
+| 2026-08-21 | Recipe XP depreciation by profession vs recipe level | Reward crafting at appropriate tier; config `recipe-experience-depreciation` |
+| 2026-08-21 | Warn-only craft task ↔ `recipes.yml` cross-validation | Separate canonical files; catch drift at startup (`content-validation.craft-recipes`) |
 
 ## Open questions
 

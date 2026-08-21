@@ -1,7 +1,7 @@
 # Secure sessions (web editor) — Living Spec
 
 > Status: active  
-> Last updated: 2026-08-08  
+> Last updated: 2026-08-21  
 > Owners: modularjobs maintainers
 
 ## Intent
@@ -75,8 +75,15 @@ plan steps as verification/docs unless tests fail.
 
 ## Next
 
+- [ ] React editor dashboard at `/editor/` (single Vite app; replace Astro session iframe)
+- [ ] Astro plugin homepage redesign (shared Tailwind v4 + daisyUI with editor)
 - [ ] End-to-end smoke checklist documented for ops (export → edit → save → apply)
 - [ ] Optional: require `SESSION_CREATE_SECRET` in non-loopback deploy docs as default recommendation
+
+Design + plan: [2026-08-17-react-editor-and-homepage-design.md](../superpowers/specs/2026-08-17-react-editor-and-homepage-design.md),
+[2026-08-17-react-editor-and-homepage-plan.md](../superpowers/plans/2026-08-17-react-editor-and-homepage-plan.md).
+Prior cutover: `docs/superpowers/specs/2026-08-08-rest-editor-session-cutover-design.md`,
+`docs/superpowers/plans/2026-08-08-rest-editor-session-cutover.md`.
 
 ## Future
 

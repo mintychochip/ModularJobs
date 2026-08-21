@@ -13,7 +13,7 @@ MySQL-backed REST API (Rust) and React secure session editor.
 | `web` | Docs + session-editor + rest-api |
 | `scripts/` | Out-of-band ops helpers (schema apply) |
 
-Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-2.0.0-all.jar`).
+Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-<version>-all.jar`, e.g. `paper-26.8.11.1-all.jar`).
 Unit tests: `./gradlew :api:test :common:test :paper:test`.  
 Static analysis (Error Prone on compile; Checkstyle/PMD/SpotBugs on `check`):  
 `./gradlew check` — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
@@ -118,5 +118,7 @@ Index: `docs/living-specs/README.md`. One-shot design dumps under
 
 - Guice removed (2026-08): manual wiring
 - MockBukkit 26.2 / Paper 26.2 / Java toolchain 25
+- Java domain package `dev.mintychochip` (2026-08-21; was `net.aincraft`)
+- Recipe depreciation + `recipes.yml` startup loading + craft/task cross-validation
 - MySQL DDL + fidelity tests; connect-only remote schema ownership
 - `web/rest-api` (Rust) + React `web/session-editor` for secure sessions

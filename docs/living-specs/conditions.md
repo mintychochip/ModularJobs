@@ -76,6 +76,8 @@ shaped; boosts persist a condition as serializer **bytes** next to rule priority
 - [x] `ConditionHandler` / `DataHandler` SPI so extra predicates are not ModularJobs-owned
 - [x] ModularJobs registers `BoostPayloadHandler` and fills job extras on evaluate
 
+Design reference: [2026-08-19-player-conditions-api-design.md](../superpowers/specs/2026-08-19-player-conditions-api-design.md).
+
 ## Next
 
 - [ ] Broader vanilla subset (time_check, equipment, random_chance) as content needs

@@ -17,8 +17,11 @@ intent or progress changes. Checkboxes in these files are the persistence layer.
 | **Secure sessions** | [secure-sessions.md](./secure-sessions.md) | REST API, React editor, Paper export/apply |
 | **Professions** | [professions.md](./professions.md) | Profession catalog, block-break gates, Bukkit services |
 
-One-shot design dumps live under `docs/superpowers/specs/` and `docs/superpowers/plans/`.
-Those are historical; **horizons and checkboxes here are authoritative for “what’s next”.**
+One-shot design dumps live under `docs/superpowers/` (see
+[docs/superpowers/README.md](../superpowers/README.md)). Those are historical;
+**horizons and checkboxes here are authoritative for “what’s next”.** Recent
+designs indexed there include player conditions (2026-08-19) and React editor +
+homepage (2026-08-17).
 
 ## Agent protocol
 

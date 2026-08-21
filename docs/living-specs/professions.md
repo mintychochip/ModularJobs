@@ -1,7 +1,7 @@
 # Professions — Living Spec
 
 > Status: active  
-> Last updated: 2026-08-10  
+> Last updated: 2026-08-21  
 > Owners: ModularJobs and Azoth maintainers
 
 ## Intent
@@ -65,6 +65,8 @@ levels with Azoth combat levels.
 - [x] Java 21 API/common publication at version 26.8.11.1
 - [x] Herbalism task data and operator-run migration
 - [x] Azoth-owned block, fish, log-strip, and plant-harvest gate design
+- [x] Starter `recipes.yml` loaded at startup (craft gates + depreciation metadata)
+- [x] Craft recipe gate listener + shared craft-output lookup for payment depreciation
 
 ## Next
 
@@ -85,6 +87,7 @@ levels with Azoth combat levels.
 | 2026-08-08 | No material wildcards | Predictable configuration |
 | 2026-08-10 | Azoth owns gathering enforcement | Keep world policy with the interaction host |
 | 2026-08-10 | Core ProfessionService always registered | Required dependency has a stable integration point |
+| 2026-08-21 | `recipes.yml` registers craft metadata at startup | Profession gates + depreciation share one craft-output index |
 
 ## Open questions
 
