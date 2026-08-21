@@ -36,7 +36,7 @@ subprojects {
     apply(plugin = "net.ltgt.errorprone")
 
     val moduleName = name
-    val javaVersion = if (moduleName == "paper") 25 else 21
+    val javaVersion = 25
     configure<JavaPluginExtension> {
         toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
     }

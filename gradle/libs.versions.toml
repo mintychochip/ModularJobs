@@ -1,7 +1,7 @@
 [versions]
 # Build plugins
 # run-paper 3.x uses Fill API (v2 sunset); needed for Paper 26.x downloads
-run-paper = "3.0.2"
+run-paper = "3.1.0"
 # GradleUp shadow 9.x: ASM supports Java 25 class files (major 69)
 shadow = "9.6.1"
 
@@ -9,15 +9,15 @@ shadow = "9.6.1"
 errorprone = "2.50.0"
 errorprone-plugin = "5.1.0"
 # Distinct keys so version catalog accessors don't nest under "spotbugs"
-spotbugs-tool = "4.10.3"
+spotbugs-tool = "4.9.7"
 spotbugs-gradle = "6.5.10"
 pmd = "7.26.0"
-checkstyle = "13.9.0"
+checkstyle = "13.11.0"
 
 # Core infrastructure
 kryo = "5.6.2"
 guava = "33.4.0-jre"
-hikari = "5.0.1"
+hikari = "7.0.2"
 caffeine = "3.2.2"
 exp4j = "0.4.8"
 gson = "2.11.0"
