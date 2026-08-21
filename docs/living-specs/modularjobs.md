@@ -92,6 +92,8 @@ Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.m
 
 - [ ] Keep living-spec horizons in sync when domain work ships
 - [ ] Align any remaining operator docs with MySQL-only persistence, optional
+- [ ] Server-skill alignment Wave 1: toolchain pins, `api-version` 26.2, CI action majors, nightly, Hikari 7.0.2 (`docs/superpowers/specs/2026-08-21-server-skill-alignment-design.md`)
+- [ ] Server-skill alignment Wave 2: Spotless + Google Checks fail-on-`check`, Fumadocs verify-docs gate
 
 ## Future
 
@@ -108,6 +110,7 @@ Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.m
 | 2026-08 | Secure editor via REST + MySQL, not Bytebin | Token ownership, shared durable store |
 | 2026-08-10 | Optional reflective Mint adapter + blackhole default | Base Paper builds stay independent of Mint while currency-required servers can fail fast |
 | 2026-08-21 | Rename Java packages to `dev.mintychochip` | Align plugin bootstrap, shadow jar, and published API coordinates |
+| 2026-08-21 | Align with server-development-skills except MySQL connect-only and `YY.M.D.REVISION` | Skills win on pins/CI/style/docs gate; AGENTS.md wins on schema ownership and CalVer |
 
 ## Open questions
 
