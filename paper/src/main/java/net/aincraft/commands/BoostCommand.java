@@ -9,8 +9,6 @@ import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -22,7 +20,6 @@ import java.util.stream.Collectors;
 import net.aincraft.boost.AdditiveBoostImpl;
 import net.aincraft.boost.ConditionTreeFormatter;
 import net.aincraft.boost.MultiplicativeBoostImpl;
-import net.aincraft.boost.SlotSetParser;
 import net.aincraft.boost.config.BoostSourceLoader;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
@@ -41,8 +38,6 @@ import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
 import net.aincraft.upgrade.UpgradeBoostDataService;
 import net.aincraft.util.DurationParser;
-import java.util.Map;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -54,6 +49,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 /**
  * Unified boost management command.
+ *
  * <p>
  * Subcommands:
  * <ul>
@@ -304,7 +300,7 @@ public final class BoostCommand implements JobsCommand {
     if (!timedBoosts.isEmpty()) {
       Messages.send(sender, "<secondary>Timed Boosts:");
       for (ActiveBoostData boost : timedBoosts) {
-        String remaining = DurationParser.formatRemaining(boost.started().getTime(),
+        String remaining = DurationParser.formatRemaining(boost.started().toEpochMilli(),
             boost.duration());
         String boostEffects = formatBoostEffects(boost.boostSource());
         Messages.send(sender,
@@ -379,7 +375,7 @@ public final class BoostCommand implements JobsCommand {
         if (boost.isExpired()) {
           continue;
         }
-        String remaining = DurationParser.formatRemaining(boost.started().getTime(),
+        String remaining = DurationParser.formatRemaining(boost.started().toEpochMilli(),
             boost.duration());
         String boostEffects = formatBoostEffects(boost.boostSource());
         Messages.send(sender,

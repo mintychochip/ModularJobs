@@ -1,6 +1,5 @@
 package net.aincraft.service;
 
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -68,7 +67,7 @@ public class TimedBoostDataServiceImpl implements TimedBoostDataService {
         target instanceof PlayerTarget playerTarget ? playerTarget.playerId().toString()
             : GLOBAL_IDENTIFIER;
     String sourceIdentifier = data.boostSource().key().toString();
-    Timestamp timestamp = Timestamp.from(Instant.now());
+    Instant timestamp = Instant.now();
     Duration duration = data.getDuration().orElse(null);
     timedBoostRepository.addBoost(
         new ActiveBoostData(targetIdentifier, sourceIdentifier, timestamp, duration,

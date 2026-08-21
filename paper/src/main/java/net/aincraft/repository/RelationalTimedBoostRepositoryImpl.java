@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -228,7 +228,7 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
       // Always persist pure identifiers from the value — never the composite cache key
       ps.setString(1, value.targetIdentifier());
       ps.setString(2, value.sourceIdentifier());
-      ps.setLong(3, value.started().getTime());
+      ps.setLong(3, value.started().toEpochMilli());
 
       Duration duration = value.duration();
       if (duration != null) {
@@ -246,7 +246,7 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
       String targetId = targetFromCacheKey(cacheKey);
       String sourceId = rs.getString("source_id");
       long millis = rs.getLong("epoch_millis");
-      Timestamp started = new Timestamp(millis);
+      Instant started = Instant.ofEpochMilli(millis);
 
       byte[] durationBlob = rs.getBytes("duration");
       Duration duration = null;

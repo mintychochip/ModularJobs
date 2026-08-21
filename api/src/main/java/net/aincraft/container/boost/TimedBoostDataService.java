@@ -1,7 +1,7 @@
 package net.aincraft.container.boost;
 
-import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import net.aincraft.container.BoostSource;
@@ -24,7 +24,7 @@ public interface TimedBoostDataService {
    * Active timed boost row. Expiry is computed from {@link #started} + {@link #duration};
    * expired rows are deleted by {@link TimedBoostDataService#findApplicableBoosts(Target)}.
    */
-  record ActiveBoostData(String targetIdentifier, String sourceIdentifier, Timestamp started,
+  record ActiveBoostData(String targetIdentifier, String sourceIdentifier, Instant started,
                          @Nullable Duration duration, BoostSource boostSource) {
 
     public boolean isExpired() {
@@ -38,7 +38,7 @@ public interface TimedBoostDataService {
       if (duration == null) {
         return false; // Permanent boost
       }
-      long expiresAt = started.getTime() + duration.toMillis();
+      long expiresAt = started.toEpochMilli() + duration.toMillis();
       return nowMillis > expiresAt;
     }
   }

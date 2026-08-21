@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.Target.GlobalTarget;
 import net.aincraft.repository.TimedBoostRepository;
-import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,13 +59,13 @@ class TimedBoostLifecycleTest {
 
   @Test
   void expiredBoostIsNotApplicableAndRemovedFromStorage() {
-    GlobalTarget target = new GlobalTarget();
+    final GlobalTarget target = new GlobalTarget();
     // Insert already-expired row via repository (simulates clock advancing past duration)
     Instant started = Instant.now().minus(Duration.ofHours(2));
     ActiveBoostData expired = new ActiveBoostData(
         "global",
         source.key().toString(),
-        Timestamp.from(started),
+        started,
         Duration.ofMinutes(5),
         source
     );
@@ -87,7 +85,7 @@ class TimedBoostLifecycleTest {
     ActiveBoostData permanent = new ActiveBoostData(
         "global",
         source.key().toString(),
-        Timestamp.from(Instant.now().minus(Duration.ofDays(365))),
+        Instant.now().minus(Duration.ofDays(365)),
         null,
         source
     );

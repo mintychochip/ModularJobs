@@ -153,12 +153,12 @@ public class BoostsCommand implements JobsCommand {
       return "Expired";
     }
 
-    long expiresAt = boost.started().getTime() + boost.duration().toMillis();
+    long expiresAt = boost.started().toEpochMilli() + boost.duration().toMillis();
     long remaining = expiresAt - System.currentTimeMillis();
 
     long hours = remaining / (1000 * 60 * 60);
-    long minutes = (remaining / (1000 * 60)) % 60;
-    long seconds = (remaining / 1000) % 60;
+    long minutes = remaining / (1000 * 60) % 60;
+    long seconds = remaining / 1000 % 60;
 
     if (hours > 0) {
       return String.format("%dh %dm", hours, minutes);
