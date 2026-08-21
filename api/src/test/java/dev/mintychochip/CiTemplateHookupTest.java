@@ -42,6 +42,10 @@ class CiTemplateHookupTest {
     assertFalse(
         text.contains("repo.incendo.org"),
         "incendo DNS failures must not participate in SNAPSHOT metadata lookup");
+    String ci = Files.readString(Path.of(requiredProperty("ci.workflow")));
+    assertTrue(
+        ci.contains("dev/mintychochip/databag/databag-api"),
+        "CI must verify the mintychochip databag-api GAV, not the legacy dev.databag artifact");
   }
 
   @Test

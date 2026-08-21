@@ -124,7 +124,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: mintychochip/databag
-          ref: 373f7d0991e121afbcccf32015105010cafab2be
+          ref: 59a9798ddfb6c9ae3b6c3cb37326b4e921349f9e
           path: databag
           fetch-depth: 1
 
@@ -157,7 +157,7 @@ jobs:
       - name: Verify required local dependency artifacts
         run: |
           test -f ../craftux/build/maven-repo/dev/craftux/craftux-paper/1.0.2/craftux-paper-1.0.2.pom
-          test -n "$(find ../databag/build/maven-repo/dev/databag/databag/0.0.0-SNAPSHOT -name 'databag-*.pom' -print -quit)"
+          test -n "$(find ../databag/build/maven-repo/dev/mintychochip/databag/databag-api -name 'databag-api-*.pom' -print -quit)"
           test -n "$(find ../conditions/build/maven-repo/dev/conditions/api/0.0.0-SNAPSHOT -name 'api-*.pom' -print -quit)"
 
       - name: Grant execute permission for gradlew
