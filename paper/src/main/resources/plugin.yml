@@ -2,7 +2,7 @@ name: ModularJobs
 version: '${version}'
 main: dev.mintychochip.ModularJobsBootstrap
 authors: [ ModularJobs contributors ]
-api-version: '1.21'
+api-version: '26.2'
 softdepend:
   - PlaceholderAPI
   - Mint
