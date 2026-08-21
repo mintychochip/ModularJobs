@@ -40,6 +40,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Checkout conditions dependency
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: aincraft-org/conditions
+          ref: 7d30d892b66b7ab440edd881105b1c4ad4ab4c0e
+          path: conditions
+          fetch-depth: 1
+
+      - name: Link conditions local Maven repository
+        run: ln -s "$GITHUB_WORKSPACE/conditions" "$GITHUB_WORKSPACE/../conditions"
+
+      - name: Publish conditions local Maven artifacts
+        working-directory: conditions
+        run: |
+          chmod +x gradlew
+          ./gradlew :api:publishMavenPublicationToLocalBuildRepoRepository --console=plain --no-daemon
+
       - name: Test and build API
         run: ./gradlew --no-daemon :api:test :api:build
 
