@@ -16,9 +16,24 @@ import net.aincraft.boost.conditions.PlayerResourceConditionImpl;
 import net.aincraft.boost.conditions.PotionConditionImpl;
 import net.aincraft.boost.conditions.PotionTypeConditionImpl;
 import net.aincraft.boost.conditions.SneakConditionImpl;
+import net.aincraft.boost.conditions.SnapshotCondition;
 import net.aincraft.boost.conditions.SprintConditionImpl;
 import net.aincraft.boost.conditions.WeatherConditionImpl;
 import net.aincraft.boost.conditions.WorldConditionImpl;
+import dev.conditions.AllOfCondition;
+import dev.conditions.AlwaysCondition;
+import dev.conditions.AnyOfCondition;
+import dev.conditions.BiomeCondition;
+import dev.conditions.FluidCondition;
+import dev.conditions.InvertedCondition;
+import dev.conditions.JobCondition;
+import dev.conditions.PlayerResourceCondition;
+import dev.conditions.PotionAmplifierCondition;
+import dev.conditions.PotionPresentCondition;
+import dev.conditions.SneakingCondition;
+import dev.conditions.SprintingCondition;
+import dev.conditions.WeatherCondition;
+import dev.conditions.WorldCondition;
 import net.aincraft.boost.config.BoostSourceConfig.BoostConfig;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
 import net.aincraft.boost.config.BoostSourceConfig.RuleConfig;
@@ -101,6 +116,9 @@ public final class BoostSourceConfigSerializer {
    * @throws IllegalArgumentException for unsupported condition implementations
    */
   public static ConditionConfig serializeCondition(@NotNull Condition condition) {
+    if (condition instanceof SnapshotCondition snapshot) {
+      return serializeApi(snapshot.delegate());
+    }
     return switch (condition) {
       case AlwaysTrueConditionImpl ignored -> always();
       case BiomeConditionImpl biome -> simple("biome", biome.biomeKey().asString());
@@ -124,6 +142,96 @@ public final class BoostSourceConfigSerializer {
         throw new IllegalArgumentException(
             "Cannot serialize condition type: " + condition.getClass().getName());
       }
+    };
+  }
+
+  private static ConditionConfig serializeApi(dev.conditions.Condition condition) {
+    return switch (condition) {
+      case AlwaysCondition ignored -> always();
+      case AllOfCondition all -> {
+        if (all.terms().isEmpty()) {
+          yield always();
+        }
+        List<ConditionConfig> children = all.terms().stream()
+            .map(BoostSourceConfigSerializer::serializeApi)
+            .toList();
+        yield new ConditionConfig(
+            "and", null, null, null, children, null, null, null, null, null, null, null);
+      }
+      case AnyOfCondition any -> {
+        List<ConditionConfig> children = any.terms().stream()
+            .map(BoostSourceConfigSerializer::serializeApi)
+            .toList();
+        yield new ConditionConfig(
+            "or", null, null, null, children, null, null, null, null, null, null, null);
+      }
+      case InvertedCondition inverted -> new ConditionConfig(
+          "not", null, null, null, null, serializeApi(inverted.term()),
+          null, null, null, null, null, null);
+      case SneakingCondition sneak -> simple("sneaking", sneak.expected());
+      case SprintingCondition sprint -> simple("sprinting", sprint.expected());
+      case BiomeCondition biome -> simple("biome", biome.biomeKey().asString());
+      case WorldCondition world -> simple("world", preferredWorldName(world.worldName()));
+      case WeatherCondition weather ->
+          simple("weather", weather.state().name().toLowerCase(Locale.ROOT));
+      case FluidCondition fluid -> new ConditionConfig(
+          "liquid", null, fluid.fluidKey().asString(), null, null, null,
+          null, null, null, null, null, true);
+      case PlayerResourceCondition resource -> new ConditionConfig(
+          "player_resource",
+          operatorName(mapOperator(resource.operator())),
+          resource.expected(),
+          null, null, null,
+          resource.type().name().toLowerCase(Locale.ROOT),
+          null, null, null, null, null);
+      case PotionPresentCondition potion -> new ConditionConfig(
+          "potion_effect", null, null, null, null, null, null,
+          stripMinecraft(potion.effectKey().asString()),
+          null, null, null, null);
+      case PotionAmplifierCondition potion -> new ConditionConfig(
+          "potion_effect",
+          operatorName(mapOperator(potion.operator())),
+          null, null, null, null, null,
+          stripMinecraft(potion.effectKey().asString()),
+          potion.expected(),
+          null, null, null);
+      case JobCondition job -> {
+        List<String> keys = new ArrayList<>(job.jobKeys());
+        if (keys.size() == 1) {
+          yield simple("job", stripJobNamespace(keys.getFirst()));
+        }
+        List<Object> values = keys.stream()
+            .map(BoostSourceConfigSerializer::stripJobNamespace)
+            .map(s -> (Object) s)
+            .toList();
+        yield new ConditionConfig(
+            "job", null, null, values, null, null, null, null, null, null, null, null);
+      }
+      default -> throw new IllegalArgumentException(
+          "Cannot serialize condition type: " + condition.getClass().getName());
+    };
+  }
+
+  private static String preferredWorldName(String worldName) {
+    if (worldName.startsWith("minecraft:")) {
+      return worldName.substring("minecraft:".length());
+    }
+    return worldName;
+  }
+
+  private static String stripMinecraft(String key) {
+    return key.startsWith("minecraft:") ? key.substring("minecraft:".length()) : key;
+  }
+
+  private static RelationalOperator mapOperator(
+      dev.conditions.RelationalOperator operator) {
+    return switch (operator) {
+      case LESS_THAN -> RelationalOperator.LESS_THAN;
+      case LESS_THAN_OR_EQUAL -> RelationalOperator.LESS_THAN_OR_EQUAL;
+      case GREATER_THAN -> RelationalOperator.GREATER_THAN;
+      case GREATER_THAN_OR_EQUAL -> RelationalOperator.GREATER_THAN_OR_EQUAL;
+      case EQUAL -> RelationalOperator.EQUAL;
+      case NOT_EQUAL -> RelationalOperator.NOT_EQUAL;
     };
   }
 

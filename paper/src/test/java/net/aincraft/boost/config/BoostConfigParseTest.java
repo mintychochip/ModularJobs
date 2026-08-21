@@ -17,8 +17,9 @@ import java.util.Map;
 import net.aincraft.boost.BoostFactoryImpl;
 import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;
-import net.aincraft.boost.conditions.SneakConditionImpl;
-import net.aincraft.boost.conditions.WorldConditionImpl;
+import net.aincraft.boost.conditions.SnapshotCondition;
+import dev.conditions.SneakingCondition;
+import dev.conditions.WorldCondition;
 import net.aincraft.boost.config.BoostSourceConfig.BoostConfig;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
 import net.aincraft.boost.config.BoostSourceConfig.RuleConfig;
@@ -53,8 +54,8 @@ class BoostConfigParseTest {
         "world", null, "world_nether", null, null, null, null, null, null, null, null, null
     );
     Condition condition = assertDoesNotThrow(() -> conditionParser.parse(config));
-    WorldConditionImpl world = assertInstanceOf(WorldConditionImpl.class, condition);
-    assertEquals(Key.key("minecraft", "world_nether"), world.worldKey());
+    WorldCondition world = assertInstanceOf(WorldCondition.class, SnapshotCondition.unwrap(condition));
+    assertEquals("world_nether", world.worldName());
   }
 
   @Test
@@ -63,8 +64,8 @@ class BoostConfigParseTest {
         "world", null, "minecraft:the_end", null, null, null, null, null, null, null, null, null
     );
     Condition condition = conditionParser.parse(config);
-    WorldConditionImpl world = assertInstanceOf(WorldConditionImpl.class, condition);
-    assertEquals(Key.key("minecraft", "the_end"), world.worldKey());
+    WorldCondition world = assertInstanceOf(WorldCondition.class, SnapshotCondition.unwrap(condition));
+    assertEquals("minecraft:the_end", world.worldName());
   }
 
   @Test
@@ -74,7 +75,7 @@ class BoostConfigParseTest {
 
     Condition sneak = conditionParser.parse(
         new ConditionConfig("sneaking", null, true, null, null, null, null, null, null, null, null, null));
-    assertInstanceOf(SneakConditionImpl.class, sneak);
+    assertInstanceOf(SneakingCondition.class, SnapshotCondition.unwrap(sneak));
 
     Condition resource = conditionParser.parse(
         new ConditionConfig(

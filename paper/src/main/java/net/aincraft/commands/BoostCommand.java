@@ -20,28 +20,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.aincraft.boost.AdditiveBoostImpl;
+import net.aincraft.boost.ConditionTreeFormatter;
 import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.boost.SlotSetParser;
-import net.aincraft.boost.conditions.BiomeConditionImpl;
-import net.aincraft.boost.conditions.ComposableConditionImpl;
-import net.aincraft.boost.conditions.LiquidConditionImpl;
-import net.aincraft.boost.conditions.NegatingConditionImpl;
-import net.aincraft.boost.conditions.PlayerResourceConditionImpl;
-import net.aincraft.boost.conditions.PotionConditionImpl;
-import net.aincraft.boost.conditions.PotionTypeConditionImpl;
-import net.aincraft.boost.conditions.SneakConditionImpl;
-import net.aincraft.boost.conditions.SprintConditionImpl;
-import net.aincraft.boost.conditions.WeatherConditionImpl;
-import net.aincraft.boost.conditions.WorldConditionImpl;
 import net.aincraft.boost.config.BoostSourceLoader;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData.PassiveBoostData;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
-import net.aincraft.container.boost.Condition;
 import net.aincraft.service.ItemBoostDataService;
-import net.aincraft.container.boost.RelationalOperator;
 import net.aincraft.container.boost.RuledBoostSource;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.TimedBoostDataService;
@@ -619,7 +607,7 @@ public final class BoostCommand implements JobsCommand {
       Messages.send(sender, "<neutral>    Boost: <accent>" + formatBoost(rule.boost()));
       Messages.send(sender, "<neutral>    Condition:");
 
-      List<String> tree = formatConditionTree(rule.condition(), "      ");
+      List<String> tree = ConditionTreeFormatter.format(rule.condition(), "      ");
       for (String line : tree) {
         Messages.send(sender, "<accent>" + line);
       }
@@ -628,51 +616,6 @@ public final class BoostCommand implements JobsCommand {
         Messages.send(sender, "");
       }
     }
-  }
-
-  private List<String> formatConditionTree(Condition condition, String indent) {
-    List<String> lines = new ArrayList<>();
-    formatConditionRecursive(condition, indent, "", true, lines);
-    return lines;
-  }
-
-  private void formatConditionRecursive(Condition condition, String baseIndent, String prefix,
-      boolean isLast, List<String> lines) {
-    String connector = isLast ? "L-- " : "|-- ";
-    String childPrefix = isLast ? "    " : "|   ";
-
-    switch (condition) {
-      case ComposableConditionImpl composite -> {
-        lines.add(baseIndent + prefix + connector + composite.logicalOperator().name());
-        formatConditionRecursive(composite.a(), baseIndent, prefix + childPrefix, false, lines);
-        formatConditionRecursive(composite.b(), baseIndent, prefix + childPrefix, true, lines);
-      }
-      case NegatingConditionImpl negated -> {
-        lines.add(baseIndent + prefix + connector + "NOT");
-        formatConditionRecursive(negated.condition(), baseIndent, prefix + childPrefix, true, lines);
-      }
-      case BiomeConditionImpl b -> lines.add(baseIndent + prefix + connector + "Biome: " + b.biomeKey().value());
-      case WorldConditionImpl w -> lines.add(baseIndent + prefix + connector + "World: " + w.worldKey().value());
-      case SneakConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sneaking: " + s.state());
-      case SprintConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sprinting: " + s.state());
-      case PlayerResourceConditionImpl r -> lines.add(baseIndent + prefix + connector + r.type() + " " + formatOperator(r.operator()) + " " + r.expected());
-      case PotionConditionImpl p -> lines.add(baseIndent + prefix + connector + "Potion: " + p.effectKey().value() + " " + formatOperator(p.relationalOperator()));
-      case PotionTypeConditionImpl p -> lines.add(baseIndent + prefix + connector + "Has Potion: " + p.effectKey().value());
-      case WeatherConditionImpl w -> lines.add(baseIndent + prefix + connector + "Weather: " + w.state());
-      case LiquidConditionImpl l -> lines.add(baseIndent + prefix + connector + "In Liquid: " + l.materialKey().toLowerCase());
-      default -> lines.add(baseIndent + prefix + connector + condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", ""));
-    }
-  }
-
-  private String formatOperator(RelationalOperator op) {
-    return switch (op) {
-      case LESS_THAN -> "<";
-      case LESS_THAN_OR_EQUAL -> "<=";
-      case GREATER_THAN -> ">";
-      case GREATER_THAN_OR_EQUAL -> ">=";
-      case EQUAL -> "==";
-      case NOT_EQUAL -> "!=";
-    };
   }
 
   private String formatBoostEffects(BoostSource source) {

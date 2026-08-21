@@ -27,7 +27,9 @@ import java.sql.SQLException;
 import net.aincraft.registry.SimpleRegistryImpl;
 import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.DatabaseType;
-import net.aincraft.serialization.KryoCodecRegistry;
+import net.aincraft.boost.BoostDataCodec;
+import net.aincraft.boost.BoostFactoryImpl;
+import dev.conditions.gson.GsonConditionSerializer;
 import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
 import net.aincraft.upgrade.SkillTree;
@@ -141,7 +143,8 @@ class BoostEngineAggregationTest {
 
   private static ItemBoostDataService unusedItemService() {
     // evaluateSources does not call item service; real concrete still wires BoostEngine
-    return new ItemBoostDataService(new KryoCodecRegistry());
+    return new ItemBoostDataService(
+        new BoostDataCodec(GsonConditionSerializer.gson(), BoostFactoryImpl.INSTANCE));
   }
 
   private static TimedBoostDataService unusedTimedService() {

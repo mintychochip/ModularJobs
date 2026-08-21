@@ -11,9 +11,6 @@ import net.aincraft.boost.BoostFactoryImpl;
 import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;
 import net.aincraft.boost.conditions.AlwaysTrueConditionImpl;
-import net.aincraft.boost.conditions.Conditions;
-import net.aincraft.boost.conditions.SneakConditionImpl;
-import net.aincraft.boost.conditions.WorldConditionImpl;
 import net.aincraft.boost.config.BoostSourceConfig.BoostConfig;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
 import net.aincraft.boost.config.BoostSourceConfig.RuleConfig;
@@ -56,9 +53,9 @@ class BoostSourceConfigSerializerTest {
 
   @Test
   void serializeCompositeAndWorldSneakingRoundTrip() {
-    Condition world = Conditions.world(Key.key("minecraft", "world_nether"));
-    Condition sneak = Conditions.sneaking(true);
-    Condition and = Conditions.compose(world, sneak, LogicalOperator.AND);
+    Condition world = BoostFactoryImpl.INSTANCE.world("world_nether");
+    Condition sneak = BoostFactoryImpl.INSTANCE.sneaking(true);
+    Condition and = BoostFactoryImpl.INSTANCE.compose(world, sneak, LogicalOperator.AND);
     Rule rule = new Rule(and, 100, new MultiplicativeBoostImpl(BigDecimal.valueOf(3.0)));
     BoostSource source = new RuledBoostSourceImpl(
         List.of(rule), Key.key("modularjobs", "mining_boost"), "nether sneak");
@@ -71,13 +68,13 @@ class BoostSourceConfigSerializerTest {
     assertEquals(1, ruled.rules().size());
     Rule reparsedRule = ruled.rules().getFirst();
     assertEquals(100, reparsedRule.priority());
-    assertInstanceOf(net.aincraft.boost.conditions.ComposableConditionImpl.class,
+    assertInstanceOf(net.aincraft.boost.conditions.SnapshotCondition.class,
         reparsedRule.condition());
   }
 
   @Test
   void serializeWorldPrefersPlainName() {
-    Condition world = new WorldConditionImpl(Key.key("minecraft", "world_nether"));
+    Condition world = BoostFactoryImpl.INSTANCE.world("world_nether");
     ConditionConfig config = BoostSourceConfigSerializer.serializeCondition(world);
     assertEquals("world", config.type());
     assertEquals("world_nether", config.value());
@@ -86,18 +83,19 @@ class BoostSourceConfigSerializerTest {
   @Test
   void serializeSneaking() {
     ConditionConfig config =
-        BoostSourceConfigSerializer.serializeCondition(new SneakConditionImpl(true));
+        BoostSourceConfigSerializer.serializeCondition(BoostFactoryImpl.INSTANCE.sneaking(true));
     assertEquals("sneaking", config.type());
     assertEquals(true, config.value());
   }
 
   @Test
   void serializeFlattenedAnd() {
-    Condition a = Conditions.sneaking(true);
-    Condition b = Conditions.sprinting(false);
-    Condition c = Conditions.weather(net.aincraft.container.boost.WeatherState.RAINING);
-    Condition composite = Conditions.compose(
-        Conditions.compose(a, b, LogicalOperator.AND), c, LogicalOperator.AND);
+    Condition a = BoostFactoryImpl.INSTANCE.sneaking(true);
+    Condition b = BoostFactoryImpl.INSTANCE.sprinting(false);
+    Condition c = BoostFactoryImpl.INSTANCE.weather(
+        net.aincraft.container.boost.WeatherState.RAINING);
+    Condition composite = BoostFactoryImpl.INSTANCE.compose(
+        BoostFactoryImpl.INSTANCE.compose(a, b, LogicalOperator.AND), c, LogicalOperator.AND);
 
     ConditionConfig config = BoostSourceConfigSerializer.serializeCondition(composite);
     assertEquals("and", config.type());

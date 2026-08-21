@@ -7,26 +7,14 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.aincraft.boost.AdditiveBoostImpl;
+import net.aincraft.boost.ConditionTreeFormatter;
 import net.aincraft.boost.MultiplicativeBoostImpl;
-import net.aincraft.boost.conditions.BiomeConditionImpl;
-import net.aincraft.boost.conditions.ComposableConditionImpl;
-import net.aincraft.boost.conditions.LiquidConditionImpl;
-import net.aincraft.boost.conditions.NegatingConditionImpl;
-import net.aincraft.boost.conditions.PlayerResourceConditionImpl;
-import net.aincraft.boost.conditions.PotionConditionImpl;
-import net.aincraft.boost.conditions.PotionTypeConditionImpl;
-import net.aincraft.boost.conditions.SneakConditionImpl;
-import net.aincraft.boost.conditions.SprintConditionImpl;
-import net.aincraft.boost.conditions.WeatherConditionImpl;
-import net.aincraft.boost.conditions.WorldConditionImpl;
 import net.aincraft.boost.config.BoostSourceLoader;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
-import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.RuledBoostSource;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.registry.Registry;
@@ -156,7 +144,7 @@ public final class SourceCommand implements JobsCommand {
 
       // Condition tree
       Messages.send(sender, "<neutral>    Condition:");
-      List<String> conditionTree = formatConditionTree(rule.condition(), "      ");
+      List<String> conditionTree = ConditionTreeFormatter.format(rule.condition(), "      ");
       for (String line : conditionTree) {
         Messages.send(sender, "<accent>" + line);
       }
@@ -165,50 +153,6 @@ public final class SourceCommand implements JobsCommand {
         sender.sendMessage(Component.empty());
       }
     }
-  }
-
-  private List<String> formatConditionTree(Condition condition, String indent) {
-    List<String> lines = new ArrayList<>();
-    formatConditionTreeRecursive(condition, indent, "", true, lines);
-    return lines;
-  }
-
-  private void formatConditionTreeRecursive(Condition condition, String baseIndent, String prefix, boolean isLast, List<String> lines) {
-    String connector = isLast ? "└── " : "├── ";
-    String childPrefix = isLast ? "    " : "│   ";
-
-    switch (condition) {
-      case ComposableConditionImpl composite -> {
-        lines.add(baseIndent + prefix + connector + composite.logicalOperator().name());
-        formatConditionTreeRecursive(composite.a(), baseIndent, prefix + childPrefix, false, lines);
-        formatConditionTreeRecursive(composite.b(), baseIndent, prefix + childPrefix, true, lines);
-      }
-      case NegatingConditionImpl negated -> {
-        lines.add(baseIndent + prefix + connector + "NOT");
-        formatConditionTreeRecursive(negated.condition(), baseIndent, prefix + childPrefix, true, lines);
-      }
-      case BiomeConditionImpl b -> lines.add(baseIndent + prefix + connector + "Biome: " + b.biomeKey().value());
-      case WorldConditionImpl w -> lines.add(baseIndent + prefix + connector + "World: " + w.worldKey().value());
-      case SneakConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sneaking: " + s.state());
-      case SprintConditionImpl s -> lines.add(baseIndent + prefix + connector + "Sprinting: " + s.state());
-      case PlayerResourceConditionImpl r -> lines.add(baseIndent + prefix + connector + r.type() + " " + formatOperator(r.operator()) + " " + r.expected());
-      case PotionConditionImpl p -> lines.add(baseIndent + prefix + connector + "Potion: " + p.effectKey().value() + " " + p.conditionType() + " " + formatOperator(p.relationalOperator()) + " " + p.expected());
-      case PotionTypeConditionImpl p -> lines.add(baseIndent + prefix + connector + "Has Potion: " + p.effectKey().value());
-      case WeatherConditionImpl w -> lines.add(baseIndent + prefix + connector + "Weather: " + w.state());
-      case LiquidConditionImpl l -> lines.add(baseIndent + prefix + connector + "In Liquid: " + l.materialKey().toLowerCase());
-      default -> lines.add(baseIndent + prefix + connector + condition.getClass().getSimpleName().replace("Impl", "").replace("Condition", ""));
-    }
-  }
-
-  private String formatOperator(net.aincraft.container.boost.RelationalOperator op) {
-    return switch (op) {
-      case LESS_THAN -> "<";
-      case LESS_THAN_OR_EQUAL -> "<=";
-      case GREATER_THAN -> ">";
-      case GREATER_THAN_OR_EQUAL -> ">=";
-      case EQUAL -> "==";
-      case NOT_EQUAL -> "!=";
-    };
   }
 
   private String formatBoost(Boost boost) {

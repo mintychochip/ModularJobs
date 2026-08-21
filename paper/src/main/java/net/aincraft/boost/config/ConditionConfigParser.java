@@ -2,6 +2,7 @@ package net.aincraft.boost.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.aincraft.boost.conditions.SnapshotCondition;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
 import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.LogicalOperator;
@@ -32,7 +33,7 @@ public final class ConditionConfigParser {
    */
   public Condition parse(ConditionConfig config) {
     return switch (config.type().toLowerCase()) {
-      case "always" -> new AlwaysTrueCondition();
+      case "always" -> SnapshotCondition.wrap(dev.conditions.Conditions.always());
       case "biome" -> parseBiome(config);
       case "world" -> parseWorld(config);
       case "sneaking" -> parseSneaking(config);
@@ -222,13 +223,4 @@ public final class ConditionConfigParser {
     };
   }
 
-  /**
-   * Always-true condition for base rules without conditions.
-   */
-  private static class AlwaysTrueCondition implements Condition {
-    @Override
-    public boolean applies(net.aincraft.container.BoostContext context) {
-      return true;
-    }
-  }
 }

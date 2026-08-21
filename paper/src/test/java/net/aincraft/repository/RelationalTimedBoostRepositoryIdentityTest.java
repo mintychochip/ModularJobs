@@ -18,11 +18,12 @@ import java.time.Instant;
 import java.util.List;
 import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;
-import net.aincraft.boost.conditions.SneakConditionImpl;
+import net.aincraft.boost.BoostDataCodec;
+import net.aincraft.boost.BoostFactoryImpl;
+import dev.conditions.gson.GsonConditionSerializer;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
-import net.aincraft.serialization.KryoCodecRegistry;
 import net.aincraft.service.TimedBoostDataServiceImpl;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.NotNull;
@@ -65,10 +66,11 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
     ConnectionSource connectionSource = new FixedConnectionSource(connection);
     repository = RelationalTimedBoostRepositoryImpl.createSynchronous(
-        connectionSource, new KryoCodecRegistry());
+        connectionSource,
+        new BoostDataCodec(GsonConditionSerializer.gson(), BoostFactoryImpl.INSTANCE));
 
     source = new RuledBoostSourceImpl(
-        List.of(new Rule(new SneakConditionImpl(false), 1,
+        List.of(new Rule(BoostFactoryImpl.INSTANCE.sneaking(false), 1,
             new MultiplicativeBoostImpl(new BigDecimal("2.0")))),
         Key.key("modularjobs", "timed_test"),
         "test"

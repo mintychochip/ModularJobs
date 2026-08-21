@@ -1,7 +1,8 @@
 package net.aincraft.boost;
 
 import java.math.BigDecimal;
-import net.aincraft.boost.conditions.Conditions;
+import net.aincraft.boost.conditions.SnapshotCondition;
+import dev.conditions.Conditions;
 import net.aincraft.container.Boost;
 import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.LogicalOperator;
@@ -14,17 +15,13 @@ import net.aincraft.container.boost.factories.ConditionFactory;
 import net.kyori.adventure.key.Key;
 
 /**
- * Single instance of {@link BoostFactory} and {@link ConditionFactory} that delegates to
- * {@link net.aincraft.boost.conditions.Conditions} and the record boost implementations.
- * <p>
- * String keys without a namespace are normalized to {@code minecraft:} before being turned
- * into {@link Key} values.
+ * Boost and condition factory. Conditions are snapshot-graph types from
+ * {@code dev.conditions}, adapted onto the boost {@link Condition} interface.
  */
 public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
 
   public static final BoostFactoryImpl INSTANCE = new BoostFactoryImpl();
 
-  /** Singleton instance; construction is private to this class. */
   private BoostFactoryImpl() {}
 
   @Override
@@ -39,69 +36,82 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
 
   @Override
   public Condition biome(String biomeKey) {
-    return Conditions.biome(toKey(biomeKey));
+    return SnapshotCondition.wrap(Conditions.biome(toKey(biomeKey)));
   }
 
   @Override
   public Condition world(String worldName) {
-    return Conditions.world(toKey(worldName));
+    return SnapshotCondition.wrap(Conditions.world(worldName));
   }
 
   @Override
   public Condition playerResource(PlayerResourceType type, double expected,
       RelationalOperator operator) {
-    return Conditions.playerResource(type, expected, operator);
+    return SnapshotCondition.wrap(
+        Conditions.playerResource(mapResource(type), mapOperator(operator), expected));
   }
 
   @Override
   public Condition sneaking(boolean state) {
-    return Conditions.sneaking(state);
+    return SnapshotCondition.wrap(Conditions.sneaking(state));
   }
 
   @Override
   public Condition sprinting(boolean state) {
-    return Conditions.sprinting(state);
+    return SnapshotCondition.wrap(Conditions.sprinting(state));
   }
 
   @Override
   public Condition negate(Condition condition) {
-    return Conditions.negate(condition);
+    return SnapshotCondition.wrap(Conditions.inverted(SnapshotCondition.unwrap(condition)));
   }
 
   @Override
   public Condition liquid(String materialKey) throws IllegalArgumentException {
-    return Conditions.liquid(materialKey);
+    return SnapshotCondition.wrap(Conditions.fluid(toKey(materialKey)));
   }
 
   @Override
   public Condition potionType(String potionEffectTypeKey) {
-    return Conditions.potionType(toKey(potionEffectTypeKey));
+    return SnapshotCondition.wrap(Conditions.potionPresent(toKey(potionEffectTypeKey)));
   }
 
   @Override
   public Condition potion(String potionEffectTypeKey, int expected,
       PotionConditionType conditionType, RelationalOperator operator) {
-    return Conditions.potion(toKey(potionEffectTypeKey), expected, conditionType, operator);
+    Key key = toKey(potionEffectTypeKey);
+    dev.conditions.RelationalOperator op = mapOperator(operator);
+    return SnapshotCondition.wrap(switch (conditionType) {
+      case AMPLIFIER -> Conditions.potionAmplifier(key, op, expected);
+      case DURATION -> Conditions.potionDuration(key, op, expected);
+    });
   }
 
   @Override
   public Condition compose(Condition a, Condition b, LogicalOperator operator) {
-    return Conditions.compose(a, b, operator);
+    dev.conditions.Condition left = SnapshotCondition.unwrap(a);
+    dev.conditions.Condition right = SnapshotCondition.unwrap(b);
+    dev.conditions.Condition composed = switch (operator) {
+      case AND -> Conditions.allOf(left, right);
+      case OR -> Conditions.anyOf(left, right);
+      default -> ctx -> operator.test(left.test(ctx), right.test(ctx));
+    };
+    return SnapshotCondition.wrap(composed);
   }
 
   @Override
   public Condition weather(WeatherState state) {
-    return Conditions.weather(state);
+    return SnapshotCondition.wrap(Conditions.weather(mapWeather(state)));
   }
 
   @Override
   public Condition job(String jobKey) {
-    return Conditions.job(jobKey);
+    return SnapshotCondition.wrap(Conditions.job(jobKey));
   }
 
   @Override
   public Condition jobAny(String... jobKeys) {
-    return Conditions.jobAny(jobKeys);
+    return SnapshotCondition.wrap(Conditions.jobAny(jobKeys));
   }
 
   /**
@@ -121,5 +131,32 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
       return Key.key(trimmed.toLowerCase());
     }
     return Key.key("minecraft", trimmed.toLowerCase());
+  }
+
+  private static dev.conditions.PlayerResourceType mapResource(PlayerResourceType type) {
+    return switch (type) {
+      case HEALTH -> dev.conditions.PlayerResourceType.HEALTH;
+      case HUNGER -> dev.conditions.PlayerResourceType.HUNGER;
+      case EXPERIENCE -> dev.conditions.PlayerResourceType.EXPERIENCE;
+    };
+  }
+
+  private static dev.conditions.RelationalOperator mapOperator(RelationalOperator operator) {
+    return switch (operator) {
+      case LESS_THAN -> dev.conditions.RelationalOperator.LESS_THAN;
+      case LESS_THAN_OR_EQUAL -> dev.conditions.RelationalOperator.LESS_THAN_OR_EQUAL;
+      case GREATER_THAN -> dev.conditions.RelationalOperator.GREATER_THAN;
+      case GREATER_THAN_OR_EQUAL -> dev.conditions.RelationalOperator.GREATER_THAN_OR_EQUAL;
+      case EQUAL -> dev.conditions.RelationalOperator.EQUAL;
+      case NOT_EQUAL -> dev.conditions.RelationalOperator.NOT_EQUAL;
+    };
+  }
+
+  private static dev.conditions.WeatherState mapWeather(WeatherState state) {
+    return switch (state) {
+      case THUNDERING -> dev.conditions.WeatherState.THUNDERING;
+      case RAINING -> dev.conditions.WeatherState.RAINING;
+      case CLEAR -> dev.conditions.WeatherState.CLEAR;
+    };
   }
 }

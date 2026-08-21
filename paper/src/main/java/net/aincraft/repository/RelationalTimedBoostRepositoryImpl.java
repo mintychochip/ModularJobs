@@ -13,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import net.aincraft.boost.BoostDataCodec;
 import net.aincraft.container.BoostSource;
+import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBoostData;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
-import net.aincraft.serialization.KryoCodecRegistry;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +40,6 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
       SqlStatements.load("time_boosts/delete.sql");
 
   private final ConnectionSource connectionSource;
-  private final KryoCodecRegistry codecRegistry;
   private final RelationalRepositoryImpl<String, ActiveBoostData> relational;
   /** Null when constructed for synchronous (test) access without write-back. */
   @Nullable
@@ -48,8 +48,8 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   private final Map<String, Set<String>> knownBoostKeys = new ConcurrentHashMap<>();
 
   public RelationalTimedBoostRepositoryImpl(Plugin plugin, ConnectionSource connectionSource,
-      KryoCodecRegistry codecRegistry) {
-    this(connectionSource, codecRegistry, plugin);
+      BoostDataCodec codec) {
+    this(connectionSource, codec, plugin);
   }
 
   /**
@@ -57,17 +57,16 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
    * Still uses the production SQL context.
    */
   static RelationalTimedBoostRepositoryImpl createSynchronous(
-      ConnectionSource connectionSource, KryoCodecRegistry codecRegistry) {
-    return new RelationalTimedBoostRepositoryImpl(connectionSource, codecRegistry, null);
+      ConnectionSource connectionSource, BoostDataCodec codec) {
+    return new RelationalTimedBoostRepositoryImpl(connectionSource, codec, null);
   }
 
   private RelationalTimedBoostRepositoryImpl(
       ConnectionSource connectionSource,
-      KryoCodecRegistry codecRegistry,
+      BoostDataCodec codec,
       @Nullable Plugin plugin) {
     this.connectionSource = connectionSource;
-    this.codecRegistry = codecRegistry;
-    TimedBoostRelationalContext context = new TimedBoostRelationalContext(codecRegistry);
+    TimedBoostRelationalContext context = new TimedBoostRelationalContext(codec);
     this.relational = new RelationalRepositoryImpl<>(connectionSource, context);
     if (plugin != null) {
       this.writeBack = WriteBackRepositoryImpl.create(plugin, relational, 10L);
@@ -196,10 +195,10 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
   static final class TimedBoostRelationalContext
       implements RelationalRepositoryContext<String, ActiveBoostData> {
 
-    private final KryoCodecRegistry codecRegistry;
+    private final BoostDataCodec codec;
 
-    TimedBoostRelationalContext(KryoCodecRegistry codecRegistry) {
-      this.codecRegistry = codecRegistry;
+    TimedBoostRelationalContext(BoostDataCodec codec) {
+      this.codec = codec;
     }
 
     @Override
@@ -233,12 +232,13 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
 
       Duration duration = value.duration();
       if (duration != null) {
-        ps.setBytes(4, codecRegistry.encode(duration));
+        ps.setBytes(4, duration.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
       } else {
         ps.setNull(4, Types.BLOB);
       }
 
-      ps.setBytes(5, codecRegistry.encode(value.boostSource()));
+      Duration encodedDuration = duration == null ? Duration.ZERO : duration;
+      ps.setBytes(5, codec.write(new ConsumableBoostData(value.boostSource(), encodedDuration)));
     }
 
     @Override
@@ -250,12 +250,12 @@ public final class RelationalTimedBoostRepositoryImpl implements TimedBoostRepos
 
       byte[] durationBlob = rs.getBytes("duration");
       Duration duration = null;
-      if (durationBlob != null) {
-        duration = codecRegistry.decode(durationBlob, Duration.class);
+      if (durationBlob != null && durationBlob.length > 0) {
+        duration = Duration.parse(new String(durationBlob, java.nio.charset.StandardCharsets.UTF_8));
       }
 
       byte[] boostSourceBytes = rs.getBytes("boost_source");
-      BoostSource boostSource = codecRegistry.decode(boostSourceBytes, BoostSource.class);
+      BoostSource boostSource = codec.readSource(boostSourceBytes);
       return new ActiveBoostData(targetId, sourceId, started, duration, boostSource);
     }
   }
