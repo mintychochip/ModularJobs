@@ -1,6 +1,7 @@
 package net.aincraft.upgrade;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import net.aincraft.service.RecipeService;
@@ -175,7 +176,7 @@ public final class UpgradeEffectApplier implements NodeEffectApplier {
   }
 
   public void restoreEffects(Player player, UpgradeTree tree, Set<String> unlockedNodeKeys) {
-    java.util.Map<String, UpgradeNode> activeNodes = new java.util.HashMap<>();
+    Map<String, UpgradeNode> activeNodes = new HashMap<>();
 
     for (String nodeKey : unlockedNodeKeys) {
       var nodeOpt = tree.getNode(nodeKey);

@@ -31,7 +31,7 @@ final class HopperPayListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onMoveToFurnace(final InventoryMoveItemEvent event) {
+  void onMoveToFurnace(final InventoryMoveItemEvent event) {
     if (!exploitService.settings().preventHopperSmelt()) {
       return;
     }
@@ -45,7 +45,7 @@ final class HopperPayListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onMoveToBrewing(final InventoryMoveItemEvent event) {
+  void onMoveToBrewing(final InventoryMoveItemEvent event) {
     if (!exploitService.settings().preventHopperBrew()) {
       return;
     }
@@ -63,7 +63,7 @@ final class HopperPayListener implements Listener {
 
   /** Opening a machine re-enables payment attribution. */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onInteract(final PlayerInteractEvent event) {
+  void onInteract(final PlayerInteractEvent event) {
     if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
       return;
     }

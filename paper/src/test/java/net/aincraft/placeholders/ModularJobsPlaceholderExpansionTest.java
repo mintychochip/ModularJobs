@@ -90,7 +90,7 @@ class ModularJobsPlaceholderExpansionTest {
 
   private static JobService serviceWith(JobProgression... progressions) {
     return (JobService) java.lang.reflect.Proxy.newProxyInstance(
-        JobService.class.getClassLoader(), new Class<?>[] {JobService.class},
+        Thread.currentThread().getContextClassLoader(), new Class<?>[] {JobService.class},
         (proxy, method, args) -> {
           switch (method.getName()) {
             case "getJobs" -> {
@@ -129,7 +129,7 @@ class ModularJobsPlaceholderExpansionTest {
   private static JobProgression progression(String name, int level, String exp) {
     Job job = job(name);
     return (JobProgression) java.lang.reflect.Proxy.newProxyInstance(
-        JobProgression.class.getClassLoader(), new Class<?>[] {JobProgression.class},
+        Thread.currentThread().getContextClassLoader(), new Class<?>[] {JobProgression.class},
         (proxy, method, args) -> {
           switch (method.getName()) {
             case "job" -> {
@@ -153,7 +153,7 @@ class ModularJobsPlaceholderExpansionTest {
 
   private static Job job(String name) {
     return (Job) java.lang.reflect.Proxy.newProxyInstance(
-        Job.class.getClassLoader(), new Class<?>[] {Job.class},
+        Thread.currentThread().getContextClassLoader(), new Class<?>[] {Job.class},
         (proxy, method, args) -> {
           switch (method.getName()) {
             case "getPlainName" -> {
@@ -180,17 +180,25 @@ class ModularJobsPlaceholderExpansionTest {
 
   private static org.bukkit.OfflinePlayer offlinePlayer() {
     return (org.bukkit.OfflinePlayer) java.lang.reflect.Proxy.newProxyInstance(
-        org.bukkit.OfflinePlayer.class.getClassLoader(),
+        Thread.currentThread().getContextClassLoader(),
         new Class<?>[] {org.bukkit.OfflinePlayer.class},
         (proxy, method, args) ->
             method.getName().equals("getUniqueId") ? PLAYER : defaultValue(method.getReturnType()));
   }
 
   private static Object defaultValue(Class<?> type) {
-    if (type == boolean.class) return false;
-    if (type == int.class) return 0;
-    if (type == long.class) return 0L;
-    if (type == double.class) return 0D;
+    if (type == boolean.class) {
+      return false;
+    }
+    if (type == int.class) {
+      return 0;
+    }
+    if (type == long.class) {
+      return 0L;
+    }
+    if (type == double.class) {
+      return 0D;
+    }
     return null;
   }
 }

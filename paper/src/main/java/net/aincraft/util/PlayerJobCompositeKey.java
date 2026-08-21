@@ -1,6 +1,5 @@
 package net.aincraft.util;
 
-import java.util.Objects;
 import java.util.UUID;
 import net.aincraft.Job;
 import net.kyori.adventure.key.Key;
@@ -13,11 +12,6 @@ import org.bukkit.OfflinePlayer;
  * @param jobKey namespaced job key
  */
 public record PlayerJobCompositeKey(UUID playerId, Key jobKey) {
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(playerId,jobKey);
-  }
 
   /**
    * Creates a key from an offline player and a job.

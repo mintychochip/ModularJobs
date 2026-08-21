@@ -48,11 +48,11 @@ public final class SkillTreeConfigParser {
       throw new IllegalArgumentException("Skill tree requires \"job\", \"root\", and \"nodes\"");
     }
 
-    String jobKey = root.get("job").getAsString();
-    String rootNodeKey = root.get("root").getAsString();
-    int pointsPerLevel = root.has("skill_points_per_level")
+    final String jobKey = root.get("job").getAsString();
+    final String rootNodeKey = root.get("root").getAsString();
+    final int pointsPerLevel = root.has("skill_points_per_level")
         ? root.get("skill_points_per_level").getAsInt() : 1;
-    String description = root.has("description") && !root.get("description").isJsonNull()
+    final String description = root.has("description") && !root.get("description").isJsonNull()
         ? root.get("description").getAsString() : null;
 
     JsonObject nodesObj = root.getAsJsonObject("nodes");
@@ -70,14 +70,14 @@ public final class SkillTreeConfigParser {
   }
 
   private SkillNode parseNode(String jobKey, String nodeKey, JsonObject obj) {
-    SkillNodeKind kind = SkillNodeKind.valueOf(obj.get("kind").getAsString().toUpperCase());
-    String name = obj.get("name").getAsString();
-    String description = obj.has("description") && !obj.get("description").isJsonNull()
+    final SkillNodeKind kind = SkillNodeKind.valueOf(obj.get("kind").getAsString().toUpperCase());
+    final String name = obj.get("name").getAsString();
+    final String description = obj.has("description") && !obj.get("description").isJsonNull()
         ? obj.get("description").getAsString() : null;
 
-    Set<String> prerequisites = parseStringSet(obj, "prerequisites");
-    Set<String> excludes = parseStringSet(obj, "excludes");
-    int cost = obj.has("cost") ? obj.get("cost").getAsInt() : 0;
+    final Set<String> prerequisites = parseStringSet(obj, "prerequisites");
+    final Set<String> excludes = parseStringSet(obj, "excludes");
+    final int cost = obj.has("cost") ? obj.get("cost").getAsInt() : 0;
 
     List<Requirement> requirements = new ArrayList<>();
     if (obj.has("requirements")) {

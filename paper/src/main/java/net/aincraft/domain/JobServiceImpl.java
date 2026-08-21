@@ -16,9 +16,6 @@ import net.aincraft.container.PayableType;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.model.JobTaskRecord;
-import net.aincraft.domain.MemoryJobRepositoryImpl;
-import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
-import net.aincraft.domain.repository.JobProgressionRepository;
 import net.aincraft.Bridge;
 import net.aincraft.event.JobJoinEvent;
 import net.aincraft.event.JobLeaveEvent;
@@ -64,6 +61,8 @@ final class JobServiceImpl implements JobService {
   private final Plugin plugin;
 
   /**
+   * Wires job definitions, tasks, and progression into a single service facade.
+   *
    * @param actionTypeRegistry     registry of known action types
    * @param payableTypeRegistry    registry of known payable types
    * @param jobTaskRepository      relational task store
@@ -73,7 +72,7 @@ final class JobServiceImpl implements JobService {
    * @param joinGate               join-eligibility gate
    * @param plugin                 plugin for key namespaces and events
    */
-  public JobServiceImpl(
+  JobServiceImpl(
       Registry<ActionType> actionTypeRegistry,
       Registry<PayableType> payableTypeRegistry,
       RelationalJobTaskRepositoryImpl jobTaskRepository,
@@ -100,7 +99,7 @@ final class JobServiceImpl implements JobService {
   }
 
   @Override
-  public Job getJob(String jobKey) throws IllegalArgumentException {
+  public Job getJob(String jobKey) {
     JobRecord record = jobRepository.load(jobKey);
     if (record == null) {
       throw new IllegalArgumentException();
@@ -140,7 +139,7 @@ final class JobServiceImpl implements JobService {
   }
 
   @Override
-  public boolean joinJob(String playerId, String jobKey) throws IllegalArgumentException {
+  public boolean joinJob(String playerId, String jobKey) {
     JobRecord jobRecord = jobRepository.load(jobKey);
     if (jobRecord == null) {
       throw new IllegalArgumentException("failed to joined job, the job does not exist");
@@ -190,7 +189,7 @@ final class JobServiceImpl implements JobService {
   }
 
   @Override
-  public boolean leaveJob(String playerId, String jobKey) throws IllegalArgumentException {
+  public boolean leaveJob(String playerId, String jobKey) {
     JobProgressionRecord record = progressionService.load(playerId, jobKey);
     if (record == null) {
       return false;
@@ -205,12 +204,11 @@ final class JobServiceImpl implements JobService {
     new PaperEventBridge(Bridge.bridge().eventBus())
         .publishLeave(new JobLeaveEvent(uuid, job, finalLevel), player);
 
-    return progressionService.archive(playerId,jobKey);
+    return progressionService.archive(playerId, jobKey);
   }
 
   @Override
-  public JobProgression getProgression(String playerId, String jobKey)
-      throws IllegalArgumentException {
+  public JobProgression getProgression(String playerId, String jobKey) {
     // Ensure jobKey has proper namespace
     String fullJobKey = jobKey.contains(":") ? jobKey : "modularjobs:" + jobKey;
 

@@ -17,6 +17,8 @@ public final class LevelUpCommandExecutor {
   private final Consumer<String> dispatcher;
 
   /**
+   * Creates an executor for configured level-up commands.
+   *
    * @param config     configured level-up command list
    * @param dispatcher receives the final command string (typically console dispatch)
    */

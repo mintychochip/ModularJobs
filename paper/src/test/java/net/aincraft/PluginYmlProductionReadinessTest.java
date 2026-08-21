@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
-import java.util.Map;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -16,11 +17,11 @@ class PluginYmlProductionReadinessTest {
 
   @Test
   void pluginYmlHasNoDebugTestCommandAndDeclaresAdminPermissions() throws Exception {
-    try (InputStream in = ModularJobsBootstrap.class.getClassLoader()
+    try (InputStream in = Thread.currentThread().getContextClassLoader()
         .getResourceAsStream("plugin.yml")) {
       assertNotNull(in, "plugin.yml must be on the main resources classpath");
       YamlConfiguration yml = YamlConfiguration.loadConfiguration(
-          new java.io.InputStreamReader(in));
+          new InputStreamReader(in, StandardCharsets.UTF_8));
 
       assertFalse(yml.contains("commands.test"),
           "production plugin.yml must not register unrestricted commands.test");

@@ -21,7 +21,6 @@ import net.aincraft.gui.craftux.CraftuxItems;
 import net.aincraft.gui.craftux.CraftuxUiHost;
 import net.aincraft.service.PreferencesService;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

@@ -9,6 +9,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.aincraft.container.EconomyProvider;
@@ -46,8 +47,8 @@ public final class MintEconomyProvider implements EconomyProvider {
   private static final long TIMEOUT_MILLIS = 5_000L;
 
   private final AtomicBoolean reflectionFailureLogged = new AtomicBoolean();
-  private volatile @Nullable MintReflection reflection;
-  private volatile boolean reflectionUnavailable;
+  private final AtomicReference<MintReflection> reflection = new AtomicReference<>();
+  private final AtomicBoolean reflectionUnavailable = new AtomicBoolean();
 
   /** Visible for selection tests; callers go through {@link EconomyProviderFactory}. */
   public MintEconomyProvider() {}
@@ -93,26 +94,33 @@ public final class MintEconomyProvider implements EconomyProvider {
           "Mint issue timed out for " + playerId + " after " + TIMEOUT_MILLIS
               + "ms — outcome unknown, do not retry (at-most-once)");
       return false;
-    } catch (Exception | LinkageError e) {
+    } catch (LinkageError e) {
+      LOGGER.log(Level.SEVERE, "Mint issue failed for player " + playerId, e);
+      return false;
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      LOGGER.log(Level.SEVERE, "Mint issue failed for player " + playerId, e);
+      return false;
+    } catch (ReflectiveOperationException | java.util.concurrent.ExecutionException e) {
       LOGGER.log(Level.SEVERE, "Mint issue failed for player " + playerId, e);
       return false;
     }
   }
 
   private @Nullable MintReflection reflection() {
-    MintReflection current = reflection;
+    MintReflection current = reflection.get();
     if (current != null) {
       return current;
     }
-    if (reflectionUnavailable) {
+    if (reflectionUnavailable.get()) {
       return null;
     }
     try {
       current = MintReflection.load();
-      reflection = current;
+      reflection.set(current);
       return current;
     } catch (ReflectiveOperationException | LinkageError e) {
-      reflectionUnavailable = true;
+      reflectionUnavailable.set(true);
       if (reflectionFailureLogged.compareAndSet(false, true)) {
         LOGGER.log(Level.WARNING, "Mint API is unavailable; Mint economy rewards are disabled", e);
       }
@@ -121,20 +129,15 @@ public final class MintEconomyProvider implements EconomyProvider {
   }
 
   private static Class<?> loadClass(String name) throws ClassNotFoundException {
-    ClassLoader ownLoader = MintEconomyProvider.class.getClassLoader();
-    try {
-      return Class.forName(name, false, ownLoader);
-    } catch (ClassNotFoundException first) {
-      ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
-      if (contextLoader != null && contextLoader != ownLoader) {
-        try {
-          return Class.forName(name, false, contextLoader);
-        } catch (ClassNotFoundException ignored) {
-          // Try the caller/system loader below.
-        }
+    ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+    if (contextLoader != null) {
+      try {
+        return Class.forName(name, false, contextLoader);
+      } catch (ClassNotFoundException ignored) {
+        // Fall back to the default loader chain below.
       }
-      return Class.forName(name);
     }
+    return Class.forName(name);
   }
 
   private static final class MintReflection {
@@ -257,7 +260,8 @@ public final class MintEconomyProvider implements EconomyProvider {
     }
 
     private boolean issue(Object mint, UUID playerId, BigDecimal amount)
-        throws Exception {
+        throws ReflectiveOperationException, InterruptedException,
+        java.util.concurrent.ExecutionException, TimeoutException {
       Object namespace = namespaceParse.invoke(null, ACTOR_NAMESPACE);
       Object actor = actorOf.invoke(null, namespace);
       Object currency = currencyOf.invoke(
@@ -297,7 +301,7 @@ public final class MintEconomyProvider implements EconomyProvider {
       try {
         Object rejection = rejected.getClass().getMethod("rejection").invoke(rejected);
         return String.valueOf(rejection.getClass().getMethod("message").invoke(rejection));
-      } catch (ReflectiveOperationException | RuntimeException ignored) {
+      } catch (ReflectiveOperationException ignored) {
         return "unknown reason";
       }
     }

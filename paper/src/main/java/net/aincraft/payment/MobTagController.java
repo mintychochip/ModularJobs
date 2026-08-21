@@ -6,12 +6,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.entity.EntityTransformEvent;
 
 /**
  * Responsible for tracking entities spawned or transformed by spawner-related mechanics
  * (e.g., natural spawners or spawn eggs).
+ *
  * <p>
  * It tags these entities using the {@link EntityValidationService}, so that future plugin logic can
  * identify them as "spawner" entities — useful for applying special behavior or filtering.
@@ -27,19 +27,21 @@ final class MobTagController implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onSpawn(final CreatureSpawnEvent event) {
+  void onSpawn(final CreatureSpawnEvent event) {
     switch (event.getSpawnReason()) {
       case BREEDING:
       case SPAWNER:
       case SPAWNER_EGG:
       case BUCKET:
-        entityValidationService
-            .setValid(event.getEntity(), false);
+        entityValidationService.setValid(event.getEntity(), false);
+        break;
+      default:
+        break;
     }
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onEntityTransform(final EntityTransformEvent event) {
+  void onEntityTransform(final EntityTransformEvent event) {
     if (!entityValidationService.isValid(event.getEntity())) {
       return;
     }

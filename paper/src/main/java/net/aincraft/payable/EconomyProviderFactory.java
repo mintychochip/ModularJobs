@@ -46,7 +46,6 @@ public final class EconomyProviderFactory {
   /**
    * Resolves the configured provider, defaulting to a non-throwing blackhole fallback.
    *
-   * @throws IllegalArgumentException when the missing-provider policy is unknown
    * @throws IllegalStateException when the configured policy is {@code fail} and Mint is absent
    */
   public static @NotNull EconomyProvider createOrFail(@NotNull Plugin plugin) {

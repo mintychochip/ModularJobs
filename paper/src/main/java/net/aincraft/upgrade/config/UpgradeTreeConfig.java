@@ -3,7 +3,6 @@ package net.aincraft.upgrade.config;
 import java.util.List;
 import java.util.Map;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
-import net.aincraft.boost.config.BoostSourceConfig.PolicyConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

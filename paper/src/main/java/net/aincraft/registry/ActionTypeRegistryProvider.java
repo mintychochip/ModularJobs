@@ -2,7 +2,6 @@ package net.aincraft.registry;
 
 import net.aincraft.action.ActionTypeImpl;
 import net.aincraft.container.ActionType;
-import net.kyori.adventure.key.Key;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 

@@ -43,8 +43,8 @@ public record PaymentSettings(
    */
   public static PaymentSettings fromPlugin(@NotNull Plugin plugin) {
     FileConfiguration config = plugin.getConfig();
-    boolean payInCreative = config.getBoolean("pay-in-creative", true);
-    boolean payWhileRiding = config.getBoolean("pay-while-riding", false);
+    final boolean payInCreative = config.getBoolean("pay-in-creative", true);
+    final boolean payWhileRiding = config.getBoolean("pay-while-riding", false);
 
     List<String> worlds = config.getStringList("disabled-worlds");
     Set<String> disabled = new HashSet<>();
@@ -81,7 +81,11 @@ public record PaymentSettings(
     );
   }
 
-  /** @return true when {@code worldName} (case-insensitive) is in the disabled-worlds set */
+  /**
+   * Reports whether {@code worldName} is in the disabled-worlds set.
+   *
+   * @return true when {@code worldName} (case-insensitive) is in the disabled-worlds set
+   */
   public boolean isWorldDisabled(@NotNull String worldName) {
     return disabledWorlds.contains(worldName.toLowerCase(Locale.ROOT));
   }

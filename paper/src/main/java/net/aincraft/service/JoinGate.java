@@ -28,6 +28,8 @@ public final class JoinGate {
   private final Set<String> disabledWorlds;
 
   /**
+   * Creates a join eligibility gate using progression and world restrictions.
+   *
    * @param config         join-eligibility knobs
    * @param disabledWorlds case-insensitive payout disabled-world names (from
    *                       {@code PaymentSettings.disabledWorlds()})

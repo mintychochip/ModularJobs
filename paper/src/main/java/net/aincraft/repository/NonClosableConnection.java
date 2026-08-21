@@ -16,7 +16,7 @@ public interface NonClosableConnection extends Connection {
 
   static NonClosableConnection create(@NotNull Connection delegate) {
     return (NonClosableConnection) Proxy.newProxyInstance(
-        NonClosableConnection.class.getClassLoader(),
+        Thread.currentThread().getContextClassLoader(),
         new Class[]{NonClosableConnection.class}, (proxy, method, args) -> {
           if ("close".equals(method.getName())) {
             return null;

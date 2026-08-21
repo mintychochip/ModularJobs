@@ -43,6 +43,8 @@ public final class YamlJobTaskLoader {
   private final Logger logger;
 
   /**
+   * Creates a loader for seeding job task tables.
+   *
    * @param plugin owner providing data-folder resources and a logger
    * @param connectionSource source of connections for the import transaction
    */
@@ -108,17 +110,23 @@ public final class YamlJobTaskLoader {
 
     for (String jobKey : jobKeys) {
       ConfigurationSection jobSection = config.getConfigurationSection(jobKey);
-      if (jobSection == null) continue;
+      if (jobSection == null) {
+        continue;
+      }
 
       Set<String> actionTypes = jobSection.getKeys(false);
       for (String actionType : actionTypes) {
         ConfigurationSection actionSection = jobSection.getConfigurationSection(actionType);
-        if (actionSection == null) continue;
+        if (actionSection == null) {
+          continue;
+        }
 
         Set<String> contextKeys = actionSection.getKeys(false);
         for (String contextKey : contextKeys) {
           ConfigurationSection contextSection = actionSection.getConfigurationSection(contextKey);
-          if (contextSection == null) continue;
+          if (contextSection == null) {
+            continue;
+          }
 
           List<PayableEntry> payables = new ArrayList<>();
           for (String payableType : contextSection.getKeys(false)) {
@@ -157,10 +165,14 @@ public final class YamlJobTaskLoader {
       // Skip header line
       for (int i = 1; i < lines.size(); i++) {
         String line = lines.get(i).trim();
-        if (line.isEmpty()) continue;
+        if (line.isEmpty()) {
+          continue;
+        }
 
         String[] parts = line.split(",");
-        if (parts.length < 5) continue;
+        if (parts.length < 5) {
+          continue;
+        }
 
         String jobKey = parts[0].trim();
         String actionType = parts[1].trim();
@@ -168,7 +180,9 @@ public final class YamlJobTaskLoader {
         String payableType = parts[3].trim();
         BigDecimal amount = new BigDecimal(parts[4].trim());
         String currency = parts.length > 5 ? parts[5].trim() : null;
-        if (currency != null && currency.isEmpty()) currency = null;
+        if (currency != null && currency.isEmpty()) {
+          currency = null;
+        }
 
         // Group by task key
         String taskKey = jobKey + "|" + actionType + "|" + contextKey;

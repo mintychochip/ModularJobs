@@ -2,7 +2,6 @@ package net.aincraft.action;
 
 import net.aincraft.container.ActionType;
 import net.kyori.adventure.key.Key;
-import org.jetbrains.annotations.NotNull;
 
 /** Immutable action type descriptor exposed through the public action contract. */
 public record ActionTypeImpl(String name, Key key) implements ActionType {

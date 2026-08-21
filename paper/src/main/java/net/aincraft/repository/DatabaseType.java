@@ -67,20 +67,24 @@ public enum DatabaseType {
     boolean inBlockComment = false;
     boolean escapeNext = false;
 
-    for (int i = 0; i < sql.length(); i++) {
+    int i = 0;
+    while (i < sql.length()) {
       char c = sql.charAt(i);
 
       if (inLineComment) {
         if (c == '\n') {
           inLineComment = false;
         }
+        i++;
         continue;
       }
 
       if (inBlockComment) {
         if (c == '*' && i + 1 < sql.length() && sql.charAt(i + 1) == '/') {
           inBlockComment = false;
-          i++; // skip the closing '/'
+          i += 2;
+        } else {
+          i++;
         }
         continue;
       }
@@ -96,30 +100,33 @@ public enum DatabaseType {
         } else if (c == '"' && inDoubleQuote) {
           inDoubleQuote = false;
         }
+        i++;
         continue;
       }
 
       if (c == '-' && i + 1 < sql.length() && sql.charAt(i + 1) == '-') {
         inLineComment = true;
-        i++; // skip second '-'
+        i += 2;
         continue;
       }
 
       if (c == '/' && i + 1 < sql.length() && sql.charAt(i + 1) == '*') {
         inBlockComment = true;
-        i++; // skip '*'
+        i += 2;
         continue;
       }
 
       if (c == '\'') {
         inSingleQuote = true;
         current.append(c);
+        i++;
         continue;
       }
 
       if (c == '"') {
         inDoubleQuote = true;
         current.append(c);
+        i++;
         continue;
       }
 
@@ -132,6 +139,7 @@ public enum DatabaseType {
       } else {
         current.append(c);
       }
+      i++;
     }
 
     String remaining = current.toString().trim();
@@ -143,6 +151,8 @@ public enum DatabaseType {
   }
 
   /**
+   * Resolves a configured database identifier, defaulting blank values to MySQL.
+   *
    * @throws IllegalArgumentException if identifier is not {@code mysql}
    */
   public static DatabaseType fromIdentifier(String identifier) {

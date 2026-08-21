@@ -29,6 +29,8 @@ final class JobProgressionImpl implements JobProgression {
   private final int level;
 
   /**
+   * Creates a progression snapshot, deriving the current level from accrued experience.
+   *
    * @param playerId   owning player (not validated here; must be non-null)
    * @param job        job this progression tracks
    * @param experience total accrued experience
@@ -41,8 +43,10 @@ final class JobProgressionImpl implements JobProgression {
     this.level = calculateCurrentLevel();
   }
 
+  /**
+   * Returns a new progression with the given experience; returns {@code this} if unchanged.
+   */
   @Override
-  /** Returns a new progression with the given experience; returns {@code this} if unchanged. */
   public JobProgression setExperience(BigDecimal experience) {
     if (this.experience.equals(experience)) {
       return this;
@@ -81,7 +85,7 @@ final class JobProgressionImpl implements JobProgression {
    * @return the derived current level, clamped to {@code [1, maxLevel]}
    * @throws IllegalStateException if no level can be derived
    */
-  private int calculateCurrentLevel() throws IllegalStateException {
+  private int calculateCurrentLevel() {
     int maxLevel = job.maxLevel();
     if (maxLevel <= 0) {
       return 1;
@@ -104,12 +108,12 @@ final class JobProgressionImpl implements JobProgression {
 
   @Override
   public String toString() {
-    return "JobProgressionImpl[" +
-        "player=" + playerId +
-        ", job=" + job.key().value() +
-        ", experience=" + experience +
-        ", level=" + level() +
-        "]";
+    return "JobProgressionImpl["
+        + "player=" + playerId
+        + ", job=" + job.key().value()
+        + ", experience=" + experience
+        + ", level=" + level()
+        + "]";
   }
 
   /**
@@ -118,7 +122,7 @@ final class JobProgressionImpl implements JobProgression {
    *
    * @return record for persistence
    */
-  public JobProgressionRecord toRecord() {
+  JobProgressionRecord toRecord() {
     JobRecord jobRecord = ((JobImpl) job).toRecord();
     return new JobProgressionRecord(
         playerId.toString(),
@@ -136,7 +140,7 @@ final class JobProgressionImpl implements JobProgression {
    * @return reconstructed progression
    * @throws IllegalArgumentException if the player id, job, or curve is invalid
    */
-  public static JobProgressionImpl fromRecord(
+  static JobProgressionImpl fromRecord(
       JobProgressionRecord record,
       Plugin plugin,
       Registry<PayableType> payableTypeRegistry

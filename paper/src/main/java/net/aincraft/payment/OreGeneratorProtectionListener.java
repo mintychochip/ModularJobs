@@ -23,7 +23,7 @@ final class OreGeneratorProtectionListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBlockFromTo(final BlockFromToEvent event) {
+  void onBlockFromTo(final BlockFromToEvent event) {
     Block to = event.getToBlock();
     Material mat = to.getType();
     if (mat.isAir()) {

@@ -12,7 +12,6 @@ import net.aincraft.profession.RecipeDefinition;
 import net.aincraft.service.RecipeService;
 import net.aincraft.upgrade.NodeEffect.RecipeUnlockEffect;
 import net.kyori.adventure.key.Key;
-import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;

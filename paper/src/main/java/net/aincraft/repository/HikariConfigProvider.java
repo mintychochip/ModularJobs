@@ -29,13 +29,10 @@ final class HikariConfigProvider {
    * Creates a Hikari configuration from the configured database settings.
    *
    * @return populated {@link HikariConfig}
-   * @throws IllegalStateException if a required connection field ({@code jdbc-url},
-   *         {@code username}, {@code password}) is missing
    */
   @NotNull
-  public HikariConfig create()
-      throws IllegalStateException {
-    HikariConfig hikariConfig = new HikariConfig();
+  HikariConfig create() {
+    final HikariConfig hikariConfig = new HikariConfig();
 
     String jdbcUrl = configuration.getString("jdbc-url");
     String username = configuration.getString("username");

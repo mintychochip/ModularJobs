@@ -20,6 +20,8 @@ public final class JobTopPageProvider {
       .expireAfterWrite(Duration.ofMinutes(10)).build();
 
   /**
+   * Creates the page provider backed by the job service.
+   *
    * @param jobService service used to load progressions for a job key
    */
   public JobTopPageProvider(JobService jobService) {
@@ -37,7 +39,7 @@ public final class JobTopPageProvider {
    */
   public Page<JobProgression> getPage(Key jobKey, int pageNumber, int pageSize) {
     List<JobProgression> progressions = readCache.get(jobKey,
-        __ -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
+        ignoredKey -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
 
     if (progressions == null || progressions.isEmpty()) {
       return new Page<>(List.of(), 1, pageSize);
@@ -62,7 +64,7 @@ public final class JobTopPageProvider {
    */
   public List<JobProgression> getAllEntries(Key jobKey) {
     List<JobProgression> progressions = readCache.get(jobKey,
-        __ -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
+        ignoredKey -> jobService.getProgressions(jobKey, ENTRIES_PER_QUERY));
     return progressions != null ? progressions : List.of();
   }
 }

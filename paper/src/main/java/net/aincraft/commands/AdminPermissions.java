@@ -15,6 +15,8 @@ public final class AdminPermissions {
   private AdminPermissions() {}
 
   /**
+   * Returns whether the command source's sender holds the admin permission.
+   *
    * @param source command source whose sender is checked
    * @return whether the source's sender holds the admin permission
    */
@@ -23,6 +25,8 @@ public final class AdminPermissions {
   }
 
   /**
+   * Returns whether the sender holds the admin permission.
+   *
    * @param sender sender to check, may be {@code null}
    * @return whether the sender holds the admin permission
    */

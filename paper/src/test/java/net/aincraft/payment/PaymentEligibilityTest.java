@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Proxy;
+import java.util.Objects;
 import java.util.Set;
 import net.aincraft.test.MockBukkitSupport;
 import org.bukkit.GameMode;
@@ -87,7 +88,7 @@ class PaymentEligibilityTest {
 
   private static Player playerStub(World world, GameMode mode, boolean insideVehicle) {
     return (Player) Proxy.newProxyInstance(
-        Player.class.getClassLoader(),
+        Thread.currentThread().getContextClassLoader(),
         new Class<?>[] {Player.class},
         (proxy, method, args) -> {
           return switch (method.getName()) {
@@ -95,7 +96,7 @@ class PaymentEligibilityTest {
             case "getGameMode" -> mode;
             case "isInsideVehicle" -> insideVehicle;
             case "hasMetadata" -> false;
-            case "equals" -> proxy == args[0];
+            case "equals" -> Objects.equals(proxy, args[0]);
             case "hashCode" -> System.identityHashCode(proxy);
             case "toString" -> "PlayerStub";
             default -> {

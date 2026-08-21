@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 abstract class ForwardingMemoryStore<K, V> extends ForwardingMap<K, V> implements MemoryStore<K, V> {
 
   /** The backing map used by forwarded operations; replaced when the store reloads. */
-  protected volatile Map<K, V> store = new HashMap<>();
+  protected Map<K, V> store = new HashMap<>();
 
   @Override
   protected @NotNull Map<K, V> delegate() {

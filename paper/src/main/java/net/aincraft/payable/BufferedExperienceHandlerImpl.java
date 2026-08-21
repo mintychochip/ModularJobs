@@ -42,7 +42,7 @@ final class BufferedExperienceHandlerImpl implements
   }
 
   @Override
-  public void pay(PayableContext context) throws IllegalArgumentException {
+  public void pay(PayableContext context) {
     UUID playerId = context.playerId();
     OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
     Player onlinePlayer = player.isOnline() ? player.getPlayer() : null;

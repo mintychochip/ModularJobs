@@ -42,8 +42,6 @@ import net.kyori.adventure.key.Key;
  */
 public final class WynncraftTreeConfigParser {
 
-  private static final int DEFAULT_SKILL_POINTS_PER_LEVEL = 1;
-
   private final BoostFactory boostFactory;
   private final ConditionConfigParser conditionParser;
   private final Gson gson;
@@ -64,8 +62,8 @@ public final class WynncraftTreeConfigParser {
    * @return a fully constructed UpgradeTree
    */
   public UpgradeTree parse(WynncraftTreeConfig config) {
-    String jobKey = config.job();  // Use job field
-    Key treeKey = Key.key("modularjobs", "upgrade_tree/" + jobKey);
+    final String jobKey = config.job();  // Use job field
+    final Key treeKey = Key.key("modularjobs", "upgrade_tree/" + jobKey);
 
     Map<String, UpgradeNode> nodes = new HashMap<>();
     String rootNodeKey = config.root();  // Use root from config
@@ -297,8 +295,6 @@ public final class WynncraftTreeConfigParser {
     JsonObject conditionJson;
     if (conditionsObj instanceof JsonElement jsonElem) {
       conditionJson = jsonElem.getAsJsonObject();
-    } else if (conditionsObj instanceof Map) {
-      conditionJson = gson.toJsonTree(conditionsObj).getAsJsonObject();
     } else {
       conditionJson = gson.toJsonTree(conditionsObj).getAsJsonObject();
     }

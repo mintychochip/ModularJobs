@@ -1,5 +1,6 @@
 package net.aincraft.upgrade;
 
+import java.util.HashMap;
 import java.util.Map;
 import net.aincraft.registry.Registry;
 import org.bukkit.entity.Player;
@@ -41,7 +42,7 @@ public final class UpgradePermissionRestoreListener implements Listener {
     // v2 trees: one union restore across ALL active trees. The applier cleans
     // up this plugin's attachment exactly once, then grants the union, so a
     // per-tree restore can never wipe another job's permissions.
-    Map<SkillTree, SkillTreeState> byTree = new java.util.HashMap<>();
+    Map<SkillTree, SkillTreeState> byTree = new HashMap<>();
     for (SkillTree tree : skillTreeRegistry) {
       byTree.put(tree, upgradeService.getSkillTreeState(playerId, tree.jobKey()));
     }

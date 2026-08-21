@@ -2,7 +2,6 @@ package net.aincraft.protection;
 
 import java.util.Optional;
 import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.popcraft.bolt.BoltAPI;

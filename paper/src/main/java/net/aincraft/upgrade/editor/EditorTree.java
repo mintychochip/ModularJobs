@@ -11,7 +11,6 @@ import net.aincraft.upgrade.UpgradeNode;
 import net.aincraft.upgrade.UpgradeTree;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Mutable upgrade tree for editing purposes.
@@ -92,7 +91,9 @@ public final class EditorTree {
   }
 
   private static String capitalize(String s) {
-    if (s == null || s.isEmpty()) return s;
+    if (s == null || s.isEmpty()) {
+      return s;
+    }
     return s.substring(0, 1).toUpperCase() + s.substring(1);
   }
 
@@ -100,32 +101,70 @@ public final class EditorTree {
    * Extract the simple key from a namespaced key (e.g., "upgrade_tree/miner" -> "miner").
    */
   private static String extractSimpleKey(String namespacedKey) {
-    if (namespacedKey == null || namespacedKey.isEmpty()) return namespacedKey;
+    if (namespacedKey == null || namespacedKey.isEmpty()) {
+      return namespacedKey;
+    }
     int slashIndex = namespacedKey.indexOf('/');
     return slashIndex >= 0 ? namespacedKey.substring(slashIndex + 1) : namespacedKey;
   }
 
   // ========== Getters/Setters ==========
 
-  public String treeId() { return treeId; }
-  public void setTreeId(String treeId) { this.treeId = treeId; }
+  public String treeId() {
+    return treeId;
+  }
 
-  public String displayName() { return displayName; }
-  public void setDisplayName(String displayName) { this.displayName = displayName; }
+  public void setTreeId(String treeId) {
+    this.treeId = treeId;
+  }
 
-  public String jobKey() { return jobKey; }
-  public void setJobKey(String jobKey) { this.jobKey = jobKey; }
+  public String displayName() {
+    return displayName;
+  }
 
-  public int skillPointsPerLevel() { return skillPointsPerLevel; }
-  public void setSkillPointsPerLevel(int sp) { this.skillPointsPerLevel = sp; }
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
 
-  public String rootNodeId() { return rootNodeId; }
-  public void setRootNodeId(String rootNodeId) { this.rootNodeId = rootNodeId; }
+  public String jobKey() {
+    return jobKey;
+  }
 
-  public Map<String, EditorNode> nodes() { return nodes; }
-  public List<EditorArchetype> archetypes() { return archetypes; }
-  public Map<String, String> perkPolicies() { return perkPolicies; }
-  public List<Position> paths() { return paths; }
+  public void setJobKey(String jobKey) {
+    this.jobKey = jobKey;
+  }
+
+  public int skillPointsPerLevel() {
+    return skillPointsPerLevel;
+  }
+
+  public void setSkillPointsPerLevel(int sp) {
+    this.skillPointsPerLevel = sp;
+  }
+
+  public String rootNodeId() {
+    return rootNodeId;
+  }
+
+  public void setRootNodeId(String rootNodeId) {
+    this.rootNodeId = rootNodeId;
+  }
+
+  public Map<String, EditorNode> nodes() {
+    return nodes;
+  }
+
+  public List<EditorArchetype> archetypes() {
+    return archetypes;
+  }
+
+  public Map<String, String> perkPolicies() {
+    return perkPolicies;
+  }
+
+  public List<Position> paths() {
+    return paths;
+  }
 
   // ========== Node Operations ==========
 

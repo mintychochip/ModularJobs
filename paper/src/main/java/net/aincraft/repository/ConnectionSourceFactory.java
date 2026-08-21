@@ -27,7 +27,7 @@ public final class ConnectionSourceFactory {
   }
 
   @NotNull
-  public ConnectionSource create() throws IllegalStateException {
+  public ConnectionSource create() {
     Preconditions.checkState(
         configuration.contains("type"),
         "database section missing type (must be mysql)");

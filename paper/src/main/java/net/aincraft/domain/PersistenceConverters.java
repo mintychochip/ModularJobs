@@ -1,14 +1,10 @@
 package net.aincraft.domain;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.aincraft.Job;
 import net.aincraft.JobProgression;
 import net.aincraft.JobTask;
-import net.aincraft.PayableCurve;
 import net.aincraft.container.Currency;
 import net.aincraft.container.Payable;
 import net.aincraft.container.PayableAmount;
@@ -17,11 +13,8 @@ import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.model.JobTaskRecord;
 import net.aincraft.domain.model.PayableRecord;
-import net.aincraft.math.ExpressionCurves;
 import net.aincraft.registry.Registry;
-import net.aincraft.util.KeyUtils;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 
@@ -31,11 +24,7 @@ import org.bukkit.plugin.Plugin;
  */
 public final class PersistenceConverters {
 
-  private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
-
   private PersistenceConverters() {}
-
-  // ========== Job conversions ==========
 
   public static JobRecord toRecord(Job job) {
     if (!(job instanceof JobImpl jobImpl)) {
@@ -44,28 +33,12 @@ public final class PersistenceConverters {
     return jobImpl.toRecord();
   }
 
-  public static Job fromRecord(JobRecord record, Plugin plugin, Registry<PayableType> payableTypeRegistry) {
-    return JobImpl.fromRecord(record, plugin, payableTypeRegistry);
-  }
-
-  // ========== JobProgression conversions ==========
-
   public static JobProgressionRecord toRecord(JobProgression progression) {
     if (!(progression instanceof JobProgressionImpl progressionImpl)) {
       throw new IllegalArgumentException("JobProgression must be a JobProgressionImpl instance");
     }
     return progressionImpl.toRecord();
   }
-
-  public static JobProgression fromRecord(
-      JobProgressionRecord record,
-      Plugin plugin,
-      Registry<PayableType> payableTypeRegistry
-  ) {
-    return JobProgressionImpl.fromRecord(record, plugin, payableTypeRegistry);
-  }
-
-  // ========== JobTask conversions ==========
 
   public static JobTaskRecord toRecord(JobTask task) {
     return new JobTaskRecord(
@@ -74,6 +47,26 @@ public final class PersistenceConverters {
         task.contextKey().toString(),
         task.payables().stream().map(PersistenceConverters::toRecord).collect(Collectors.toList())
     );
+  }
+
+  public static PayableRecord toRecord(Payable payable) {
+    return new PayableRecord(
+        payable.type().key().toString(),
+        payable.amount().value(),
+        payable.amount().currency().map(Currency::identifier).orElse(null)
+    );
+  }
+
+  public static Job fromRecord(JobRecord record, Plugin plugin, Registry<PayableType> payableTypeRegistry) {
+    return JobImpl.fromRecord(record, plugin, payableTypeRegistry);
+  }
+
+  public static JobProgression fromRecord(
+      JobProgressionRecord record,
+      Plugin plugin,
+      Registry<PayableType> payableTypeRegistry
+  ) {
+    return JobProgressionImpl.fromRecord(record, plugin, payableTypeRegistry);
   }
 
   public static JobTask fromRecord(
@@ -87,16 +80,6 @@ public final class PersistenceConverters {
         record.payables().stream()
             .map(p -> fromRecord(p, typeResolver))
             .collect(Collectors.toList())
-    );
-  }
-
-  // ========== Payable conversions ==========
-
-  public static PayableRecord toRecord(Payable payable) {
-    return new PayableRecord(
-        payable.type().key().toString(),
-        payable.amount().value(),
-        payable.amount().currency().map(Currency::identifier).orElse(null)
     );
   }
 

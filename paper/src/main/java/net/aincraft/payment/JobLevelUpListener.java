@@ -27,10 +27,9 @@ final class JobLevelUpListener implements Listener {
    * title, and sends a chat message when a player levels up in a job.
    */
   @EventHandler(priority = EventPriority.MONITOR)
-  public void onJobLevelUp(BukkitJobLevelEvent event) {
+  void onJobLevelUp(BukkitJobLevelEvent event) {
     Player player = event.getPlayer();
     int newLevel = event.getNewLevel();
-    int oldLevel = event.getOldLevel();
 
     // Play level up sound
     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);

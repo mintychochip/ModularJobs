@@ -20,13 +20,12 @@ import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.DatabaseType;
 import net.aincraft.repository.NonClosableConnection;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * MySQL (real SQL path, fake job catalog only). Requires live MySQL (see {@link net.aincraft.test.TestMysql}).
+ * MySQL (real SQL path, fake job catalog only). Requires live MySQL (see {@link net.aincraft.test.MysqlTestSupport}).
  */
 class RelationalJobProgressionRepositoryTest {
 
@@ -39,9 +38,8 @@ class RelationalJobProgressionRepositoryTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    net.aincraft.test.TestMysql.assumeAvailable();
-    Connection raw = net.aincraft.test.TestMysql.open();
-    connection = NonClosableConnection.create(raw);
+    net.aincraft.test.MysqlTestSupport.assumeAvailable();
+    connection = NonClosableConnection.create(net.aincraft.test.MysqlTestSupport.open());
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS " + TABLE);
       st.execute("""
@@ -82,8 +80,8 @@ class RelationalJobProgressionRepositoryTest {
       } catch (SQLException ignored) {
         // best-effort
       }
-      if (connection instanceof NonClosableConnection nc) {
-        nc.shutdown();
+      if (connection instanceof NonClosableConnection) {
+        ((NonClosableConnection) connection).shutdown();
       }
     }
   }
@@ -152,7 +150,6 @@ class RelationalJobProgressionRepositoryTest {
     assertNull(repository.load("player-1", "modularjobs:miner"));
     assertFalse(repository.delete("player-1", "modularjobs:miner"));
   }
-
 
   /** Reuses a single open JDBC connection (shared NonClosableConnection). */
   private static final class FixedConnectionSource implements ConnectionSource {

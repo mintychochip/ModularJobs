@@ -1,11 +1,9 @@
 package net.aincraft.upgrade.editor;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import net.aincraft.upgrade.UpgradeEffect;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Mutable effect data for editing purposes.
@@ -77,32 +75,77 @@ public final class EditorEffect {
 
   // ========== Getters/Setters ==========
 
-  public EffectType type() { return type; }
-  public void setType(EffectType type) { this.type = type; }
+  public EffectType type() {
+    return type;
+  }
 
-  public String target() { return target; }
-  public void setTarget(String target) { this.target = target; }
+  public void setType(EffectType type) {
+    this.type = type;
+  }
 
-  public double amount() { return amount; }
-  public void setAmount(double amount) { this.amount = amount; }
+  public String target() {
+    return target;
+  }
 
-  public String ability() { return ability; }
-  public void setAbility(String ability) { this.ability = ability; }
+  public void setTarget(String target) {
+    this.target = target;
+  }
 
-  public String passiveDescription() { return passiveDescription; }
-  public void setPassiveDescription(String desc) { this.passiveDescription = desc; }
+  public double amount() {
+    return amount;
+  }
 
-  public String permission() { return permission; }
-  public void setPermission(String permission) { this.permission = permission; }
+  public void setAmount(double amount) {
+    this.amount = amount;
+  }
 
-  public List<String> permissions() { return permissions; }
-  public void setPermissions(List<String> permissions) { this.permissions = permissions != null ? permissions : new ArrayList<>(); }
+  public String ability() {
+    return ability;
+  }
 
-  public String ruledDescription() { return ruledDescription; }
-  public void setRuledDescription(String desc) { this.ruledDescription = desc; }
+  public void setAbility(String ability) {
+    this.ability = ability;
+  }
 
-  public String ruledConfigJson() { return ruledConfigJson; }
-  public void setRuledConfigJson(String json) { this.ruledConfigJson = json; }
+  public String passiveDescription() {
+    return passiveDescription;
+  }
+
+  public void setPassiveDescription(String desc) {
+    this.passiveDescription = desc;
+  }
+
+  public String permission() {
+    return permission;
+  }
+
+  public void setPermission(String permission) {
+    this.permission = permission;
+  }
+
+  public List<String> permissions() {
+    return permissions;
+  }
+
+  public void setPermissions(List<String> permissions) {
+    this.permissions = permissions != null ? permissions : new ArrayList<>();
+  }
+
+  public String ruledDescription() {
+    return ruledDescription;
+  }
+
+  public void setRuledDescription(String desc) {
+    this.ruledDescription = desc;
+  }
+
+  public String ruledConfigJson() {
+    return ruledConfigJson;
+  }
+
+  public void setRuledConfigJson(String json) {
+    this.ruledConfigJson = json;
+  }
 
   // ========== Display Helpers ==========
 

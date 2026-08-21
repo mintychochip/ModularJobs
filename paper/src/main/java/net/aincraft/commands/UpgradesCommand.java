@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 /**
  * Command for viewing and managing job upgrades.
  *
+ * <p>
  * Usage:
  * - /jobs upgrade <job> - View upgrade tree
  * - /jobs upgrade <job> unlock <node> - Unlock a node

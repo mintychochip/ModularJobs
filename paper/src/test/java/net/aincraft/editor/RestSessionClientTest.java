@@ -46,7 +46,7 @@ class RestSessionClientTest {
         respond(exchange, 201,
             "{\"code\":\"abc123\",\"token\":\"server-token\","
                 + "\"expiresAt\":\"2030-01-01T00:00:00Z\"}");
-      } catch (Throwable failure) {
+      } catch (AssertionError failure) {
         handlerFailure.set(failure);
         respond(exchange, 500, "{\"error\":\"handler assertion failed\"}");
       }
@@ -73,7 +73,7 @@ class RestSessionClientTest {
         assertEquals("server-token",
             exchange.getRequestHeaders().getFirst("X-Session-Token"));
         respond(exchange, 200, new Gson().toJson(payload()));
-      } catch (Throwable failure) {
+      } catch (AssertionError failure) {
         handlerFailure.set(failure);
         respond(exchange, 500, "{\"error\":\"handler assertion failed\"}");
       }

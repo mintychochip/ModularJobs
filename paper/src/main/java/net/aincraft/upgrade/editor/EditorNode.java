@@ -85,46 +85,117 @@ public final class EditorNode {
 
   // ========== Getters/Setters ==========
 
-  public String id() { return id; }
-  public void setId(String id) { this.id = id; }
+  public String id() {
+    return id;
+  }
 
-  public String name() { return name; }
-  public void setName(String name) { this.name = name; }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-  public String description() { return description; }
-  public void setDescription(String description) { this.description = description; }
+  public String name() {
+    return name;
+  }
 
-  public Material icon() { return icon; }
-  public void setIcon(Material icon) { this.icon = icon; }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-  public Material unlockedIcon() { return unlockedIcon; }
-  public void setUnlockedIcon(Material icon) { this.unlockedIcon = icon; }
+  public String description() {
+    return description;
+  }
 
-  public String itemModel() { return itemModel; }
-  public void setItemModel(String itemModel) { this.itemModel = itemModel; }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-  public String unlockedItemModel() { return unlockedItemModel; }
-  public void setUnlockedItemModel(String unlockedItemModel) { this.unlockedItemModel = unlockedItemModel; }
+  public Material icon() {
+    return icon;
+  }
 
-  public int cost() { return cost; }
-  public void setCost(int cost) { this.cost = Math.max(0, cost); }
+  public void setIcon(Material icon) {
+    this.icon = icon;
+  }
 
-  public Position position() { return position; }
-  public void setPosition(Position position) { this.position = position; }
+  public Material unlockedIcon() {
+    return unlockedIcon;
+  }
 
-  public String archetypeRef() { return archetypeRef; }
-  public void setArchetypeRef(String archetypeRef) { this.archetypeRef = archetypeRef; }
+  public void setUnlockedIcon(Material icon) {
+    this.unlockedIcon = icon;
+  }
 
-  public String perkId() { return perkId; }
-  public void setPerkId(String perkId) { this.perkId = perkId; }
+  public String itemModel() {
+    return itemModel;
+  }
 
-  public int level() { return level; }
-  public void setLevel(int level) { this.level = Math.max(1, level); }
+  public void setItemModel(String itemModel) {
+    this.itemModel = itemModel;
+  }
 
-  public Set<String> prerequisites() { return prerequisites; }
-  public Set<String> exclusive() { return exclusive; }
-  public List<String> children() { return children; }
-  public List<EditorEffect> effects() { return effects; }
+  public String unlockedItemModel() {
+    return unlockedItemModel;
+  }
+
+  public void setUnlockedItemModel(String unlockedItemModel) {
+    this.unlockedItemModel = unlockedItemModel;
+  }
+
+  public int cost() {
+    return cost;
+  }
+
+  public void setCost(int cost) {
+    this.cost = Math.max(0, cost);
+  }
+
+  public Position position() {
+    return position;
+  }
+
+  public void setPosition(Position position) {
+    this.position = position;
+  }
+
+  public String archetypeRef() {
+    return archetypeRef;
+  }
+
+  public void setArchetypeRef(String archetypeRef) {
+    this.archetypeRef = archetypeRef;
+  }
+
+  public String perkId() {
+    return perkId;
+  }
+
+  public void setPerkId(String perkId) {
+    this.perkId = perkId;
+  }
+
+  public int level() {
+    return level;
+  }
+
+  public void setLevel(int level) {
+    this.level = Math.max(1, level);
+  }
+
+  public Set<String> prerequisites() {
+    return prerequisites;
+  }
+
+  public Set<String> exclusive() {
+    return exclusive;
+  }
+
+  public List<String> children() {
+    return children;
+  }
+
+  public List<EditorEffect> effects() {
+    return effects;
+  }
 
   // ========== Helpers ==========
 

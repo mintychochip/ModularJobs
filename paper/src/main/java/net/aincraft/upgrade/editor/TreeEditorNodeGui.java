@@ -82,7 +82,7 @@ public final class TreeEditorNodeGui implements Listener {
   }
 
   InventoryView buildView(Player player, EditorSession session, EditorNode node) {
-    UUID audience = player.getUniqueId();
+    final UUID audience = player.getUniqueId();
     Map<Integer, String> actions = new HashMap<>();
     Map<Integer, Slot> content = new HashMap<>();
 
@@ -241,7 +241,7 @@ public final class TreeEditorNodeGui implements Listener {
           int y = Integer.parseInt(parts[1].trim());
           node.setPosition(new net.aincraft.upgrade.Position(x, y));
           Messages.send(player, "<success>Position set to " + x + "," + y);
-        } catch (Exception e) {
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
           Messages.send(player, "<error>Invalid position. Use x,y");
         }
         reopen(player, edit);

@@ -19,7 +19,7 @@ public final class BlockOwnershipService {
   private final BlockProtectionAdapter protectionAdapter;
 
   /** Creates the service delegating to the given adapter, which may be null. */
-  public BlockOwnershipService(@org.jetbrains.annotations.Nullable BlockProtectionAdapter protectionAdapter) {
+  public BlockOwnershipService(@Nullable BlockProtectionAdapter protectionAdapter) {
     this.protectionAdapter = protectionAdapter;
   }
 

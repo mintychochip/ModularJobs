@@ -19,7 +19,9 @@ public final class KillContributionPayout {
   private KillContributionPayout() {}
 
   /**
-   * @return players who should receive kill pay (normalized contribution &gt; cutoff, not blocked)
+   * Returns players who should receive kill pay.
+   *
+   * @return players with normalized contribution above cutoff and not blocked by eligibility
    */
   public static List<Player> selectPayees(
       @NotNull DamageContribution damageContribution,

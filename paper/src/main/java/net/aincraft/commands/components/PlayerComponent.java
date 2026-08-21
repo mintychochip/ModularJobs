@@ -16,6 +16,8 @@ public final class PlayerComponent implements ComponentLike {
   private final String playerName;
 
   /**
+   * Creates a player component from explicit id and display name.
+   *
    * @param playerId   player's UUID string (shown on hover)
    * @param playerName display name (rendered as the component text)
    */

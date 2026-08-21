@@ -17,7 +17,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Immutable job definition backed by a persistence record.
@@ -52,7 +51,7 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
    *
    * @return record containing MiniMessage text and curve expressions
    */
-  public JobRecord toRecord() {
+  JobRecord toRecord() {
     return new JobRecord(
         key.toString(),
         MINI_MESSAGE.serialize(displayName),
@@ -76,7 +75,7 @@ record JobImpl(Key key, Component displayName, Component description, int maxLev
    * @return reconstructed job
    * @throws IllegalArgumentException if a key or curve expression is invalid
    */
-  public static JobImpl fromRecord(
+  static JobImpl fromRecord(
       JobRecord record,
       Plugin plugin,
       Registry<PayableType> payableTypeRegistry

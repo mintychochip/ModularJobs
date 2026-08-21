@@ -31,9 +31,8 @@ public final class DurationParser {
    *
    * @param input duration string
    * @return parsed Duration
-   * @throws IllegalArgumentException if the format is invalid
    */
-  public static Duration parse(String input) throws IllegalArgumentException {
+  public static Duration parse(String input) {
     if (input == null || input.isBlank()) {
       throw new IllegalArgumentException("Duration string cannot be empty");
     }
@@ -87,9 +86,9 @@ public final class DurationParser {
     }
 
     long days = totalSeconds / 86400;
-    long hours = (totalSeconds % 86400) / 3600;
-    long minutes = (totalSeconds % 3600) / 60;
-    long seconds = totalSeconds % 60;
+    long hours = totalSeconds % 86400 / 3600;
+    long minutes = totalSeconds % 3600 / 60;
+    final long seconds = totalSeconds % 60;
 
     StringBuilder sb = new StringBuilder();
     if (days > 0) {

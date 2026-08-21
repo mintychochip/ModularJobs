@@ -26,7 +26,6 @@ final class YamlFileBackedConfigurationImpl {
       plugin.saveResource(path, false);
       plugin.getSLF4JLogger().info("Config file saved, exists now: {}", configFile.exists());
     }
-    assert (configFile != null);
     config = YamlConfiguration.loadConfiguration(configFile);
     plugin.getSLF4JLogger().info("Loaded config with keys: {}", config.getKeys(false));
   }
@@ -39,7 +38,7 @@ final class YamlFileBackedConfigurationImpl {
     YamlFileBackedConfigurationImpl impl = new YamlFileBackedConfigurationImpl(plugin, path);
     YamlConfiguration config = impl.config;
     return (net.aincraft.config.YamlConfiguration) Proxy.newProxyInstance(
-        net.aincraft.config.YamlConfiguration.class.getClassLoader(),
+        Thread.currentThread().getContextClassLoader(),
         new Class[]{
             net.aincraft.config.YamlConfiguration.class}, (proxy, method, args) -> {
           if ("getPlugin".equals(method.getName())) {
@@ -65,12 +64,8 @@ final class YamlFileBackedConfigurationImpl {
 
   /** Reloads the current YAML file from the plugin data folder. */
   void reload() {
-    try {
-      configFile = new File(plugin.getDataFolder(), path);
-      config = YamlConfiguration.loadConfiguration(configFile);
-    } catch (NullPointerException | IllegalArgumentException e) {
-      throw new RuntimeException(e);
-    }
+    configFile = new File(plugin.getDataFolder(), path);
+    config = YamlConfiguration.loadConfiguration(configFile);
   }
 
   /** Persists the current configuration to its YAML file. */

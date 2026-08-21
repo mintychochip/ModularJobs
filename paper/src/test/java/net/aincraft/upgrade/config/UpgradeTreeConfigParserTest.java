@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 import net.aincraft.boost.BoostFactoryImpl;
-import net.aincraft.upgrade.UpgradeEffect;
 import net.aincraft.upgrade.UpgradeEffect.BoostEffect;
 import net.aincraft.upgrade.UpgradeEffect.PermissionEffect;
 import net.aincraft.upgrade.UpgradeNode;

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -42,7 +43,7 @@ class SchemaPresenceTest {
         st.execute("SELECT 1");
         mysqlAvailable = true;
       }
-    } catch (Exception e) {
+    } catch (ClassNotFoundException | SQLException e) {
       mysqlAvailable = false;
     }
   }

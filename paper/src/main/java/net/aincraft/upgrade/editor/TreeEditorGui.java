@@ -67,7 +67,7 @@ public final class TreeEditorGui {
       TreeEditorSettingsGui settingsGui) {
     // plugin reserved for future editor messaging/scheduling hooks
     if (plugin == null) {
-      throw new NullPointerException("plugin");
+      throw new IllegalArgumentException("plugin must not be null");
     }
     this.inventory = inventory;
     this.exporter = exporter;
@@ -164,10 +164,10 @@ public final class TreeEditorGui {
   }
 
   InventoryView buildView(Player player, EditorSession session) {
-    UUID audience = player.getUniqueId();
+    final UUID audience = player.getUniqueId();
     Map<Integer, Slot> slots = new HashMap<>();
     Map<Integer, String> nodes = new HashMap<>();
-    Map<Integer, String> controls = new HashMap<>();
+    final Map<Integer, String> controls = new HashMap<>();
 
     EditorTree tree = session.tree();
     int scrollX = session.scrollOffsetX();
@@ -286,13 +286,13 @@ public final class TreeEditorGui {
     EditorTree tree = session.tree();
     var kind = click.policyKind();
 
-    if (kind == dev.craftux.api.inventory.ClickKind.RIGHT) {
+    if (kind == ClickKind.RIGHT) {
       transitioningToSubGui.add(player.getUniqueId());
       nodeEditorGui.open(player, session, node);
       return;
     }
 
-    if (kind == dev.craftux.api.inventory.ClickKind.DROP) {
+    if (kind == ClickKind.DROP) {
       if (node.id().equals(tree.rootNodeId())) {
         Messages.send(player, "<error>Cannot delete root node!");
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1.0f);
@@ -309,8 +309,8 @@ public final class TreeEditorGui {
       return;
     }
 
-    if (kind == dev.craftux.api.inventory.ClickKind.SHIFT_LEFT
-        || kind == dev.craftux.api.inventory.ClickKind.SHIFT_RIGHT) {
+    if (kind == ClickKind.SHIFT_LEFT
+        || kind == ClickKind.SHIFT_RIGHT) {
       String selectedId = session.selectedNodeId();
       if (selectedId == null || selectedId.equals(node.id())) {
         Messages.send(player, "<error>Select a different node first!");

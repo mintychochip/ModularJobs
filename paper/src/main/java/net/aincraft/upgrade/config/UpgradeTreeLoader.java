@@ -3,11 +3,13 @@ package net.aincraft.upgrade.config;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Level;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
 import net.aincraft.registry.Registry;
@@ -100,7 +103,7 @@ public final class UpgradeTreeLoader {
       createDefaultConfig(configFile);
     }
 
-    try (FileReader reader = new FileReader(configFile)) {
+    try (Reader reader = Files.newBufferedReader(configFile.toPath(), StandardCharsets.UTF_8)) {
       int count = loadFromReader(reader);
       plugin.getLogger().info("Loaded " + count + " tree(s) from file: " + CONFIG_FILE);
       return count;
@@ -126,9 +129,11 @@ public final class UpgradeTreeLoader {
     }
 
     for (File file : files) {
-      try (FileReader reader = new FileReader(file)) {
+      try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
         JsonObject treeObj = gson.fromJson(reader, JsonObject.class);
-        if (treeObj == null) continue;
+        if (treeObj == null) {
+          continue;
+        }
 
         // Get tree ID from filename (without .json extension)
         String treeId = file.getName().replace(".json", "");
@@ -165,8 +170,8 @@ public final class UpgradeTreeLoader {
 
           if (missingPositions) {
             throw new IllegalArgumentException(
-                "Tree '" + treeId + "' uses legacy format but is missing positions. " +
-                "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+                "Tree '" + treeId + "' uses legacy format but is missing positions. "
+                + "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
             );
           }
         }
@@ -176,9 +181,9 @@ public final class UpgradeTreeLoader {
         count++;
         plugin.getLogger().info("Loaded tree: " + treeId + " (job=" + tree.jobKey() + ")");
 
-      } catch (Exception e) {
+      } catch (IOException | JsonParseException | IllegalArgumentException | IllegalStateException e) {
         plugin.getLogger().warning("Failed to load tree from " + file.getName() + ": " + e.getMessage());
-        e.printStackTrace();
+        plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       }
     }
 
@@ -194,7 +199,7 @@ public final class UpgradeTreeLoader {
     return load();
   }
 
-  private int loadFromReader(java.io.Reader reader) {
+  private int loadFromReader(Reader reader) {
     JsonObject root = gson.fromJson(reader, JsonObject.class);
     if (root == null) {
       plugin.getLogger().warning("Failed to parse JSON configuration");
@@ -209,7 +214,7 @@ public final class UpgradeTreeLoader {
         plugin.getLogger().info(
             "Loaded v2 skill tree: " + CONFIG_FILE + " (jobKey=" + tree.jobKey() + ")");
         return 1;
-      } catch (Exception e) {
+      } catch (IllegalArgumentException | IllegalStateException e) {
         plugin.getLogger().warning("Failed to parse v2 skill tree: " + e.getMessage());
         return 0;
       }
@@ -247,10 +252,10 @@ public final class UpgradeTreeLoader {
         plugin.getLogger().info(
             "Loaded v2 skill tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ")");
         count++;
-      } catch (Exception e) {
+      } catch (IllegalArgumentException | IllegalStateException e) {
         plugin.getLogger().warning(
             "Failed to parse v2 tree '" + entry.getKey() + "': " + e.getMessage());
-        e.printStackTrace();
+        plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       }
     }
     return count;
@@ -294,9 +299,9 @@ public final class UpgradeTreeLoader {
       } else {
         return loadFlatWynncraftFormat(root);
       }
-    } catch (Exception e) {
+    } catch (IllegalStateException e) {
       plugin.getLogger().warning("Failed to parse Wynncraft format: " + e.getMessage());
-      e.printStackTrace();
+      plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       return 0;
     }
   }
@@ -328,12 +333,12 @@ public final class UpgradeTreeLoader {
       registry.register(tree);
       convertLegacy(tree);
 
-      plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + config.treeId() + " (jobKey=" + tree.jobKey() + ") with " +
-          tree.allNodes().size() + " nodes");
+      plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + config.treeId() + " (jobKey=" + tree.jobKey() + ") with "
+          + tree.allNodes().size() + " nodes");
       return 1;
-    } catch (Exception e) {
+    } catch (JsonParseException | IllegalArgumentException | IllegalStateException e) {
       plugin.getLogger().warning("Failed to parse flat Wynncraft format: " + e.getMessage());
-      e.printStackTrace();
+      plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       return 0;
     }
   }
@@ -384,19 +389,19 @@ public final class UpgradeTreeLoader {
           registry.register(tree);
           convertLegacy(tree);
 
-          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + treeId + " (jobKey=" + tree.jobKey() + ") with " +
-              tree.allNodes().size() + " nodes");
+          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + treeId + " (jobKey=" + tree.jobKey() + ") with "
+              + tree.allNodes().size() + " nodes");
           count++;
-        } catch (Exception e) {
+        } catch (JsonParseException | IllegalArgumentException | IllegalStateException e) {
           plugin.getLogger().warning("Failed to parse Wynncraft tree '" + entry.getKey() + "': " + e.getMessage());
-          e.printStackTrace();
+          plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
         }
       }
 
       return count;
-    } catch (Exception e) {
+    } catch (IllegalStateException e) {
       plugin.getLogger().warning("Failed to parse nested Wynncraft format: " + e.getMessage());
-      e.printStackTrace();
+      plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       return 0;
     }
   }
@@ -447,8 +452,8 @@ public final class UpgradeTreeLoader {
               wynncraftDeserializer.deserialize(treeConfig, net.aincraft.upgrade.wynncraft.WynncraftTreeConfig.class, null);
           tree = wynncraftParser.parse(config);
 
-          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ") with " +
-              tree.allNodes().size() + " nodes");
+          plugin.getLogger().info("Loaded Wynncraft upgrade tree: " + entry.getKey() + " (jobKey=" + tree.jobKey() + ") with "
+              + tree.allNodes().size() + " nodes");
           registry.register(tree);
           convertLegacy(tree);
           count++;
@@ -466,21 +471,21 @@ public final class UpgradeTreeLoader {
 
         if (missingPositions) {
           throw new IllegalArgumentException(
-              "Tree '" + entry.getKey() + "' uses legacy format but is missing positions. " +
-              "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+              "Tree '" + entry.getKey() + "' uses legacy format but is missing positions. "
+              + "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
           );
         }
 
         registry.register(tree);
         convertLegacy(tree);
         count++;
-        plugin.getLogger().info("Loaded legacy upgrade tree for job: " + config.job() + " (jobKey=" + tree.jobKey() + ") with " +
-            tree.allNodes().size() + " nodes");
-      } catch (Exception e) {
+        plugin.getLogger().info("Loaded legacy upgrade tree for job: " + config.job() + " (jobKey=" + tree.jobKey() + ") with "
+            + tree.allNodes().size() + " nodes");
+      } catch (JsonParseException | IllegalArgumentException | IllegalStateException e) {
         plugin.getLogger().warning(
             "Failed to parse upgrade tree '" + entry.getKey() + "': " + e.getMessage()
         );
-        e.printStackTrace();
+        plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       }
     }
 
@@ -502,11 +507,11 @@ public final class UpgradeTreeLoader {
     }
 
     File treeFile = new File(treesFolder, treeId + ".json");
-    try (FileWriter writer = new FileWriter(treeFile)) {
+    try (Writer writer = Files.newBufferedWriter(treeFile.toPath(), StandardCharsets.UTF_8)) {
       gson.toJson(new com.google.gson.JsonParser().parse(json), writer);
-    } catch (Exception e) {
+    } catch (IOException | JsonParseException | IllegalStateException e) {
       plugin.getLogger().warning("Failed to save tree " + treeId + ": " + e.getMessage());
-      e.printStackTrace();
+      plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       return false;
     }
 
@@ -548,7 +553,7 @@ public final class UpgradeTreeLoader {
       return java.util.Optional.empty();
     }
 
-    try (FileReader reader = new FileReader(treeFile)) {
+    try (Reader reader = Files.newBufferedReader(treeFile.toPath(), StandardCharsets.UTF_8)) {
       JsonObject treeObj = gson.fromJson(reader, JsonObject.class);
       if (treeObj == null) {
         return java.util.Optional.empty();
@@ -585,16 +590,16 @@ public final class UpgradeTreeLoader {
 
         if (missingPositions) {
           throw new IllegalArgumentException(
-              "Tree '" + treeId + "' uses legacy format but is missing positions. " +
-              "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
+              "Tree '" + treeId + "' uses legacy format but is missing positions. "
+              + "Please use Wynncraft format with layout coordinates or specify positions for all nodes."
           );
         }
       }
 
       return java.util.Optional.of(tree);
-    } catch (Exception e) {
+    } catch (IOException | JsonParseException | IllegalArgumentException | IllegalStateException e) {
       plugin.getLogger().warning("Failed to load tree '" + treeId + "': " + e.getMessage());
-      e.printStackTrace();
+      plugin.getLogger().log(Level.WARNING, "Upgrade tree load failed", e);
       return java.util.Optional.empty();
     }
   }
@@ -662,7 +667,7 @@ public final class UpgradeTreeLoader {
 
     String rootPerk = perkByNodeKey.get(legacy.rootNodeKey());
     String v2Root = rootPerk != null && skillNodes.containsKey(rootPerk)
-        ? rootPerk : (skillNodes.isEmpty() ? legacy.rootNodeKey() : skillNodes.keySet().iterator().next());
+        ? rootPerk : skillNodes.isEmpty() ? legacy.rootNodeKey() : skillNodes.keySet().iterator().next();
 
     SkillTree tree = new SkillTree(
         Key.key("modularjobs", "upgrade_tree/" + legacy.jobKey()),
@@ -674,7 +679,7 @@ public final class UpgradeTreeLoader {
 
   private SkillNode convertPerk(UpgradeTree legacy, String perk, List<UpgradeNode> group,
       Map<String, String> perkByNodeKey, Map<String, Integer> maxLevelByPerk) {
-    UpgradeNode base = group.get(0);
+    final UpgradeNode base = group.get(0);
     boolean isRoot = Objects.equals(perk, perkByNodeKey.get(legacy.rootNodeKey()));
     SkillNodeKind kind = isRoot ? SkillNodeKind.ROOT : SkillNodeKind.SKILL;
 

@@ -15,10 +15,9 @@ public interface DomainMapper<D, R> {
    *
    * @param record persisted record; must not be {@code null}
    * @return domain value
-   * @throws IllegalArgumentException if the record cannot be converted
    */
   @NotNull
-  D toDomain(@NotNull R record) throws IllegalArgumentException;
+  D toDomain(@NotNull R record);
 
   /**
    * Converts a domain value to a persistence record.

@@ -19,8 +19,6 @@ import net.aincraft.registry.Registry;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -260,9 +258,9 @@ public final class UpgradeServiceImpl implements UpgradeService {
     }
 
     int nextLevel = state.levelOf(nodeKey) + 1;
-    int cost = node.levelCost(nextLevel);
+    final int cost = node.levelCost(nextLevel);
 
-    Set<String> unmet = unmetRequirements(tree, node, state);
+    Set<String> unmet = unmetRequirements(node, state);
     if (!unmet.isEmpty()) {
       return new PurchaseResult.RequirementsNotMet(unmet);
     }
@@ -310,7 +308,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
       return new PurchaseResult.AlreadyOwned(nodeKey);
     }
 
-    Set<String> unmet = unmetRequirements(tree, node, state);
+    Set<String> unmet = unmetRequirements(node, state);
     if (!unmet.isEmpty()) {
       return new PurchaseResult.RequirementsNotMet(unmet);
     }
@@ -425,7 +423,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
     Player player;
     try {
       player = Bukkit.getPlayer(UUID.fromString(playerId));
-    } catch (RuntimeException e) {
+    } catch (IllegalArgumentException e) {
       return;
     }
     if (player == null || !player.isOnline()) {
@@ -444,7 +442,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
     currentByTree.put(tree, current);
     try {
       effectApplier.syncEffects(player, previousByTree, currentByTree);
-    } catch (RuntimeException e) {
+    } catch (IllegalArgumentException | IllegalStateException e) {
       // The purchase is already persisted; a sync failure must not roll it
       // back or surface a false failure (retry would double-spend). It is
       // logged instead of silently swallowed.
@@ -539,7 +537,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
       try {
         JobProgression progression = jobService.getProgression(playerId, jobKey);
         return progression == null ? 0 : progression.level();
-      } catch (RuntimeException e) {
+      } catch (IllegalArgumentException | IllegalStateException e) {
         return 0;
       }
     };
@@ -554,7 +552,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
       try {
         Player player = Bukkit.getPlayer(UUID.fromString(playerId));
         return player != null && player.isOnline() && player.hasPermission(permission);
-      } catch (RuntimeException e) {
+      } catch (IllegalArgumentException e) {
         return false;
       }
     };
@@ -571,7 +569,7 @@ public final class UpgradeServiceImpl implements UpgradeService {
         .findFirst();
   }
 
-  private Set<String> unmetRequirements(SkillTree tree, SkillNode node, SkillTreeState state) {
+  private Set<String> unmetRequirements(SkillNode node, SkillTreeState state) {
     Set<String> unmet = new HashSet<>();
     for (Requirement requirement : node.requirements()) {
       if (!requirement.satisfied(state)) {
@@ -660,9 +658,6 @@ public final class UpgradeServiceImpl implements UpgradeService {
 
     // Get player's current job progression
     try {
-      UUID uuid = UUID.fromString(playerId);
-      OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-
       JobProgression progression = jobService.getProgression(playerId, jobKey);
       if (progression == null) {
         return 0;

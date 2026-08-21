@@ -30,16 +30,6 @@ public final class KeyResolver {
     return resolve(raw, context);
   }
 
-  /**
-   * Registers or replaces a strategy for a context class.
-   *
-   * @param clazz exact context class handled by the strategy
-   * @param strategy resolver invoked for matching contexts
-   */
-  public <T extends Context> void addStrategy(Class<T> clazz, KeyResolvingStrategy<T> strategy) {
-    strategies.put(clazz,strategy);
-  }
-
   @SuppressWarnings("unchecked")
   private static <T extends Context> Key resolve(KeyResolvingStrategy<?> raw, Context object) {
     KeyResolvingStrategy<T> strategy = (KeyResolvingStrategy<T>) raw;
@@ -47,13 +37,22 @@ public final class KeyResolver {
     return strategy.resolve(casted);
   }
 
-
+  /**
+   * Registers or replaces a strategy for a context class.
+   *
+   * @param clazz exact context class handled by the strategy
+   * @param strategy resolver invoked for matching contexts
+   */
+  public <T extends Context> void addStrategy(Class<T> clazz, KeyResolvingStrategy<T> strategy) {
+    strategies.put(clazz, strategy);
+  }
 
   /**
    * Strategy for converting one context type into a stable lookup key.
    *
    * @param <T> context type accepted by this strategy
    */
+  @FunctionalInterface
   public interface KeyResolvingStrategy<T extends Context> {
 
     /**

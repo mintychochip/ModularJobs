@@ -26,7 +26,7 @@ public final class SimpleRegistryImpl<T extends Keyed> implements Registry<T> {
 
   /** Looks up an object and rejects keys that are not registered. */
   @Override
-  public @NotNull T getOrThrow(Key key) throws IllegalArgumentException {
+  public @NotNull T getOrThrow(Key key) {
     Preconditions.checkArgument(isRegistered(key));
     readWriteLock.readLock().lock();
     try {

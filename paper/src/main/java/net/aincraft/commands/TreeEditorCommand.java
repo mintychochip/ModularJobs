@@ -20,6 +20,7 @@ import org.bukkit.entity.Player;
 /**
  * Command for editing upgrade trees.
  *
+ * <p>
  * Usage:
  * - /jobs treeeditor <job> - Edit existing tree
  * - /jobs treeeditor new <job> - Create new tree

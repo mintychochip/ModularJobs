@@ -21,7 +21,7 @@ class ProfessionCatalogJobsYmlAlignmentTest {
   @Test
   void everyCatalogStorageKeyExistsInJobsYml() throws IOException {
     String yml;
-    try (InputStream in = getClass().getClassLoader().getResourceAsStream("jobs.yml")) {
+    try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("jobs.yml")) {
       assertTrue(in != null, "jobs.yml must be on test classpath from paper resources");
       yml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }

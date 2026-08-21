@@ -6,6 +6,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 /**
  * Provides the Brigadier command tree for one subcommand of the jobs command.
  */
+@FunctionalInterface
 public interface JobsCommand {
 
   /**

@@ -23,12 +23,18 @@ public final class PaymentEligibility {
     this.settings = Objects.requireNonNull(settings, "settings");
   }
 
-  /** @return the settings driving this payment gate */
+  /**
+   * Returns the settings driving this payment gate.
+   *
+   * @return the settings driving this payment gate
+   */
   public PaymentSettings settings() {
     return settings;
   }
 
   /**
+   * Reports whether pay must be skipped for this player.
+   *
    * @return true when pay must be skipped for this player
    */
   public boolean blocksPay(@NotNull Player player) {

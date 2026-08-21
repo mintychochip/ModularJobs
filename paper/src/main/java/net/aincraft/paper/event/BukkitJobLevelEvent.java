@@ -44,6 +44,8 @@ public final class BukkitJobLevelEvent extends Event {
   }
 
   /**
+   * Returns the legacy level value; use {@link #getNewLevel()} instead.
+   *
    * @deprecated Use {@link #getNewLevel()} instead
    */
   @Deprecated

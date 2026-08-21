@@ -12,36 +12,36 @@ import java.util.UUID;
  */
 public final class EditorSessionStore {
 
-    private final Cache<String, EditorSession> sessionCache;
+  private final Cache<String, EditorSession> sessionCache;
 
-    public EditorSessionStore(EditorConfig config) {
-        this.sessionCache = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(config.sessionTtlMinutes()))
-            .build();
-    }
+  public EditorSessionStore(EditorConfig config) {
+    this.sessionCache = Caffeine.newBuilder()
+      .expireAfterWrite(Duration.ofMinutes(config.sessionTtlMinutes()))
+      .build();
+  }
 
-    public void store(EditorSession session) {
-        sessionCache.put(session.sessionCode(), session);
-    }
+  public void store(EditorSession session) {
+    sessionCache.put(session.sessionCode(), session);
+  }
 
-    public Optional<EditorSession> get(String sessionCode) {
-        EditorSession session = sessionCache.getIfPresent(sessionCode);
-        if (session == null) {
-            return Optional.empty();
-        }
-        if (session.isExpired(Instant.now())) {
-            sessionCache.invalidate(sessionCode);
-            return Optional.empty();
-        }
-        return Optional.of(session);
+  public Optional<EditorSession> get(String sessionCode) {
+    EditorSession session = sessionCache.getIfPresent(sessionCode);
+    if (session == null) {
+      return Optional.empty();
     }
+    if (session.isExpired(Instant.now())) {
+      sessionCache.invalidate(sessionCode);
+      return Optional.empty();
+    }
+    return Optional.of(session);
+  }
 
-    public Optional<EditorSession> getOwned(String sessionCode, UUID playerId) {
-        return get(sessionCode)
-            .filter(session -> session.playerId().equals(playerId));
-    }
+  public Optional<EditorSession> getOwned(String sessionCode, UUID playerId) {
+    return get(sessionCode)
+      .filter(session -> session.playerId().equals(playerId));
+  }
 
-    public void remove(String sessionCode) {
-        sessionCache.invalidate(sessionCode);
-    }
+  public void remove(String sessionCode) {
+    sessionCache.invalidate(sessionCode);
+  }
 }

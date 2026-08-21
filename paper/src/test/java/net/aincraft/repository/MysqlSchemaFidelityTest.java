@@ -53,9 +53,8 @@ class MysqlSchemaFidelityTest {
         st.execute("SELECT 1");
         mysqlAvailable = true;
       }
-    } catch (Exception e) {
+    } catch (ClassNotFoundException | SQLException e) {
       mysqlAvailable = false;
-      System.err.println("MySQL not available for fidelity tests: " + e.getMessage());
     }
   }
 
@@ -113,7 +112,8 @@ class MysqlSchemaFidelityTest {
       ps.setString(3, "minecraft:diamond_ore");
       assertEquals(1, ps.executeUpdate());
       try (ResultSet keys = ps.getGeneratedKeys()) {
-        assertTrue(keys.next());
+        boolean hasKey = keys.next();
+        assertTrue(hasKey);
         taskId = keys.getInt(1);
       }
     }
@@ -140,7 +140,8 @@ class MysqlSchemaFidelityTest {
             """)) {
       ps.setInt(1, taskId);
       try (ResultSet rs = ps.executeQuery()) {
-        assertTrue(rs.next());
+        boolean hasRow = rs.next();
+        assertTrue(hasRow);
         assertEquals("modularjobs:miner", rs.getString("job_key"));
         assertEquals("modularjobs:block_break", rs.getString("action_type_key"));
         assertEquals("minecraft:diamond_ore", rs.getString("context_key"));
@@ -150,7 +151,8 @@ class MysqlSchemaFidelityTest {
         assertEquals(0, amount.compareTo(readAmount),
             "DECIMAL amount must round-trip without loss; expected " + amount + " got " + readAmount);
         assertNull(rs.getString("currency_identifier"));
-        assertFalse(rs.next());
+        boolean hasExtraRow = rs.next();
+        assertFalse(hasExtraRow);
       }
     }
   }
@@ -184,7 +186,8 @@ class MysqlSchemaFidelityTest {
       ps.setString(3, "minecraft:cod");
       ps.setString(4, "modularjobs:economy");
       try (ResultSet rs = ps.executeQuery()) {
-        assertTrue(rs.next());
+        boolean hasRow = rs.next();
+        assertTrue(hasRow);
         assertEquals(0, amount.compareTo(rs.getBigDecimal("amount")));
         assertEquals("test:default", rs.getString("currency"));
       }
@@ -208,7 +211,8 @@ class MysqlSchemaFidelityTest {
       ps.setString(1, "11111111-2222-3333-4444-555555555555");
       ps.setString(2, "modularjobs:miner");
       try (ResultSet rs = ps.executeQuery()) {
-        assertTrue(rs.next());
+        boolean hasRow = rs.next();
+        assertTrue(hasRow);
         assertEquals(0, exp.compareTo(rs.getBigDecimal("experience")));
       }
     }

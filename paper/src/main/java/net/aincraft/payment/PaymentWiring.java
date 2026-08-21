@@ -3,6 +3,7 @@ package net.aincraft.payment;
 import com.google.common.cache.CacheLoader;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,6 @@ import net.kyori.adventure.key.Key;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
@@ -146,7 +146,7 @@ public final class PaymentWiring {
             CacheLoader.from(
                 block -> new LocationKey(block.getWorld().getName(), block.getX(), block.getY(),
                     block.getZ()))));
-    Map<Material, java.time.temporal.TemporalAmount> placedTemporal = new HashMap<>(placedMaterials);
+    Map<Material, java.time.temporal.TemporalAmount> placedTemporal = new EnumMap<>(placedMaterials);
     providers.put(ExploitProtectionType.PLACED.key(),
         new MemoryExploitProtectionStoreImpl<Block, Material>(
             placedTemporal,

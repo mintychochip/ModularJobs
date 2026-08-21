@@ -33,8 +33,12 @@ public class PreferencesServiceImpl implements PreferencesService {
   
   @Override
   public void setEntriesPerPage(@NotNull UUID playerId, int entries) {
-    if (entries < 1) entries = 1;
-    if (entries > 50) entries = 50;
+    if (entries < 1) {
+      entries = 1;
+    }
+    if (entries > 50) {
+      entries = 50;
+    }
     
     PlayerPreferences prefs = preferencesCache.computeIfAbsent(
         playerId, k -> new PlayerPreferences());

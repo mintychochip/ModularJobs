@@ -19,7 +19,7 @@ public record EditorSession(
     Instant createdAt,
     Instant expiresAt
 ) {
-    public boolean isExpired(Instant now) {
-        return !expiresAt.isAfter(now);
-    }
+  public boolean isExpired(Instant now) {
+    return !expiresAt.isAfter(now);
+  }
 }

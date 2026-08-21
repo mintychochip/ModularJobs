@@ -202,12 +202,6 @@ public final class JobBrowseGui {
   }
 
   private ItemSpec jobItem(Job job, JobProgression progression) {
-    boolean isJoined = progression != null;
-    Material material = isJoined ? Material.EMERALD : Material.BOOK;
-    NamedTextColor nameColor = isJoined ? NamedTextColor.GREEN : NamedTextColor.GOLD;
-    String name = PLAIN.serialize(
-        job.displayName().color(nameColor).decoration(TextDecoration.ITALIC, false));
-
     List<String> lore = new ArrayList<>();
     lore.add(plain(job.description().color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
     lore.add("");
@@ -237,6 +231,7 @@ public final class JobBrowseGui {
         .decoration(TextDecoration.ITALIC, false)));
     addExampleRewards(job, lore);
 
+    boolean isJoined = progression != null;
     if (isJoined) {
       lore.add("");
       lore.add(plain(Component.text()
@@ -258,6 +253,10 @@ public final class JobBrowseGui {
           .decoration(TextDecoration.ITALIC, false)));
     }
 
+    Material material = isJoined ? Material.EMERALD : Material.BOOK;
+    NamedTextColor nameColor = isJoined ? NamedTextColor.GREEN : NamedTextColor.GOLD;
+    String name = PLAIN.serialize(
+        job.displayName().color(nameColor).decoration(TextDecoration.ITALIC, false));
     return CraftuxItems.of(material, name, lore);
   }
 

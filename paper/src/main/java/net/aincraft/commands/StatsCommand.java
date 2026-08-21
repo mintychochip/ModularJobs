@@ -13,7 +13,6 @@ import net.aincraft.gui.StatsGui;
 import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -115,7 +114,7 @@ public class StatsCommand implements JobsCommand {
    * Displays stats in a craftux inventory GUI.
    */
   private void displayStatsDialog(Player viewer, OfflinePlayer target) {
-    List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
+    final List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
     statsGui.open(viewer, target, progressions, 1);
   }
 
@@ -123,7 +122,7 @@ public class StatsCommand implements JobsCommand {
    * Displays stats in chat format (original implementation).
    */
   private void displayStatsChat(CommandSender viewer, OfflinePlayer target) {
-    List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
+    final List<JobProgression> progressions = jobService.getProgressions(target.getUniqueId());
 
     String targetName = target.getName() != null ? target.getName() : "Unknown";
     String header = viewer.equals(target)
@@ -142,10 +141,8 @@ public class StatsCommand implements JobsCommand {
       Messages.send(viewer, "<neutral>  Use <secondary>/jobs join<neutral> to join a job.");
       Messages.send(viewer, "");
     } else {
-      PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
-
       for (JobProgression progression : progressions) {
-        displayJobStats(viewer, progression, serializer);
+        displayJobStats(viewer, progression);
       }
     }
 
@@ -154,8 +151,7 @@ public class StatsCommand implements JobsCommand {
     Messages.send(viewer, "");
   }
 
-  private void displayJobStats(CommandSender viewer, JobProgression progression,
-                               PlainTextComponentSerializer serializer) {
+  private void displayJobStats(CommandSender viewer, JobProgression progression) {
     int currentLevel = progression.level();
     BigDecimal currentXp = progression.experience();
     int maxLevel = progression.job().maxLevel();
@@ -180,7 +176,7 @@ public class StatsCommand implements JobsCommand {
     }
 
     // Build hover text with all metadata
-    Component hoverText = buildHoverText(viewer, currentLevel, maxLevel, currentXp, xpCurrent, xpTotal, percentage);
+    Component hoverText = buildHoverText(currentLevel, maxLevel, currentXp, xpCurrent, xpTotal, percentage);
 
     // Build main display: bar + Lvl. [level] + [name]
     String bar = createProgressBar(percentage);
@@ -198,7 +194,7 @@ public class StatsCommand implements JobsCommand {
     viewer.sendMessage(mainDisplay);
   }
 
-  private Component buildHoverText(CommandSender viewer, int currentLevel, int maxLevel, BigDecimal currentXp,
+  private Component buildHoverText(int currentLevel, int maxLevel, BigDecimal currentXp,
                                    BigDecimal xpCurrent, BigDecimal xpTotal, double percentage) {
     String percentageStr = String.format("%.1f%%", percentage);
     String xpCurrentStr = formatFullNumber(xpCurrent);
@@ -206,10 +202,10 @@ public class StatsCommand implements JobsCommand {
     String totalXpStr = formatFullNumber(currentXp);
     String progressColor = getProgressColorTag(percentage);
 
-    return Messages.component("<neutral>Level: <primary>" + currentLevel + " / " + maxLevel +
-        "\n<neutral>Progress: <" + progressColor + ">" + percentageStr +
-        "\n<neutral>XP in level: <secondary>" + xpCurrentStr + " / " + xpTotalStr +
-        "\n<neutral>Total XP: <accent>" + totalXpStr);
+    return Messages.component("<neutral>Level: <primary>" + currentLevel + " / " + maxLevel
+        + "\n<neutral>Progress: <" + progressColor + ">" + percentageStr
+        + "\n<neutral>XP in level: <secondary>" + xpCurrentStr + " / " + xpTotalStr
+        + "\n<neutral>Total XP: <accent>" + totalXpStr);
   }
 
   private String createProgressBar(double percentage) {

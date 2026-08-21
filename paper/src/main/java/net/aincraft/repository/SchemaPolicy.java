@@ -18,6 +18,8 @@ public final class SchemaPolicy {
   private SchemaPolicy() {}
 
   /**
+   * Determines whether schema DDL should run during connection startup.
+   *
    * @return always false — never CREATE TABLE inside the game process
    */
   public static boolean shouldApplySchemaOnConnect(
@@ -26,6 +28,8 @@ public final class SchemaPolicy {
   }
 
   /**
+   * Reports whether required tables must exist before the plugin uses the database.
+   *
    * @return true — fail fast when ops has not applied {@code sql/mysql.sql}
    */
   public static boolean shouldVerifySchemaPresent(@NotNull DatabaseType type) {
@@ -33,6 +37,8 @@ public final class SchemaPolicy {
   }
 
   /**
+   * Detects legacy {@code auto-schema} configuration that the plugin ignores.
+   *
    * @return true if config still sets {@code auto-schema} (unsupported; ops must apply DDL)
    */
   public static boolean hasIgnoredRemoteAutoSchema(

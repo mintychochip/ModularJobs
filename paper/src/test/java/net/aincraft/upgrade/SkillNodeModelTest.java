@@ -1,18 +1,14 @@
 package net.aincraft.upgrade;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.aincraft.upgrade.SkillNode.LevelEffectMode;
-import net.aincraft.upgrade.SkillNodeKind;
-import net.aincraft.upgrade.NodeLevel;
-import net.aincraft.upgrade.NodeEffect;
-import net.aincraft.upgrade.SkillNode;
-import net.aincraft.upgrade.SkillTreeState;
 import net.aincraft.upgrade.Requirements.NodeLevelRequirement;
-import net.aincraft.upgrade.Position;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.Test;
 
@@ -55,8 +51,8 @@ class SkillNodeModelTest {
   @Test
   void kindSemantics() {
     SkillNode root = node(SkillNodeKind.ROOT, 0, List.of(), LevelEffectMode.REPLACE, List.of());
-    SkillNode skill = node(SkillNodeKind.SKILL, 0, List.of(new NodeLevel(1, List.of())), LevelEffectMode.REPLACE, List.of());
-    SkillNode major = node(SkillNodeKind.MAJOR, 5, List.of(), LevelEffectMode.REPLACE, List.of());
+    final SkillNode skill = node(SkillNodeKind.SKILL, 0, List.of(new NodeLevel(1, List.of())), LevelEffectMode.REPLACE, List.of());
+    final SkillNode major = node(SkillNodeKind.MAJOR, 5, List.of(), LevelEffectMode.REPLACE, List.of());
 
     assertTrue(root.isRoot());
     assertFalse(root.isSkill());
@@ -111,7 +107,7 @@ class SkillNodeModelTest {
 
   @Test
   void majorNeverHasLevels() {
-    SkillNode major = node(SkillNodeKind.MAJOR, 5, List.of(), LevelEffectMode.REPLACE, List.of());
+    final SkillNode major = node(SkillNodeKind.MAJOR, 5, List.of(), LevelEffectMode.REPLACE, List.of());
     assertEquals(List.of(), major.activeEffects(0));
     assertEquals(List.of(), major.activeEffects(1));
   }

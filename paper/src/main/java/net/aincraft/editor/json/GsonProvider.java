@@ -5,12 +5,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import net.kyori.adventure.key.Key;
 import java.io.IOException;
 import java.time.Instant;
+import net.kyori.adventure.key.Key;
 
 /**
  * Factory that creates a configured Gson instance for the ModularJobs web editor.
+ *
  * <p>
  * Configuration:
  * <ul>
@@ -18,6 +19,7 @@ import java.time.Instant;
  *   <li>Lenient parsing enabled</li>
  *   <li>Null values are NOT serialized (default behavior)</li>
  * </ul>
+ *
  * <p>
  * Custom type adapters:
  * <ul>
@@ -27,60 +29,62 @@ import java.time.Instant;
  */
 public final class GsonProvider {
 
-    private GsonProvider() {}
+  private GsonProvider() {}
 
-    public static Gson create() {
-        return new GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(Key.class, new KeyAdapter())
-            .registerTypeAdapter(Instant.class, new InstantAdapter())
-            .setLenient()
-            .create();
+  public static Gson create() {
+    return new GsonBuilder()
+        .setPrettyPrinting()
+        .registerTypeAdapter(Key.class, new KeyAdapter())
+        .registerTypeAdapter(Instant.class, new InstantAdapter())
+        .setLenient()
+        .create();
+  }
+
+  /**
+   * TypeAdapter for Adventure Key serialization.
+   *
+   * <p>
+   * Writes keys as "namespace:value" strings and reads them using {@link Key#key(String)}.
+   */
+  private static final class KeyAdapter extends TypeAdapter<Key> {
+
+    @Override
+    public void write(JsonWriter out, Key value) throws IOException {
+      if (value == null) {
+        out.nullValue();
+        return;
+      }
+      out.value(value.namespace() + ":" + value.value());
     }
 
-    /**
-     * TypeAdapter for Adventure Key serialization.
-     * <p>
-     * Writes keys as "namespace:value" strings and reads them using {@link Key#key(String)}.
-     */
-    private static final class KeyAdapter extends TypeAdapter<Key> {
+    @Override
+    public Key read(JsonReader in) throws IOException {
+      String keyString = in.nextString();
+      return Key.key(keyString);
+    }
+  }
 
-        @Override
-        public void write(JsonWriter out, Key value) throws IOException {
-            if (value == null) {
-                out.nullValue();
-                return;
-            }
-            out.value(value.namespace() + ":" + value.value());
-        }
+  /**
+   * TypeAdapter for Instant serialization.
+   *
+   * <p>
+   * Writes instants as ISO-8601 strings and reads them using {@link Instant#parse(CharSequence)}.
+   */
+  private static final class InstantAdapter extends TypeAdapter<Instant> {
 
-        @Override
-        public Key read(JsonReader in) throws IOException {
-            String keyString = in.nextString();
-            return Key.key(keyString);
-        }
+    @Override
+    public void write(JsonWriter out, Instant value) throws IOException {
+      if (value == null) {
+        out.nullValue();
+        return;
+      }
+      out.value(value.toString());
     }
 
-    /**
-     * TypeAdapter for Instant serialization.
-     * <p>
-     * Writes instants as ISO-8601 strings and reads them using {@link Instant#parse(CharSequence)}.
-     */
-    private static final class InstantAdapter extends TypeAdapter<Instant> {
-
-        @Override
-        public void write(JsonWriter out, Instant value) throws IOException {
-            if (value == null) {
-                out.nullValue();
-                return;
-            }
-            out.value(value.toString());
-        }
-
-        @Override
-        public Instant read(JsonReader in) throws IOException {
-            String instantString = in.nextString();
-            return Instant.parse(instantString);
-        }
+    @Override
+    public Instant read(JsonReader in) throws IOException {
+      String instantString = in.nextString();
+      return Instant.parse(instantString);
     }
+  }
 }

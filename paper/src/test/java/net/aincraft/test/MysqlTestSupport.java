@@ -9,13 +9,13 @@ import java.sql.Statement;
 import net.aincraft.repository.DatabaseType;
 
 /** Shared helper for tests that need a live MySQL 8 instance. */
-public final class TestMysql {
+public final class MysqlTestSupport {
 
   public static final String DEFAULT_URL = "jdbc:mysql://localhost:13306/modularjobs";
   public static final String DEFAULT_USER = "test";
   public static final String DEFAULT_PASSWORD = "test";
 
-  private TestMysql() {}
+  private MysqlTestSupport() {}
 
   public static String jdbcUrl() {
     return envOr("MODULARJOBS_TEST_MYSQL_URL", DEFAULT_URL);
@@ -37,7 +37,7 @@ public final class TestMysql {
         st.execute("SELECT 1");
         return true;
       }
-    } catch (Exception e) {
+    } catch (ClassNotFoundException | SQLException e) {
       return false;
     }
   }

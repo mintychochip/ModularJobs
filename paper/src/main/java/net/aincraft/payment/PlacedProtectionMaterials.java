@@ -211,7 +211,7 @@ public final class PlacedProtectionMaterials {
         return false;
       }
       return material.isBlock();
-    } catch (RuntimeException | LinkageError e) {
+    } catch (UnsupportedOperationException | LinkageError e) {
       // Incomplete registry entry — treat known non-air names as candidates only via curated set
       String name = material.name();
       return !name.equals("AIR") && !name.equals("CAVE_AIR") && !name.equals("VOID_AIR");

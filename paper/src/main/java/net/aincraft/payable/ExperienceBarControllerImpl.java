@@ -98,7 +98,7 @@ final class ExperienceBarControllerImpl implements ExperienceBarController, List
   }
 
   @EventHandler
-  public void onPlayerQuit(PlayerQuitEvent event) {
+  void onPlayerQuit(PlayerQuitEvent event) {
     UUID playerId = event.getPlayer().getUniqueId();
     surfaces.hideAllBossBars(playerId);
     formatScratch.asMap().keySet().removeIf(key -> {

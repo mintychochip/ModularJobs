@@ -33,7 +33,11 @@ public final class TextScoreboard {
     return new TextScoreboard(surfaces, PLAIN.serialize(displayName));
   }
 
-  /** @deprecated use {@link #create(CraftuxSurfaces, Component)} */
+  /**
+   * Legacy factory without craftux surfaces.
+   *
+   * @deprecated use {@link #create(CraftuxSurfaces, Component)}
+   */
   @Deprecated
   public static TextScoreboard create(Component displayName) {
     throw new UnsupportedOperationException(

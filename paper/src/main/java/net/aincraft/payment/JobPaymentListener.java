@@ -19,7 +19,6 @@ import net.aincraft.container.ActionTypes;
 import net.aincraft.paper.BukkitContexts;
 import net.aincraft.payment.ExploitService.ExploitProtectionType;
 import net.aincraft.protection.BlockOwnershipService;
-import net.aincraft.payment.DamageContribution;
 import net.aincraft.util.LocationKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -83,6 +82,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Central Bukkit listener that turns gameplay events into job payments.
+ *
  * <p>
  * Every handler applies {@link PaymentEligibility} to gate pay, and most also apply exploit/
  * protection checks (placed-block timers, milk/wax/dye/strip cooldowns, silk-touch, generator
@@ -105,7 +105,7 @@ final class JobPaymentListener implements Listener {
 
   private static final String CITIZENS = "NPC";
 
-  public static final Predicate<Player> IS_CITIZEN = player -> player.hasMetadata(CITIZENS);
+  static final Predicate<Player> IS_CITIZEN = player -> player.hasMetadata(CITIZENS);
 
   private final PaymentEligibility eligibility;
 
@@ -129,13 +129,17 @@ final class JobPaymentListener implements Listener {
     this.hopperPayDisableStore = hopperPayDisableStore;
   }
 
-  /** @return true when the player must not receive job pay */
+  /**
+   * Reports whether job pay is blocked for the player.
+   *
+   * @return true when the player must not receive job pay
+   */
   boolean blocksPay(Player player) {
     return eligibility.blocksPay(player);
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBucketEntity(final PlayerBucketEntityEvent event) {
+  void onBucketEntity(final PlayerBucketEntityEvent event) {
     Player player = event.getPlayer();
     if (!entityValidationService
         .isValid(event.getEntity())) {
@@ -148,7 +152,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onWaxBlock(final PlayerInteractEvent event) {
+  void onWaxBlock(final PlayerInteractEvent event) {
     Action action = event.getAction();
     Block block = event.getClickedBlock();
     if (action != Action.RIGHT_CLICK_BLOCK || block == null) {
@@ -177,7 +181,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onStripLog(final PlayerInteractEvent event) {
+  void onStripLog(final PlayerInteractEvent event) {
     Action action = event.getAction();
     Block block = event.getClickedBlock();
     if (action != Action.RIGHT_CLICK_BLOCK || block == null) {
@@ -213,7 +217,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBlockPlace(final BlockPlaceEvent event) {
+  void onBlockPlace(final BlockPlaceEvent event) {
     if (!event.canBuild()) {
       return;
     }
@@ -235,7 +239,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onTameAnimal(final EntityTameEvent event) {
+  void onTameAnimal(final EntityTameEvent event) {
     LivingEntity entity = event.getEntity();
     if (!entityValidationService
         .isValid(entity)) {
@@ -252,7 +256,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onEntityShear(final PlayerShearEntityEvent event) {
+  void onEntityShear(final PlayerShearEntityEvent event) {
     Player player = event.getPlayer();
     if (eligibility.blocksPay(player)) {
       return;
@@ -271,7 +275,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBlockBreak(final BlockBreakEvent event) {
+  void onBlockBreak(final BlockBreakEvent event) {
     Player player = event.getPlayer();
     if (eligibility.blocksPay(player)) {
       return;
@@ -305,7 +309,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler
-  private void onBlockPhysics(final BlockPhysicsEvent event) {
+  void onBlockPhysics(final BlockPhysicsEvent event) {
     Block block = event.getBlock();
     Block sourceBlock = event.getSourceBlock();
     if (block.equals(sourceBlock)) {
@@ -352,7 +356,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onMilkEntity(final PlayerInteractEntityEvent event) {
+  void onMilkEntity(final PlayerInteractEntityEvent event) {
     Entity entity = event.getRightClicked();
     if (!(entity instanceof Cow || entity instanceof Goat)) {
       return;
@@ -367,8 +371,8 @@ final class JobPaymentListener implements Listener {
     PlayerInventory inventory = player.getInventory();
     ItemStack hand = inventory.getItemInMainHand();
     Material type = hand.getType();
-    if ((type != Material.BOWL && type != Material.BUCKET) ||
-        (type == Material.BOWL && !(entity instanceof MushroomCow))) {
+    if ((type != Material.BOWL && type != Material.BUCKET)
+        || (type == Material.BOWL && !(entity instanceof MushroomCow))) {
       return;
     }
     // Apply the milk cooldown.
@@ -382,7 +386,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBrushBlock(final BlockDropItemEvent event) {
+  void onBrushBlock(final BlockDropItemEvent event) {
     Player player = event.getPlayer();
     if (eligibility.blocksPay(player)) {
       return;
@@ -400,7 +404,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBreedEntity(final EntityBreedEvent event) {
+  void onBreedEntity(final EntityBreedEvent event) {
     LivingEntity breeder = event.getBreeder();
     if (!(breeder instanceof Player player)) {
       return;
@@ -417,7 +421,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onKill(final EntityDeathEvent event) {
+  void onKill(final EntityDeathEvent event) {
     LivingEntity victim = event.getEntity();
     if (!entityValidationService.isValid(victim)) {
       return;
@@ -428,8 +432,8 @@ final class JobPaymentListener implements Listener {
       return;
     }
     @Nullable Player player = resolveKillingPlayer(killer);
-    if (player == null ||
-        eligibility.blocksPay(player)) {
+    if (player == null
+        || eligibility.blocksPay(player)) {
       return;
     }
     boolean victimIsRealPlayer =
@@ -490,7 +494,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onEat(final PlayerItemConsumeEvent event) {
+  void onEat(final PlayerItemConsumeEvent event) {
     Player player = event.getPlayer();
     if (eligibility.blocksPay(player)) {
       return;
@@ -504,7 +508,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onPickupItem(final EntityPickupItemEvent event) {
+  void onPickupItem(final EntityPickupItemEvent event) {
     Entity entity = event.getEntity();
     if (!(entity instanceof Player player)) {
       return;
@@ -517,7 +521,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onHarvestBerries(final PlayerInteractEvent event) {
+  void onHarvestBerries(final PlayerInteractEvent event) {
     if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
       return;
     }
@@ -571,7 +575,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onFish(final PlayerFishEvent event) {
+  void onFish(final PlayerFishEvent event) {
     if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) {
       return;
     }
@@ -588,7 +592,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onFurnaceSmelt(final FurnaceSmeltEvent event) {
+  void onFurnaceSmelt(final FurnaceSmeltEvent event) {
     Block block = event.getBlock();
     OfflinePlayer owner = blockOwnershipService.getOwner(block).orElse(null);
     if (owner == null || !owner.isOnline()) {
@@ -616,7 +620,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onBrewEvent(final BrewEvent event) {
+  void onBrewEvent(final BrewEvent event) {
     Block block = event.getBlock();
     OfflinePlayer owner = blockOwnershipService.getOwner(block).orElse(null);
     if (owner == null || !owner.isOnline()) {
@@ -639,7 +643,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onExplore(final PlayerMoveEvent event) {
+  void onExplore(final PlayerMoveEvent event) {
     Player player = event.getPlayer();
     if (eligibility.blocksPay(player)) {
       return;
@@ -656,7 +660,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onDyeEntity(final EntityDyeEvent event) {
+  void onDyeEntity(final EntityDyeEvent event) {
     Entity entity = event.getEntity();
     if (entity.isDead() || !entityValidationService.isValid(entity)) {
       return;
@@ -675,7 +679,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onEnchant(final EnchantItemEvent event) {
+  void onEnchant(final EnchantItemEvent event) {
     Player player = event.getEnchanter();
     if (eligibility.blocksPay(player)) {
       return;
@@ -701,7 +705,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onTntBreak(final EntityExplodeEvent event) {
+  void onTntBreak(final EntityExplodeEvent event) {
     Entity entity = event.getEntity();
     if (!(entity instanceof TNTPrimed tnt) || !(tnt.getSource() instanceof Player player)) {
       return;
@@ -724,7 +728,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onVillagerTrade(final InventoryClickEvent event) {
+  void onVillagerTrade(final InventoryClickEvent event) {
     if (!(event.getInventory() instanceof MerchantInventory merchantInventory)) {
       return;
     }
@@ -749,7 +753,7 @@ final class JobPaymentListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onCraft(final CraftItemEvent event) {
+  void onCraft(final CraftItemEvent event) {
     switch (event.getAction()) {
       case NOTHING:
       case PLACE_ONE:
@@ -848,11 +852,6 @@ final class JobPaymentListener implements Listener {
       return player;
     }
     return null;
-  }
-
-  private boolean isOre(Material material) {
-    String name = material.name();
-    return name.endsWith("_ORE") || material == Material.ANCIENT_DEBRIS;
   }
 
   private boolean isReplaceable(Material material) {

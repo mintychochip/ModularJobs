@@ -12,7 +12,6 @@ class EditorSessionStoreTest {
   @Test
   void looksUpSessionsByCodeAndEnforcesOwner() {
     UUID owner = UUID.randomUUID();
-    UUID other = UUID.randomUUID();
     Instant now = Instant.parse("2030-01-01T00:00:00Z");
     EditorSession session = new EditorSession(
         "code-a",
@@ -26,7 +25,7 @@ class EditorSessionStoreTest {
 
     assertEquals(session, store.get("code-a").orElseThrow());
     assertEquals(session, store.getOwned("code-a", owner).orElseThrow());
-    assertTrue(store.getOwned("code-a", other).isEmpty());
+    assertTrue(store.getOwned("code-a", UUID.randomUUID()).isEmpty());
   }
 
   @Test

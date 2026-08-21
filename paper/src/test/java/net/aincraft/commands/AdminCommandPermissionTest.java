@@ -94,14 +94,11 @@ class AdminCommandPermissionTest {
 
   private static CommandSourceStack sourceWith(CommandSender sender) {
     return (CommandSourceStack) Proxy.newProxyInstance(
-        CommandSourceStack.class.getClassLoader(),
+        Thread.currentThread().getContextClassLoader(),
         new Class<?>[] {CommandSourceStack.class},
         (proxy, method, args) -> {
           if ("getSender".equals(method.getName())) {
             return sender;
-          }
-          if ("equals".equals(method.getName())) {
-            return proxy == args[0];
           }
           if ("hashCode".equals(method.getName())) {
             return System.identityHashCode(proxy);

@@ -8,7 +8,6 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.aincraft.PluginProvider;
 import net.aincraft.editor.EditorService;
-import net.aincraft.editor.ImportResult;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,6 +22,8 @@ public final class ApplyEditsCommand implements JobsCommand {
   private final EditorService editorService;
 
   /**
+   * Creates the apply-edits command backed by the editor import service.
+   *
    * @param editorService service used to import web-editor task payloads
    */
   public ApplyEditsCommand(EditorService editorService) {

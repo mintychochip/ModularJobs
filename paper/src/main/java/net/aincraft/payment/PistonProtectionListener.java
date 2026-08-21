@@ -23,7 +23,7 @@ final class PistonProtectionListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onExtend(final BlockPistonExtendEvent event) {
+  void onExtend(final BlockPistonExtendEvent event) {
     if (!exploitService.settings().pistonMoveProtections()) {
       return;
     }
@@ -31,7 +31,7 @@ final class PistonProtectionListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onRetract(final BlockPistonRetractEvent event) {
+  void onRetract(final BlockPistonRetractEvent event) {
     if (!exploitService.settings().pistonMoveProtections()) {
       return;
     }

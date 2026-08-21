@@ -8,12 +8,9 @@ import net.aincraft.container.PayableType;
 import net.aincraft.domain.MemoryJobRepositoryImpl.YamlRecordLoader;
 import net.aincraft.domain.model.JobRecord;
 import net.aincraft.domain.repository.JobProgressionRepository;
-import net.aincraft.domain.MemoryJobRepositoryImpl;
-import net.aincraft.domain.RelationalJobTaskRepositoryImpl;
 import net.aincraft.registry.Registry;
 import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.PluginResources;
-import net.aincraft.domain.JobResolver;
 import net.aincraft.service.JobService;
 import net.aincraft.service.JoinGate;
 import net.aincraft.service.YamlJobTaskLoader;
@@ -48,6 +45,8 @@ public final class DomainWiring {
   }
 
   /**
+   * Composes domain services, loading job definitions and wiring progression write-back stores.
+   *
    * @param connectionSource shared payable DB source (already tracked by {@code resources})
    * @param resources        registers progression write-back flush hooks for disable
    */

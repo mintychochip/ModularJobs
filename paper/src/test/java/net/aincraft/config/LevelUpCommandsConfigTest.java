@@ -11,7 +11,7 @@ class LevelUpCommandsConfigTest {
   @Test
   void parsesCommandsWithPlaceholders() {
     LevelUpCommandsConfig config = LevelUpCommandsConfig.fromMap(java.util.Map.of(
-        "level-up-commands", java.util.List.of(
+        "level-up-commands", List.of(
             java.util.Map.of("command", "say {player} reached {level} in {job}",
                 "min-level", 5))));
     List<LevelUpCommandsConfig.LevelUpCommand> commands = config.commands();
@@ -29,7 +29,7 @@ class LevelUpCommandsConfigTest {
   @Test
   void ignoresBlankCommandsAndClampsMinLevel() {
     LevelUpCommandsConfig config = LevelUpCommandsConfig.fromMap(java.util.Map.of(
-        "level-up-commands", java.util.List.of(
+        "level-up-commands", List.of(
             java.util.Map.of("command", "  ", "min-level", 3),
             java.util.Map.of("command", "say hi", "min-level", -2))));
     List<LevelUpCommandsConfig.LevelUpCommand> commands = config.commands();

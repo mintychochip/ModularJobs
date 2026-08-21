@@ -21,8 +21,6 @@ import net.aincraft.upgrade.wynncraft.IconConfig;
 import net.aincraft.upgrade.wynncraft.LayoutItem;
 import net.aincraft.upgrade.wynncraft.LayoutItemType;
 import net.aincraft.upgrade.wynncraft.WynncraftTreeConfig;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Custom Gson deserializer for WynncraftTreeConfig.
@@ -34,29 +32,30 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
   public WynncraftTreeConfig deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
     JsonObject root = json.getAsJsonObject();
 
-    String treeId = getString(root, "tree_id");
+    final String treeId = getString(root, "tree_id");
 
-    // Parse metadata for job info
-    String job = null;
-    String description = null;
-    int skillPointsPerLevel = 1;
-    String rootId = null;
+    final String job;
+    final String description;
+    final int skillPointsPerLevel;
+    final String rootId;
 
     if (root.has("metadata")) {
       JsonObject metadata = root.getAsJsonObject("metadata");
       job = getString(metadata, "job");
       description = metadata.has("description") ? metadata.get("description").getAsString() : null;
-      skillPointsPerLevel = metadata.has("skill_points_per_level") ? metadata.get("skill_points_per_level").getAsInt() : 1;
+      skillPointsPerLevel = metadata.has("skill_points_per_level")
+          ? metadata.get("skill_points_per_level").getAsInt() : 1;
       rootId = getString(metadata, "root");
     } else {
       // Fallback to top-level fields
       job = getString(root, "job");
       description = root.has("description") ? root.get("description").getAsString() : null;
-      skillPointsPerLevel = root.has("skill_points_per_level") ? root.get("skill_points_per_level").getAsInt() : 1;
+      skillPointsPerLevel = root.has("skill_points_per_level")
+          ? root.get("skill_points_per_level").getAsInt() : 1;
       rootId = getString(root, "root");
     }
 
-    String displayName = job; // Default to job name
+    final String displayName = job; // Default to job name
 
     // Parse archetypes
     List<Archetype> archetypes = new ArrayList<>();
@@ -76,7 +75,7 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
     if (root.has("layout")) {
       for (JsonElement elem : root.getAsJsonArray("layout")) {
         JsonObject itemObj = elem.getAsJsonObject();
-        layout.add(deserializeLayoutItem(itemObj, context));
+        layout.add(deserializeLayoutItem(itemObj));
       }
     }
 
@@ -105,14 +104,14 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
     return new WynncraftTreeConfig(treeId, displayName, description, job, skillPointsPerLevel, rootId, paths, archetypes, layout, perkPolicies);
   }
 
-  private LayoutItem deserializeLayoutItem(JsonObject itemObj, JsonDeserializationContext context) {
-    String id = getString(itemObj, "id");
+  private LayoutItem deserializeLayoutItem(JsonObject itemObj) {
+    final String id = getString(itemObj, "id");
     String typeStr = getString(itemObj, "type");
     LayoutItemType type = LayoutItemType.valueOf(typeStr.toUpperCase());
 
     // Parse coordinates
     JsonObject coordsObj = itemObj.getAsJsonObject("coordinates");
-    Position coordinates = new Position(
+    final Position coordinates = new Position(
         coordsObj.get("x").getAsInt(),
         coordsObj.get("y").getAsInt()
     );
@@ -152,7 +151,7 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
   }
 
   private AbilityMeta deserializeAbilityMeta(JsonObject meta) {
-    String name = getString(meta, "name");
+    final String name = getString(meta, "name");
 
     // Parse icon - supports both new format (locked/unlocked) and legacy format (single icon)
     JsonObject iconObj = meta.getAsJsonObject("icon");
@@ -182,9 +181,9 @@ public final class WynncraftTreeConfigDeserializer implements JsonDeserializer<W
       icons = new AbilityMeta.AbilityIcons(singleIcon, singleIcon);
     }
 
-    int cost = meta.has("cost") ? meta.get("cost").getAsInt() : 0;
-    boolean required = meta.has("required") && meta.get("required").getAsBoolean();
-    boolean major = meta.has("major") && meta.get("major").getAsBoolean();
+    final int cost = meta.has("cost") ? meta.get("cost").getAsInt() : 0;
+    final boolean required = meta.has("required") && meta.get("required").getAsBoolean();
+    final boolean major = meta.has("major") && meta.get("major").getAsBoolean();
 
     // Parse description
     List<String> description = new ArrayList<>();

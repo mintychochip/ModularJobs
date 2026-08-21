@@ -8,11 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.aincraft.boost.RuledBoostSourceImpl;
-import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
-import net.aincraft.boost.config.ConditionConfigParser;
-import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
-import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.factories.BoostFactory;
 import net.aincraft.container.boost.factories.ConditionFactory;
@@ -27,7 +23,6 @@ import net.aincraft.upgrade.config.UpgradeTreeConfig.EffectConfig;
 import net.aincraft.upgrade.config.UpgradeTreeConfig.NodeConfig;
 import net.aincraft.upgrade.config.UpgradeTreeConfig.PositionConfig;
 import net.aincraft.upgrade.config.UpgradeTreeConfig.RuleConfig;
-import net.aincraft.upgrade.config.UpgradeTreeConfig.BoostConfig;
 import net.kyori.adventure.key.Key;
 
 /**
@@ -36,18 +31,12 @@ import net.kyori.adventure.key.Key;
  */
 public final class UpgradeTreeConfigParser {
 
-  private final ConditionFactory conditionFactory;
-  private final BoostFactory boostFactory;
-  private final ConditionConfigParser conditionParser;
   private final net.aincraft.boost.config.BoostSourceConfigParser boostSourceParser;
 
   public UpgradeTreeConfigParser(
       ConditionFactory conditionFactory,
       BoostFactory boostFactory
   ) {
-    this.conditionFactory = conditionFactory;
-    this.boostFactory = boostFactory;
-    this.conditionParser = new ConditionConfigParser(conditionFactory);
     this.boostSourceParser = new net.aincraft.boost.config.BoostSourceConfigParser(
         conditionFactory, boostFactory);
   }
@@ -78,20 +67,20 @@ public final class UpgradeTreeConfigParser {
   }
 
   private UpgradeNode parseNode(String jobKey, String nodeKey, NodeConfig config) {
-    Key key = Key.key(jobKey, nodeKey);
+    final Key key = Key.key(jobKey, nodeKey);
 
     // Material name string; paper GUI resolves via Material.matchMaterial (BARRIER fallback)
-    String icon = config.icon() != null ? config.icon() : "BARRIER";
+    final String icon = config.icon() != null ? config.icon() : "BARRIER";
 
-    Set<String> prerequisites = config.prerequisites() != null
+    final Set<String> prerequisites = config.prerequisites() != null
         ? new HashSet<>(config.prerequisites())
         : Set.of();
 
-    Set<String> exclusive = config.exclusive() != null
+    final Set<String> exclusive = config.exclusive() != null
         ? new HashSet<>(config.exclusive())
         : Set.of();
 
-    List<String> children = config.children() != null
+    final List<String> children = config.children() != null
         ? config.children()
         : List.of();
 

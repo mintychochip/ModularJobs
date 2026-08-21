@@ -10,6 +10,7 @@ import dev.craftux.api.inventory.InventoryView;
 import dev.craftux.api.inventory.Slot;
 import dev.craftux.api.inventory.SlotPixelIntent;
 import dev.craftux.api.inventory.SlotRole;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,7 +42,7 @@ class CraftuxGuiMigrationTest {
           if (text.contains("dev.triumphteam.gui") || text.contains("triumphteam")) {
             offenders.add(path.toString());
           }
-        } catch (Exception e) {
+        } catch (IOException e) {
           throw new RuntimeException(e);
         }
       });
@@ -139,7 +140,7 @@ class CraftuxGuiMigrationTest {
               || text.contains("aincraft-mining.pet.")) {
             offenders.add(path.toString());
           }
-        } catch (Exception e) {
+        } catch (IOException e) {
           throw new RuntimeException(e);
         }
       });
@@ -237,7 +238,7 @@ class CraftuxGuiMigrationTest {
           if (text.contains("io.papermc.paper.dialog") || text.contains("showDialog")) {
             dialogOffenders.add(path.toString());
           }
-        } catch (Exception e) {
+        } catch (IOException e) {
           throw new RuntimeException(e);
         }
       });

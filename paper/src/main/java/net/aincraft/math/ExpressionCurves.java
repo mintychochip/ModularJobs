@@ -29,8 +29,11 @@ public final class ExpressionCurves {
           return memo.computeIfAbsent(params, p ->
               BigDecimal.valueOf(exp.setVariable("level", p.level()).evaluate()));
         }
+
         @Override
-        public String toString() { return expr; }
+        public String toString() {
+          return expr;
+        }
       };
     });
   }
@@ -49,8 +52,11 @@ public final class ExpressionCurves {
                      .setVariable("jobs", p.jobs())
                      .evaluate()));
         }
+
         @Override
-        public String toString() { return expr; }
+        public String toString() {
+          return expr;
+        }
       };
     });
   }

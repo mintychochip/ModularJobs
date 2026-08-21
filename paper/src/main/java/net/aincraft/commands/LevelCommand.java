@@ -27,6 +27,7 @@ import org.bukkit.entity.Player;
 /**
  * Unified command for managing player job levels.
  *
+ * <p>
  * Usage:
  * - /jobs level set <player> <job> <level>
  * - /jobs level add <player> <job> <amount>

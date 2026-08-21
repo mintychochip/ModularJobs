@@ -1,6 +1,5 @@
 package net.aincraft.payment;
 
-import net.kyori.adventure.key.Key;
 import org.bukkit.entity.Entity;
 
 /**
@@ -18,14 +17,16 @@ public final class MobDamageTracker {
 
   /**
    * Stops tracking {@code entity} and returns its accumulated {@link DamageContribution}.
-   *
-   * @throws IllegalArgumentException when no tracking exists for the entity
    */
-  public DamageContribution endTracking(Entity entity) throws IllegalArgumentException {
+  public DamageContribution endTracking(Entity entity) {
     return store.removeContribution(entity);
   }
 
-  /** @return true when damage on {@code entity} is currently being tracked */
+  /**
+   * Reports whether damage on {@code entity} is currently being tracked.
+   *
+   * @return true when damage on {@code entity} is currently being tracked
+   */
   public boolean isTracking(Entity entity) {
     return store.hasContribution(entity);
   }

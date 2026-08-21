@@ -148,7 +148,6 @@ public final class StatsGui {
   }
 
   private ItemSpec jobItem(JobProgression prog) {
-    String name = PLAIN.serialize(prog.job().displayName());
     int level = prog.level();
     BigDecimal xp = prog.experience();
     List<String> lore = new ArrayList<>();
@@ -158,9 +157,10 @@ public final class StatsGui {
       BigDecimal next = prog.job().levelingCurve()
           .evaluate(new net.aincraft.LevelingCurve.Parameters(level + 1));
       lore.add("Next level: " + next.setScale(1, RoundingMode.HALF_UP).toPlainString());
-    } catch (RuntimeException ignored) {
+    } catch (IllegalArgumentException | ArithmeticException ignored) {
       // curve may not support level+1
     }
+    String name = PLAIN.serialize(prog.job().displayName());
     return CraftuxItems.of(Material.EMERALD, name, lore);
   }
 }

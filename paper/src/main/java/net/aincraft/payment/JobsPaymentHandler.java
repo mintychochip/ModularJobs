@@ -24,6 +24,7 @@ import org.bukkit.plugin.Plugin;
 /**
  * Pays the player for a single {@link ActionType} across every job that defines a matching
  * task and has non-empty payables.
+ *
  * <p>
  * For each payable, the base amount is run through the job's {@link PayableCurve} (when present),
  * then boosted via {@link BoostEngine}, and finally handed to the payable type's
@@ -32,7 +33,6 @@ import org.bukkit.plugin.Plugin;
  */
 public final class JobsPaymentHandler {
 
-  private final Plugin plugin;
   private final BoostEngine boostEngine;
   private final JobService jobService;
 
@@ -41,7 +41,7 @@ public final class JobsPaymentHandler {
    * persist each payable.
    */
   public JobsPaymentHandler(Plugin plugin, BoostEngine boostEngine, JobService jobService) {
-    this.plugin = plugin;
+    java.util.Objects.requireNonNull(plugin, "plugin");
     this.boostEngine = boostEngine;
     this.jobService = jobService;
   }

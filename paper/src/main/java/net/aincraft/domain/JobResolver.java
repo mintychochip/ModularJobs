@@ -23,7 +23,7 @@ public final class JobResolver {
     if (identifier.contains(":")) {
       try {
         return jobService.getJob(identifier);
-      } catch (IllegalArgumentException e) {
+      } catch (IllegalArgumentException ignored) {
         return null;
       }
     }
@@ -44,8 +44,8 @@ public final class JobResolver {
       if (job != null) {
         return job;
       }
-    } catch (IllegalArgumentException e) {
-      // Continue to fallback
+    } catch (IllegalArgumentException ignored) {
+      // Job key not found; fall back to plain-name search within namespace.
     }
 
     // Fallback: search by plain name within namespace
@@ -78,6 +78,7 @@ public final class JobResolver {
   /**
    * Calculate similarity score between input and job name.
    * Higher score = better match.
+   *
    * <p>
    * Scoring system:
    * - Exact match: 1000 points
@@ -97,7 +98,7 @@ public final class JobResolver {
     // Prefix match (high priority)
     if (normalizedJobName.startsWith(input)) {
       int lengthDiff = Math.abs(normalizedJobName.length() - input.length());
-      return 500 + (100 - lengthDiff);
+      return 500 + 100 - lengthDiff;
     }
 
     // Contains match (medium priority)
@@ -119,6 +120,7 @@ public final class JobResolver {
 
   /**
    * Calculate Levenshtein distance between two strings.
+   *
    * <p>
    * The Levenshtein distance is the minimum number of single-character edits
    * (insertions, deletions, or substitutions) required to change one string into the other.

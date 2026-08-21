@@ -14,7 +14,6 @@ import net.aincraft.container.MemoryStoreImpl;
 import net.aincraft.container.Store;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -90,17 +89,17 @@ public class McMMOBoostSourceImpl implements BoostSource {
    *
    * @param store store updated when players activate or deactivate super abilities
    */
-  private record McMMOController(Store<UUID, SuperAbilityType> store) implements Listener {
+  public record McMMOController(Store<UUID, SuperAbilityType> store) implements Listener {
 
     /** Stores the ability just activated by the player. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    private void onAbilityOn(final McMMOPlayerAbilityActivateEvent event) {
+    public void onAbilityOn(final McMMOPlayerAbilityActivateEvent event) {
       store.add(event.getPlayer().getUniqueId(), event.getAbility());
     }
 
     /** Removes the player's active ability on deactivation. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    private void onAbilityOff(final McMMOPlayerAbilityDeactivateEvent event) {
+    public void onAbilityOff(final McMMOPlayerAbilityDeactivateEvent event) {
       store.remove(event.getPlayer().getUniqueId());
     }
   }

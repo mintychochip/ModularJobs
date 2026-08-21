@@ -3,7 +3,6 @@ package net.aincraft.domain;
 import java.util.List;
 import net.aincraft.domain.model.JobProgressionRecord;
 import net.aincraft.domain.repository.JobProgressionRepository;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -20,6 +19,8 @@ public final class ProgressionService {
   private final JobProgressionRepository archive;
 
   /**
+   * Wires live and archive progression repositories for routine operations and migration.
+   *
    * @param live the live repository backing normal progression operations
    * @param archive the repository used to hold archived progression records
    */

@@ -13,7 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
-import net.aincraft.test.TestMysql;
+import net.aincraft.test.MysqlTestSupport;
 import net.aincraft.upgrade.PlayerUpgradeDataImpl;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -87,7 +87,8 @@ class SqlStatementsHikariRepositoryTest {
       ps.setString(1, PLAYER_ID);
       ps.setString(2, JOB_KEY);
       try (ResultSet rs = ps.executeQuery()) {
-        assertTrue(rs.next(), "row must be readable with the same SqlStatements resource");
+        boolean hasRow = rs.next();
+        assertTrue(hasRow, "row must be readable with the same SqlStatements resource");
         assertEquals(9, rs.getInt("total_skill_points"));
       }
     }
@@ -97,18 +98,18 @@ class SqlStatementsHikariRepositoryTest {
   }
 
   private ConnectionSource openHikari() throws SQLException {
-    TestMysql.assumeAvailable();
+    MysqlTestSupport.assumeAvailable();
     YamlConfiguration config = new YamlConfiguration();
-    config.set("jdbc-url", TestMysql.jdbcUrl());
-    config.set("username", TestMysql.user());
-    config.set("password", TestMysql.password());
+    config.set("jdbc-url", MysqlTestSupport.jdbcUrl());
+    config.set("username", MysqlTestSupport.user());
+    config.set("password", MysqlTestSupport.password());
     config.set("maximum-pool-size", 2);
     config.set("minimum-idle", 0);
     ConnectionSource source = new HikariSourceImpl(
         new HikariConfigProvider(config, DatabaseType.MYSQL).create(),
         DatabaseType.MYSQL);
     try (Connection connection = source.getConnection()) {
-      TestMysql.applyShippedSchema(connection);
+      MysqlTestSupport.applyShippedSchema(connection);
       try (PreparedStatement ps = connection.prepareStatement(
           SqlStatements.load("player_upgrades/delete.sql"))) {
         ps.setString(1, PLAYER_ID);

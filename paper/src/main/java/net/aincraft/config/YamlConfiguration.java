@@ -17,7 +17,7 @@ public interface YamlConfiguration extends ConfigurationSection {
   void save();
 
   @NotNull
-  static YamlConfiguration create(Plugin plugin, String path) throws IllegalArgumentException {
+  static YamlConfiguration create(Plugin plugin, String path) {
     return YamlFileBackedConfigurationImpl.create(plugin, path);
   }
 }

@@ -68,7 +68,7 @@ public final class PermissionHook {
         data.getClass().getMethod("add", nodeClass).invoke(data, node);
         userManager.getClass().getMethod("saveUser", user.getClass()).invoke(userManager, user);
       }
-    } catch (Exception e) {
+    } catch (ReflectiveOperationException e) {
       logger.warning("Failed to grant permission via LuckPerms: " + e.getMessage());
       player.addAttachment(plugin).setPermission(permission, true);
     }
@@ -89,7 +89,7 @@ public final class PermissionHook {
         data.getClass().getMethod("remove", nodeClass).invoke(data, node);
         userManager.getClass().getMethod("saveUser", user.getClass()).invoke(userManager, user);
       }
-    } catch (Exception e) {
+    } catch (ReflectiveOperationException e) {
       logger.warning("Failed to revoke permission via LuckPerms: " + e.getMessage());
     }
   }

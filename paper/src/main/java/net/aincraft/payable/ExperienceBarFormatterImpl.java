@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * and the configured overlay. Formatting never mutates the passed bar; it returns a new
  * configured boss bar.
  */
-final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
+public final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
 
   private final ExperienceBarColorProvider colorProvider;
 
@@ -87,7 +87,7 @@ final class ExperienceBarFormatterImpl implements ExperienceBarFormatter {
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     /** Deserializes the level/job/xp/payable name template against the given context. */
-    public @NotNull Component format(
+    @NotNull Component format(
         @NotNull ExperiencePayableHandler.ExperienceBarContext context) {
       JobProgressionView progression = context.progression();
       int level = progression.level();

@@ -204,8 +204,8 @@ public class InfoCommand implements JobsCommand {
 
   private void displayJobInfoChat(
       Player player, Job job, Map<ActionType, List<JobTask>> tasks, int page, int entriesPerPage) {
-    int totalPages = jobInfoGui.calculateTotalPages(tasks, entriesPerPage);
-    String jobName = job.key().value();
+    final int totalPages = jobInfoGui.calculateTotalPages(tasks, entriesPerPage);
+    final String jobName = job.key().value();
     String jobDisplayName = serializePlain(job.displayName());
 
     Messages.send(player, "");

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
-import net.aincraft.payment.DamageContribution;
 import org.bukkit.entity.Entity;
 
 /**
@@ -25,7 +24,7 @@ public final class MobDamageTrackerStore {
   public DamageContribution getContribution(Entity entity,
       Supplier<DamageContribution> contributionSupplier) {
     return damageContributions.computeIfAbsent(entity.getUniqueId(),
-        __ -> contributionSupplier.get());
+        ignoredKey -> contributionSupplier.get());
   }
 
   /** Removes and returns the contribution for {@code entity}, or null when not tracked. */
@@ -33,7 +32,11 @@ public final class MobDamageTrackerStore {
     return damageContributions.remove(entity.getUniqueId());
   }
 
-  /** @return true when {@code entity} has an active contribution being tracked */
+  /**
+   * Reports whether {@code entity} has an active contribution being tracked.
+   *
+   * @return true when {@code entity} has an active contribution being tracked
+   */
   public boolean hasContribution(Entity entity) {
     return damageContributions.containsKey(entity.getUniqueId());
   }

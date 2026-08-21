@@ -13,12 +13,12 @@ import net.aincraft.service.JobService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
  * Command handler for the web editor.
+ *
  * <p>
  * Usage:
  * <ul>
@@ -29,24 +29,20 @@ import org.bukkit.entity.Player;
 public final class EditorCommand implements JobsCommand {
 
   private final EditorService editorService;
-  private final JobService jobService;
   private final JobResolver jobResolver;
   private static final String DEFAULT_NAMESPACE = "modularjobs";
 
   public EditorCommand(EditorService editorService, JobService jobService, JobResolver jobResolver) {
     this.editorService = editorService;
-    this.jobService = jobService;
     this.jobResolver = jobResolver;
   }
 
-  /** Admin permission required to export job data to the web editor. */
   public static final String PERMISSION = AdminPermissions.ADMIN;
 
   @Override
   public LiteralArgumentBuilder<CommandSourceStack> build() {
     return Commands.literal("editor")
         .requires(AdminPermissions::isAdmin)
-        // /jobs editor [job] - with optional job argument
         .then(Commands.argument("job", StringArgumentType.string())
             .suggests((context, builder) -> {
               jobResolver.getPlainNames().forEach(builder::suggest);
@@ -55,71 +51,47 @@ public final class EditorCommand implements JobsCommand {
             .executes(context -> {
               CommandSourceStack source = context.getSource();
               CommandSender sender = source.getSender();
-
               if (!(sender instanceof Player player)) {
                 Messages.send(sender, "<error>This command can only be used by players.");
                 return Command.SINGLE_SUCCESS;
               }
-
               String input = context.getArgument("job", String.class);
-
-              // Resolve job (supports both plain name and full key)
               net.aincraft.Job job = jobResolver.resolveInNamespace(input, DEFAULT_NAMESPACE);
-
               if (job == null) {
-                // Try fuzzy matching for suggestions
                 java.util.List<String> suggestions = jobResolver.suggestSimilar(input, 3);
-
                 Messages.send(player, "<error>Job not found: " + input);
                 if (!suggestions.isEmpty()) {
                   Messages.send(player, "<neutral>Did you mean: " + String.join(", ", suggestions));
                 }
                 return 0;
               }
-
               handleExport(player, job.key().toString());
               return Command.SINGLE_SUCCESS;
             }))
-        // /jobs editor - without arguments (export all jobs)
         .executes(context -> {
           CommandSourceStack source = context.getSource();
           CommandSender sender = source.getSender();
-
           if (!(sender instanceof Player player)) {
             Messages.send(sender, "<error>This command can only be used by players.");
             return Command.SINGLE_SUCCESS;
           }
-
           handleExport(player, null);
           return Command.SINGLE_SUCCESS;
         });
   }
 
-  /**
-   * Handles the export operation for a player.
-   *
-   * @param player the player performing the export
-   * @param jobKey the job key to export, or null to export all jobs
-   */
   private void handleExport(Player player, String jobKey) {
     Messages.send(player, "<neutral>Exporting job data to web editor...");
-
     editorService.exportTasks(jobKey, player.getUniqueId())
-        .thenAccept(result -> {
-          // Run on main thread to safely send messages
-          Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
-            Component message = Component.text("Click to open editor: ")
-                .append(Component.text(result.webEditorUrl())
-                    .clickEvent(ClickEvent.openUrl(result.webEditorUrl())));
-
-            player.sendMessage(message);
-          });
-        })
+        .thenAccept(result -> Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
+          Component message = Component.text("Click to open editor: ")
+              .append(Component.text(result.webEditorUrl())
+                  .clickEvent(ClickEvent.openUrl(result.webEditorUrl())));
+          player.sendMessage(message);
+        }))
         .exceptionally(throwable -> {
-          // Run on main thread to safely send messages
-          Bukkit.getScheduler().runTask(PluginProvider.get(), () -> {
-            Messages.send(player, "<error>Failed to export job data: " + throwable.getMessage());
-          });
+          Bukkit.getScheduler().runTask(PluginProvider.get(), () ->
+              Messages.send(player, "<error>Failed to export job data: " + throwable.getMessage()));
           return null;
         });
   }

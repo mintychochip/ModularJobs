@@ -3,7 +3,6 @@ package net.aincraft.commands.top;
 import java.util.List;
 import net.aincraft.JobProgression;
 import net.aincraft.commands.Page;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 
@@ -11,6 +10,7 @@ import org.bukkit.command.CommandSender;
  * Renders one page of a job leaderboard to a sender. Implementations define
  * the output medium (chat messages, scoreboard, …).
  */
+@FunctionalInterface
 public interface JobsTopPageConsumer {
 
   /**

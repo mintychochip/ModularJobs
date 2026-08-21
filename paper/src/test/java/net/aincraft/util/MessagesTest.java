@@ -16,27 +16,30 @@ class MessagesTest {
 
   private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
+  /** Verifies null and empty strings produce empty components. */
   @Test
-  void component_emptyAndNull_areEmpty() {
+  void componentEmptyAndNullAreEmpty() {
     assertEquals(Component.empty(), Messages.component(null));
     assertEquals(Component.empty(), Messages.component(""));
   }
 
+  /** Verifies theme tags are stripped while preserving visible text. */
   @Test
-  void component_stripsThemeTags_andKeepsPlainText() {
+  void componentStripsThemeTagsAndKeepsPlainText() {
     Component c = Messages.component("<error>Boom</error> <success>ok</success>");
     assertEquals("Boom ok", PLAIN.serialize(c));
   }
 
+  /** Verifies each theme tag maps to the expected named color. */
   @Test
-  void component_appliesNamedThemeColors() {
+  void componentAppliesNamedThemeColors() {
     Component error = Messages.component("<error>x</error>");
     Component success = Messages.component("<success>y</success>");
     Component primary = Messages.component("<primary>p</primary>");
-    Component secondary = Messages.component("<secondary>s</secondary>");
-    Component neutral = Messages.component("<neutral>n</neutral>");
-    Component accent = Messages.component("<accent>a</accent>");
-    Component info = Messages.component("<info>i</info>");
+    final Component secondary = Messages.component("<secondary>s</secondary>");
+    final Component neutral = Messages.component("<neutral>n</neutral>");
+    final Component accent = Messages.component("<accent>a</accent>");
+    final Component info = Messages.component("<info>i</info>");
 
     assertTrue(hasColor(error, NamedTextColor.RED), "error -> red");
     assertTrue(hasColor(success, NamedTextColor.GREEN), "success -> green");
@@ -47,14 +50,16 @@ class MessagesTest {
     assertTrue(hasColor(info, NamedTextColor.BLUE), "info -> blue");
   }
 
+  /** Verifies nested theme tags resolve completely in plain text. */
   @Test
-  void component_nestedThemeTags_serializeFully() {
+  void componentNestedThemeTagsSerializeFully() {
     String plain = PLAIN.serialize(
         Messages.component("<neutral>━━ <primary>Jobs Top</primary> <accent>#1</accent> ━━"));
     assertEquals("━━ Jobs Top #1 ━━", plain);
     assertFalse(plain.contains("<"), "tags must be resolved, not left as literal text");
   }
 
+  /** Returns whether {@code component} or any child uses {@code expected}. */
   private static boolean hasColor(Component component, NamedTextColor expected) {
     if (expected.equals(component.color())) {
       return true;

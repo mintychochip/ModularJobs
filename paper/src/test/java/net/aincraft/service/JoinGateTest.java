@@ -85,48 +85,74 @@ class JoinGateTest {
   }
 
   private static Player permittedPlayer(boolean permitted, String worldName) {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
     return (Player) java.lang.reflect.Proxy.newProxyInstance(
-        Player.class.getClassLoader(), new Class<?>[] {Player.class},
+        loader, new Class<?>[] {Player.class},
         (proxy, method, args) -> {
-          if (method.getName().equals("hasPermission")) return permitted;
-          if (method.getName().equals("getWorld")) return world(worldName);
+          if (method.getName().equals("hasPermission")) {
+            return permitted;
+          }
+          if (method.getName().equals("getWorld")) {
+            return world(worldName);
+          }
           return defaultValue(method.getReturnType());
         });
   }
 
   private static Object world(String name) {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
     return java.lang.reflect.Proxy.newProxyInstance(
-        org.bukkit.World.class.getClassLoader(),
+        loader,
         new Class<?>[] {org.bukkit.World.class},
-        (proxy, method, args) ->
-            method.getName().equals("getName") ? name : defaultValue(method.getReturnType()));
+        (proxy, method, args) -> {
+          if (method.getName().equals("getName")) {
+            return name;
+          }
+          return defaultValue(method.getReturnType());
+        });
   }
 
   private static Job job(String name) {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
     return (Job) java.lang.reflect.Proxy.newProxyInstance(
-        Job.class.getClassLoader(), new Class<?>[] {Job.class},
+        loader, new Class<?>[] {Job.class},
         (proxy, method, args) -> {
-          if (method.getName().equals("getPlainName")) return name;
+          if (method.getName().equals("getPlainName")) {
+            return name;
+          }
           if (method.getName().equals("key")) {
             return net.kyori.adventure.key.Key.key(
-                "modularjobs", name.toLowerCase(java.util.Locale.ROOT));
+                "modularjobs", name.toLowerCase(Locale.ROOT));
           }
           return defaultValue(method.getReturnType());
         });
   }
 
   private static JobProgression progression(Job job) {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
     return (JobProgression) java.lang.reflect.Proxy.newProxyInstance(
-        JobProgression.class.getClassLoader(), new Class<?>[] {JobProgression.class},
-        (proxy, method, args) ->
-            method.getName().equals("job") ? job : defaultValue(method.getReturnType()));
+        loader, new Class<?>[] {JobProgression.class},
+        (proxy, method, args) -> {
+          if (method.getName().equals("job")) {
+            return job;
+          }
+          return defaultValue(method.getReturnType());
+        });
   }
 
   private static Object defaultValue(Class<?> type) {
-    if (type == boolean.class) return false;
-    if (type == int.class) return 0;
-    if (type == long.class) return 0L;
-    if (type == double.class) return 0D;
+    if (type == boolean.class) {
+      return false;
+    }
+    if (type == int.class) {
+      return 0;
+    }
+    if (type == long.class) {
+      return 0L;
+    }
+    if (type == double.class) {
+      return 0D;
+    }
     return null;
   }
 }

@@ -92,7 +92,6 @@
         <exclude name="UseUtilityClass"/>
         <exclude name="ClassWithOnlyPrivateConstructorsShouldBeFinal"/>
         <exclude name="AbstractClassWithoutAnyMethod"/>
-        <exclude name="AvoidCatchingGenericException"/>
         <exclude name="AvoidThrowingRawExceptionTypes"/>
         <exclude name="SignatureDeclareThrowsException"/>
         <exclude name="ExceptionAsFlowControl"/>

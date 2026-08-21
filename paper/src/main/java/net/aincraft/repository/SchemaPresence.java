@@ -38,8 +38,7 @@ public final class SchemaPresence {
   public static void requireTables(
       @NotNull Connection connection,
       @NotNull DatabaseType type,
-      @NotNull List<String> required)
-      throws SQLException, SchemaMissingException {
+      @NotNull List<String> required) throws SQLException {
     List<String> missing = new ArrayList<>();
     for (String table : required) {
       if (!tableExists(connection, type, table)) {
@@ -69,6 +68,7 @@ public final class SchemaPresence {
    * Thrown when schema was not provisioned. Message points operators at the SQL script.
    */
   public static final class SchemaMissingException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
     private final DatabaseType type;
     private final List<String> missingTables;
 
@@ -87,7 +87,7 @@ public final class SchemaPresence {
     }
 
     private static String buildMessage(DatabaseType type, List<String> missing) {
-      return "Database schema not provisioned for MySQL. Missing tables: " + missing
+      return "Database schema not provisioned for " + type + ". Missing tables: " + missing
           + ". The plugin does not create tables. Apply "
           + "paper/src/main/resources/sql/mysql.sql out-of-band "
           + "(see scripts/apply-mysql-schema.sh).";

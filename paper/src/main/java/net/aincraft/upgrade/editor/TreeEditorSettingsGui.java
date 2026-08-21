@@ -81,7 +81,7 @@ public final class TreeEditorSettingsGui implements Listener {
   }
 
   InventoryView buildView(Player player, EditorSession session) {
-    UUID audience = player.getUniqueId();
+    final UUID audience = player.getUniqueId();
     EditorTree tree = session.tree();
     Map<Integer, String> actions = new HashMap<>();
     Map<Integer, Slot> content = new HashMap<>();

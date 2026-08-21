@@ -26,6 +26,8 @@ public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsu
   private final TextScoreboard scoreBoard;
 
   /**
+   * Creates a scoreboard consumer that writes rows to the given surface.
+   *
    * @param scoreBoard scoreboard surface the rows are written to
    */
   public ScoreboardJobsTopPageConsumerImpl(TextScoreboard scoreBoard) {
@@ -45,7 +47,7 @@ public final class ScoreboardJobsTopPageConsumerImpl implements JobsTopPageConsu
       JobProgression progression = data.get(i);
       OfflinePlayer progressionPlayer = Bukkit.getOfflinePlayer(progression.playerId());
       Component row = MiniMessage.miniMessage().deserialize(ENTRY_FORMAT, TagResolver.builder()
-          .tag("rank", Tag.inserting(Component.text((i + 1) + (pageNumber - 1) * pageSize)))
+          .tag("rank", Tag.inserting(Component.text(i + 1 + (pageNumber - 1) * pageSize)))
           .tag("player", Tag.inserting(PlayerComponent.of(progressionPlayer)))
           .tag("level", Tag.inserting(LevelComponent.of(progression)))
           .build());

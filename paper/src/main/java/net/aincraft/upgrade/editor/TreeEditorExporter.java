@@ -162,43 +162,38 @@ public final class TreeEditorExporter {
   private JsonObject exportEffect(EditorEffect effect) {
     JsonObject obj = new JsonObject();
 
-    switch (effect.type()) {
-      case BOOST -> {
-        obj.addProperty("type", "boost");
-        obj.addProperty("target", effect.target());
-        obj.addProperty("amount", effect.amount());
+    if (effect.type() == EditorEffect.EffectType.BOOST) {
+      obj.addProperty("type", "boost");
+      obj.addProperty("target", effect.target());
+      obj.addProperty("amount", effect.amount());
+    } else if (effect.type() == EditorEffect.EffectType.PASSIVE) {
+      obj.addProperty("type", "passive");
+      if (effect.ability() != null) {
+        obj.addProperty("ability", effect.ability());
       }
-      case PASSIVE -> {
-        obj.addProperty("type", "passive");
-        if (effect.ability() != null) {
-          obj.addProperty("ability", effect.ability());
-        }
-        if (effect.passiveDescription() != null) {
-          obj.addProperty("description", effect.passiveDescription());
-        }
+      if (effect.passiveDescription() != null) {
+        obj.addProperty("description", effect.passiveDescription());
       }
-      case PERMISSION -> {
-        obj.addProperty("type", "permission");
-        // Export permissions array if there are multiple, otherwise export single permission
-        if (effect.permissions() != null && effect.permissions().size() > 1) {
-          JsonArray permsArray = new JsonArray();
-          for (String perm : effect.permissions()) {
-            permsArray.add(perm);
-          }
-          obj.add("permissions", permsArray);
-        } else if (effect.permission() != null) {
-          obj.addProperty("permission", effect.permission());
+    } else if (effect.type() == EditorEffect.EffectType.PERMISSION) {
+      obj.addProperty("type", "permission");
+      if (effect.permissions() != null && effect.permissions().size() > 1) {
+        JsonArray permsArray = new JsonArray();
+        for (String permission : effect.permissions()) {
+          permsArray.add(permission);
         }
+        obj.add("permissions", permsArray);
+      } else if (effect.permission() != null) {
+        obj.addProperty("permission", effect.permission());
       }
-      case RULED_BOOST -> {
-        obj.addProperty("type", "ruled_boost");
-        obj.addProperty("target", effect.target());
-        if (effect.ruledDescription() != null) {
-          obj.addProperty("description", effect.ruledDescription());
-        }
-        // TODO: Parse and export full ruled boost config
-        obj.addProperty("_note", "Complex ruled boost - edit JSON manually");
+    } else if (effect.type() == EditorEffect.EffectType.RULED_BOOST) {
+      obj.addProperty("type", "ruled_boost");
+      obj.addProperty("target", effect.target());
+      if (effect.ruledDescription() != null) {
+        obj.addProperty("description", effect.ruledDescription());
       }
+      obj.addProperty("_note", "Complex ruled boost - edit JSON manually");
+    } else {
+      throw new IllegalArgumentException("Unsupported effect type: " + effect.type());
     }
 
     return obj;

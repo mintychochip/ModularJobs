@@ -24,7 +24,11 @@ public final class PlayerChunkExplorationService {
 
   private static final PersistentDataType<String, PersistentChunkData> DATA_TYPE = new PersistentChunkDataType();
 
-  /** @return true when this player's UUID is recorded as having explored {@code chunk} */
+  /**
+   * Reports whether this player has explored {@code chunk}.
+   *
+   * @return true when this player's UUID is recorded as having explored {@code chunk}
+   */
   public boolean hasExplored(OfflinePlayer player, Chunk chunk) {
     PersistentChunkData data = chunk.getPersistentDataContainer().get(CHUNK_KEY, DATA_TYPE);
     return data != null && data.getPlayers().contains(player.getUniqueId());
@@ -63,10 +67,11 @@ public final class PlayerChunkExplorationService {
 
     private final Set<UUID> players = new HashSet<>();
 
-    public Set<UUID> getPlayers() {
+    Set<UUID> getPlayers() {
       return players;
     }
 
+    @Override
     public String toString() {
       return "PersistentChunkData[players=" + players + "]";
     }
@@ -77,19 +82,23 @@ public final class PlayerChunkExplorationService {
 
     private static final Gson GSON = new Gson();
 
+    @Override
     public @NotNull Class<String> getPrimitiveType() {
       return String.class;
     }
 
+    @Override
     public @NotNull Class<PersistentChunkData> getComplexType() {
       return PersistentChunkData.class;
     }
 
+    @Override
     public @NotNull String toPrimitive(@NotNull PersistentChunkData complex,
         @NotNull PersistentDataAdapterContext context) {
       return GSON.toJson(complex);
     }
 
+    @Override
     public @NotNull PersistentChunkData fromPrimitive(@NotNull String primitive,
         @NotNull PersistentDataAdapterContext context) {
       return GSON.fromJson(primitive, PersistentChunkData.class);

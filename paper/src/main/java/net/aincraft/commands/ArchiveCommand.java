@@ -11,7 +11,6 @@ import java.math.RoundingMode;
 import java.util.List;
 import net.aincraft.JobProgression;
 import net.aincraft.service.JobService;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -26,6 +25,8 @@ public class ArchiveCommand implements JobsCommand {
   private final JobService jobService;
 
   /**
+   * Creates the archive command backed by the job service.
+   *
    * @param jobService service used to load archived progressions
    */
   public ArchiveCommand(JobService jobService) {

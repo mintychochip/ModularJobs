@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
  */
 class KeyUtilityTest {
 
+  /** Verifies {@link LocationKey} equality, hash code, and formatting. */
   @Test
   void locationKeyToStringAndEquality() {
     LocationKey a = new LocationKey("world", 10, 64, -20);
@@ -24,6 +25,7 @@ class KeyUtilityTest {
     assertEquals("world:10,64,-20", a.toString());
   }
 
+  /** Verifies {@link PlayerJobCompositeKey} record equality semantics. */
   @Test
   void playerJobCompositeKeyEquality() {
     UUID player = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -33,7 +35,7 @@ class KeyUtilityTest {
     PlayerJobCompositeKey a = new PlayerJobCompositeKey(player, miner);
     PlayerJobCompositeKey b = new PlayerJobCompositeKey(player, miner);
     PlayerJobCompositeKey otherJob = new PlayerJobCompositeKey(player, fisher);
-    PlayerJobCompositeKey otherPlayer = new PlayerJobCompositeKey(UUID.randomUUID(), miner);
+    final PlayerJobCompositeKey otherPlayer = new PlayerJobCompositeKey(UUID.randomUUID(), miner);
 
     assertEquals(a, b);
     assertEquals(a.hashCode(), b.hashCode());

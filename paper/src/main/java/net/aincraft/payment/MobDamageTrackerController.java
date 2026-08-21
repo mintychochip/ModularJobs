@@ -1,7 +1,5 @@
 package net.aincraft.payment;
 
-import net.aincraft.payment.DamageContribution;
-import org.bukkit.Bukkit;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
@@ -33,7 +31,7 @@ final class MobDamageTrackerController implements Listener {
    */
   @SuppressWarnings("UnstableApiUsage")
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-  private void onDamageTrackedEntity(final EntityDamageByEntityEvent event) {
+  void onDamageTrackedEntity(final EntityDamageByEntityEvent event) {
     Entity victim = event.getEntity();
     // Start tracking on the first player damage event.
     DamageSource damageSource = event.getDamageSource();

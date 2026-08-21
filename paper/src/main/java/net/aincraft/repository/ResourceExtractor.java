@@ -16,7 +16,7 @@ interface ResourceExtractor {
    * @throws FileNotFoundException if no such resource exists
    */
   static InputStream getResourceStream(String filePath) throws FileNotFoundException {
-    ClassLoader loader = ResourceExtractor.class.getClassLoader();
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
     InputStream resourceStream = loader.getResourceAsStream(filePath);
     if (resourceStream == null) {
       throw new FileNotFoundException(filePath);

@@ -20,8 +20,7 @@ public final class RegistryContainerImpl implements RegistryContainer {
 
   @SuppressWarnings("unchecked")
   @Override
-  public @NotNull <T> RegistryView<T> getRegistry(RegistryKey<T> key)
-      throws IllegalArgumentException {
+  public @NotNull <T> RegistryView<T> getRegistry(RegistryKey<T> key) {
     Preconditions.checkArgument(hasRegistry(key));
     return (RegistryView<T>) registrar.get(key.key());
   }
@@ -29,7 +28,7 @@ public final class RegistryContainerImpl implements RegistryContainer {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends Keyed> void editRegistry(RegistryKey<T> key,
-      Consumer<Registry<T>> registryConsumer) throws IllegalArgumentException {
+      Consumer<Registry<T>> registryConsumer) {
     Preconditions.checkArgument(hasRegistry(key));
     Registry<T> registry = (Registry<T>) registrar.get(key.key());
     registryConsumer.accept(registry);

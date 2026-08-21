@@ -1,14 +1,15 @@
 package net.aincraft.payment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.cache.CacheLoader;
 import java.time.Duration;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import net.aincraft.payment.ExploitService.ExploitProtectionType;
 import net.aincraft.test.MockBukkitSupport;
 import net.aincraft.util.LocationKey;
 import org.bukkit.Material;
@@ -53,7 +54,7 @@ class PlacedProtectionMaterialsTest {
     Map<Material, Duration> map =
         PlacedProtectionMaterials.fromConfiguration(config, Logger.getGlobal());
     assertTrue(map.size() > 50);
-    assertTrue(map.get(Material.DIRT).equals(Duration.ofSeconds(30)));
+    assertEquals(Duration.ofSeconds(30), map.get(Material.DIRT));
   }
 
   @Test
@@ -75,7 +76,7 @@ class PlacedProtectionMaterialsTest {
     ExploitService service = PaymentWiring.createExploitService(placed);
     assertNotNull(service);
 
-    Map<Material, java.time.temporal.TemporalAmount> temporal = new java.util.HashMap<>(placed);
+    Map<Material, java.time.temporal.TemporalAmount> temporal = new EnumMap<>(placed);
     MemoryExploitProtectionStoreImpl<Material, Material> store =
         new MemoryExploitProtectionStoreImpl<>(
             temporal,

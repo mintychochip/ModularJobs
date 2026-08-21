@@ -2,6 +2,7 @@ package net.aincraft.indirection;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.reflect.Modifier;
 import net.aincraft.domain.JobResolver;
@@ -75,7 +76,7 @@ class SingleImplementorCollapseTest {
   private static void assertClassMissing(String fqcn) {
     try {
       Class.forName(fqcn);
-      assertFalse(true, "expected " + fqcn + " to be removed");
+      fail("expected " + fqcn + " to be removed");
     } catch (ClassNotFoundException expected) {
       // good
     }

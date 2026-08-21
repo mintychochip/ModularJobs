@@ -6,7 +6,6 @@ import net.aincraft.util.Messages;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.aincraft.boost.AdditiveBoostImpl;

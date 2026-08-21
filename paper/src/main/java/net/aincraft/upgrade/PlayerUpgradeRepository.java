@@ -173,7 +173,9 @@ public final class PlayerUpgradeRepository {
     Map<Key, String> hydrated = new HashMap<>();
     for (String nodeKey : ownedInPrerequisiteOrder(tree, normalized)) {
       SkillNode node = tree.node(nodeKey).orElse(null);
-      if (node == null || !node.isMajor()) continue;
+      if (node == null || !node.isMajor()) {
+        continue;
+      }
       for (NodeStateWrite write : node.stateWrites()) {
         if (write.op() == NodeStateWrite.Op.SET) {
           hydrated.put(write.key(), write.value());

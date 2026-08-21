@@ -1,6 +1,5 @@
 package net.aincraft.domain;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public final class MemoryJobRepositoryImpl {
      * @param configuration the raw YAML configuration to parse
      * @return the parsed records keyed by their namespaced job key
      */
-    public Map<String, JobRecord> load(YamlConfiguration configuration) {
+    Map<String, JobRecord> load(YamlConfiguration configuration) {
       Map<String, JobRecord> jobs = new HashMap<>();
       for (String jobKey : configuration.getKeys(false)) {
         if (!configuration.contains(jobKey)) {
@@ -64,9 +63,9 @@ public final class MemoryJobRepositoryImpl {
         if (displayName == null) {
           continue;
         }
-        String description = jobConfiguration.getString("description", null);
+        final String description = jobConfiguration.getString("description", null);
         //TODO: get default max level
-        int maxLevel = jobConfiguration.getInt("max-level", 1);
+        final int maxLevel = jobConfiguration.getInt("max-level", 1);
         String levellingCurve = jobConfiguration.getString("leveling-curve");
         if (levellingCurve == null) {
           continue;
@@ -78,10 +77,10 @@ public final class MemoryJobRepositoryImpl {
           String curve = curveConfiguration.getString(curveKey);
           curves.put(curveKey, curve);
         }
-        
+
         // Parse upgrade-level with default of 30
         int upgradeLevel = jobConfiguration.getInt("upgrade-level", 30);
-        
+
         // Parse perk-unlocks map
         Map<Integer, List<String>> perkUnlocks = new HashMap<>();
         if (jobConfiguration.contains("perk-unlocks")) {
@@ -94,8 +93,8 @@ public final class MemoryJobRepositoryImpl {
                 if (perks != null && !perks.isEmpty()) {
                   perkUnlocks.put(level, perks);
                 }
-              } catch (NumberFormatException e) {
-                // Skip invalid level keys
+              } catch (NumberFormatException ignored) {
+                // Skip invalid perk-unlock level keys in configuration.
               }
             }
           }
