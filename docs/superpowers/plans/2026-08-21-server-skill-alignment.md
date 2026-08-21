@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-08-21-server-skill-alignment-design.md`
 
+**Wave 1 status:** landed on `chore/server-skill-alignment`. Verified `./gradlew :api:test :common:test :paper:test` and `./gradlew clean check` (analyzers still report-only). Packaged `plugin.yml` has `api-version: '26.2'`. Wave 2 not started.
+
 ## Global constraints
 
 - Do **not** switch to CalVer `YYYY.MM.DD.<GITHUB_RUN_NUMBER>`. Keep `-PreleaseVersion=` and `scripts/validate-release-version.sh`.
@@ -56,7 +58,7 @@
 - Create: `paper/src/test/java/dev/mintychochip/repository/HikariConfigProviderTest.java`
 - Modify: `api/src/test/java/dev/mintychochip/CiTemplateHookupTest.java`
 
-- [ ] **Step 1: Tighten plugin.yml api-version assertion**
+- [x] **Step 1: Tighten plugin.yml api-version assertion**
 
 In `PluginYmlProductionReadinessTest`, replace the `1.13` check with:
 
