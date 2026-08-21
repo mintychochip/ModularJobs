@@ -2,7 +2,7 @@ package net.aincraft.boost;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.math.BigDecimal;
 import net.aincraft.container.Boost;
@@ -66,6 +66,6 @@ class BoostArithmeticTest {
 
     assertEquals(0, new BigDecimal("240").compareTo(addFirst));
     assertEquals(0, new BigDecimal("220").compareTo(multiFirst));
-    assertTrue(addFirst.compareTo(multiFirst) != 0);
+    assertNotEquals(addFirst, multiFirst);
   }
 }

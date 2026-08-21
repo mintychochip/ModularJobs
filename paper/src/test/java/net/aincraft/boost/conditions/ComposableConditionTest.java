@@ -19,38 +19,38 @@ class ComposableConditionTest {
 
   @Test
   void andRequiresBothTrue() {
-    Condition both = Conditions.compose(ALWAYS, ALWAYS, LogicalOperator.AND);
-    Condition mixed = Conditions.compose(ALWAYS, NEVER, LogicalOperator.AND);
+    Condition both = BoostFactoryCompose.compose(ALWAYS, ALWAYS, LogicalOperator.AND);
+    Condition mixed = BoostFactoryCompose.compose(ALWAYS, NEVER, LogicalOperator.AND);
     assertTrue(both.applies(EMPTY_CONTEXT));
     assertFalse(mixed.applies(EMPTY_CONTEXT));
   }
 
   @Test
   void orAcceptsEitherTrue() {
-    Condition either = Conditions.compose(ALWAYS, NEVER, LogicalOperator.OR);
-    Condition none = Conditions.compose(NEVER, NEVER, LogicalOperator.OR);
+    Condition either = BoostFactoryCompose.compose(ALWAYS, NEVER, LogicalOperator.OR);
+    Condition none = BoostFactoryCompose.compose(NEVER, NEVER, LogicalOperator.OR);
     assertTrue(either.applies(EMPTY_CONTEXT));
     assertFalse(none.applies(EMPTY_CONTEXT));
   }
 
   @Test
   void xorIsExclusive() {
-    Condition xorTrue = Conditions.compose(ALWAYS, NEVER, LogicalOperator.XOR);
-    Condition xorFalse = Conditions.compose(ALWAYS, ALWAYS, LogicalOperator.XOR);
+    Condition xorTrue = BoostFactoryCompose.compose(ALWAYS, NEVER, LogicalOperator.XOR);
+    Condition xorFalse = BoostFactoryCompose.compose(ALWAYS, ALWAYS, LogicalOperator.XOR);
     assertTrue(xorTrue.applies(EMPTY_CONTEXT));
     assertFalse(xorFalse.applies(EMPTY_CONTEXT));
   }
 
   @Test
   void negateInvertsInnerCondition() {
-    Condition notAlways = Conditions.negate(ALWAYS);
-    Condition notNever = Conditions.negate(NEVER);
+    Condition notAlways = BoostFactoryCompose.negate(ALWAYS);
+    Condition notNever = BoostFactoryCompose.negate(NEVER);
     assertFalse(notAlways.applies(EMPTY_CONTEXT));
     assertTrue(notNever.applies(EMPTY_CONTEXT));
   }
 
   @Test
-  void factoryComposeAndNegateMatchStaticHelpers() {
+  void factoryCompositionUsesDataBagAdapter() {
     Condition factoryAnd = BoostFactoryCompose.compose(ALWAYS, NEVER, LogicalOperator.AND);
     Condition factoryOr = BoostFactoryCompose.compose(ALWAYS, NEVER, LogicalOperator.OR);
     Condition factoryNot = BoostFactoryCompose.negate(ALWAYS);
@@ -61,8 +61,7 @@ class ComposableConditionTest {
   }
 
   /**
-   * Thin access to {@link net.aincraft.boost.BoostFactoryImpl} compose/negate without pulling
-   * Bukkit-heavy condition factories into every assertion.
+   * Thin access to the production DataBag adapter.
    */
   private static final class BoostFactoryCompose {
     static Condition compose(Condition a, Condition b, LogicalOperator op) {

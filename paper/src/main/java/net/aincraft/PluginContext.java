@@ -73,7 +73,7 @@ import net.aincraft.repository.PluginResources;
 import net.aincraft.repository.SharedConnectionSources;
 import net.aincraft.repository.RelationalTimedBoostRepositoryImpl;
 import net.aincraft.boost.BoostDataCodec;
-import dev.conditions.gson.GsonConditionSerializer;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
 import net.aincraft.service.PreferencesServiceImpl;
 import net.aincraft.service.PreferencesService;
 import net.aincraft.service.TimedBoostDataServiceImpl;
@@ -144,46 +144,49 @@ public final class PluginContext {
 
   public static PluginContext create(JavaPlugin plugin) {
     PluginResources resources = new PluginResources();
+    boolean created = false;
     try {
-      return createInto(plugin, resources);
-    } catch (Throwable t) {
-      resources.closeQuietly();
-      throw t;
+      PluginContext context = createInto(plugin, resources);
+      created = true;
+      return context;
+    } finally {
+      if (!created) {
+        resources.closeQuietly();
+      }
     }
   }
-
 
   /**
    * Composition body. Sources are tracked on {@code resources} as they open so callers
    * (and {@link #create}) can clean up on failure.
    */
   static PluginContext createInto(JavaPlugin plugin, PluginResources resources) {
-    YamlConfiguration databaseConfig = YamlConfiguration.create(plugin, "database.yml");
+    final YamlConfiguration databaseConfig = YamlConfiguration.create(plugin, "database.yml");
     plugin.getSLF4JLogger().info("Loading database.yml, keys: {}", databaseConfig.getKeys(false));
 
-    ConfigurationSection payableSection =
+    final ConfigurationSection payableSection =
         DatabaseConfigSections.requireSection(databaseConfig, "payable");
-    SharedConnectionSources sharedSources = new SharedConnectionSources(plugin, resources);
-    ConnectionSource connectionSource = sharedSources.getOrCreate(payableSection);
+    final SharedConnectionSources sharedSources = new SharedConnectionSources(plugin, resources);
+    final ConnectionSource connectionSource = sharedSources.getOrCreate(payableSection);
 
     ModularJobsBags.register();
-    KeyResolver keyResolver = KeyResolvers.create();
-    BoostFactory boostFactory = BoostFactoryImpl.INSTANCE;
-    ConditionFactory conditionFactory = BoostFactoryImpl.INSTANCE;
-    BoostDataCodec boostDataCodec = new BoostDataCodec(GsonConditionSerializer.gson(), boostFactory);
-    Gson gson = GsonProvider.create();
+    final KeyResolver keyResolver = KeyResolvers.create();
+    final BoostFactory boostFactory = BoostFactoryImpl.INSTANCE;
+    final ConditionFactory conditionFactory = BoostFactoryImpl.INSTANCE;
+    final BoostDataCodec boostDataCodec = new BoostDataCodec(GsonConditionSerializer.gson(), boostFactory);
+    final Gson gson = GsonProvider.create();
 
-    Registry<ActionType> actionTypeRegistry = ActionTypeRegistryProvider.create(plugin);
+    final Registry<ActionType> actionTypeRegistry = ActionTypeRegistryProvider.create(plugin);
 
     // JobService holds a reference to the payable registry; types are registered after domain
     // construction so the experience handler can close over JobService.
-    Registry<PayableType> payableTypeRegistry = new SimpleRegistryImpl<>();
+    final Registry<PayableType> payableTypeRegistry = new SimpleRegistryImpl<>();
 
-    ProgressionLimitsConfig progressionLimits = ProgressionLimitsConfig.fromPlugin(plugin);
-    PaymentSettings paymentSettingsForJoin = PaymentSettings.fromPlugin(plugin);
-    JoinGate joinGate = new JoinGate(progressionLimits, paymentSettingsForJoin.disabledWorlds());
+    final ProgressionLimitsConfig progressionLimits = ProgressionLimitsConfig.fromPlugin(plugin);
+    final PaymentSettings paymentSettingsForJoin = PaymentSettings.fromPlugin(plugin);
+    final JoinGate joinGate = new JoinGate(progressionLimits, paymentSettingsForJoin.disabledWorlds());
 
-    DomainWiring domain = DomainWiring.create(
+    final DomainWiring domain = DomainWiring.create(
         plugin,
         connectionSource,
         resources,
@@ -193,10 +196,10 @@ public final class PluginContext {
         joinGate);
 
     // Craftux inventory + text surfaces (scoreboard / boss bar) for all plugin UIs
-    CraftuxUiHost craftuxUi = CraftuxUiHost.create(plugin);
-    CraftuxSurfaces craftuxSurfaces = CraftuxSurfaces.create();
+    final CraftuxUiHost craftuxUi = CraftuxUiHost.create(plugin);
+    final CraftuxSurfaces craftuxSurfaces = CraftuxSurfaces.create();
 
-    PayableWiring payables =
+    final PayableWiring payables =
         PayableWiring.create(plugin, domain.jobService, payableTypeRegistry, craftuxSurfaces);
 
     RegistryContainerImpl registryContainer = new RegistryContainerImpl();
@@ -209,11 +212,11 @@ public final class PluginContext {
     RelationalTimedBoostRepositoryImpl timedBoostRepository = new RelationalTimedBoostRepositoryImpl(
         plugin, timedBoostSource, boostDataCodec);
     resources.onFlush(timedBoostRepository::flushPending);
-    TimedBoostDataService timedBoostDataService =
+    final TimedBoostDataService timedBoostDataService =
         new TimedBoostDataServiceImpl(timedBoostRepository);
-    ItemBoostDataService itemBoostDataService = new ItemBoostDataService(boostDataCodec);
+    final ItemBoostDataService itemBoostDataService = new ItemBoostDataService(boostDataCodec);
 
-    PreferencesService preferencesService = new PreferencesServiceImpl(plugin);
+    final PreferencesService preferencesService = new PreferencesServiceImpl(plugin);
 
     ConfigurationSection upgradesSection = DatabaseConfigSections.sectionOrFallback(
         databaseConfig, "upgrades", payableSection);
@@ -227,13 +230,12 @@ public final class PluginContext {
         plugin, gson, upgradeTreeRegistry, skillTreeRegistry, conditionFactory, boostFactory);
     upgradeTreeLoader.load();
 
-    ProfessionWiring professions = ProfessionWiring.create(domain.jobService);
+    final ProfessionWiring professions = ProfessionWiring.create(domain.jobService);
 
-
-    UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
+    final UpgradePermissionManager permissionManager = new UpgradePermissionManager(plugin);
     UpgradeEffectApplier effectApplier =
         new UpgradeEffectApplier(permissionManager, professions.recipeService);
-    UpgradeBoostDataService upgradeBoostDataService =
+    final UpgradeBoostDataService upgradeBoostDataService =
         new UpgradeBoostDataServiceImpl(
             playerUpgradeRepository, upgradeTreeRegistry, skillTreeRegistry);
     UpgradeService upgradeService = new UpgradeServiceImpl(
@@ -243,7 +245,7 @@ public final class PluginContext {
         domain.jobService,
         effectApplier);
 
-    UpgradeTreeGui upgradeTreeGui = new UpgradeTreeGui(plugin, craftuxUi.inventory(), upgradeService);
+    final UpgradeTreeGui upgradeTreeGui = new UpgradeTreeGui(craftuxUi.inventory(), upgradeService);
     TreeEditorExporter treeEditorExporter = new TreeEditorExporter();
     TreeEditorNodeGui treeEditorNodeGui = new TreeEditorNodeGui(plugin, craftuxUi.inventory());
     TreeEditorSettingsGui treeEditorSettingsGui = new TreeEditorSettingsGui(plugin, craftuxUi.inventory());
@@ -271,7 +273,7 @@ public final class PluginContext {
     BlockOwnershipService blockOwnershipService =
         new BlockOwnershipService(protectionAdapter);
 
-    PaymentWiring payment = PaymentWiring.create(
+    final PaymentWiring payment = PaymentWiring.create(
         plugin,
         domain.jobService,
         itemBoostDataService,
@@ -282,11 +284,11 @@ public final class PluginContext {
         professions.professionService);
 
     LevelUpCommandsConfig levelUpCommands = LevelUpCommandsConfig.fromPlugin(plugin);
-    LevelUpCommandExecutor levelUpCommandExecutor = new LevelUpCommandExecutor(
+    final LevelUpCommandExecutor levelUpCommandExecutor = new LevelUpCommandExecutor(
         levelUpCommands,
         command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
 
-    EditorConfig editorConfig = EditorConfig.fromPlugin(plugin);
+    final EditorConfig editorConfig = EditorConfig.fromPlugin(plugin);
 
     JobBrowseGui jobBrowseGui = new JobBrowseGui(
         craftuxUi.inventory(), domain.jobService, upgradeService, joinGate);
@@ -294,7 +296,7 @@ public final class PluginContext {
     StatsGui statsGui = new StatsGui(craftuxUi.inventory());
     craftuxUi.actions().register(CraftuxUiHost.ACTION_STATS_PREV, statsGui::onPrev);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_STATS_NEXT, statsGui::onNext);
-    JobTopPageProvider topPageProvider = new JobTopPageProvider(domain.jobService);
+    final JobTopPageProvider topPageProvider = new JobTopPageProvider(domain.jobService);
 
     JobInfoGui jobInfoGui = new JobInfoGui(craftuxUi.inventory(), preferencesService);
     craftuxUi.actions().register(CraftuxUiHost.ACTION_INFO_PREV, jobInfoGui::onPrev);

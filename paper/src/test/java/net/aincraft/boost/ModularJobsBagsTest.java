@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import dev.databag.DataBag;
-import dev.databag.DataHandlers;
+import dev.mintychochip.databag.DataBag;
+import dev.mintychochip.databag.DataHandlers;
 import java.util.Optional;
 import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;

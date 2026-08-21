@@ -4,12 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import net.aincraft.boost.AdditiveBoostImpl;
 import net.aincraft.boost.MultiplicativeBoostImpl;
@@ -29,7 +27,7 @@ import net.aincraft.repository.ConnectionSource;
 import net.aincraft.repository.DatabaseType;
 import net.aincraft.boost.BoostDataCodec;
 import net.aincraft.boost.BoostFactoryImpl;
-import dev.conditions.gson.GsonConditionSerializer;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
 import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.upgrade.PlayerUpgradeRepository;
 import net.aincraft.upgrade.SkillTree;
@@ -71,7 +69,7 @@ class BoostEngineAggregationTest {
     ActiveBoostData timed = new ActiveBoostData(
         UUID.randomUUID().toString(),
         timedSource.key().toString(),
-        Timestamp.from(Instant.now()),
+        Instant.now(),
         Duration.ofHours(1),
         timedSource
     );

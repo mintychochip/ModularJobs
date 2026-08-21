@@ -1,7 +1,6 @@
 package net.aincraft.boost;
 
 import java.util.BitSet;
-import org.bukkit.inventory.PlayerInventory;
 
 /**
  * Utility for parsing slot set specifications.
@@ -13,6 +12,7 @@ public final class SlotSetParser {
 
   /**
    * Parse a slot specification string into a BitSet.
+   *
    * <p>
    * Supported formats:
    * - "all" - all slots (0-40)
@@ -33,7 +33,7 @@ public final class SlotSetParser {
    * @return the parsed BitSet
    * @throws IllegalArgumentException if the specification is invalid
    */
-  public static BitSet parse(String spec) throws IllegalArgumentException {
+  public static BitSet parse(String spec) {
     if (spec == null || spec.isBlank()) {
       throw new IllegalArgumentException("Slot specification cannot be null or blank");
     }
@@ -100,7 +100,7 @@ public final class SlotSetParser {
       }
       return slotNum;
     } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("Invalid slot number: " + slot);
+      throw new IllegalArgumentException("Invalid slot number: " + slot, e);
     }
   }
 

@@ -2,7 +2,7 @@ package net.aincraft.boost;
 
 import java.math.BigDecimal;
 import net.aincraft.boost.conditions.SnapshotCondition;
-import dev.conditions.Conditions;
+import dev.mintychochip.databag.Conditions;
 import net.aincraft.container.Boost;
 import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.LogicalOperator;
@@ -16,7 +16,7 @@ import net.kyori.adventure.key.Key;
 
 /**
  * Boost and condition factory. Conditions are snapshot-graph types from
- * {@code dev.conditions}, adapted onto the boost {@link Condition} interface.
+ * {@code dev.mintychochip.databag}, adapted onto the boost {@link Condition} interface.
  */
 public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
 
@@ -67,7 +67,7 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   }
 
   @Override
-  public Condition liquid(String materialKey) throws IllegalArgumentException {
+  public Condition liquid(String materialKey) {
     return SnapshotCondition.wrap(Conditions.fluid(toKey(materialKey)));
   }
 
@@ -80,7 +80,7 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
   public Condition potion(String potionEffectTypeKey, int expected,
       PotionConditionType conditionType, RelationalOperator operator) {
     Key key = toKey(potionEffectTypeKey);
-    dev.conditions.RelationalOperator op = mapOperator(operator);
+    dev.mintychochip.databag.RelationalOperator op = mapOperator(operator);
     return SnapshotCondition.wrap(switch (conditionType) {
       case AMPLIFIER -> Conditions.potionAmplifier(key, op, expected);
       case DURATION -> Conditions.potionDuration(key, op, expected);
@@ -89,9 +89,9 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
 
   @Override
   public Condition compose(Condition a, Condition b, LogicalOperator operator) {
-    dev.conditions.Condition left = SnapshotCondition.unwrap(a);
-    dev.conditions.Condition right = SnapshotCondition.unwrap(b);
-    dev.conditions.Condition composed = switch (operator) {
+    dev.mintychochip.databag.Condition left = SnapshotCondition.unwrap(a);
+    dev.mintychochip.databag.Condition right = SnapshotCondition.unwrap(b);
+    dev.mintychochip.databag.Condition composed = switch (operator) {
       case AND -> Conditions.allOf(left, right);
       case OR -> Conditions.anyOf(left, right);
       default -> ctx -> operator.test(left.test(ctx), right.test(ctx));
@@ -133,30 +133,30 @@ public final class BoostFactoryImpl implements BoostFactory, ConditionFactory {
     return Key.key("minecraft", trimmed.toLowerCase());
   }
 
-  private static dev.conditions.PlayerResourceType mapResource(PlayerResourceType type) {
+  private static dev.mintychochip.databag.PlayerResourceType mapResource(PlayerResourceType type) {
     return switch (type) {
-      case HEALTH -> dev.conditions.PlayerResourceType.HEALTH;
-      case HUNGER -> dev.conditions.PlayerResourceType.HUNGER;
-      case EXPERIENCE -> dev.conditions.PlayerResourceType.EXPERIENCE;
+      case HEALTH -> dev.mintychochip.databag.PlayerResourceType.HEALTH;
+      case HUNGER -> dev.mintychochip.databag.PlayerResourceType.HUNGER;
+      case EXPERIENCE -> dev.mintychochip.databag.PlayerResourceType.EXPERIENCE;
     };
   }
 
-  private static dev.conditions.RelationalOperator mapOperator(RelationalOperator operator) {
+  private static dev.mintychochip.databag.RelationalOperator mapOperator(RelationalOperator operator) {
     return switch (operator) {
-      case LESS_THAN -> dev.conditions.RelationalOperator.LESS_THAN;
-      case LESS_THAN_OR_EQUAL -> dev.conditions.RelationalOperator.LESS_THAN_OR_EQUAL;
-      case GREATER_THAN -> dev.conditions.RelationalOperator.GREATER_THAN;
-      case GREATER_THAN_OR_EQUAL -> dev.conditions.RelationalOperator.GREATER_THAN_OR_EQUAL;
-      case EQUAL -> dev.conditions.RelationalOperator.EQUAL;
-      case NOT_EQUAL -> dev.conditions.RelationalOperator.NOT_EQUAL;
+      case LESS_THAN -> dev.mintychochip.databag.RelationalOperator.LESS_THAN;
+      case LESS_THAN_OR_EQUAL -> dev.mintychochip.databag.RelationalOperator.LESS_THAN_OR_EQUAL;
+      case GREATER_THAN -> dev.mintychochip.databag.RelationalOperator.GREATER_THAN;
+      case GREATER_THAN_OR_EQUAL -> dev.mintychochip.databag.RelationalOperator.GREATER_THAN_OR_EQUAL;
+      case EQUAL -> dev.mintychochip.databag.RelationalOperator.EQUAL;
+      case NOT_EQUAL -> dev.mintychochip.databag.RelationalOperator.NOT_EQUAL;
     };
   }
 
-  private static dev.conditions.WeatherState mapWeather(WeatherState state) {
+  private static dev.mintychochip.databag.WeatherState mapWeather(WeatherState state) {
     return switch (state) {
-      case THUNDERING -> dev.conditions.WeatherState.THUNDERING;
-      case RAINING -> dev.conditions.WeatherState.RAINING;
-      case CLEAR -> dev.conditions.WeatherState.CLEAR;
+      case THUNDERING -> dev.mintychochip.databag.WeatherState.THUNDERING;
+      case RAINING -> dev.mintychochip.databag.WeatherState.RAINING;
+      case CLEAR -> dev.mintychochip.databag.WeatherState.CLEAR;
     };
   }
 }

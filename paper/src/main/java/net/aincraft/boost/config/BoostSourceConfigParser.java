@@ -20,7 +20,6 @@ import net.kyori.adventure.key.Key;
  */
 public final class BoostSourceConfigParser {
 
-  private final ConditionFactory conditionFactory;
   private final BoostFactory boostFactory;
   private final ConditionConfigParser conditionParser;
 
@@ -31,7 +30,6 @@ public final class BoostSourceConfigParser {
       ConditionFactory conditionFactory,
       BoostFactory boostFactory
   ) {
-    this.conditionFactory = conditionFactory;
     this.boostFactory = boostFactory;
     this.conditionParser = new ConditionConfigParser(conditionFactory);
   }
@@ -83,6 +81,16 @@ public final class BoostSourceConfigParser {
   }
 
   /**
+   * Parse an UpgradeTreeConfig rule configuration.
+   */
+  public Rule parseRule(net.aincraft.upgrade.config.UpgradeTreeConfig.RuleConfig config) {
+    Condition condition = conditionParser.parse(config.conditions());
+    Boost boost = parseBoost(config.boost());
+    int priority = config.priority();
+    return new Rule(condition, priority, boost);
+  }
+
+  /**
    * Parse a boost configuration.
    */
   public Boost parseBoost(BoostConfig config) {
@@ -92,18 +100,6 @@ public final class BoostSourceConfigParser {
       case "additive" -> boostFactory.additive(amount);
       default -> throw new IllegalArgumentException("Unknown boost type: " + config.type());
     };
-  }
-
-  // Overloaded methods for UpgradeTreeConfig types
-
-  /**
-   * Parse an UpgradeTreeConfig rule configuration.
-   */
-  public Rule parseRule(net.aincraft.upgrade.config.UpgradeTreeConfig.RuleConfig config) {
-    Condition condition = conditionParser.parse(config.conditions());
-    Boost boost = parseBoost(config.boost());
-    int priority = config.priority();
-    return new Rule(condition, priority, boost);
   }
 
   /**

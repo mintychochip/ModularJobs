@@ -2,13 +2,12 @@ package net.aincraft.boost.config;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.factories.BoostFactory;
@@ -60,7 +59,7 @@ public final class BoostSourceLoader {
       createDefaultConfig(configFile);
     }
 
-    try (FileReader reader = new FileReader(configFile)) {
+    try (var reader = Files.newBufferedReader(configFile.toPath(), StandardCharsets.UTF_8)) {
       return loadFromReader(reader);
     } catch (IOException e) {
       plugin.getLogger().warning("Failed to load boost sources: " + e.getMessage());
@@ -95,7 +94,7 @@ public final class BoostSourceLoader {
         BoostSource boostSource = parser.parse(config);
         registry.register(boostSource);
         count++;
-      } catch (Exception e) {
+      } catch (IllegalArgumentException | JsonSyntaxException e) {
         plugin.getLogger().warning(
             "Failed to parse boost source '" + entry.getKey() + "': " + e.getMessage()
         );

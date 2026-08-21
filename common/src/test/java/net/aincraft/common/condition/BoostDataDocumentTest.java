@@ -10,11 +10,11 @@ import net.aincraft.common.boost.BoostDataDocument;
 import net.aincraft.common.boost.BoostDataDocument.BoostDocument;
 import net.aincraft.common.boost.BoostDataDocument.RuleDocument;
 import net.aincraft.common.boost.BoostDataDocument.SourceDocument;
-import dev.conditions.Condition;
-import dev.conditions.ConditionSerializer;
-import dev.conditions.Conditions;
-import dev.conditions.SneakingCondition;
-import dev.conditions.gson.GsonConditionSerializer;
+import dev.mintychochip.databag.Condition;
+import dev.mintychochip.databag.ConditionSerializer;
+import dev.mintychochip.databag.Conditions;
+import dev.mintychochip.databag.SneakingCondition;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
 import org.junit.jupiter.api.Test;
 
 class BoostDataDocumentTest {

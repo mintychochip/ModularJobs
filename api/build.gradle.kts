@@ -1,7 +1,7 @@
 dependencies {
     api(libs.adventure.api)
     api(libs.jetbrains.annotations)
-    api(libs.conditions.api)
+    api(libs.databag.api)
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

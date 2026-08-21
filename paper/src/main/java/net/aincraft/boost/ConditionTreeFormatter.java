@@ -3,31 +3,31 @@ package net.aincraft.boost;
 import java.util.ArrayList;
 import java.util.List;
 import net.aincraft.boost.conditions.SnapshotCondition;
-import dev.conditions.AllOfCondition;
-import dev.conditions.AlwaysCondition;
-import dev.conditions.AnyOfCondition;
-import dev.conditions.BabyCondition;
-import dev.conditions.BiomeCondition;
-import dev.conditions.BlockIdCondition;
-import dev.conditions.BlockPropertyCondition;
-import dev.conditions.EntityTypeCondition;
-import dev.conditions.FluidCondition;
-import dev.conditions.FlyingCondition;
-import dev.conditions.GameModeCondition;
-import dev.conditions.GlidingCondition;
-import dev.conditions.InvertedCondition;
-import dev.conditions.JobCondition;
-import dev.conditions.OnFireCondition;
-import dev.conditions.OnGroundCondition;
-import dev.conditions.PlayerResourceCondition;
-import dev.conditions.PotionAmplifierCondition;
-import dev.conditions.PotionDurationCondition;
-import dev.conditions.PotionPresentCondition;
-import dev.conditions.SneakingCondition;
-import dev.conditions.SprintingCondition;
-import dev.conditions.SwimmingCondition;
-import dev.conditions.WeatherCondition;
-import dev.conditions.WorldCondition;
+import dev.mintychochip.databag.AllOfCondition;
+import dev.mintychochip.databag.AlwaysCondition;
+import dev.mintychochip.databag.AnyOfCondition;
+import dev.mintychochip.databag.BabyCondition;
+import dev.mintychochip.databag.BiomeCondition;
+import dev.mintychochip.databag.BlockIdCondition;
+import dev.mintychochip.databag.BlockPropertyCondition;
+import dev.mintychochip.databag.EntityTypeCondition;
+import dev.mintychochip.databag.FluidCondition;
+import dev.mintychochip.databag.FlyingCondition;
+import dev.mintychochip.databag.GameModeCondition;
+import dev.mintychochip.databag.GlidingCondition;
+import dev.mintychochip.databag.InvertedCondition;
+import dev.mintychochip.databag.JobCondition;
+import dev.mintychochip.databag.OnFireCondition;
+import dev.mintychochip.databag.OnGroundCondition;
+import dev.mintychochip.databag.PlayerResourceCondition;
+import dev.mintychochip.databag.PotionAmplifierCondition;
+import dev.mintychochip.databag.PotionDurationCondition;
+import dev.mintychochip.databag.PotionPresentCondition;
+import dev.mintychochip.databag.SneakingCondition;
+import dev.mintychochip.databag.SprintingCondition;
+import dev.mintychochip.databag.SwimmingCondition;
+import dev.mintychochip.databag.WeatherCondition;
+import dev.mintychochip.databag.WorldCondition;
 import net.aincraft.container.boost.Condition;
 
 /**
@@ -55,7 +55,7 @@ public final class ConditionTreeFormatter {
   }
 
   private static void formatApi(
-      dev.conditions.Condition condition,
+      dev.mintychochip.databag.Condition condition,
       String baseIndent,
       String prefix,
       boolean isLast,

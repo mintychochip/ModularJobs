@@ -34,9 +34,8 @@ placeholderapi = "2.11.6"
 craftux = "1.0.2"
 # Mint durable ledger API (aincraft-org/mint; published to sibling ../mint/build/maven-repo)
 mint-api = "1.0.0"
-# Player conditions (aincraft-org/conditions; sibling ../conditions/build/maven-repo)
-conditions = "0.0.0-SNAPSHOT"
-# Primitive bag (mintychochip/databag; sibling ../databag/build/maven-repo)
+# DataBag primitive storage + condition graph (mintychochip/databag; sibling
+# ../databag/build/maven-repo)
 databag = "0.0.0-SNAPSHOT"
 
 mockbukkit = "26.2.0-mj"
@@ -72,10 +71,9 @@ craftux-common = { module = "dev.craftux:craftux-common", version.ref = "craftux
 craftux-paper = { module = "dev.craftux:craftux-paper", version.ref = "craftux" }
 # Mint ledger API (compileOnly; Mint ships it at runtime)
 mint-api = { module = "dev.jlo.mint:mint-api", version.ref = "mint-api" }
-conditions-api = { module = "dev.conditions:api", version.ref = "conditions" }
-conditions-gson = { module = "dev.conditions:gson", version.ref = "conditions" }
-conditions-paper = { module = "dev.conditions:paper", version.ref = "conditions" }
-databag = { module = "dev.databag:databag", version.ref = "databag" }
+databag-common = { module = "dev.mintychochip.databag:databag-common", version.ref = "databag" }
+databag-api = { module = "dev.mintychochip.databag:databag-api", version.ref = "databag" }
+databag-paper = { module = "dev.mintychochip.databag:databag-paper", version.ref = "databag" }
 
 mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v26.2", version.ref = "mockbukkit" }
 mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }

@@ -12,7 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +19,7 @@ import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;
 import net.aincraft.boost.BoostDataCodec;
 import net.aincraft.boost.BoostFactoryImpl;
-import dev.conditions.gson.GsonConditionSerializer;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.aincraft.container.boost.TimedBoostDataService.ActiveBoostData;
@@ -46,10 +45,9 @@ class RelationalTimedBoostRepositoryIdentityTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    net.aincraft.test.TestMysql.assumeAvailable();
+    net.aincraft.test.MysqlTestSupport.assumeAvailable();
     // Wrap so try-with-resources in RelationalRepositoryImpl does not close the shared connection
-    Connection raw = net.aincraft.test.TestMysql.open();
-    connection = NonClosableConnection.create(raw);
+    connection = NonClosableConnection.create(net.aincraft.test.MysqlTestSupport.open());
     try (Statement st = connection.createStatement()) {
       st.execute("DROP TABLE IF EXISTS time_boosts");
       st.execute("""
@@ -85,8 +83,8 @@ class RelationalTimedBoostRepositoryIdentityTest {
       } catch (SQLException ignored) {
         // best-effort
       }
-      if (connection instanceof NonClosableConnection nonClosable) {
-        nonClosable.shutdown();
+      if (connection instanceof NonClosableConnection) {
+        ((NonClosableConnection) connection).shutdown();
       } else if (!connection.isClosed()) {
         connection.close();
       }
@@ -98,7 +96,7 @@ class RelationalTimedBoostRepositoryIdentityTest {
     ActiveBoostData boost = new ActiveBoostData(
         TARGET,
         SOURCE_ID,
-        Timestamp.from(Instant.now()),
+        Instant.now(),
         Duration.ofHours(1),
         source
     );
@@ -107,13 +105,16 @@ class RelationalTimedBoostRepositoryIdentityTest {
     try (PreparedStatement ps = connection.prepareStatement(
         "SELECT target_id, source_id FROM time_boosts");
         ResultSet rs = ps.executeQuery()) {
-      assertTrue(rs.next());
+      if (!rs.next()) {
+        throw new AssertionError("expected result row");
+      }
       assertEquals(TARGET, rs.getString("target_id"),
           "DB target_id must be pure player/global id, not composite cache key");
       assertEquals(SOURCE_ID, rs.getString("source_id"));
       assertFalse(rs.getString("target_id").contains(SOURCE_ID),
           "target_id must not embed source id");
-      assertFalse(rs.next());
+      boolean hasExtraRow = rs.next();
+      assertFalse(hasExtraRow);
     }
   }
 
@@ -122,7 +123,7 @@ class RelationalTimedBoostRepositoryIdentityTest {
     ActiveBoostData boost = new ActiveBoostData(
         TARGET,
         SOURCE_ID,
-        Timestamp.from(Instant.now()),
+        Instant.now(),
         Duration.ofHours(1),
         source
     );
@@ -145,7 +146,9 @@ class RelationalTimedBoostRepositoryIdentityTest {
     try (PreparedStatement ps = connection.prepareStatement(
         "SELECT COUNT(*) FROM time_boosts");
         ResultSet rs = ps.executeQuery()) {
-      assertTrue(rs.next());
+      if (!rs.next()) {
+        throw new AssertionError("expected result row");
+      }
       assertEquals(0, rs.getInt(1), "row must be deleted from real storage");
     }
   }
@@ -156,25 +159,25 @@ class RelationalTimedBoostRepositoryIdentityTest {
     ActiveBoostData expired = new ActiveBoostData(
         TARGET,
         SOURCE_ID,
-        Timestamp.from(started),
+        started,
         Duration.ofMinutes(5),
         source
     );
     repository.addBoost(expired);
 
-    TimedBoostDataServiceImpl service = new TimedBoostDataServiceImpl(repository);
     // Player target needs Player — use global path via findApplicableBoosts after forcing
     // target as global for this check: re-insert under "global"
     repository.delete(TARGET, SOURCE_ID);
     ActiveBoostData globalExpired = new ActiveBoostData(
         "global",
         SOURCE_ID,
-        Timestamp.from(started),
+        started,
         Duration.ofMinutes(5),
         source
     );
     repository.addBoost(globalExpired);
     assertEquals(1, countRows());
+    TimedBoostDataServiceImpl service = new TimedBoostDataServiceImpl(repository);
 
     List<ActiveBoostData> applicable = service.findApplicableBoosts(
         new net.aincraft.container.boost.TimedBoostDataService.Target.GlobalTarget());
@@ -185,7 +188,9 @@ class RelationalTimedBoostRepositoryIdentityTest {
   private int countRows() throws SQLException {
     try (PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) FROM time_boosts");
         ResultSet rs = ps.executeQuery()) {
-      rs.next();
+      if (!rs.next()) {
+        throw new AssertionError("expected result row");
+      }
       return rs.getInt(1);
     }
   }

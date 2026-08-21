@@ -1,9 +1,9 @@
 package net.aincraft.service;
 
-import dev.conditions.paper.PersistentBags;
-import dev.databag.DataBag;
-import dev.databag.FormattedBytes;
-import dev.databag.UnknownBagFormatException;
+import dev.mintychochip.databag.paper.PersistentBags;
+import dev.mintychochip.databag.DataBag;
+import dev.mintychochip.databag.FormattedBytes;
+import dev.mintychochip.databag.UnknownBagFormatException;
 import java.util.Optional;
 import net.aincraft.boost.BoostDataCodec;
 import net.aincraft.boost.BoostPayloadHandler;
@@ -18,7 +18,7 @@ import org.bukkit.persistence.PersistentDataType;
  *
  * <p>The PDC tag is a Kryo {@link DataBag} {@code BYTE_ARRAY}. Boost JSON lives in the bag
  * as formatted bytes ({@link #BOOST_PAYLOAD_FORMAT}) so later encodings can migrate.
- * Condition graphs stay {@link dev.conditions.ConditionSerializer} bytes, not Kryo
+ * Condition graphs stay {@link dev.mintychochip.databag.ConditionSerializer} bytes, not Kryo
  * condition classes.
  */
 public final class ItemBoostDataService {
@@ -64,12 +64,13 @@ public final class ItemBoostDataService {
     if (blob == null || blob.length == 0) {
       return Optional.empty();
     }
+    if (looksLikeJson(blob)) {
+      return readRawJson(blob);
+    }
     if (DataBag.isVersioned(blob)) {
       try {
         return readBagPayload(DataBag.fromBytes(blob));
-      } catch (UnknownBagFormatException ignored) {
-        return Optional.empty();
-      } catch (RuntimeException ignored) {
+      } catch (UnknownBagFormatException | IllegalStateException ignored) {
         return Optional.empty();
       }
     }
@@ -78,14 +79,28 @@ public final class ItemBoostDataService {
       if (fromBag.isPresent()) {
         return fromBag;
       }
-    } catch (RuntimeException ignored) {
+    } catch (IllegalArgumentException | IllegalStateException ignored) {
       // fall through to legacy raw JSON blob
     }
+    return readRawJson(blob);
+  }
+
+  private Optional<SerializableBoostData> readRawJson(byte[] blob) {
     try {
       return Optional.of(codec.read(blob));
-    } catch (RuntimeException ignored) {
+    } catch (IllegalArgumentException | IllegalStateException
+        | java.time.format.DateTimeParseException ignored) {
       return Optional.empty();
     }
+  }
+
+  private static boolean looksLikeJson(byte[] blob) {
+    for (byte value : blob) {
+      if (!Character.isWhitespace(value)) {
+        return value == '{' || value == '[';
+      }
+    }
+    return false;
   }
 
   private Optional<SerializableBoostData> readBagPayload(DataBag bag) {

@@ -1,16 +1,16 @@
 package net.aincraft.boost.conditions;
 
-import dev.conditions.ConditionContext;
+import dev.mintychochip.databag.ConditionContext;
 import net.aincraft.container.BoostContext;
 import net.aincraft.container.boost.Condition;
 
 /**
- * Adapts a Paper-free {@link dev.conditions.Condition} onto the boost
+ * Adapts a Paper-free {@link dev.mintychochip.databag.Condition} onto the boost
  * {@link Condition} interface by reading {@link BoostContext#conditions()}.
  */
-public record SnapshotCondition(dev.conditions.Condition delegate) implements Condition {
+public record SnapshotCondition(dev.mintychochip.databag.Condition delegate) implements Condition {
 
-  public static Condition wrap(dev.conditions.Condition delegate) {
+  public static Condition wrap(dev.mintychochip.databag.Condition delegate) {
     return new SnapshotCondition(delegate);
   }
 
@@ -18,7 +18,7 @@ public record SnapshotCondition(dev.conditions.Condition delegate) implements Co
    * Unwraps a boost condition to the snapshot graph, wrapping lambdas as
    * snapshot predicates.
    */
-  public static dev.conditions.Condition unwrap(Condition condition) {
+  public static dev.mintychochip.databag.Condition unwrap(Condition condition) {
     if (condition instanceof SnapshotCondition snapshot) {
       return snapshot.delegate();
     }

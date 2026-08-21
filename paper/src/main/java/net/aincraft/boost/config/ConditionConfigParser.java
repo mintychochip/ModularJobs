@@ -33,7 +33,7 @@ public final class ConditionConfigParser {
    */
   public Condition parse(ConditionConfig config) {
     return switch (config.type().toLowerCase()) {
-      case "always" -> SnapshotCondition.wrap(dev.conditions.Conditions.always());
+      case "always" -> SnapshotCondition.wrap(dev.mintychochip.databag.Conditions.always());
       case "biome" -> parseBiome(config);
       case "world" -> parseWorld(config);
       case "sneaking" -> parseSneaking(config);
@@ -60,7 +60,7 @@ public final class ConditionConfigParser {
 
   /**
    * Parse world by name or key string. Does not require the world to exist at parse time;
-   * matching is deferred to evaluation ({@link net.aincraft.boost.conditions.WorldConditionImpl}).
+   * matching is deferred to snapshot evaluation.
    */
   private Condition parseWorld(ConditionConfig config) {
     if (!(config.value() instanceof String worldName) || worldName.isBlank()) {

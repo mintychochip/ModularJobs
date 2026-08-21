@@ -10,7 +10,7 @@ import java.util.List;
 import net.aincraft.boost.BoostFactoryImpl;
 import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;
-import net.aincraft.boost.conditions.AlwaysTrueConditionImpl;
+import net.aincraft.boost.conditions.SnapshotCondition;
 import net.aincraft.boost.config.BoostSourceConfig.BoostConfig;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
 import net.aincraft.boost.config.BoostSourceConfig.RuleConfig;
@@ -34,7 +34,9 @@ class BoostSourceConfigSerializerTest {
 
   @Test
   void serializeAlwaysAndMultiplicative() {
-    Rule rule = new Rule(AlwaysTrueConditionImpl.INSTANCE, 10,
+    Rule rule = new Rule(
+        SnapshotCondition.wrap(dev.mintychochip.databag.Conditions.always()),
+        10,
         new MultiplicativeBoostImpl(BigDecimal.valueOf(1.25)));
     BoostSource source = new RuledBoostSourceImpl(
         List.of(rule), Key.key("modularjobs", "test"), "test desc");
@@ -68,8 +70,7 @@ class BoostSourceConfigSerializerTest {
     assertEquals(1, ruled.rules().size());
     Rule reparsedRule = ruled.rules().getFirst();
     assertEquals(100, reparsedRule.priority());
-    assertInstanceOf(net.aincraft.boost.conditions.SnapshotCondition.class,
-        reparsedRule.condition());
+    assertInstanceOf(SnapshotCondition.class, reparsedRule.condition());
   }
 
   @Test

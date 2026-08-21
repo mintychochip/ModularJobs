@@ -1,6 +1,6 @@
 package net.aincraft.boost;
 
-import dev.databag.DataHandler;
+import dev.mintychochip.databag.DataHandler;
 import net.kyori.adventure.key.Key;
 
 /**

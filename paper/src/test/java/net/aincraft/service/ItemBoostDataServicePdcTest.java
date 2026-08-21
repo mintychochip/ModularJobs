@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import dev.conditions.gson.GsonConditionSerializer;
-import dev.conditions.paper.PersistentBags;
-import dev.databag.DataBag;
-import dev.databag.FormattedBytes;
+import dev.mintychochip.databag.gson.GsonConditionSerializer;
+import dev.mintychochip.databag.paper.PersistentBags;
+import dev.mintychochip.databag.DataBag;
+import dev.mintychochip.databag.FormattedBytes;
 import net.aincraft.boost.BoostPayloadHandler;
 import java.math.BigDecimal;
 import java.util.BitSet;

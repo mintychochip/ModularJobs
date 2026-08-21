@@ -37,19 +37,6 @@ dependencyResolutionManagement {
                 password = System.getenv("GITHUB_TOKEN") ?: ""
             }
         }
-        // conditions library (./gradlew -p ../conditions publishAllPublicationsToLocalBuildRepoRepository)
-        maven {
-            name = "conditionsLocal"
-            url = uri(rootDir.resolve("../conditions/build/maven-repo"))
-        }
-        maven {
-            name = "conditionsGitHub"
-            url = uri("https://maven.pkg.github.com/aincraft-org/conditions")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR") ?: ""
-                password = System.getenv("GITHUB_TOKEN") ?: ""
-            }
-        }
         mavenLocal()
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")

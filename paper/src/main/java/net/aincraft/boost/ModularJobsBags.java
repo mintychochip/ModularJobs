@@ -1,7 +1,7 @@
 package net.aincraft.boost;
 
-import dev.databag.DataBag;
-import dev.databag.DataHandlers;
+import dev.mintychochip.databag.DataBag;
+import dev.mintychochip.databag.DataHandlers;
 import net.kyori.adventure.key.Key;
 import org.jetbrains.annotations.Nullable;
 

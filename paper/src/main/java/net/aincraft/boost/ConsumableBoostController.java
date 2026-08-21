@@ -6,7 +6,6 @@ import net.aincraft.container.boost.BoostData.SerializableBoostData.ConsumableBo
 import net.aincraft.service.ItemBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService;
 import net.aincraft.container.boost.TimedBoostDataService.Target.PlayerTarget;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -38,7 +37,7 @@ public class ConsumableBoostController implements Listener {
 
   /** Applies consumable boost data carried by the consumed item to the consuming player. */
   @EventHandler
-  private void onConsumeItem(final PlayerItemConsumeEvent event) {
+  public void onConsumeItem(final PlayerItemConsumeEvent event) {
     ItemStack itemStack = event.getItem();
     Optional<SerializableBoostData> data = boostDataService.getData(itemStack);
     if (data.isEmpty()) {

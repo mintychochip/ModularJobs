@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * JSON persistence document for {@code SerializableBoostData}. Rule
- * {@code conditions} are opaque bytes from {@link dev.conditions.ConditionSerializer}.
+ * {@code conditions} are opaque bytes from {@link dev.mintychochip.databag.ConditionSerializer}.
  */
 public record BoostDataDocument(
     String kind,

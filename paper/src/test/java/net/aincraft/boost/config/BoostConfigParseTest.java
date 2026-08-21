@@ -13,13 +13,12 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import net.aincraft.boost.BoostFactoryImpl;
 import net.aincraft.boost.MultiplicativeBoostImpl;
 import net.aincraft.boost.RuledBoostSourceImpl;
 import net.aincraft.boost.conditions.SnapshotCondition;
-import dev.conditions.SneakingCondition;
-import dev.conditions.WorldCondition;
+import dev.mintychochip.databag.SneakingCondition;
+import dev.mintychochip.databag.WorldCondition;
 import net.aincraft.boost.config.BoostSourceConfig.BoostConfig;
 import net.aincraft.boost.config.BoostSourceConfig.ConditionConfig;
 import net.aincraft.boost.config.BoostSourceConfig.RuleConfig;
@@ -27,7 +26,6 @@ import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.Condition;
 import net.aincraft.container.boost.RuledBoostSource;
-import net.aincraft.container.boost.RuledBoostSource.Rule;
 import net.kyori.adventure.key.Key;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,7 +141,7 @@ class BoostConfigParseTest {
 
   @Test
   void loadDefaultJsonResourceParsesWithoutLiveWorlds() throws Exception {
-    try (InputStream in = getClass().getClassLoader()
+    try (InputStream in = Thread.currentThread().getContextClassLoader()
         .getResourceAsStream("boost_sources_default.json")) {
       assertNotNull(in, "boost_sources_default.json must be on test classpath");
       Gson gson = new Gson();

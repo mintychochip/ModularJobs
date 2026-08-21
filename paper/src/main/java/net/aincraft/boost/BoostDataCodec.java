@@ -11,7 +11,7 @@ import net.aincraft.common.boost.BoostDataDocument;
 import net.aincraft.common.boost.BoostDataDocument.BoostDocument;
 import net.aincraft.common.boost.BoostDataDocument.RuleDocument;
 import net.aincraft.common.boost.BoostDataDocument.SourceDocument;
-import dev.conditions.ConditionSerializer;
+import dev.mintychochip.databag.ConditionSerializer;
 import net.aincraft.container.Boost;
 import net.aincraft.container.BoostSource;
 import net.aincraft.container.boost.BoostData.SerializableBoostData;
