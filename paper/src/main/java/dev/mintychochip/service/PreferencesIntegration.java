@@ -1,8 +1,8 @@
 package dev.mintychochip.service;
 
 import dev.mintychochip.preferences.api.Preference;
-import dev.mintychochip.preferences.api.codec.PreferenceCodec;
 import dev.mintychochip.preferences.api.PreferencesService;
+import dev.mintychochip.preferences.api.codec.PreferenceCodec;
 import java.util.Objects;
 import java.util.logging.Level;
 import net.kyori.adventure.bossbar.BossBar.Color;
@@ -15,9 +15,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * Soft integration with the external Preferences plugin.
  *
- * <p>When the Preferences Bukkit service is registered, ModularJobs registers its per-player
- * XP boss bar color preference there. When the plugin or service is absent, yields a null
- * preference so {@link dev.mintychochip.payable.ExperienceBarColorProvider} falls back to green.
+ * <p>When the Preferences Bukkit service is registered, ModularJobs registers its per-player XP
+ * boss bar color preference there. When the plugin or service is absent, yields a null preference
+ * so {@link dev.mintychochip.payable.ExperienceBarColorProvider} falls back to green.
  */
 @NullMarked
 public final class PreferencesIntegration {
@@ -29,7 +29,8 @@ public final class PreferencesIntegration {
   /** Result of wiring: optional preference handle plus optional disable-path cleanup. */
   public record Wiring(
       @Nullable Preference<Color> experienceBarColor, @Nullable Runnable onDisable) {
-    // Both fields are intentionally nullable: the absent-service paths construct Wiring(null, null).
+    // Both fields are intentionally nullable: the absent-service paths construct
+    // Wiring(null, null).
   }
 
   /**
@@ -44,8 +45,9 @@ public final class PreferencesIntegration {
     // an enabled "Preferences" plugin fixture.
     PreferencesService external = Bukkit.getServicesManager().load(PreferencesService.class);
     if (external == null) {
-      plugin.getSLF4JLogger().info(
-          "Preferences plugin not present; XP boss bar color stays default green");
+      plugin
+          .getSLF4JLogger()
+          .info("Preferences plugin not present; XP boss bar color stays default green");
       return new Wiring(null, null);
     }
 
@@ -60,12 +62,17 @@ public final class PreferencesIntegration {
                       .description(Component.text("Color of your job experience boss bar"))
                       .codec(PreferenceCodec.enumerated(Color.class, c -> Component.text(c.name())))
                       .defaultValue(Color.GREEN));
-      plugin.getSLF4JLogger().info(
-          "Registered ModularJobs XP boss bar color preference with Preferences plugin");
+      plugin
+          .getSLF4JLogger()
+          .info("Registered ModularJobs XP boss bar color preference with Preferences plugin");
       return new Wiring(color, () -> external.unregisterPlugin(plugin));
-    } catch (RuntimeException e) {
-      plugin.getLogger().log(
-          Level.WARNING, "Failed to register XP bar color preference; falling back to green", e);
+    } catch (IllegalArgumentException | IllegalStateException e) {
+      plugin
+          .getLogger()
+          .log(
+              Level.WARNING,
+              "Failed to register XP bar color preference; falling back to green",
+              e);
       return new Wiring(null, null);
     }
   }

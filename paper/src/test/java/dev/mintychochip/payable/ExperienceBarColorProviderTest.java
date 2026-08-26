@@ -11,7 +11,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockbukkit.mockbukkit.MockBukkit;
 
 class ExperienceBarColorProviderTest {
 
@@ -45,7 +44,7 @@ class ExperienceBarColorProviderTest {
     assertEquals(Color.GREEN, provider.getColor(player));
   }
 
-  /** Minimal Preference<Color> stub — only get(Player) is exercised. */
+  /** Minimal color preference stub. Only get(Player) is exercised. */
   private static final class StubPreference implements Preference<Color> {
     private final Color value;
 

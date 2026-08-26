@@ -42,8 +42,7 @@ class PluginYmlProductionReadinessTest {
               .anyMatch(s -> s.equalsIgnoreCase("PlaceholderAPI")),
           "softdepend must list PlaceholderAPI");
       assertTrue(
-          yml.getStringList("softdepend").stream()
-              .anyMatch(s -> s.equalsIgnoreCase("Preferences")),
+          yml.getStringList("softdepend").stream().anyMatch(s -> s.equalsIgnoreCase("Preferences")),
           "softdepend must list Preferences");
 
       assertNotNull(yml.getConfigurationSection("permissions.modularjobs.admin"));

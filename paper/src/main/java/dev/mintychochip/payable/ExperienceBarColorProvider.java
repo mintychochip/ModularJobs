@@ -7,8 +7,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Resolves the XP boss bar color from the optional per-player Preferences-backed preference.
- * Falls back to green when the preference or its service is unavailable.
+ * Resolves the XP boss bar color from the optional per-player Preferences-backed preference. Falls
+ * back to green when the preference or its service is unavailable.
  */
 @NullMarked
 final class ExperienceBarColorProvider {

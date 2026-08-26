@@ -89,7 +89,7 @@ class PreferencesIntegrationTest {
     }
   }
 
-  /** Minimal Preference<T> handle backed by a builder. */
+  /** Minimal preference handle. Backed by a builder. */
   private static final class StubPreference<T> implements Preference<T> {
     private final PreferenceBuilder<T> builder;
 
