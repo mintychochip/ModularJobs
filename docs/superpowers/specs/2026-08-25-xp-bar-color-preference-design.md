@@ -53,12 +53,18 @@ step, pointed at the new repo:
 
 1. Pinned checkout of `aincraft-org/preferences` at SHA
    `c18236c1fa844eb0ae26824e524ae4605a9b41df` into `preferences/`.
-2. `./gradlew :preferences-api:publishToMavenLocal -Dmaven.repo.local=${{ runner.temp }}/m2`.
+2. Publish the API module at the pinned `0.2.0` version:
+   `./gradlew :preferences-api:publishToMavenLocal -PbuildVersion=0.2.0
+   -Dmaven.repo.local=${{ runner.temp }}/m2`. The preferences repo's version
+   defaults to a dated CalVer `-SNAPSHOT`; `-PbuildVersion` forces the exact
+   coordinate ModularJobs depends on. Verified to produce
+   `dev.mintychochip:preferences-api:0.2.0` in the isolated repo.
 3. The `java` CI job's `clean check` and `shadowJar` already pass
    `-Dmaven.repo.local=${{ runner.temp }}/m2`, so the artifact resolves there.
 
 Locally, the sibling checkout (`../preferences`) publishes to `mavenLocal()`
-(already a repository in `settings.gradle.kts`).
+(already a repository in `settings.gradle.kts`):
+`./gradlew -p ../preferences :preferences-api:publishToMavenLocal -PbuildVersion=0.2.0`.
 
 ### Registration
 
@@ -95,8 +101,9 @@ bar render. No ModularJobs command needed.
 
 - Update the stale "Checkout Preferences API dependency" step: repo
   `aincraft-org/preferences`, ref `c18236c1fa844eb0ae26824e524ae4605a9b41df`.
-  The publish command (`:preferences-api:publishToMavenLocal` with isolated
-  `-Dmaven.repo.local`) is already correct.
+  Change the publish command from the old `:api:publishToMavenLocal` to
+  `:preferences-api:publishToMavenLocal -PbuildVersion=0.2.0` with the isolated
+  `-Dmaven.repo.local`.
 - Same update in `.github/workflows/nightly.yml`.
 
 ## Testing
