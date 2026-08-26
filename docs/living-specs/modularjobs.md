@@ -83,8 +83,11 @@ Shipped platform surface still “active capability” for agents:
 ### Current notes
 
 The general Paper distribution hardening is landed: Mint is an optional
-reflective economy adapter with a blackhole default, Preferences is local-only,
-the editor is opt-in, and Craftux remains the explicitly deferred UI dependency.
+reflective economy adapter with a blackhole default, the editor is opt-in, and
+Craftux remains the explicitly deferred UI dependency. The external Preferences
+plugin is an optional soft-depend that powers the per-player XP boss bar color;
+without it the bar stays green and the local preferences service handles
+entries-per-page/gui-mode.
 
 Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.md`.
 

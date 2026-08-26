@@ -73,11 +73,12 @@ startup behavior.
 - [x] Default blackhole fallback and explicit fail policy
 - [x] Local preferences service has no external Preferences dependency
 - [x] Factory, fallback, and Mint-absence tests
+- [x] Per-player XP boss bar color preference (external Preferences plugin, green fallback)
 
 ### Current notes
 
-Mint failures return false and are logged by the adapter. The payment pipeline
-does not retry after an unknown outcome.
+The XP boss bar color is a per-player preference registered with the external
+Preferences plugin when present; without it the bar stays default green.
 
 ## Next
 
