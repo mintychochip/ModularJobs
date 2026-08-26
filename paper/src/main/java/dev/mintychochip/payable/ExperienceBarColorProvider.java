@@ -23,7 +23,7 @@ final class ExperienceBarColorProvider {
     if (preference == null) {
       return Color.GREEN;
     }
-    Color value = preference.get(player);
+    @Nullable Color value = preference.get(player);
     return value != null ? value : Color.GREEN;
   }
 }
