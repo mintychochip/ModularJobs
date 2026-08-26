@@ -115,6 +115,9 @@ economy:
 - `required: true` remains a compatibility shorthand for `fail` when no explicit
   `missing-provider` is set.
 
+Mint deposit failures return false and are logged by the adapter.
+The payment pipeline does not retry after an unknown outcome.
+
 ### Permissions
 
 | Node | Default | Purpose |

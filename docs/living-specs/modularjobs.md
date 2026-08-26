@@ -89,6 +89,8 @@ plugin is an optional soft-depend that powers the per-player XP boss bar color;
 without it the bar stays green and the local preferences service handles
 entries-per-page/gui-mode.
 
+Mint deposit failures return false and are logged by the adapter.
+The payment pipeline does not retry after an unknown outcome.
 Related one-shot docs: `docs/superpowers/specs/2026-08-06-module-layout-design.md`.
 
 ## Next

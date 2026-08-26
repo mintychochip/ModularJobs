@@ -77,6 +77,8 @@ startup behavior.
 
 ### Current notes
 
+Mint deposit failures return false and are logged by the adapter.
+The payment pipeline does not retry after an unknown outcome.
 The XP boss bar color is a per-player preference registered with the external
 Preferences plugin when present; without it the bar stays default green.
 
