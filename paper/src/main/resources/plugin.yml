@@ -10,6 +10,8 @@ softdepend:
   - Bolt
   - LWC
   - Choco
+  - Preferences
+
 permissions:
   modularjobs.admin:
     description: Admin commands for ModularJobs (level, experience, boost, editor, applyedits)

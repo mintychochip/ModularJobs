@@ -29,6 +29,9 @@ dependencies {
     compileOnly(libs.paper.api)
     // Mint ledger API (soft-depend; Mint plugin ships it at runtime)
     compileOnly(libs.mint.api)
+    // External Preferences API (soft-depend; Preferences plugin ships it at runtime)
+    compileOnly(libs.preferences.api)
+
     compileOnly(libs.mcmmo) {
         exclude(group = "com.sk89q.worldguard")
     }

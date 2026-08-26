@@ -38,6 +38,9 @@ mint-api = "1.0.0"
 # DataBag primitive storage + condition graph (mintychochip/databag; sibling
 # ../databag/build/maven-repo)
 databag = "0.0.0-SNAPSHOT"
+# External Preferences plugin API (aincraft-org/preferences; soft-depend, provided at runtime)
+preferences-api = "0.2.0"
+
 
 mockbukkit = "26.2.0-mj"
 mysql = "9.4.0"
@@ -75,6 +78,9 @@ mint-api = { module = "dev.jlo.mint:mint-api", version.ref = "mint-api" }
 databag-common = { module = "dev.mintychochip.databag:databag-common", version.ref = "databag" }
 databag-api = { module = "dev.mintychochip.databag:databag-api", version.ref = "databag" }
 databag-paper = { module = "dev.mintychochip.databag:databag-paper", version.ref = "databag" }
+# External Preferences API (soft-depend; Preferences plugin ships it at runtime)
+preferences-api = { module = "dev.mintychochip:preferences-api", version.ref = "preferences-api" }
+
 
 mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v26.2", version.ref = "mockbukkit" }
 mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
