@@ -31,6 +31,7 @@ dependencies {
     compileOnly(libs.mint.api)
     // External Preferences API (soft-depend; Preferences plugin ships it at runtime)
     compileOnly(libs.preferences.api)
+    testImplementation(libs.preferences.api)
 
     compileOnly(libs.mcmmo) {
         exclude(group = "com.sk89q.worldguard")
