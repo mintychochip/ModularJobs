@@ -45,7 +45,10 @@ final class YamlFileBackedConfigurationImpl {
     YamlConfiguration config = impl.config;
     return (dev.mintychochip.config.YamlConfiguration)
         Proxy.newProxyInstance(
-            Thread.currentThread().getContextClassLoader(),
+            // The interface's defining loader, not the thread context loader: the CCL may point
+            // at another plugin's classloader during enable (e.g. soft-depend plugins), which
+            // fails Proxy's interface-visibility check.
+            dev.mintychochip.config.YamlConfiguration.class.getClassLoader(),
             new Class[] {dev.mintychochip.config.YamlConfiguration.class},
             (proxy, method, args) -> {
               if ("getPlugin".equals(method.getName())) {
