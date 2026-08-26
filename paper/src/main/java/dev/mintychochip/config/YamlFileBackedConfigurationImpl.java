@@ -37,6 +37,7 @@ final class YamlFileBackedConfigurationImpl {
   }
 
   /** Creates a proxy exposing Bukkit configuration access plus reload/save operations. */
+  @SuppressWarnings("PMD.UseProperClassLoader")
   static dev.mintychochip.config.YamlConfiguration create(Plugin plugin, String path) {
     String[] split = path.split("\\.");
     Preconditions.checkArgument(split.length >= 2);
