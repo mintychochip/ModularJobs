@@ -13,8 +13,8 @@ MySQL-backed REST API (Rust) and React secure session editor.
 | `web` | Docs + session-editor + rest-api |
 | `scripts/` | Out-of-band ops helpers (schema apply) |
 
-Build plugin: `./gradlew :paper:build` (shadowJar → `paper/build/libs/paper-<version>-all.jar`, e.g. `paper-26.8.11.1-all.jar`).
-Unit tests: `./gradlew :api:test :common:test :paper:test`.  
+Build plugin: `./gradlew :modularjobs-paper:build` (shadowJar → `paper/build/libs/modularjobs-paper-<version>-all.jar`, e.g. `modularjobs-paper-26.8.11.1-all.jar`).
+Unit tests: `./gradlew :modularjobs-api:test :modularjobs-common:test :modularjobs-paper:test`.  
 Static analysis (Error Prone on compile; Spotless, Checkstyle Google Checks, PMD, SpotBugs on `check`):  
 `./gradlew clean check` is the fail-closed CI gate — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
 Configs: `config/checkstyle/`, `config/pmd/`, `config/spotbugs/`.  

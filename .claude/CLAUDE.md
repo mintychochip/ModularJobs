@@ -84,11 +84,11 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - Also: `web/rest-api` (Rust) + `web/session-editor` (React) for secure editor sessions
 
 ## Development
-- Build: `./gradlew :paper:build` → shadow jar at `paper/build/libs/paper-all.jar`
-- Tests: `./gradlew :api:test :common:test :paper:test`
+- Build: `./gradlew :modularjobs-paper:build` → shadow jar at `paper/build/libs/modularjobs-paper-<version>-all.jar`
+- Tests: `./gradlew :modularjobs-api:test :modularjobs-common:test :modularjobs-paper:test`
 - Session API: `cd web/rest-api && cargo test`
 - Session editor: `cd web/session-editor && npm test && npm run build`
-- Test server: `./gradlew :paper:runServer` (when configured)
+- Test server: `./gradlew :modularjobs-paper:runServer` (when configured)
 - Server data in `paper/run/` (when runServer used)
 
 Rules:

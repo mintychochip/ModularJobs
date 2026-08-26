@@ -19,13 +19,13 @@ Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 ## Build
 
 ```bash
-./gradlew :paper:build
-# artifact: paper/build/libs/paper-26.8.11.1-all.jar
+./gradlew :modularjobs-paper:build
+# artifact: paper/build/libs/modularjobs-paper-26.8.11.1-all.jar
 ```
 Unit tests:
 
 ```bash
-./gradlew :api:test :common:test :paper:test
+./gradlew :modularjobs-api:test :modularjobs-common:test :modularjobs-paper:test
 ```
 
 Session stack:

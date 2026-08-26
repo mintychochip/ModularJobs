@@ -22,13 +22,44 @@ class CiTemplateHookupTest {
     assertTrue(
         text.contains("name: API build + publish artifact"),
         "missing inline api-build job in " + workflow);
-    assertTrue(text.contains(":api:test :api:build"), "missing api gradle tasks in " + workflow);
+    assertTrue(
+        text.contains(":modularjobs-api:test :modularjobs-api:build"),
+        "missing prefixed api gradle tasks in " + workflow);
+    assertFalse(
+        text.contains(":api:test :api:build"),
+        "unprefixed :api: task paths must not remain in " + workflow);
+    assertTrue(
+        text.contains(":modularjobs-paper:shadowJar"),
+        "missing prefixed paper shadowJar in " + workflow);
+    assertFalse(
+        text.contains("./gradlew :paper:shadowJar"),
+        "unprefixed :paper:shadowJar must not remain in " + workflow);
     assertTrue(text.contains("api/build/libs/*.jar"), "missing api jar upload glob in " + workflow);
     assertFalse(
         text.contains("aincraft-org/ci-template/.github/workflows/paper.yml@"),
         "reusable workflow must not be referenced from "
             + workflow
             + " (aincraft-org/ci-template is private and unresolvable from a public repo)");
+  }
+
+  @Test
+  void gradleIncludesPrefixedJavaModulesAndNotWeb() throws IOException {
+    Path root = Path.of(requiredProperty("project.root"));
+    String settings = Files.readString(root.resolve("settings.gradle.kts"));
+    assertTrue(settings.contains("\"modularjobs-api\""), settings);
+    assertTrue(settings.contains("\"modularjobs-common\""), settings);
+    assertTrue(settings.contains("\"modularjobs-paper\""), settings);
+    assertFalse(
+        settings.contains("include(\"api\", \"common\", \"paper\")"),
+        "unprefixed include() must not remain");
+    assertFalse(settings.contains("include(\"web\")"), "web must not be a Gradle included project");
+    String hooks = Files.readString(root.resolve(".githooks/pre-commit"));
+    assertTrue(
+        hooks.contains(":modularjobs-api:test :modularjobs-common:test :modularjobs-paper:test"),
+        "pre-commit must run prefixed module tests");
+    assertFalse(
+        hooks.contains(":api:test :common:test :paper:test"),
+        "unprefixed module test paths must not remain in pre-commit");
   }
 
   @Test
@@ -78,6 +109,12 @@ class CiTemplateHookupTest {
     assertTrue(text.contains("cron: '0 4 * * *'"), "nightly must schedule at 04:00 UTC");
     assertTrue(text.contains("workflow_dispatch"), "nightly must be manually dispatchable");
     assertTrue(text.contains("gh release create nightly"), "must replace rolling nightly tag");
+    assertTrue(
+        text.contains(":modularjobs-paper:shadowJar"),
+        "nightly must build the prefixed paper shadow jar");
+    assertFalse(
+        text.contains("./gradlew :paper:shadowJar"),
+        "unprefixed :paper:shadowJar must not remain in nightly.yml");
     assertTrue(text.contains("paper/build/libs/*-all.jar"), "must publish paper shadow jar");
     assertTrue(isScheduleOrManualOnly(text), "nightly must not run on push/PR/tag");
   }
@@ -105,7 +142,7 @@ class CiTemplateHookupTest {
             root.resolve("gradlew").toAbsolutePath().toString(),
             "--no-daemon",
             "-q",
-            ":api:generatePomFileForMavenPublication",
+            ":modularjobs-api:generatePomFileForMavenPublication",
             "-PreleaseVersion=" + RELEASE_VERSION);
     builder.directory(root.toFile());
     builder.redirectErrorStream(true);
@@ -115,6 +152,8 @@ class CiTemplateHookupTest {
     assertEquals(0, process.exitValue(), output);
     String pom = Files.readString(Path.of(requiredProperty("ci.pom")));
     assertTrue(pom.contains("<version>" + RELEASE_VERSION + "</version>"), pom);
+    assertTrue(pom.contains("<artifactId>modularjobs-api</artifactId>"), pom);
+    assertFalse(pom.contains("modularjobs-modularjobs-api"), pom);
     String build = Files.readString(root.resolve("build.gradle.kts"));
     assertTrue(build.contains("https://maven.pkg.github.com/aincraft-org/modularjobs"), build);
     assertTrue(build.contains("GITHUB_ACTOR"), build);

@@ -155,7 +155,7 @@ jobs:
         run: ./gradlew clean check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
 
       - name: Shadow jar
-        run: ./gradlew :paper:shadowJar -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
+        run: ./gradlew :modularjobs-paper:shadowJar -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
 
       - name: Replace rolling nightly release
         env:

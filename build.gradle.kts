@@ -37,7 +37,7 @@ subprojects {
     apply(plugin = "com.diffplug.spotless")
     apply(plugin = "net.ltgt.errorprone")
 
-    val moduleName = name
+    val moduleName = name.removePrefix("modularjobs-")
     val javaVersion = 25
     configure<JavaPluginExtension> {
         toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))

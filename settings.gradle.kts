@@ -1,7 +1,10 @@
 
 rootProject.name = "jobs2"
 
-include("api", "common", "paper")
+include("modularjobs-api", "modularjobs-common", "modularjobs-paper")
+project(":modularjobs-api").projectDir = file("api")
+project(":modularjobs-common").projectDir = file("common")
+project(":modularjobs-paper").projectDir = file("paper")
 
 
 

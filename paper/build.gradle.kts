@@ -5,8 +5,8 @@ plugins {
 
 dependencies {
     implementation(libs.guava)
-    implementation(project(":api"))
-    implementation(project(":common"))
+    implementation(project(":modularjobs-api"))
+    implementation(project(":modularjobs-common"))
     implementation(libs.databag.api)
     implementation(libs.databag.common)
     implementation(libs.databag.paper)

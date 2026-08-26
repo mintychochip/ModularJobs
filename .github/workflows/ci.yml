@@ -57,7 +57,7 @@ jobs:
           ./gradlew publishAllPublicationsToLocalBuildRepoRepository --console=plain --no-daemon
 
       - name: Test and build API
-        run: ./gradlew --no-daemon :api:test :api:build
+        run: ./gradlew --no-daemon :modularjobs-api:test :modularjobs-api:build
 
       - name: Upload API jar
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -214,7 +214,7 @@ jobs:
         run: ./gradlew clean check -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
 
       - name: Shadow jar
-        run: ./gradlew :paper:shadowJar -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
+        run: ./gradlew :modularjobs-paper:shadowJar -Dmaven.repo.local=${{ runner.temp }}/m2 --console=plain --no-daemon
 
       - name: Upload paper shadow jar
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

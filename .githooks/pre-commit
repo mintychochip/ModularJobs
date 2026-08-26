@@ -64,7 +64,7 @@ if [[ "${need_java}" -eq 1 ]]; then
   # Full quality (Checkstyle/PMD/SpotBugs) stays report-only in CI check.
   run ./gradlew --console=plain \
     compileJava compileTestJava \
-    :api:test :common:test :paper:test
+    :modularjobs-api:test :modularjobs-common:test :modularjobs-paper:test
 fi
 
 if [[ "${need_rust}" -eq 1 ]]; then
