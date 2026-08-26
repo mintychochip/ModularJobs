@@ -11,16 +11,16 @@ Extensible job progression plugin for PaperMC (**26.2** / Java **25**).
 
 | Path | Role |
 |------|------|
-| `api` | Pure public contracts (no Paper) |
-| `common` | Shared DTOs (editor payload, …) |
-| `paper` | Paper plugin implementation (shadow jar) |
+| `modularjobs-api` | Pure public contracts (no Paper) |
+| `modularjobs-common` | Shared DTOs (editor payload, …) |
+| `modularjobs-paper` | Paper plugin implementation (shadow jar) |
 | `web` | Docs + session-editor + rest-api |
 
 ## Build
 
 ```bash
 ./gradlew :modularjobs-paper:build
-# artifact: paper/build/libs/modularjobs-paper-26.8.11.1-all.jar
+# artifact: modularjobs-paper/build/libs/modularjobs-paper-26.8.11.1-all.jar
 ```
 Unit tests:
 
@@ -67,7 +67,7 @@ ModularJobs uses **MySQL 8 only** (no SQLite/PostgreSQL/MariaDB).
 ```bash
 export DATABASE_URL=mysql://user:pass@host:3306/modularjobs
 ./scripts/apply-mysql-schema.sh
-# or: mysql "$DATABASE_URL" < paper/src/main/resources/sql/mysql.sql
+# or: mysql "$DATABASE_URL" < modularjobs-paper/src/main/resources/sql/mysql.sql
 ```
 
 2. Configure `database.yml` (sections with the same jdbc-url + username share one pool):

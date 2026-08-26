@@ -9,7 +9,7 @@ reviewed schema; backups and upgrades stay outside `onEnable`.
 
 ## Boundaries
 
-- DDL source of truth: `paper/src/main/resources/sql/mysql.sql`
+- DDL source of truth: `modularjobs-paper/src/main/resources/sql/mysql.sql`
 - Apply path: `./scripts/apply-mysql-schema.sh`
 - HikariCP pools keyed by `jdbc-url` + `username` (`database.yml`)
 - Repository pattern + domain mappers for progression, tasks, boosts, upgrades

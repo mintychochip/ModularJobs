@@ -7,11 +7,11 @@
 #   ./scripts/apply-mysql-schema.sh mysql://user:pass@host:3306/db
 #
 # Schema source of truth:
-#   paper/src/main/resources/sql/mysql.sql
+#   modularjobs-paper/src/main/resources/sql/mysql.sql
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SCHEMA="${ROOT}/paper/src/main/resources/sql/mysql.sql"
+SCHEMA="${ROOT}/modularjobs-paper/src/main/resources/sql/mysql.sql"
 
 if [[ ! -f "${SCHEMA}" ]]; then
   echo "error: schema file not found: ${SCHEMA}" >&2

@@ -89,7 +89,7 @@ public final class SchemaPresence {
           + ". Missing tables: "
           + missing
           + ". The plugin does not create tables. Apply "
-          + "paper/src/main/resources/sql/mysql.sql out-of-band "
+          + "modularjobs-paper/src/main/resources/sql/mysql.sql out-of-band "
           + "(see scripts/apply-mysql-schema.sh).";
     }
   }

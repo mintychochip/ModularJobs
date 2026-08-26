@@ -6,15 +6,15 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - **Type**: PaperMC/Spigot plugin for Minecraft 1.21.11 / Paper 26.2
 - **Language**: Java 21 / 25 toolchain
 - **Build System**: Gradle (Kotlin DSL)
-- **Structure**: Multi-module project (`api`, `common`, `paper`, `web`)
+- **Structure**: Multi-module project (`modularjobs-api`, `modularjobs-common`, `modularjobs-paper`, `web`)
 
 ## Modules
 
 | Path | Role |
 |------|------|
-| `api` | Pure public contracts (no Paper) |
-| `common` | Shared DTOs (editor payload, …) |
-| `paper` | Paper plugin implementation (shadow jar) |
+| `modularjobs-api` | Pure public contracts (no Paper) |
+| `modularjobs-common` | Shared DTOs (editor payload, …) |
+| `modularjobs-paper` | Paper plugin implementation (shadow jar) |
 | `web` | Docs + session-editor + rest-api |
 
 ## Core Features
@@ -76,20 +76,20 @@ This codebase is for ModularJobs - an extensible job progression system plugin f
 - **Service Layer**: Business logic separation
 
 ## Database Configuration
-- Configured in `database.yml` (plugin data folder; template under `paper/src/main/resources/`)
+- Configured in `database.yml` (plugin data folder; template under `modularjobs-paper/src/main/resources/`)
  - **MySQL 8 only** — connection pooling with HikariCP
  - **Schema ownership:** MySQL is **connect-only** — apply
-   `paper/src/main/resources/sql/mysql.sql` via `scripts/apply-mysql-schema.sh`
+   `modularjobs-paper/src/main/resources/sql/mysql.sql` via `scripts/apply-mysql-schema.sh`
    (never CREATE from the game/API process). See `docs/database-schema.md` and root `AGENTS.md`.
 - Also: `web/rest-api` (Rust) + `web/session-editor` (React) for secure editor sessions
 
 ## Development
-- Build: `./gradlew :modularjobs-paper:build` → shadow jar at `paper/build/libs/modularjobs-paper-<version>-all.jar`
+- Build: `./gradlew :modularjobs-paper:build` → shadow jar at `modularjobs-paper/build/libs/modularjobs-paper-<version>-all.jar`
 - Tests: `./gradlew :modularjobs-api:test :modularjobs-common:test :modularjobs-paper:test`
 - Session API: `cd web/rest-api && cargo test`
 - Session editor: `cd web/session-editor && npm test && npm run build`
 - Test server: `./gradlew :modularjobs-paper:runServer` (when configured)
-- Server data in `paper/run/` (when runServer used)
+- Server data in `modularjobs-paper/run/` (when runServer used)
 
 Rules:
 

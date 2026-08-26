@@ -18,7 +18,7 @@ This process **never creates tables**. Provision the shared database once:
 ```bash
 ./scripts/apply-mysql-schema.sh
 # or
-mysql "$DATABASE_URL" < paper/src/main/resources/sql/mysql.sql
+mysql "$DATABASE_URL" < modularjobs-paper/src/main/resources/sql/mysql.sql
 ```
 
 See `docs/database-schema.md`. Paper and this REST process must use the same

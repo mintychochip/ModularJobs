@@ -103,7 +103,8 @@ class BootstrapLifecycleTest {
 
   private static Path locate(String relativeUnderAincraft) {
     Path root = Path.of("").toAbsolutePath();
-    Path candidate = root.resolve("paper/src/main/java/dev/mintychochip/" + relativeUnderAincraft);
+    Path candidate =
+        root.resolve("modularjobs-paper/src/main/java/dev/mintychochip/" + relativeUnderAincraft);
     if (Files.isRegularFile(candidate)) {
       return candidate;
     }

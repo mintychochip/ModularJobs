@@ -162,7 +162,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete nightly --cleanup-tag --yes || true
-          gh release create nightly paper/build/libs/*-all.jar \
+          gh release create nightly modularjobs-paper/build/libs/*-all.jar \
             --prerelease \
             --title "Nightly $(date -u +%F)" \
             --notes "Automated nightly build from ${GITHUB_SHA}."

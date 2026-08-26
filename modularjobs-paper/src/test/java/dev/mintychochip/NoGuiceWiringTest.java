@@ -142,7 +142,7 @@ class NoGuiceWiringTest {
   @Test
   void buildFilesDoNotDeclareGuice() throws IOException {
     Path catalog = locateRepoRoot().resolve("gradle/libs.versions.toml");
-    Path coreBuild = locateRepoRoot().resolve("paper/build.gradle.kts");
+    Path coreBuild = locateRepoRoot().resolve("modularjobs-paper/build.gradle.kts");
     assertTrue(Files.isRegularFile(catalog));
     assertTrue(Files.isRegularFile(coreBuild));
     assertFalse(Files.readString(catalog).contains("guice"));
@@ -158,11 +158,11 @@ class NoGuiceWiringTest {
     if (Files.isDirectory(fromModule)) {
       return fromModule.toAbsolutePath().normalize();
     }
-    Path fromRoot = Path.of("paper/src/main/java");
+    Path fromRoot = Path.of("modularjobs-paper/src/main/java");
     if (Files.isDirectory(fromRoot)) {
       return fromRoot.toAbsolutePath().normalize();
     }
-    fail("Could not locate paper/src/main/java from " + Path.of(".").toAbsolutePath());
+    fail("Could not locate modularjobs-paper/src/main/java from " + Path.of(".").toAbsolutePath());
     return null;
   }
 

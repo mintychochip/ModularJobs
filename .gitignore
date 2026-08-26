@@ -39,7 +39,7 @@ bin/
 .DS_Store
 
 ### Runtime & Local ###
-paper/run/
+modularjobs-paper/run/
 .claude/settings.local.json
 *.bak
 *.backup

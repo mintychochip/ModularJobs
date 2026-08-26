@@ -34,7 +34,9 @@ class CiTemplateHookupTest {
     assertFalse(
         text.contains("./gradlew :paper:shadowJar"),
         "unprefixed :paper:shadowJar must not remain in " + workflow);
-    assertTrue(text.contains("api/build/libs/*.jar"), "missing api jar upload glob in " + workflow);
+    assertTrue(
+        text.contains("modularjobs-api/build/libs/*.jar"),
+        "missing api jar upload glob in " + workflow);
     assertFalse(
         text.contains("aincraft-org/ci-template/.github/workflows/paper.yml@"),
         "reusable workflow must not be referenced from "
@@ -115,7 +117,8 @@ class CiTemplateHookupTest {
     assertFalse(
         text.contains("./gradlew :paper:shadowJar"),
         "unprefixed :paper:shadowJar must not remain in nightly.yml");
-    assertTrue(text.contains("paper/build/libs/*-all.jar"), "must publish paper shadow jar");
+    String shadowJarGlob = "modularjobs-paper/build/libs/*-all.jar";
+    assertTrue(text.contains(shadowJarGlob), "must publish paper shadow jar");
     assertTrue(isScheduleOrManualOnly(text), "nightly must not run on push/PR/tag");
   }
 

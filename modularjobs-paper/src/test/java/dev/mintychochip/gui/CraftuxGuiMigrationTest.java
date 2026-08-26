@@ -185,7 +185,8 @@ class CraftuxGuiMigrationTest {
 
     String jobApi =
         Files.readString(
-            Path.of("../api/src/main/java/dev/mintychochip/Job.java"), StandardCharsets.UTF_8);
+            Path.of("../modularjobs-api/src/main/java/dev/mintychochip/Job.java"),
+            StandardCharsets.UTF_8);
     assertFalse(jobApi.contains("petPerks"), "Job API must not expose petPerks");
     assertFalse(jobApi.contains("petRevokedPerks"), "Job API must not expose petRevokedPerks");
   }

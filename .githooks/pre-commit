@@ -25,7 +25,7 @@ while IFS= read -r f; do
   [[ -z "${f}" ]] && continue
   any_staged=1
   case "${f}" in
-    api/*|common/*|paper/*|\
+    modularjobs-api/*|modularjobs-common/*|modularjobs-paper/*|\
     build.gradle.kts|settings.gradle.kts|gradle.properties|\
     gradle/*|config/checkstyle/*|config/pmd/*|config/spotbugs/*|\
     .githooks/*)

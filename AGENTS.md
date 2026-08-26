@@ -7,13 +7,13 @@ MySQL-backed REST API (Rust) and React secure session editor.
 
 | Path | Role |
 |------|------|
-| `api` | Pure public contracts (no Paper); depends on `dev.conditions:api` |
-| `common` | Shared DTOs (editor payload, …) |
-| `paper` | Paper plugin implementation (shadow jar) |
+| `modularjobs-api` | Pure public contracts (no Paper); depends on `dev.conditions:api` |
+| `modularjobs-common` | Shared DTOs (editor payload, …) |
+| `modularjobs-paper` | Paper plugin implementation (shadow jar) |
 | `web` | Docs + session-editor + rest-api |
 | `scripts/` | Out-of-band ops helpers (schema apply) |
 
-Build plugin: `./gradlew :modularjobs-paper:build` (shadowJar → `paper/build/libs/modularjobs-paper-<version>-all.jar`, e.g. `modularjobs-paper-26.8.11.1-all.jar`).
+Build plugin: `./gradlew :modularjobs-paper:build` (shadowJar → `modularjobs-paper/build/libs/modularjobs-paper-<version>-all.jar`, e.g. `modularjobs-paper-26.8.11.1-all.jar`).
 Unit tests: `./gradlew :modularjobs-api:test :modularjobs-common:test :modularjobs-paper:test`.  
 Static analysis (Error Prone on compile; Spotless, Checkstyle Google Checks, PMD, SpotBugs on `check`):  
 `./gradlew clean check` is the fail-closed CI gate — reports under `*/build/reports/{checkstyle,pmd,spotbugs}/`.  
@@ -40,7 +40,7 @@ React editor: `cd web/session-editor && npm test && npm run build`.
 |-------|-----------------|-----------------|
 | MySQL | Ops / CI / script **once** | Connect + verify only |
 
-- Source of truth: `paper/src/main/resources/sql/mysql.sql`
+- Source of truth: `modularjobs-paper/src/main/resources/sql/mysql.sql`
 - Apply: `./scripts/apply-mysql-schema.sh`
 - Policy: `SchemaPolicy` — never runs DDL in-process (`auto-schema` is ignored)
 - Fail-fast: `SchemaPresence` on connect; missing tables → hard error, no CREATE
@@ -59,7 +59,7 @@ Plugin export (payload JSON)
 ```
 
 - Payload contract: version, metadata.sessionToken, jobs map, registered action/payable types  
-  (`paper` editor JSON, `web/rest-api` models, `web/session-editor` types; shared DTOs in `common`)
+  (`modularjobs-paper` editor JSON, `web/rest-api` models, `web/session-editor` types; shared DTOs in `modularjobs-common`)
 - Auth: session **code** (public) + **token** (secret). Wrong/missing token → 401; no cross-session overwrite
 - React client base URL: `VITE_SESSION_API_URL` (default `http://127.0.0.1:18787`)
 - **Do not** use `bytebin.lucko.me` for the production secure editor path  

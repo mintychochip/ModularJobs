@@ -63,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: api-jar
-          path: api/build/libs/*.jar
+          path: modularjobs-api/build/libs/*.jar
           if-no-files-found: error
 
   java:
@@ -220,7 +220,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: paper-all
-          path: paper/build/libs/*-all.jar
+          path: modularjobs-paper/build/libs/*-all.jar
           if-no-files-found: error
 
       - name: Upload static analysis reports

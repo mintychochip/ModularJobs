@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
-/** Guards pure modules ({@code api}, {@code common}) against accidental Bukkit/Paper imports. */
+/** Guards pure {@code modularjobs-api} and {@code modularjobs-common} sources. */
 class ArchitectureIsolationTest {
 
   @Test
@@ -21,7 +21,7 @@ class ArchitectureIsolationTest {
             Path.of("src/main/java"),
             // common is sibling — also scan from repo via relative path when test runs from api
             // project
-            Path.of("../common/src/main/java"));
+            Path.of("../modularjobs-common/src/main/java"));
     List<String> offenders = new ArrayList<>();
     for (Path root : roots) {
       if (!Files.isDirectory(root)) {

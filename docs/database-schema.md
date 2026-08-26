@@ -14,7 +14,7 @@ in `onEnable` or the API request path.
 
 ## Source of truth
 
-- `paper/src/main/resources/sql/mysql.sql`
+- `modularjobs-paper/src/main/resources/sql/mysql.sql`
 
 ## Provision MySQL
 
@@ -25,7 +25,7 @@ export DATABASE_URL=mysql://user:pass@host:3306/modularjobs
 
 # Or, with the MySQL client configured for the target database
 mysql --host=host --port=3306 --user=user --password modularjobs \
-  < paper/src/main/resources/sql/mysql.sql
+  < modularjobs-paper/src/main/resources/sql/mysql.sql
 ```
 
 Then point the plugin at that database:
