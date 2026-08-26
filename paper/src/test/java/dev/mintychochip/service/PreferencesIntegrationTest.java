@@ -63,6 +63,35 @@ class PreferencesIntegrationTest {
     assertNull(wiring.onDisable(), "no service -> no cleanup");
   }
 
+  @Test
+  void wireFallsBackWhenRegistrationFails() {
+    FailingStubPreferencesService external = new FailingStubPreferencesService();
+    Bukkit.getServicesManager()
+        .register(PreferencesService.class, external, plugin, ServicePriority.Normal);
+
+    PreferencesIntegration.Wiring wiring = PreferencesIntegration.wire(plugin);
+
+    assertNull(wiring.experienceBarColor(), "registration failure -> no preference");
+    assertNull(wiring.onDisable(), "registration failure -> no cleanup");
+  }
+
+  /** Stub that rejects registration. */
+  private static final class FailingStubPreferencesService implements PreferencesService {
+    @Override
+    public <T> Preference<T> register(
+        org.bukkit.plugin.Plugin owner, Class<T> type, Consumer<PreferenceBuilder<T>> configure) {
+      throw new IllegalStateException("registration rejected");
+    }
+
+    @Override
+    public Collection<? extends Preference<?>> all() {
+      return List.of();
+    }
+
+    @Override
+    public void unregisterPlugin(org.bukkit.plugin.Plugin plugin) {}
+  }
+
   /** Minimal stub recording registrations; never actually persists. */
   private static final class StubPreferencesService implements PreferencesService {
     final List<Preference<?>> registered = new ArrayList<>();

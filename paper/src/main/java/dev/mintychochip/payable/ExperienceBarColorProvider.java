@@ -1,6 +1,5 @@
 package dev.mintychochip.payable;
 
-import dev.mintychochip.preferences.api.Preference;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -13,9 +12,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class ExperienceBarColorProvider {
 
-  private final @Nullable Preference<Color> preference;
+  private final @Nullable ExperienceBarColorPreference preference;
 
-  ExperienceBarColorProvider(@Nullable Preference<Color> preference) {
+  ExperienceBarColorProvider(@Nullable ExperienceBarColorPreference preference) {
     this.preference = preference;
   }
 
@@ -23,7 +22,7 @@ final class ExperienceBarColorProvider {
     if (preference == null) {
       return Color.GREEN;
     }
-    @Nullable Color value = preference.get(player);
+    @Nullable Color value = preference.color(player);
     return value != null ? value : Color.GREEN;
   }
 }
