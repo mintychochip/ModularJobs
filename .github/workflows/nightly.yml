@@ -107,8 +107,8 @@ jobs:
       - name: Checkout Preferences API dependency
         uses: actions/checkout@v7
         with:
-          repository: mintychochip/Preferences
-          ref: c78eac8c81104ba0890fc98d5f49090d90d0dee7
+          repository: aincraft-org/preferences
+          ref: c18236c1fa844eb0ae26824e524ae4605a9b41df
           path: preferences
           fetch-depth: 1
 
@@ -116,7 +116,8 @@ jobs:
         working-directory: preferences
         run: |
           chmod +x gradlew
-          ./gradlew :api:publishToMavenLocal \
+          ./gradlew :preferences-api:publishToMavenLocal \
+            -PbuildVersion=0.2.0 \
             -Dmaven.repo.local=${{ runner.temp }}/m2 \
             --console=plain --no-daemon
 
