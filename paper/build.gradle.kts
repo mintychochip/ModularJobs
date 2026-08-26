@@ -45,6 +45,8 @@ dependencies {
     testImplementation(libs.paper.api)
     // PlaceholderAPI for expansion unit tests (compileOnly in main)
     testImplementation(libs.placeholderapi)
+    // Preferences API for payable preference wiring tests (compileOnly in main)
+    testImplementation(libs.preferences.api)
     // MySQL only — driver ships in the plugin artifact
     implementation(libs.mysql)
     testImplementation(libs.mysql)

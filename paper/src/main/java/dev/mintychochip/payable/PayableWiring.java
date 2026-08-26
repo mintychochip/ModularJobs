@@ -8,11 +8,13 @@ import dev.mintychochip.container.PayableAmount;
 import dev.mintychochip.container.PayableHandler;
 import dev.mintychochip.container.PayableType;
 import dev.mintychochip.gui.craftux.CraftuxSurfaces;
+import dev.mintychochip.preferences.api.Preference;
 import dev.mintychochip.registry.Registry;
 import dev.mintychochip.service.JobService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
+import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -21,6 +23,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 /** Manual composition for payable types and experience bar (replaces Guice PayableModule). */
 public final class PayableWiring {
@@ -43,8 +46,10 @@ public final class PayableWiring {
       Plugin plugin,
       JobService jobService,
       Registry<PayableType> payableTypeRegistry,
-      CraftuxSurfaces surfaces) {
-    ExperienceBarColorProvider colorProvider = new ExperienceBarColorProvider();
+      CraftuxSurfaces surfaces,
+      @Nullable Preference<Color> experienceBarColorPreference) {
+    ExperienceBarColorProvider colorProvider =
+        new ExperienceBarColorProvider(experienceBarColorPreference);
     ExperienceBarController controller = new ExperienceBarControllerImpl(plugin, surfaces);
     ExperienceBarFormatter formatter = new ExperienceBarFormatterImpl(colorProvider);
     PayableHandler experienceHandler =

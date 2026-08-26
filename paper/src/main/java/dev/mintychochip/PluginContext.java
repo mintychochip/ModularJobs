@@ -206,7 +206,8 @@ public final class PluginContext {
     final CraftuxSurfaces craftuxSurfaces = CraftuxSurfaces.create();
 
     final PayableWiring payables =
-        PayableWiring.create(plugin, domain.jobService, payableTypeRegistry, craftuxSurfaces);
+        PayableWiring.create(
+            plugin, domain.jobService, payableTypeRegistry, craftuxSurfaces, null);
 
     RegistryContainerImpl registryContainer = new RegistryContainerImpl();
     registryContainer.addRegistry(RegistryKeys.ACTION_TYPES.key(), actionTypeRegistry);
