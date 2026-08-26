@@ -454,10 +454,7 @@ public final class PreferencesIntegration {
   /** Result of wiring: optional preference handle plus optional disable-path cleanup. */
   public record Wiring(
       @Nullable Preference<Color> experienceBarColor, @Nullable Runnable onDisable) {
-    public Wiring {
-      Objects.requireNonNull(experienceBarColor, "experienceBarColor");
-      Objects.requireNonNull(onDisable, "onDisable");
-    }
+    // Both fields are intentionally nullable: the absent-service paths construct Wiring(null, null).
   }
 
   /**
