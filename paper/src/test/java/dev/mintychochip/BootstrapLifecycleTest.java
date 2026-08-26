@@ -44,9 +44,12 @@ class BootstrapLifecycleTest {
     assertTrue(
         text.contains("new PreferencesServiceImpl(plugin)"),
         "PluginContext must construct the always-available local preference service");
-    assertFalse(
-        text.contains("PreferencesIntegration"),
-        "PluginContext must not depend on the removed external Preferences adapter");
+    assertTrue(
+        text.contains("PreferencesIntegration.wire(plugin)"),
+        "PluginContext must wire optional external XP bar color preference");
+    assertTrue(
+        text.contains("resources.onFlush(preferencesWiring.onDisable())"),
+        "PluginContext must unregister external preference on disable");
     assertFalse(
         text.contains("ExternalBackedPreferencesService"),
         "PluginContext must not depend on the removed external facade");
