@@ -432,7 +432,6 @@ import java.util.logging.Level;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -464,18 +463,13 @@ public final class PreferencesIntegration {
   public static Wiring wire(JavaPlugin plugin) {
     Objects.requireNonNull(plugin, "plugin");
 
-    Plugin preferencesPlugin = Bukkit.getPluginManager().getPlugin("Preferences");
-    if (preferencesPlugin == null || !preferencesPlugin.isEnabled()) {
-      plugin.getSLF4JLogger().info(
-          "Preferences plugin not present; XP boss bar color stays default green");
-      return new Wiring(null, null);
-    }
-
+    // The Preferences plugin registers its service at enable time, so service presence is the
+    // authoritative capability check. No plugin-name gate: the test registers the service without
+    // an enabled "Preferences" plugin fixture.
     PreferencesService external = Bukkit.getServicesManager().load(PreferencesService.class);
     if (external == null) {
       plugin.getSLF4JLogger().info(
-          "Preferences plugin enabled but PreferencesService is not registered; "
-              + "XP boss bar color stays default green");
+          "Preferences plugin not present; XP boss bar color stays default green");
       return new Wiring(null, null);
     }
 
